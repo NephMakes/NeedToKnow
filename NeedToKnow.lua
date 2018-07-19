@@ -428,7 +428,7 @@ function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SUCCEEDED(unit, spell, rank_st
 end
 
 -- function NeedToKnow.ExecutiveFrame_COMBAT_LOG_EVENT_UNFILTERED(tod, event, hideCaster, guidCaster, ...)
-function TimerBars.ExecutiveFrame_COMBAT_LOG_EVENT_UNFILTERED()
+function NeedToKnow.ExecutiveFrame_COMBAT_LOG_EVENT_UNFILTERED()
 
     local tod, event, hideCaster, guidCaster, sourceName, sourceFlags, sourceRaidFlags, guidTarget, nameTarget, _, _, spellid, spell = CombatLogGetCurrentEventInfo()
 
