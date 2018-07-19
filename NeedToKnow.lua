@@ -427,12 +427,16 @@ function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SUCCEEDED(unit, spell, rank_st
     end
 end
 
-function NeedToKnow.ExecutiveFrame_COMBAT_LOG_EVENT_UNFILTERED(tod, event, hideCaster, guidCaster, ...)
+-- function NeedToKnow.ExecutiveFrame_COMBAT_LOG_EVENT_UNFILTERED(tod, event, hideCaster, guidCaster, ...)
+function TimerBars.ExecutiveFrame_COMBAT_LOG_EVENT_UNFILTERED()
+
+    local tod, event, hideCaster, guidCaster, sourceName, sourceFlags, sourceRaidFlags, guidTarget, nameTarget, _, _, spellid, spell = CombatLogGetCurrentEventInfo()
+
     -- the time that's passed in appears to be time of day, not game time like everything else.
     local time = g_GetTime() 
     -- TODO: Is checking r.state sufficient or must event be checked instead?
     if ( guidCaster == NeedToKnow.guidPlayer and event=="SPELL_CAST_SUCCESS") then
-        local guidTarget, nameTarget, _, _, spellid, spell = select(4, ...) -- source_name, source_flags, source_flags2, 
+        -- local guidTarget, nameTarget, _, _, spellid, spell = select(4, ...) -- source_name, source_flags, source_flags2, 
 
         local found
         local t = m_last_cast
@@ -3055,12 +3059,12 @@ end
 local EDT = {}
 EDT["COMBAT_LOG_EVENT_UNFILTERED"] = function(self, unit, ...)
     -- local combatEvent = select(1, ...)
-    local combatEvent = select(1, CombatLogGetCurrentEventInfo())
+    local tod, event, hideCaster, guidCaster, sourceName, sourceFlags, sourceRaidFlags, guidTarget, nameTarget, _, _, spellid, spell = CombatLogGetCurrentEventInfo()
 
     if ( c_AURAEVENTS[combatEvent] ) then
-        local guidTarget = select(7, ...)
+        -- local guidTarget = select(7, ...)
         if ( guidTarget == g_UnitGUID(self.unit) ) then
-            local idSpell, nameSpell = select(11, ...)
+            -- local idSpell, nameSpell = select(11, ...)
             if (self.auraName:find(idSpell) or
                     self.auraName:find(nameSpell)) 
             then 
@@ -3068,8 +3072,9 @@ EDT["COMBAT_LOG_EVENT_UNFILTERED"] = function(self, unit, ...)
             end
         end
     elseif ( combatEvent == "UNIT_DIED" ) then
-        local guidDeceased = select(7, ...) 
-        if ( guidDeceased == UnitGUID(self.unit) ) then
+        -- local guidDeceased = select(7, ...) 
+        -- if ( guidDeceased == UnitGUID(self.unit) ) then
+        if ( guidTarget == UnitGUID(self.unit) ) then
             mfn_Bar_AuraCheck(self)
         end
     end 
