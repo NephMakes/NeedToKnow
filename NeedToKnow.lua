@@ -509,7 +509,7 @@ function NeedToKnow.ExecutiveFrame_PLAYER_LOGIN()
         NeedToKnow.is_Druid = 1
     end
 
-    NeedToKnowLoader.SetPowerTypeList(player_CLASS)
+    -- NeedToKnowLoader.SetPowerTypeList(player_CLASS)
 
     NeedToKnow_ExecutiveFrame:RegisterEvent("PLAYER_TALENT_UPDATE")
     NeedToKnow_ExecutiveFrame:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
@@ -1138,7 +1138,7 @@ function NeedToKnowLoader.SafeUpgrade()
      -- TODO: check the required members for existence and delete any corrupted profiles
 end
 
-
+--[[
 function NeedToKnowLoader.AddSpellCost(sid, powerTypesUsed)
     local costInfo = g_GetSpellPowerCost(sid)
 	local iCost
@@ -1152,7 +1152,6 @@ function NeedToKnowLoader.AddSpellCost(sid, powerTypesUsed)
 		end
 	end
 end
-
 
 function NeedToKnowLoader.SetPowerTypeList(player_CLASS)
     if player_CLASS == "DRUID" or 
@@ -1196,7 +1195,7 @@ function NeedToKnowLoader.SetPowerTypeList(player_CLASS)
             { Setting = tostring(pt), MenuText = NeedToKnow.GetPowerName(pt) } ) 
 	end
 end	
-
+]]--
 
 
 
@@ -1692,6 +1691,7 @@ function NeedToKnow.SetScripts(bar)
         bar:RegisterEvent("SPELL_UPDATE_COOLDOWN")
     elseif ( "EQUIPSLOT" == bar.settings.BuffOrDebuff ) then
         bar:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
+--[[
     elseif ( "POWER" == bar.settings.BuffOrDebuff ) then
         if bar.settings.AuraName == tostring(NEEDTOKNOW.SPELL_POWER_STAGGER) then
           bar:RegisterEvent("UNIT_HEALTH")
@@ -1699,6 +1699,7 @@ function NeedToKnow.SetScripts(bar)
           bar:RegisterEvent("UNIT_POWER")
           bar:RegisterEvent("UNIT_DISPLAYPOWER")
         end
+]]--
     elseif ( "USABLE" == bar.settings.BuffOrDebuff ) then
         bar:RegisterEvent("SPELL_UPDATE_USABLE")
     elseif ( bar.settings.Unit == "targettarget" ) then
@@ -1761,8 +1762,8 @@ function NeedToKnow.ClearScripts(bar)
     bar:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     bar:UnregisterEvent("PLAYER_TOTEM_UPDATE")
     bar:UnregisterEvent("UNIT_AURA")
-    bar:UnregisterEvent("UNIT_POWER")
-    bar:UnregisterEvent("UNIT_DISPLAYPOWER")
+    -- bar:UnregisterEvent("UNIT_POWER")
+    -- bar:UnregisterEvent("UNIT_DISPLAYPOWER")
     bar:UnregisterEvent("UNIT_TARGET")
     bar:UnregisterEvent("START_AUTOREPEAT_SPELL")
     bar:UnregisterEvent("STOP_AUTOREPEAT_SPELL")
@@ -1785,7 +1786,8 @@ end
 
 function NeedToKnow.Bar_OnMouseUp(self, button)
     if ( button == "RightButton" ) then
-        PlaySound("UChatScrollButton");
+        -- PlaySound("UChatScrollButton");
+        PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON);
         NeedToKnowRMB.ShowMenu(self);
      end
 end
@@ -2612,7 +2614,7 @@ end
 local function UnitAuraWrapper(a,b,c,d)
      local
         name,  
-        _, -- rank,  
+        -- _, -- rank,  
         icon,
         count,  
         _, -- type,
@@ -2672,6 +2674,8 @@ mfn_AuraCheck_Single = function(bar, bar_entry, all_stacks)
             j=j+1
         end
     else
+        --[[
+        -- UnitAura() no longer supports querying by spell name 
         local buffName, iconPath, count, duration, expirationTime, caster, _, tt1, tt2, tt3 
           = UnitAuraWrapper(bar.unit, bar_entry.name, nil, filter)
           mfn_AddInstanceToStacks( all_stacks, bar_entry,
@@ -2682,6 +2686,28 @@ mfn_AuraCheck_Single = function(bar, bar_entry, all_stacks)
                iconPath,                               -- icon path
                caster,                                 -- caster
                tt1, tt2, tt3 )                         -- extra status values, like vengeance armor or healing bo
+        ]]--
+        local j = 1
+        while true do
+            local buffName, iconPath, count, duration, expirationTime, caster, spellID, tt1, tt2, tt3
+              = UnitAuraWrapper(bar.unit, j, filter)
+            if (not buffName) then
+                break
+            end
+
+            if (buffName == bar_entry.name) then 
+                mfn_AddInstanceToStacks( all_stacks, bar_entry,
+                       duration,                               -- duration
+                       buffName,                               -- name
+                       count,                                  -- count
+                       expirationTime,                         -- expiration time
+                       iconPath,                               -- icon path
+                       caster,                                 -- caster
+                       tt1, tt2, tt3 )                         -- extra status values, like vengeance armor or healing bo
+                return;
+            end
+            j=j+1
+        end
     end
 end
 
@@ -3051,8 +3077,8 @@ EDT["ACTIONBAR_UPDATE_COOLDOWN"] = mfn_Bar_AuraCheck
 EDT["SPELL_UPDATE_COOLDOWN"] = mfn_Bar_AuraCheck
 EDT["SPELL_UPDATE_USABLE"] = mfn_Bar_AuraCheck
 EDT["UNIT_AURA"] = fnAuraCheckIfUnitMatches
-EDT["UNIT_POWER"] = fnAuraCheckIfUnitMatches
-EDT["UNIT_DISPLAYPOWER"] = fnAuraCheckIfUnitMatches
+-- EDT["UNIT_POWER"] = fnAuraCheckIfUnitMatches
+-- EDT["UNIT_DISPLAYPOWER"] = fnAuraCheckIfUnitMatches
 EDT["UNIT_HEALTH"] = mfn_Bar_AuraCheck
 EDT["PLAYER_TARGET_CHANGED"] = function(self, unit)
     if self.unit == "targettarget" then

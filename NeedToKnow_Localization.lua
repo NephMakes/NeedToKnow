@@ -362,6 +362,7 @@ function NTK_LocLoader.IsSpellPower(intVarName)
 	return nil
 end
 
+--[[
 function NTK_LocLoader.FindPowerTypes()
     NEEDTOKNOW.POWER_TYPES = {};
     NEEDTOKNOW.POWER_TYPES[SPELL_POWER_MANA] = MANA
@@ -384,3 +385,4 @@ function NTK_LocLoader.FindPowerTypes()
 end
 NTK_LocLoader.FindPowerTypes()
 NTK_LocLoader = nil
+]]--
