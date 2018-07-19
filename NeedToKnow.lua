@@ -2687,6 +2687,7 @@ mfn_AuraCheck_Single = function(bar, bar_entry, all_stacks)
                caster,                                 -- caster
                tt1, tt2, tt3 )                         -- extra status values, like vengeance armor or healing bo
         ]]--
+        -- TODO: Use AuraUtil.FindAuraByName in FrameXML/AuraUtil.lua, added in 8.0
         local j = 1
         while true do
             local buffName, iconPath, count, duration, expirationTime, caster, spellID, tt1, tt2, tt3
@@ -3053,7 +3054,8 @@ end
 
 local EDT = {}
 EDT["COMBAT_LOG_EVENT_UNFILTERED"] = function(self, unit, ...)
-    local combatEvent = select(1, ...)
+    -- local combatEvent = select(1, ...)
+    local combatEvent = select(1, CombatLogGetCurrentEventInfo())
 
     if ( c_AURAEVENTS[combatEvent] ) then
         local guidTarget = select(7, ...)
@@ -3113,8 +3115,10 @@ EDT["STOP_AUTOREPEAT_SPELL"] = function(self, unit, ...)
     self:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
 end
 EDT["UNIT_SPELLCAST_SUCCEEDED"] = function(self, unit, ...)
-    local spell = select(1,...)
-    if ( self.settings.bAutoShot and unit == "player" and spell == c_AUTO_SHOT_NAME ) then
+    -- local spell = select(1,...)
+    local spellID  = select(2, ...)
+    local spellName = select(1, GetSpellInfo(spellId))
+    if ( self.settings.bAutoShot and unit == "player" and spellName == c_AUTO_SHOT_NAME ) then
         local interval = UnitRangedDamage("player")
         self.tAutoShotCD = interval
         self.tAutoShotStart = g_GetTime()
