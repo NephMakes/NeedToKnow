@@ -1,8 +1,8 @@
 
---------------------
+----------------------
 NeedToKnow
-by Kitjan
---------------------
+by Kitjan, lieandswell
+----------------------
 
 
 NeedToKnow allows you to monitor specific buffs and debuffs of your choosing as timer bars that always appear in a consistent place on your screen in a consistent color.  It's especially useful for monitoring frequently used short-duration buffs and debuffs.  For example, a rogue could configure NeedToKnow to show timer bars for Slice and Dice, Rupture, and their own stack of Deadly Poison VII.  A death knight could use it to track their own diseases on a mob.  NeedToKnow also works with procs and on-use trinkets.  The number, size, position, and appearance of timer bars are all customizable.  
@@ -20,6 +20,21 @@ When entering your settings, be careful with your spelling and capitalization.  
 ----------
 Change log
 ----------
+
+v4.0.28
+* More fixes for UNIT_SPELLCAST event changes
+
+v4.0.27 (beta)
+* Update for WoW 8.0 Battle for Azeroth
+* Supports new PlaySound() arguments
+* UnitAura() no longer returns rank
+* UnitAura() no longer supports query by spell name
+* UNIT_SPELLCAST_SUCCEEDED no longer provides spell name and rank.
+* COMBAT_LOG_EVENT_UNFILTERED no longer has event payload. Using CombatLogGetCurrentEventInfo()
+* Removed reference to nonexistent NeedToKnow_GroupOptionsTemplate.xml in toc
+* Removed power bar functionality (was experimental anyway)
+* Thanks to jofmayer(Curse)/endymonium(Github) for code guidance
+
 4.0.03
  - Added "Last Raid Recipient" as a target for buff bars.  Great for spells like Beacon of Light, Lifebloom, Earth Shield, etc.
  - Improved the system used for "Detect Extends".  Hopefully this will fix the occasional occurrance of wildly incorrect extends.  This also improves performance of those bars a little.

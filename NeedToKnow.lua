@@ -116,7 +116,7 @@ m_scratch.bar_entry =
     }
 -- NEEDTOKNOW = {} is defined in the localization file, which must be loaded before this file
 
-NEEDTOKNOW.VERSION = "4.0.26"
+NEEDTOKNOW.VERSION = "4.0.28"
 
 local c_UPDATE_INTERVAL = 0.05
 local c_MAXBARS = 20
@@ -358,7 +358,8 @@ function NeedToKnow.ExecutiveFrame_OnEvent(self, event, ...)
     end
 end
 
-function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SENT(unit, spell, rank_str, tgt, serialno)
+-- function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SENT(unit, spell, rank_str, tgt, serialno)
+function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SENT(unit, tgt, lineID, spellID)
     if unit == "player" then
         -- TODO: I hate to pay this memory cost for every "spell" ever cast.
         --       Would be nice to at least garbage collect this data at some point, but that
@@ -366,23 +367,23 @@ function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SENT(unit, spell, rank_str, tg
         if not m_last_sent then
             m_last_sent = {}
         end
-        m_last_sent[spell] = g_GetTime()
+        m_last_sent[spellID] = g_GetTime()
 
         -- How expensive a second check do we need?
-        if ( m_last_guid[spell] or NeedToKnow.BarsForPSS ) then
+        if ( m_last_guid[spellID] or NeedToKnow.BarsForPSS ) then
             local r = m_last_cast[m_last_cast_tail]
             if not r then
-                r = { spell=spell, target=tgt, serial=serialno }
+                r = { spellID=spellID, target=tgt, lineID=lineID }
                 m_last_cast[m_last_cast_tail] = r
             else
-                r.spell = spell
+                r.spellID = spellID
                 r.target = tgt
-                r.serial = serialno
+                r.lineID = lineID
             end
             m_last_cast_tail = m_last_cast_tail + 1
             if ( m_last_cast_tail == 2 ) then
                 m_last_cast_head = 1
-                if ( m_last_guid[spell] ) then
+                if ( m_last_guid[spellID] ) then
                     NeedToKnow_ExecutiveFrame:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
                     NeedToKnow_ExecutiveFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
                 else
@@ -394,14 +395,16 @@ function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SENT(unit, spell, rank_str, tg
 end
 
 
-function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SUCCEEDED(unit, spell, rank_str, serialno, spellid)
+-- function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SUCCEEDED(unit, spell, rank_str, serialno, spellid)
+function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID, spellID)
+	-- Patch 8.0 UNIT_SPELLCAST_SUCCEEDED no longers provides spell name and rank 
     if unit == "player" then
         local found
         local t = m_last_cast
         local last = m_last_cast_tail-1
         local i
         for i = last,m_last_cast_head,-1  do
-            if t[i].spell == spell and t[i].serial == serialno then
+            if t[i].spellID == spellID and t[i].serial == serialno then
                 found = i
                 break
             end
@@ -409,10 +412,10 @@ function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SUCCEEDED(unit, spell, rank_st
 
         if found then
             if ( NeedToKnow.BarsForPSS ) then
-                local bar,one
+                local bar,one, spellName
                 for bar,one in pairs(NeedToKnow.BarsForPSS) do
                     local unitTarget = NeedToKnow.raid_members[t[found].target or ""]
-                    NeedToKnow.Bar_OnEvent(bar, "PLAYER_SPELLCAST_SUCCEEDED", "player", spell, spellid, unitTarget);
+                    NeedToKnow.Bar_OnEvent(bar, "PLAYER_SPELLCAST_SUCCEEDED", "player", spellName, spellID, unitTarget);
                 end
             end
 
@@ -2691,7 +2694,7 @@ mfn_AuraCheck_Single = function(bar, bar_entry, all_stacks)
                caster,                                 -- caster
                tt1, tt2, tt3 )                         -- extra status values, like vengeance armor or healing bo
         ]]--
-        -- TODO: Use AuraUtil.FindAuraByName in FrameXML/AuraUtil.lua, added in 8.0
+        -- TODO: Use AuraUtil.FindAuraByName in FrameXML/AuraUtil.lua (added in 8.0)
         local j = 1
         while true do
             local buffName, iconPath, count, duration, expirationTime, caster, spellID, tt1, tt2, tt3
