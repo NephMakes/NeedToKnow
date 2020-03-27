@@ -1586,8 +1586,8 @@ function NeedToKnow.StartSizing(self, button)
     group.oldScale = group:GetScale();
     group.oldX = group:GetLeft();
     group.oldY = group:GetTop();
-    --    group:ClearAllPoints();
-    --    group:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", group.oldX, group.oldY);
+		group:ClearAllPoints();
+		group:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", group.oldX, group.oldY);
     self.oldCursorX, self.oldCursorY = GetCursorPosition(UIParent);
     self.oldWidth = _G[group:GetName().."Bar1"]:GetWidth();
     self:SetScript("OnUpdate", NeedToKnow.Sizing_OnUpdate);
@@ -1614,7 +1614,7 @@ function NeedToKnow.Sizing_OnUpdate(self)
     -- set new frame coords to keep same on-screen position
     local newX = group.oldX * group.oldScale / newScale;
     local newY = group.oldY * group.oldScale / newScale;
-    group:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", newX, newY);
+    group:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", newX, newY);  -- throws bug re anchors
 
     -- calculate & set new bar width
     local newWidth = max(50, ((cursorX - self.oldCursorX)/uiScale + self.oldWidth * group.oldScale)/newScale);
