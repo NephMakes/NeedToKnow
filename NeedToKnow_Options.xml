@@ -1,5 +1,8 @@
 ﻿<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\..\..\Blizza~1\FrameXML\UI.xsd">
+
+    <!-- XML files must be loaded last in the .toc -->
+
     <Frame name="NeedToKnow_DropDownTemplate" inherits="UIDropDownMenuTemplate" virtual="true">
         <Anchors>
             <Anchor point="TOP"/>
@@ -13,7 +16,6 @@
             </OnShow>
         </Scripts>
     </Frame>
-
 
     <Frame name="NeedToKnow_GroupOptionsTemplate" virtual="true">
         <Size>

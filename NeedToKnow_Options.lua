@@ -1,4 +1,6 @@
-﻿local trace = print
+﻿local addonName, addonTable = ...
+
+local trace = print
 
 NEEDTOKNOW.MAXBARSPACING = 24;
 NEEDTOKNOW.MAXBARPADDING = 12;
@@ -11,8 +13,8 @@ local fontList = LSM:List("font");
 local NeedToKnow_OldProfile = nil;
 local NeedToKnow_OldSettings = nil;
 
-NeedToKnowOptions = {}
-NeedToKnowRMB = {}
+-- NeedToKnowOptions = {}
+-- NeedToKnowRMB = {}
 
 function NeedToKnow.FindProfileByName(profName)
     local key
@@ -159,7 +161,8 @@ function NeedToKnowOptions.NumberbarsButton_OnClick(self, increment)
         return;
     end
     NeedToKnow.ProfileSettings.Groups[groupID]["NumberBars"] = oldNumber + increment;
-    NeedToKnow.Group_Update(groupID);
+    -- NeedToKnow.Group_Update(groupID);
+    NeedToKnow.UpdateBarGroup(groupID);
     NeedToKnowOptions.NumberbarsWidget_Update(groupID);
 end
 
@@ -186,6 +189,7 @@ end
 -- -----------------------------------
 -- INTERFACE OPTIONS PANEL: APPEARANCE
 -- -----------------------------------
+
 NeedToKnowOptions.DefaultSelectedColor =   { 0.1, 0.6, 0.8, 1 }
 NeedToKnowOptions.DefaultNormalColor = { 0.7, 0.7, 0.7, 0 }
 
@@ -543,14 +547,11 @@ function NeedToKnowOptions.OnClickTextureItem(self)
     NeedToKnowOptions.UIPanel_Appearance_Update()
 end
 
-
 function NeedToKnowOptions.OnClickFontItem(self)
     NeedToKnow.ProfileSettings["BarFont"] = self.text:GetText()
     NeedToKnow.Update()
     NeedToKnowOptions.UIPanel_Appearance_Update()
 end
-
-
 
 function NeedToKnowOptions.ChooseColor(variable)
     info = UIDropDownMenu_CreateInfo();
@@ -703,8 +704,8 @@ StaticPopupDialogs["NEEDTOKNOW.CHOOSENAME_DIALOG"] = {
         self:GetParent():Hide();
     end,
     OnHide = function(self)
-    -- Removed for wow 3.3.5, it seems like there is a focu stack
-    -- now that obsoletes this anyway.  If not, there isn't a 
+    -- Removed for wow 3.3.5, it seems like there is a focus stack
+    -- now that obsoletes this anyway. If not, there isn't a 
     -- single ChatFrameEditBox anymore, there's ChatFrame1EditBox etc.
         -- if ( ChatFrameEditBox:IsVisible() ) then
         --    ChatFrameEditBox:SetFocus();
@@ -743,7 +744,8 @@ NeedToKnowRMB.BarMenu_SubMenus = {
 -- The code that drives it remains so that any existing users' bars won't break.
 --          { Setting = "USABLE", MenuText = NEEDTOKNOW.BARMENU_USABLE },
           { Setting = "EQUIPSLOT", MenuText = NEEDTOKNOW.BARMENU_EQUIPSLOT },
-          { Setting = "POWER", MenuText = NEEDTOKNOW.BARMENU_POWER }
+--          { Setting = "POWER", MenuText = NEEDTOKNOW.BARMENU_POWER }
+-- Disabling POWER option since it looks like Kitjan never finished implementing it
     },
     TimeFormat = {
           { Setting = "Fmt_SingleUnit", MenuText = NEEDTOKNOW.FMT_SINGLEUNIT },
@@ -1222,232 +1224,6 @@ function NeedToKnowRMB.EditBox_Numeric_OnTextChanged(self, isUserInput)
     end
 end
 
-NeedToKnowIE = {}
-function NeedToKnowIE.CombineKeyValue(key,value)
-    local vClean = value
-    if type(vClean) == "string" and value:byte(1) ~= 123 then
-        if (tostring(tonumber(vClean)) == vClean) or vClean == "true" or vClean == "false" then
-            vClean = '"' .. vClean .. '"'
-        elseif (vClean:find(",") or vClean:find("}") or vClean:byte(1) == 34) then
-            vClean = '"' .. tostring(value):gsub('"', '\\"') .. '"'
-        end
-    end
-
-    if key then
-        -- not possible for key to contain = right now, so we don't have to sanitize it
-        return key .. "=" .. tostring(vClean)
-    else
-        return vClean
-    end
-end
-
-function NeedToKnowIE.TableToString(v)
-    local i = 1
-    local ret= "{"
-    for index, value in pairs(v) do
-        if i ~= 1 then
-            ret = ret .. ","
-        end
-        local k
-        if index ~= i then
-            k = NEEDTOKNOW.SHORTENINGS[index] or index 
-        end
-        if  type(value) == "table" then
-            value = NeedToKnowIE.TableToString(value)
-        end
-        ret = ret .. NeedToKnowIE.CombineKeyValue(k, value)
-        i = i+1;
-    end
-    ret = ret .. "}"
-    return ret
-end
-
-function NeedToKnowIE.ExportBarSettingsToString(barSettings)
-    local pruned = CopyTable(barSettings)
-    NeedToKnow.RemoveDefaultValues(pruned, NEEDTOKNOW.BAR_DEFAULTS)
-    return 'bv1:' .. NeedToKnowIE.TableToString(pruned);
-end
-
---[[ Test Cases
-/script MemberDump( NeedToKnowIE.StringToTable( '{a,b,c}' ) )
-    members
-      1 a
-      2 b
-      3 c
-
-/script MemberDump( NeedToKnowIE.StringToTable( '{Aura=Frost Fever,Unit=target,Clr={g=0.4471,r=0.2784},Typ=HARMFUL}' ) )
-    members
-      BuffOrDebuff HARMFUL
-      BarColor table: 216B04C0
-      |  g 0.4471
-      |  r 0.2784
-      AuraName Frost Fever
-      Unit target
-
-/script MemberDump( NeedToKnowIE.StringToTable( '{"a","b","c"}' ) )
-    members
-      1 a
-      2 b
-      3 c
-
-/script MemberDump( NeedToKnowIE.StringToTable( '{"a,b","b=c","{c={d}}"}' ) )
-    members
-      1 a,b
-      2 b=c
-      3 {c={d}}
-
-/script local t = {'\\",\'','}'} local p = NeedToKnowIE.TableToString(t) print (p) MemberDump( NeedToKnowIE.StringToTable( p ) )
-    {"\\",'","}"}
-    members
-      1 \",'
-      2 }
-
-/script local p = NeedToKnowIE.TableToString( {} ) print (p) MemberDump( NeedToKnowIE.StringToTable( p ) )
-    {}
-    members
-
-    I don't think this can come up, but might as well be robust
-/script local p = NeedToKnowIE.TableToString( {{{}}} ) print (p) MemberDump( NeedToKnowIE.StringToTable( p ) )
-    {{{}}}
-    members
-      1 table: 216A2428
-      |  1 table: 216A0510
-
-    I don't think this can come up, but might as well be robust
-/script local p = NeedToKnowIE.TableToString( {{{"a"}}} ) print (p) MemberDump( NeedToKnowIE.StringToTable( p ) )
-    {{{a}}}
-    members
-      1 table: 27D68048
-      |  1 table: 27D68098
-      |  |  1 a
-
-    User Error                                   1234567890123456789012
-/script MemberDump( NeedToKnowIE.StringToTable( '{"a,b","b=c","{c={d}}",{' ) )
-    Unexpected end of string
-    nil
-
-    User Error                                   1234567890123456789012
-/script MemberDump( NeedToKnowIE.StringToTable( '{"a,b","b=c""{c={d}}"' ) )
-    Illegal quote at 12
-    nil
-]]--
-function NeedToKnowIE.StringToTable(text, ofs)
-    local cur = ofs or 1
-
-    if text:byte(cur+1) == 125 then
-        return {},cur+1
-    end
-
-    local i = 0
-    local ret = {}
-    while text:byte(cur) ~= 125 do
-        if not text:byte(cur) then
-            print("Unexpected end of string")
-            return nil,nil
-        end
-        i = i + 1
-        cur = cur + 1 -- advance past the { or ,
-        local hasKey, eq, delim
-        -- If it's not a quote or a {, it should be a key+equals or value+delimeter
-        if text:byte(cur) ~= 34 and text:byte(cur) ~= 123 then 
-            eq = text:find("=", cur)
-            local comma = text:find(",", cur) 
-            delim = text:find("}", cur) or comma
-            if comma and delim > comma then
-                delim = comma 
-            end
-
-            if not delim then 
-                print("Unexpected end of string")
-                return nil, nil
-            end
-            hasKey = (eq and eq < delim)
-        end
-
-        local k,v
-        if not hasKey then
-            k = i
-        else
-            k = text:sub(cur,eq-1)
-            k = NEEDTOKNOW.LENGTHENINGS[k] or k
-            if not k or k == "" then
-                print("Error parsing key at", cur)
-                return nil,nil
-            end
-            cur = eq+1
-        end
-
-        if not text:byte(cur) then 
-            print("Unexpected end of string")
-            return nil,nil
-        elseif text:byte(cur) == 123 then -- '{'
-            v, cur = NeedToKnowIE.StringToTable(text, cur)
-            if not v then return nil,nil end
-            cur = cur+1
-        else
-            if text:byte(cur) == 34 then -- '"'
-                -- find the closing quote
-                local endq = cur
-                delim=nil
-                while not delim do
-                    endq = text:find('"', endq+1)
-                    if not endq then
-                        print("Could not find closing quote begun at", cur)
-                        return nil, nil
-                    end
-                    if text:byte(endq-1) ~= 92 then -- \
-                        delim = endq+1
-                        if text:byte(delim) ~= 125 and text:byte(delim) ~= 44 then
-                            print("Illegal quote at", endq)
-                            return nil, nil
-                        end
-                    end
-                end
-                v = text:sub(cur+1,delim-2)
-                v = gsub(v, '\\"', '"')
-            else
-                v = text:sub(cur,delim-1)
-                local n = tonumber(v)
-                if tostring(n) == v  then
-                    v = n
-                elseif v == "true" then
-                    v = true
-                elseif v == "false" then
-                    v = false
-                end
-            end
-            if v==nil or v == "" then
-                print("Error parsing value at",cur)
-            end
-            cur = delim
-        end
-
-        ret[k] = v
-    end
-
-    return ret,cur
-end
-
-function NeedToKnowIE.ImportBarSettingsFromString(text, bars, barID)
-    local pruned
-    if text and text ~= "" then
-        local ver, packed = text:match("bv(%d+):(.*)")
-        if not ver then
-            print("Could not find bar settings header")
-        elseif not packed then
-            print("Could not find bar settings")
-        end
-        pruned = NeedToKnowIE.StringToTable(packed)
-    else
-        pruned = {}
-    end
-
-    if pruned then
-        NeedToKnow.AddDefaultsToTable(pruned, NEEDTOKNOW.BAR_DEFAULTS)
-        bars[barID] = pruned
-    end
-end
-
 function NeedToKnowRMB.BarMenu_ShowNameDialog(self, a1, a2, checked)
     if not self.value.text or not NEEDTOKNOW[self.value.text] then return end
 
@@ -1493,7 +1269,9 @@ function NeedToKnowRMB.BarMenu_ChooseName(text, variable)
     NeedToKnow.Bar_Update(groupID, barID);
 end
 
-function MemberDump(v, bIndex, filter, indent, recurse)
+local function MemberDump(v, bIndex, filter, indent, recurse)
+	-- Appears to be a utility/debug function not called anywhere
+
     if v == nil then 
         print("nil")
         return
@@ -1614,7 +1392,7 @@ function NeedToKnow.Sizing_OnUpdate(self)
     -- set new frame coords to keep same on-screen position
     local newX = group.oldX * group.oldScale / newScale;
     local newY = group.oldY * group.oldScale / newScale;
-    group:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", newX, newY);  -- throws bug re anchors
+    group:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", newX, newY);
 
     -- calculate & set new bar width
     local newWidth = max(50, ((cursorX - self.oldCursorX)/uiScale + self.oldWidth * group.oldScale)/newScale);
@@ -1631,7 +1409,7 @@ function NeedToKnow.SetWidth(groupID, width)
         text:SetWidth(width-60);
         NeedToKnow.SizeBackground(bar, bar.settings.show_icon);
     end
-    NeedToKnow.ProfileSettings.Groups[groupID]["Width"] = width;        -- move this to StopSizing?
+    NeedToKnow.ProfileSettings.Groups[groupID]["Width"] = width;  -- move this to StopSizing?
 end
 
 function NeedToKnow.StopSizing(self, button)

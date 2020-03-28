@@ -1,9 +1,13 @@
 ﻿<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\..\..\Blizza~1\FrameXML\UI.xsd">
 
+    <!-- 
     <Script file="NeedToKnow_Localization.lua"/>
     <Script file="NeedToKnow.lua"/>
     <Script file="NeedToKnow_Options.lua"/>
+    -->
+
+    <!-- XML files must be loaded last in the .toc -->
 
     <Frame name="NeedToKnow_GroupTemplate" virtual="true">
         <Size>

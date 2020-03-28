@@ -1,7 +1,10 @@
--- ----------------------
+-- --------------------------------
 -- NeedToKnow
--- by Kitjan, lieandswell
--- ----------------------
+-- by Kitjan, NephMakes/lieandswell
+-- --------------------------------
+
+local addonName, addonTable = ...
+-- UI now passes a table to each addon so they don't need to use globals
 
 local trace = print
 --function maybe_trace(...)
@@ -26,17 +29,14 @@ local trace = print
   --trace(so_far,"=",p)
 --end
 --
--- -------------
--- ADDON GLOBALS
--- -------------
-
-NeedToKnow = {}
-NeedToKnowLoader = {}
 
 -- -------------
 -- ADDON MEMBERS
 -- -------------
+
+-- Define local versions of global functions
 local g_GetActiveTalentGroup = _G.GetSpecialization
+local g_UnitExists = UnitExists
 local g_UnitAffectingCombat = UnitAffectingCombat
 local g_UnitIsFriend = UnitIsFriend
 local g_UnitGUID = UnitGUID
@@ -53,13 +53,11 @@ local m_last_guid, m_last_cast, m_last_sent, m_last_cast_head, m_last_cast_tail
 local m_bInCombat, m_bCombatWithBoss
 
 local mfn_Bar_AuraCheck
-local mfn_EnergyBar_OnUpdate
 local mfn_AuraCheck_Single
 local mfn_AuraCheck_TOTEM
 local mfn_AuraCheck_BUFFCD
 local mfn_AuraCheck_USABLE
 local mfn_AuraCheck_EQUIPSLOT
-local mfn_AuraCheck_POWER
 local mfn_AuraCheck_CASTCD
 local mfn_AuraCheck_AllStacks
 local mfn_GetUnresolvedCooldown
@@ -70,6 +68,10 @@ local mfn_AddInstanceToStacks
 local mfn_SetStatusBarValue
 local mfn_ResetScratchStacks
 local mfn_UpdateVCT
+
+-- TO DO: Move these to Power.lua
+local mfn_AuraCheck_POWER
+local mfn_EnergyBar_OnUpdate
 
 local m_scratch = {}
 m_scratch.all_stacks = 
@@ -114,19 +116,13 @@ m_scratch.bar_entry =
         barSpell = "",
         isSpellID = false,
     }
--- NEEDTOKNOW = {} is defined in the localization file, which must be loaded before this file
-
-NEEDTOKNOW.VERSION = "4.0.28"
 
 local c_UPDATE_INTERVAL = 0.05
 local c_MAXBARS = 20
-
--- Get the localized name of spell 75, which is "Auto Shot" in US English
 local c_AUTO_SHOT_NAME = g_GetSpellInfo(75)
+	-- Localized name of spell 75 ("Auto Shot" in US English)
 
-
--- COMBAT_LOG_EVENT_UNFILTERED events where select(6,...) is the caster, 9 is the spellid, and 10 is the spell name
--- (used for Target-of-target monitoring)
+-- COMBAT_LOG_EVENT_UNFILTERED events where select(6,...) is the caster, 9 is the spellid, and 10 is the spell name. Used for Target-of-target monitoring. 
 local c_AURAEVENTS = {
     SPELL_AURA_APPLIED = true,
     SPELL_AURA_REMOVED = true,
@@ -137,194 +133,6 @@ local c_AURAEVENTS = {
     SPELL_AURA_BROKEN_SPELL = true
 }
     
-    
-NEEDTOKNOW.BAR_DEFAULTS = {
-    Enabled         = true,
-    AuraName        = "",
-    Unit            = "player",
-    BuffOrDebuff    = "HELPFUL",
-    OnlyMine        = true,
-    BarColor        = { r=0.6, g=0.6, b=0.6, a=1.0 },
-    MissingBlink    = { r=0.9, g=0.1, b=0.1, a=0.5 },
-    TimeFormat      = "Fmt_SingleUnit",
-    vct_enabled     = false,
-    vct_color       = { r=0.6, g=0.6, b=0.0, a=0.3 },
-    vct_spell       = "",
-    vct_extra       = 0,
-    bDetectExtends  = false,
-    show_text       = true,
-    show_count      = true,
-    show_time       = true,
-    show_spark      = true,
-    show_icon       = false,
-    show_mypip      = false,
-    show_all_stacks = false,
-    show_charges    = true,
-    show_ttn1       = false,
-    show_ttn2       = false,
-    show_ttn3       = false,
-    show_text_user  = "",
-    blink_enabled   = false,
-    blink_ooc       = true,
-    blink_boss      = false,
-    blink_label     = "",
-    buffcd_duration = 0,
-    buffcd_reset_spells = "",
-    usable_duration = 0,
-    append_cd       = true,
-    append_usable   = false,
-}
-NEEDTOKNOW.GROUP_DEFAULTS = {
-    Enabled          = true,
-    NumberBars       = 3,
-    Scale            = 1.0,
-    Width            = 270,
-    Bars             = { NEEDTOKNOW.BAR_DEFAULTS, NEEDTOKNOW.BAR_DEFAULTS, NEEDTOKNOW.BAR_DEFAULTS },
-    Position         = { "TOPLEFT", "TOPLEFT", 100, -100 },
-    FixedDuration    = 0, 
-}
-NEEDTOKNOW.DEFAULTS = {
-    Version       = NEEDTOKNOW.VERSION,
-    OldVersion  = NEEDTOKNOW.VERSION,
-    Profiles    = {},
-    Chars       = {},
-}
-NEEDTOKNOW.CHARACTER_DEFAULTS = {
-    Specs       = {},
-    Locked      = false,
-    Profiles    = {},
-}
-NEEDTOKNOW.PROFILE_DEFAULTS = {
-    name        = "Default",
-    nGroups     = 1,
-    Groups      = { NEEDTOKNOW.GROUP_DEFAULTS },
-    BarTexture  = "BantoBar",
-    BarFont     = "Fritz Quadrata TT",
-    BkgdColor   = { 0, 0, 0, 0.8 },
-    BarSpacing  = 3,
-    BarPadding  = 3,
-    FontSize    = 12,
-    FontOutline = 0,
-}
-
-NEEDTOKNOW.SHORTENINGS= {
-    Enabled         = "On",
-    AuraName        = "Aura",
-    --Unit            = "Unit",
-    BuffOrDebuff    = "Typ",
-    OnlyMine        = "Min",
-    BarColor        = "Clr",
-    MissingBlink    = "BCl",
-    TimeFormat      = "TF",
-    vct_enabled     = "VOn",
-    vct_color       = "VCl",
-    vct_spell       = "VSp",
-    vct_extra       = "VEx",
-    bDetectExtends  = "Ext",
-    show_text       = "sTx",
-    show_count      = "sCt",
-    show_time       = "sTm",
-    show_spark      = "sSp",
-    show_icon       = "sIc",
-    show_mypip      = "sPp",
-    show_all_stacks = "All",
-    show_charges    = "Chg",
-    show_text_user  = "sUr",
-    show_ttn1       = "sN1",
-    show_ttn2       = "sN2",
-    show_ttn3       = "sN3",
-    blink_enabled   = "BOn",
-    blink_ooc       = "BOC",
-    blink_boss      = "BBs",
-    blink_label     = "BTx",
-    buffcd_duration = "cdd",
-    buffcd_reset_spells = "cdr",
-    usable_duration = "udr",
-    append_cd       = "acd",
-    append_usable   = "aus",
-    --NumberBars       = "NmB",
-    --Scale            = "Scl",
-    --Width            = "Cx",
-    --Bars             = "Brs",
-    --Position         = "Pos",
-    --FixedDuration    = "FxD", 
-    --Version       = "Ver",
-    --OldVersion  = "OVr",
-    --Profiles    = "Pfl",
-    --Chars       = "Chr",
-    --Specs       = "Spc",
-    --Locked      = "Lck",
-    --name        = "nam",
-    --nGroups     = "nGr",
-    --Groups      = "Grp",
-    --BarTexture  = "Tex",
-    --BarFont     = "Fnt",
-    --BkgdColor   = "BgC",
-    --BarSpacing  = "BSp",
-    --BarPadding  = "BPd",
-    --FontSize    = "FSz",
-    --FontOutline = "FOl",
-}
-
-NEEDTOKNOW.LENGTHENINGS= {
-   On = "Enabled",
-   Aura = "AuraName",
---   Unit = "Unit",
-   Typ = "BuffOrDebuff",
-   Min = "OnlyMine",
-   Clr = "BarColor",
-   BCl = "MissingBlink",
-   TF  = "TimeFormat",
-   VOn = "vct_enabled",
-   VCl = "vct_color",
-   VSp = "vct_spell",
-   VEx = "vct_extra",
-   Ext = "bDetectExtends",
-   sTx = "show_text",
-   sCt = "show_count",
-   sN1 = "show_ttn1",
-   sN2 = "show_ttn2",
-   sN3 = "show_ttn3",
-   sTm = "show_time",
-   sSp = "show_spark",
-   sIc = "show_icon",
-   sPp = "show_mypip",
-   All = "show_all_stacks",
-   Chg = "show_charges",
-   sUr = "show_text_user",
-   BOn = "blink_enabled",
-   BOC = "blink_ooc",
-   BBs = "blink_boss",
-   BTx = "blink_label",
-   cdd = "buffcd_duration",
-   cdr = "buffcd_reset_spells",
-   udr = "usable_duration",
-   acd = "append_cd",
-   aus = "append_usable",
-    --NumberBars       = "NmB",
-    --Scale            = "Scl",
-    --Width            = "Cx",
-    --Bars             = "Brs",
-    --Position         = "Pos",
-    --FixedDuration    = "FxD", 
-    --Version       = "Ver",
-    --OldVersion  = "OVr",
-    --Profiles    = "Pfl",
-    --Chars       = "Chr",
-    --Specs       = "Spc",
-    --Locked      = "Lck",
-    --name can't be compressed since it's used even when not the active profile
-    --nGroups     = "nGr",
-    --Groups      = "Grp",
-    --BarTexture  = "Tex",
-    --BarFont     = "Fnt",
-    --BkgdColor   = "BgC",
-    --BarSpacing  = "BSp",
-    --BarPadding  = "BPd",
-    --FontSize    = "FSz",
-    --FontOutline = "FOl";
-}
-
 -- -------------------
 -- SharedMedia Support
 -- -------------------
@@ -394,10 +202,7 @@ function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SENT(unit, tgt, lineID, spellI
     end
 end
 
-
--- function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SUCCEEDED(unit, spell, rank_str, serialno, spellid)
 function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID, spellID)
-	-- Patch 8.0 UNIT_SPELLCAST_SUCCEEDED no longers provides spell name and rank 
     if unit == "player" then
         local found
         local t = m_last_cast
@@ -409,7 +214,6 @@ function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID
                 break
             end
         end
-
         if found then
             if ( NeedToKnow.BarsForPSS ) then
                 local bar,one, spellName
@@ -418,7 +222,6 @@ function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID
                     NeedToKnow.Bar_OnEvent(bar, "PLAYER_SPELLCAST_SUCCEEDED", "player", spellName, spellID, unitTarget);
                 end
             end
-
             if ( found == last ) then
                 m_last_cast_tail = 1
                 m_last_cast_head = 1
@@ -430,13 +233,13 @@ function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID
     end
 end
 
--- function NeedToKnow.ExecutiveFrame_COMBAT_LOG_EVENT_UNFILTERED(tod, event, hideCaster, guidCaster, ...)
 function NeedToKnow.ExecutiveFrame_COMBAT_LOG_EVENT_UNFILTERED()
 
     local tod, event, hideCaster, guidCaster, sourceName, sourceFlags, sourceRaidFlags, guidTarget, nameTarget, _, _, spellid, spell = CombatLogGetCurrentEventInfo()
 
     -- the time that's passed in appears to be time of day, not game time like everything else.
     local time = g_GetTime() 
+
     -- TODO: Is checking r.state sufficient or must event be checked instead?
     if ( guidCaster == NeedToKnow.guidPlayer and event=="SPELL_CAST_SUCCESS") then
         -- local guidTarget, nameTarget, _, _, spellid, spell = select(4, ...) -- source_name, source_flags, source_flags2, 
@@ -484,7 +287,6 @@ function NeedToKnow.ExecutiveFrame_COMBAT_LOG_EVENT_UNFILTERED()
     end
 end
 
-
 function NeedToKnow.ExecutiveFrame_ADDON_LOADED(addon)
     if ( addon == "NeedToKnow") then
         if ( not NeedToKnow_Visible ) then
@@ -502,7 +304,6 @@ function NeedToKnow.ExecutiveFrame_ADDON_LOADED(addon)
         SLASH_NEEDTOKNOW2 = "/ntk"
     end
 end
-
 
 function NeedToKnow.ExecutiveFrame_PLAYER_LOGIN()
     NeedToKnowLoader.SafeUpgrade()
@@ -563,12 +364,11 @@ end
 function NeedToKnow.ExecutiveFrame_ACTIVE_TALENT_GROUP_CHANGED()
     -- This is the only event we're guaranteed to get on a talent switch,
     -- so we have to listen for it.  However, the client may not yet have
-    -- the spellbook updates, so trying to evaluate the cooldows may fail.
+    -- the spellbook updates, so trying to evaluate the cooldowns may fail.
     -- This is one of the reasons the cooldown logic has to fail silently
     -- and try again later
     NeedToKnow.ExecutiveFrame_PLAYER_TALENT_UPDATE()
 end
-
 
 function NeedToKnow.ExecutiveFrame_PLAYER_TALENT_UPDATE()
     if NeedToKnow.CharSettings then
@@ -583,7 +383,6 @@ function NeedToKnow.ExecutiveFrame_PLAYER_TALENT_UPDATE()
         NeedToKnow.ChangeProfile(profile_key);
     end
 end
-
 
 function NeedToKnow.ExecutiveFrame_UNIT_TARGET(unitTargeting)
     if m_bInCombat and not m_bCombatWithBoss then
@@ -795,7 +594,6 @@ function NeedToKnow.UncompressProfile(profileSettings)
     profileSettings.bUncompressed = true
 end
 
-
 function NeedToKnow.ChangeProfile(profile_key)
     if NeedToKnow_Profiles[profile_key] and
        NeedToKnow.ProfileSettings ~= NeedToKnow_Profiles[profile_key] then
@@ -843,7 +641,6 @@ function NeedToKnow.ChangeProfile(profile_key)
     end
 end
 
-
 mfn_SetStatusBarValue = function (bar,texture,value,value0)
   local pct0 = 0
   if value0 then
@@ -870,7 +667,6 @@ mfn_SetStatusBarValue = function (bar,texture,value,value0)
   end
 end
 
-
 function NeedToKnowLoader.Reset(bResetCharacter)
     NeedToKnow_Globals = CopyTable( NEEDTOKNOW.DEFAULTS )
     
@@ -878,7 +674,6 @@ function NeedToKnowLoader.Reset(bResetCharacter)
         NeedToKnow.ResetCharacter()
     end
 end
-
 
 function NeedToKnow.ResetCharacter(bCreateSpecProfile)
     local charKey = UnitName("player") .. ' - ' .. GetRealmName(); 
@@ -888,7 +683,6 @@ function NeedToKnow.ResetCharacter(bCreateSpecProfile)
         NeedToKnow.ExecutiveFrame_PLAYER_TALENT_UPDATE()    
     end
 end
-
 
 function NeedToKnow.AllocateProfileKey()
     local n=NeedToKnow_Globals.NextProfile or 1
@@ -946,7 +740,6 @@ function NeedToKnow.CreateProfile(settings, idxSpec, nameProfile)
     return keyProfile
 end
 
-
 function NeedToKnowLoader.RoundSettings(t)
   for k,v in pairs(t) do
     local typ = type(v)
@@ -957,7 +750,6 @@ function NeedToKnowLoader.RoundSettings(t)
     end
   end    
 end
-
 
 function NeedToKnowLoader.MigrateSpec(specSettings, idxSpec)
     if not specSettings or not specSettings.Groups or not specSettings.Groups[1] or not 
@@ -975,7 +767,6 @@ function NeedToKnowLoader.MigrateSpec(specSettings, idxSpec)
     NeedToKnow.CreateProfile(specSettings, idxSpec)
     return true
 end
-
 
 function NeedToKnowLoader.MigrateCharacterSettings()
     print("NeedToKnow: Migrating settings from", NeedToKnow_Settings["Version"]);
@@ -1031,7 +822,6 @@ function NeedToKnowLoader.MigrateCharacterSettings()
     end
     NeedToKnow_Settings = nil
 end
-
 
 function NeedToKnowLoader.FindFontName(fontPath)
     local fontList = NeedToKnow.LSM:List("font")
@@ -1140,7 +930,6 @@ function NeedToKnowLoader.SafeUpgrade()
         local curProf = NeedToKnow_Profiles[curKey]
         NeedToKnow.CharSettings.Specs[spec] = curKey
     end
-    
 
      -- TODO: check the required members for existence and delete any corrupted profiles
 end
@@ -1159,52 +948,7 @@ function NeedToKnowLoader.AddSpellCost(sid, powerTypesUsed)
 		end
 	end
 end
-
-function NeedToKnowLoader.SetPowerTypeList(player_CLASS)
-    if player_CLASS == "DRUID" or 
-        player_CLASS == "MONK" 
-    then
-        table.insert(NeedToKnowRMB.BarMenu_SubMenus.PowerTypeList,
-            { Setting = tostring(NEEDTOKNOW.SPELL_POWER_PRIMARY), MenuText = NeedToKnow.GetPowerName(NEEDTOKNOW.SPELL_POWER_PRIMARY) } ) 
-    end
-    if player_CLASS == "MONK" 
-    then
-        table.insert(NeedToKnowRMB.BarMenu_SubMenus.PowerTypeList,
-            { Setting = tostring(NEEDTOKNOW.SPELL_POWER_STAGGER), MenuText = NeedToKnow.GetPowerName(NEEDTOKNOW.SPELL_POWER_STAGGER) } ) 
-    end
-
-	local powerTypesUsed = {}
-	
-    local numTabs = g_GetNumSpellTabs() 
-	for iTab=1,numTabs do 
-	    local _,_,offset,numSpells = g_GetSpellTabInfo(iTab) 
-	    for iSpell=1,numSpells do 
-		    local stype,sid = g_GetSpellBookItemInfo(iSpell+offset, "book") 
-			-- print(iTab, iSpell, stype, sid)
-			if (stype=="SPELL" or stype=="FUTURESPELL") then
-			    NeedToKnowLoader.AddSpellCost(sid, powerTypesUsed);
-			end
-		end 
-	end
-	
-	local nSpecs = g_GetNumSpecializations()
-	for iSpec=1,nSpecs do
-	    local spells = {g_GetSpecializationSpells(iSpec)}
-		local numSpells = table.getn(spells)
-		for iSpell=1,numSpells,2 do
-		    local sid = spells[iSpell]
-			NeedToKnowLoader.AddSpellCost(sid, powerTypesUsed);
-		end
-	end
-	
-	for pt,ptn in pairs(powerTypesUsed) do
-        table.insert(NeedToKnowRMB.BarMenu_SubMenus.PowerTypeList,
-            { Setting = tostring(pt), MenuText = NeedToKnow.GetPowerName(pt) } ) 
-	end
-end	
 ]]--
-
-
 
 function NeedToKnow.DeepCopy(object)
     if type(object) ~= "table" then
@@ -1217,7 +961,6 @@ function NeedToKnow.DeepCopy(object)
         return new_table
     end
 end
-
 
 ---- Copies anything (int, table, whatever).  Unlike DeepCopy (and CopyTable), CopyRefGraph can 
 ---- recreate a recursive reference structure (CopyTable will stack overflow.)
@@ -1262,11 +1005,10 @@ end
 function NeedToKnow.Update()
     if UnitExists("player") and NeedToKnow.ProfileSettings then
         for groupID = 1, NeedToKnow.ProfileSettings.nGroups do
-            NeedToKnow.Group_Update(groupID)
+            NeedToKnow.UpdateBarGroup(groupID)
         end
     end
 end
-
 
 function NeedToKnow.Show(bShow)
     NeedToKnow_Visible = bShow
@@ -1292,83 +1034,17 @@ end
 
 
 
--- ------
--- GROUPS
--- ------
-
-function NeedToKnow.Group_Update(groupID)
-    local groupName = "NeedToKnow_Group"..groupID
-    local group = _G[groupName]
-    local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
-
-    local bar
-    for barID = 1, groupSettings.NumberBars do
-        local barName = groupName.."Bar"..barID
-        bar = _G[barName] or CreateFrame("Frame", barName, group, "NeedToKnow_BarTemplate")
-        bar:SetID(barID)
-
-        if ( barID > 1 ) then
-            bar:SetPoint("TOP", _G[groupName.."Bar"..(barID-1)], "BOTTOM", 0, -NeedToKnow.ProfileSettings.BarSpacing)
-        else
-            bar:SetPoint("TOPLEFT", group, "TOPLEFT")
-        end
-
-        NeedToKnow.Bar_Update(groupID, barID)
-
-        if ( not groupSettings.Enabled ) then
-            NeedToKnow.ClearScripts(bar)
-        end
-    end
-
-    local resizeButton = _G[groupName.."ResizeButton"]
-    resizeButton:SetPoint("BOTTOMRIGHT", bar, "BOTTOMRIGHT", 8, -8)
-
-    local barID = groupSettings.NumberBars+1
-    while true do
-        bar = _G[groupName.."Bar"..barID]
-        if bar then
-            bar:Hide()
-            NeedToKnow.ClearScripts(bar)
-            barID = barID + 1
-        else
-            break
-        end
-    end
-
-    if ( NeedToKnow.CharSettings["Locked"] ) then
-        resizeButton:Hide()
-    else
-        resizeButton:Show()
-    end
-
-    -- Early enough in the loading process (before PLAYER_LOGIN), we might not
-    -- know the position yet
-    if groupSettings.Position then
-        group:ClearAllPoints()
-        local point, relativePoint, xOfs, yOfs = unpack(groupSettings.Position)
-        group:SetPoint(point, UIParent, relativePoint, xOfs, yOfs)
-        group:SetScale(groupSettings.Scale)
-    end
-    
-    if ( NeedToKnow_Visible and groupSettings.Enabled ) then
-        group:Show()
-    else
-        group:Hide()
-    end
-end
-
-
-
 -- ----
 -- BARS
 -- ----
 
--- Attempt to figure out if a name is an item or a spell, and if a spell
--- try to choose a spell with that name that has a cooldown
--- This may fail for valid names if the client doesn't have the data for
--- that spell yet (just logged in or changed talent specs), in which case 
--- we mark that spell to try again later
 function NeedToKnow.SetupSpellCooldown(bar, entry)
+    -- Attempt to figure out if a name is an item or a spell, and if a spell
+    -- try to choose a spell with that name that has a cooldown
+    -- This may fail for valid names if the client doesn't have the data for
+    -- that spell yet (just logged in or changed talent specs), in which case 
+    -- we mark that spell to try again later
+
     local id = entry.id
     local name = entry.name
     local idx = entry.idxName
@@ -1408,9 +1084,10 @@ function NeedToKnow.SetupSpellCooldown(bar, entry)
     end
 end
 
--- Called when the configuration of the bar has changed, when the addon
--- is loaded or when ntk is locked and unlocked
 function NeedToKnow.Bar_Update(groupID, barID)
+    -- Called when the configuration of the bar has changed, when the addon
+    -- is loaded, and when locked and unlocked
+
     local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
 
     local barName = "NeedToKnow_Group"..groupID.."Bar"..barID
@@ -1671,7 +1348,6 @@ function NeedToKnow.Bar_Update(groupID, barID)
     end
 end
 
-
 function NeedToKnow.CheckCombatLogRegistration(bar, force)
     if UnitExists(bar.unit) then
         bar:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -1679,7 +1355,6 @@ function NeedToKnow.CheckCombatLogRegistration(bar, force)
         bar:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     end
 end
-
 
 function NeedToKnow.SetScripts(bar)
     bar:SetScript("OnEvent", NeedToKnow.Bar_OnEvent)
@@ -1698,7 +1373,8 @@ function NeedToKnow.SetScripts(bar)
         bar:RegisterEvent("SPELL_UPDATE_COOLDOWN")
     elseif ( "EQUIPSLOT" == bar.settings.BuffOrDebuff ) then
         bar:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
---[[
+    --[[
+    -- DEPRECATED: Dropped support for player power in v4.0.27
     elseif ( "POWER" == bar.settings.BuffOrDebuff ) then
         if bar.settings.AuraName == tostring(NEEDTOKNOW.SPELL_POWER_STAGGER) then
           bar:RegisterEvent("UNIT_HEALTH")
@@ -1706,7 +1382,7 @@ function NeedToKnow.SetScripts(bar)
           bar:RegisterEvent("UNIT_POWER")
           bar:RegisterEvent("UNIT_DISPLAYPOWER")
         end
-]]--
+    ]]--
     elseif ( "USABLE" == bar.settings.BuffOrDebuff ) then
         bar:RegisterEvent("SPELL_UPDATE_USABLE")
     elseif ( bar.settings.Unit == "targettarget" ) then
@@ -1804,12 +1480,9 @@ function NeedToKnow.Bar_OnSizeChanged(self)
     if (self.bar2 and self.bar2.cur_value) then mfn_SetStatusBarValue(self, self.bar2, self.bar2.cur_value, self.bar1.cur_value) end
 end
 
-
-
-
--- AuraCheck calls on this to compute the "text" of the bar
--- It is separated out like this in part to be hooked by other addons
 function NeedToKnow.ComputeBarText(buffName, count, extended, buff_stacks, bar)
+    -- AuraCheck calls on this to compute the "text" of the bar
+    -- It is separated out like this in part to be hooked by other addons
     local text
     if ( count > 1 ) then
         text = buffName.."  ["..count.."]"
@@ -1832,10 +1505,11 @@ function NeedToKnow.ComputeBarText(buffName, count, extended, buff_stacks, bar)
     return text
 end
 
--- Called by mfn_UpdateVCT, which is called from AuraCheck and possibly 
--- by Bar_Update depending on vct_refresh. In addition to refactoring out some 
--- code from the long AuraCheck, this also provides a convenient hook for other addons
 function NeedToKnow.ComputeVCTDuration(bar)
+    -- Called by mfn_UpdateVCT, which is called from AuraCheck and possibly 
+    -- by Bar_Update depending on vct_refresh. In addition to refactoring out some 
+    -- code from the long AuraCheck, this also provides a convenient hook for other addons
+
     local vct_duration = 0
     
     local spellToTime = bar.settings.vct_spell
@@ -1911,6 +1585,7 @@ function NeedToKnow.PrettyName(barSettings)
         if idx then return NEEDTOKNOW.ITEM_NAMES[idx] end
         return ""
     elseif ( barSettings.BuffOrDebuff == "POWER" ) then
+    	-- DEPRECATED: Dropping support for power in v4.1
         local idx = tonumber(barSettings.AuraName)
         if idx then return NeedToKnow.GetPowerName(idx) end
         return ""
@@ -2078,6 +1753,8 @@ function NeedToKnow.GetUtilityTooltips()
     return tt1,tt2
 end
 
+--[[
+-- Appears to be vestigal code  Temporary enchant's aren't a thing anymore. 
 function NeedToKnow.DetermineTempEnchantFromTooltip(i_invID)
     local tt1,tt2 = NeedToKnow.GetUtilityTooltips()
     
@@ -2116,13 +1793,13 @@ function NeedToKnow.DetermineTempEnchantFromTooltip(i_invID)
         return line
     end    
 end
+]]--
 
-
-
--- Looks at the tooltip for the given spell to see if a cooldown 
--- is listed with a duration in seconds.  Longer cooldowns don't
--- need this logic, so we don't need to do unit conversion
 function NeedToKnow.DetermineShortCooldownFromTooltip(spell)
+    -- Looks at the tooltip for the given spell to see if a cooldown 
+    -- is listed with a duration in seconds.  Longer cooldowns don't
+    -- need this logic, so we don't need to do unit conversion
+
     if not NeedToKnow.short_cds then
         NeedToKnow.short_cds = {}
     end
@@ -2163,10 +1840,10 @@ function NeedToKnow.DetermineShortCooldownFromTooltip(spell)
     return NeedToKnow.short_cds[spell]
 end
 
-
--- Search the player's spellbook for a spell that matches 
--- todo: cache this result?
 function NeedToKnow.TryToFindSpellWithCD(barSpell)
+    -- Search the player's spellbook for a spell that matches 
+    -- todo: cache this result?
+
     if NeedToKnow.DetermineShortCooldownFromTooltip(barSpell) > 0 then return barSpell end
     
     for iBook = 1, g_GetNumSpellTabs() do
@@ -2188,7 +1865,6 @@ function NeedToKnow.TryToFindSpellWithCD(barSpell)
     end
 end
 
-
 function NeedToKnow.GetItemIDString(id_or_name)
     local _, link = GetItemInfo(id_or_name)
     if link then
@@ -2199,9 +1875,8 @@ function NeedToKnow.GetItemIDString(id_or_name)
     end
 end
 
-
--- Helper for mfn_AuraCheck_CASTCD which gets the autoshot cooldown
 mfn_GetAutoShotCooldown = function(bar)
+    -- Helper for mfn_AuraCheck_CASTCD which gets the autoshot cooldown
     local tNow = g_GetTime()
     if ( bar.tAutoShotStart and bar.tAutoShotStart + bar.tAutoShotCD > tNow ) then
         local n, _, icon = g_GetSpellInfo(75)
@@ -2211,9 +1886,8 @@ mfn_GetAutoShotCooldown = function(bar)
     end
 end
 
-
--- Helper for mfn_AuraCheck_CASTCD for names we haven't figured out yet
 mfn_GetUnresolvedCooldown = function(bar, entry)
+    -- Helper for mfn_AuraCheck_CASTCD for names we haven't figured out yet
     NeedToKnow.SetupSpellCooldown(bar, entry)
     local fn = bar.cd_functions[entry.idxName]
     if mfn_GetUnresolvedCooldown ~= fn then
@@ -2221,10 +1895,9 @@ mfn_GetUnresolvedCooldown = function(bar, entry)
     end
 end
 
-
--- Wrapper around GetSpellCooldown with extra sauce
--- Expected to return start, cd_len, enable, buffName, iconpath
 mfn_GetSpellCooldown = function(bar, entry)
+    -- Wrapper around GetSpellCooldown with extra sauce
+    -- Expected to return start, cd_len, enable, buffName, iconpath
     local barSpell = entry.id or entry.name
     local start, cd_len, enable = GetSpellCooldown(barSpell)
     if start and start > 0 then
@@ -2282,8 +1955,6 @@ mfn_GetSpellCooldown = function(bar, entry)
     end
 end
 
-
-
 mfn_GetSpellChargesCooldown = function(bar, entry)
     local barSpell = entry.id or entry.name
     local cur, max, charge_start, recharge = GetSpellCharges(barSpell)
@@ -2300,18 +1971,15 @@ mfn_GetSpellChargesCooldown = function(bar, entry)
     end
 end
 
-
-
--- Wrapper around GetItemCooldown
--- Expected to return start, cd_len, enable, buffName, iconpath
 function NeedToKnow.GetItemCooldown(bar, entry)
+    -- Wrapper around GetItemCooldown
+    -- Expected to return start, cd_len, enable, buffName, iconpath
     local start, cd_len, enable = GetItemCooldown(entry.id)
     if start then
         local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(entry.id)
         return start, cd_len, enable, name, icon
     end
 end
-
 
 mfn_AddInstanceToStacks = function (all_stacks, bar_entry, duration, name, count, expirationTime, iconPath, caster, tt1, tt2, tt3)
     if duration then
@@ -2341,10 +2009,9 @@ mfn_AddInstanceToStacks = function (all_stacks, bar_entry, duration, name, count
     end
 end
 
-
--- Bar_AuraCheck helper for Totem bars, this returns data if
--- a totem matching bar_entry is currently out. 
 mfn_AuraCheck_TOTEM = function(bar, bar_entry, all_stacks)
+    -- Bar_AuraCheck helper for Totem bars, this returns data if
+    -- a totem matching bar_entry is currently out. 
     local idxName = bar_entry.idxName
     local sComp = bar_entry.name or g_GetSpellInfo(bar_entry.id)
     for iSlot=1, 4 do
@@ -2363,7 +2030,6 @@ mfn_AuraCheck_TOTEM = function(bar, bar_entry, all_stacks)
                 end
                 NeedToKnow.totem_drops[iSlot] = precise
             end
-
             mfn_AddInstanceToStacks(all_stacks, bar_entry, 
                    totemDuration,                              -- duration
                    totemName,                                  -- name
@@ -2375,12 +2041,9 @@ mfn_AuraCheck_TOTEM = function(bar, bar_entry, all_stacks)
     end
 end
 
-
-
-
--- Bar_AuraCheck helper for tracking usable gear based on the slot its in
--- rather than the equipment name
 mfn_AuraCheck_EQUIPSLOT = function (bar, bar_entry, all_stacks)
+    -- Bar_AuraCheck helper for tracking usable gear based on the slot its in
+    -- rather than the equipment name
     local spellName, _, spellIconPath
     if ( bar_entry.id ) then
         local id = GetInventoryItemID("player",bar_entry.id)
@@ -2388,7 +2051,6 @@ mfn_AuraCheck_EQUIPSLOT = function (bar, bar_entry, all_stacks)
             local item_entry = m_scratch.bar_entry
             item_entry.id = id
             local start, cd_len, enable, name, icon = NeedToKnow.GetItemCooldown(bar, item_entry)
-
             if ( start and start > 0 ) then
                 mfn_AddInstanceToStacks(all_stacks, bar_entry, 
                        cd_len,                                     -- duration
@@ -2402,12 +2064,12 @@ mfn_AuraCheck_EQUIPSLOT = function (bar, bar_entry, all_stacks)
     end
 end
 
-
-
--- Bar_AuraCheck helper for power and combo points.  The current
--- amount is reported as the first tooltip number rather than 
--- stacks since 1 stack doesn't get displayed normally
+-- TO DO: Move this to Power.lua
 mfn_AuraCheck_POWER = function (bar, bar_entry, all_stacks)
+    -- Bar_AuraCheck helper for power and combo points.  The current
+    -- amount is reported as the first tooltip number rather than 
+    -- stacks since 1 stack doesn't get displayed normally
+
     local spellName, _, spellIconPath
     local cpt = UnitPowerType(bar.unit)
     local pt = bar_entry.id
@@ -2472,14 +2134,12 @@ mfn_AuraCheck_POWER = function (bar, bar_entry, all_stacks)
     end
 end
 
-
-
-
--- Bar_AuraCheck helper that checks for spell/item use cooldowns
--- Relies on mfn_GetAutoShotCooldown, mfn_GetSpellCooldown 
--- and NeedToKnow.GetItemCooldown. Bar_Update will have already pre-processed 
--- this list so that bar.cd_functions[idxName] can do something with bar_entry
 mfn_AuraCheck_CASTCD = function(bar, bar_entry, all_stacks)
+    -- Bar_AuraCheck helper that checks for spell/item use cooldowns
+    -- Relies on mfn_GetAutoShotCooldown, mfn_GetSpellCooldown 
+    -- and NeedToKnow.GetItemCooldown. Bar_Update will have already pre-processed 
+    -- this list so that bar.cd_functions[idxName] can do something with bar_entry
+
     local idxName = bar_entry.idxName
     local func = bar.cd_functions[idxName]
     if ( not func ) then
@@ -2525,10 +2185,9 @@ mfn_AuraCheck_CASTCD = function(bar, bar_entry, all_stacks)
     end
 end
 
-
--- Bar_AuraCheck helper for watching "Is Usable", which means that the action
--- bar button for the spell lights up.  This is mostly useful for Victory Rush
 mfn_AuraCheck_USABLE = function (bar, bar_entry, all_stacks)
+    -- Bar_AuraCheck helper for watching "Is Usable", which means that the action
+    -- bar button for the spell lights up.  This is mostly useful for Victory Rush
     local key = bar_entry.id or bar_entry.name
     local settings = bar.settings
     if ( not key ) then key = "" end
@@ -2559,7 +2218,6 @@ mfn_AuraCheck_USABLE = function (bar, bar_entry, all_stacks)
         end
     end
 end
-
 
 mfn_ResetScratchStacks = function (buff_stacks)
     buff_stacks.total = 0;
@@ -2646,9 +2304,10 @@ local function UnitAuraWrapper(a,b,c,d)
     end
 end
 
--- Bar_AuraCheck helper that looks for the first instance of a buff
--- Uses the UnitAura filters exclusively if it can
 mfn_AuraCheck_Single = function(bar, bar_entry, all_stacks)
+    -- Bar_AuraCheck helper that looks for the first instance of a buff
+    -- Uses the UnitAura filters exclusively if it can
+
     local settings = bar.settings
     local filter = settings.BuffOrDebuff
     if settings.OnlyMine then
@@ -2702,7 +2361,6 @@ mfn_AuraCheck_Single = function(bar, bar_entry, all_stacks)
             if (not buffName) then
                 break
             end
-
             if (buffName == bar_entry.name) then 
                 mfn_AddInstanceToStacks( all_stacks, bar_entry,
                        duration,                               -- duration
@@ -2719,10 +2377,10 @@ mfn_AuraCheck_Single = function(bar, bar_entry, all_stacks)
     end
 end
 
-
--- Bar_AuraCheck helper that updates bar.all_stacks (but returns nil)
--- by scanning all the auras on the unit
 mfn_AuraCheck_AllStacks = function (bar, bar_entry, all_stacks)
+    -- Bar_AuraCheck helper that updates bar.all_stacks (but returns nil)
+    -- by scanning all the auras on the unit
+
     local j = 1
     local settings = bar.settings
     local filter = settings.BuffOrDebuff
@@ -2750,12 +2408,12 @@ mfn_AuraCheck_AllStacks = function (bar, bar_entry, all_stacks)
     end
 end
 
-
--- Called whenever the state of auras on the bar's unit may have changed
-local g_UnitExists = UnitExists
 mfn_Bar_AuraCheck = function (bar)
+    -- Called whenever the state of auras on the bar's unit may have changed
+
     local settings = bar.settings
     local bUnitExists
+
     if "player" == settings.Unit then
         bUnitExists = true
     elseif "lastraid" == settings.Unit then
@@ -2922,11 +2580,9 @@ mfn_Bar_AuraCheck = function (bar)
     end
 end
 
-
 function NeedToKnow.Fmt_SingleUnit(i_fSeconds)
     return string.format(SecondsToTimeAbbrev(i_fSeconds))
 end
-
 
 function NeedToKnow.Fmt_TwoUnits(i_fSeconds)
   if ( i_fSeconds < 6040 ) then
@@ -3015,7 +2671,7 @@ function NeedToKnow.Bar_OnUpdate(self, elapsed)
     end
 end 
 
-
+-- TO DO: Move this to Power.lua
 mfn_EnergyBar_OnUpdate = function(bar, elapsed)
     local now = g_GetTime()
     if ( now > bar.nextUpdate ) then
@@ -3041,12 +2697,6 @@ mfn_EnergyBar_OnUpdate = function(bar, elapsed)
     end
 end
 
-
-
-
--- Define the event dispatching table.  Note, this comes last as the referenced 
--- functions must already be declared.  Avoiding the re-evaluation of all that
--- is one of the reasons this is an optimization!
 local fnAuraCheckIfUnitMatches = function(self, unit)
     if ( unit == self.unit )  then
         mfn_Bar_AuraCheck(self)
@@ -3059,6 +2709,9 @@ local fnAuraCheckIfUnitPlayer = function(self, unit)
     end
 end
 
+-- Define the event dispatching table.  Note, this comes last as the referenced 
+-- functions must already be declared.  Avoiding the re-evaluation of all that
+-- is one of the reasons this is an optimization!
 local EDT = {}
 EDT["COMBAT_LOG_EVENT_UNFILTERED"] = function(self, unit, ...)
     -- local combatEvent = select(1, ...)
@@ -3141,11 +2794,3 @@ function NeedToKnow.Bar_OnEvent(self, event, unit, ...)
     end
 end
 
-function NeedToKnow.GetPowerName(pt)
-    local name = NEEDTOKNOW.POWER_TYPES[pt]
-	if not name then 
-	    print("NeedToKnow: Could not find power", pt)
-	    return tostring(pt)
-	end
-	return name
-end
