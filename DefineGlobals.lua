@@ -11,6 +11,7 @@ local addonName, addonTable = ...
 -- Declare addon globals
 -- ---------------------
 
+
 NEEDTOKNOW = {}
 NeedToKnow = {}
 
@@ -22,7 +23,7 @@ NeedToKnow_Visible = {}
 NeedToKnowOptions = {}
 NeedToKnowRMB = {}  -- Right-click bar config menu
 
-NeedToKnowIE = {}  -- Used by ImportExport.lua and NeedToKnow_Options.lua
+NeedToKnowIE = {}   -- Used by ImportExport.lua and NeedToKnow_Options.lua
 
 
 -- --------------------

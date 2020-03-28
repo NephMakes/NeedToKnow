@@ -315,6 +315,7 @@ function NeedToKnow.ExecutiveFrame_PLAYER_LOGIN()
         NeedToKnow.is_DK = 1
     elseif player_CLASS == "DRUID" then
         NeedToKnow.is_Druid = 1
+        -- Is this actually used for anything? Seems like a vestige of power tracking
     end
 
     -- NeedToKnowLoader.SetPowerTypeList(player_CLASS)
@@ -398,11 +399,11 @@ function NeedToKnow.ExecutiveFrame_UNIT_TARGET(unitTargeting)
 end
 
 function NeedToKnow.GetNameAndServer(unit)
-  local name, server = UnitName(unit)
-  if name and server then 
-    return name .. '-' .. server
-  end
-  return name
+    local name, server = UnitName(unit)
+    if ( name and server ) then 
+        return name .. '-' .. server
+    end
+    return name
 end
 
 function NeedToKnow.RefreshRaidMemberNames()
@@ -437,11 +438,9 @@ function NeedToKnow.RefreshRaidMemberNames()
     end
 end
 
-
 function NeedToKnow.ExecutiveFrame_GROUP_ROSTER_UPDATE()
     NeedToKnow.RefreshRaidMemberNames();
 end
-
 
 function NeedToKnow.ExecutiveFrame_PLAYER_REGEN_DISABLED(unitTargeting)
     m_bInCombat = true
@@ -470,7 +469,6 @@ function NeedToKnow.ExecutiveFrame_PLAYER_REGEN_DISABLED(unitTargeting)
     end
 end
 
-
 function NeedToKnow.ExecutiveFrame_PLAYER_REGEN_ENABLED(unitTargeting)
     m_bInCombat = false
     m_bCombatWithBoss = false
@@ -480,7 +478,6 @@ function NeedToKnow.ExecutiveFrame_PLAYER_REGEN_ENABLED(unitTargeting)
         end
     end
 end
-
 
 function NeedToKnow.RemoveDefaultValues(t, def, k)
   if not k then k = "" end
@@ -641,35 +638,8 @@ function NeedToKnow.ChangeProfile(profile_key)
     end
 end
 
-mfn_SetStatusBarValue = function (bar,texture,value,value0)
-  local pct0 = 0
-  if value0 then
-    pct0 = value0 / bar.max_value
-    if pct0 > 1 then pct0 = 1 end
-  end
-  
-  -- This happened to me when there was lag right around the time
-  -- a bar was ending
-  if value < 0 then
-    value = 0
-  end
-
-  local pct = value / bar.max_value
-  texture.cur_value = value
-  if pct > 1 then pct = 1 end
-  local w = (pct-pct0) * bar:GetWidth()
-  if w < 1 then 
-      texture:Hide()
-  else
-      texture:SetWidth(w)
-      texture:SetTexCoord(pct0,0, pct0,1, pct,0, pct,1)
-      texture:Show()
-  end
-end
-
 function NeedToKnowLoader.Reset(bResetCharacter)
     NeedToKnow_Globals = CopyTable( NEEDTOKNOW.DEFAULTS )
-    
     if bResetCharacter == nil or bResetCharacter then
         NeedToKnow.ResetCharacter()
     end
@@ -934,22 +904,6 @@ function NeedToKnowLoader.SafeUpgrade()
      -- TODO: check the required members for existence and delete any corrupted profiles
 end
 
---[[
-function NeedToKnowLoader.AddSpellCost(sid, powerTypesUsed)
-    local costInfo = g_GetSpellPowerCost(sid)
-	local iCost
-	for iCost =1,table.getn(costInfo) do
-	    local pt = costInfo[iCost].type
-		-- -2 is used as HEALTH for certain self-harming spells
-		if ( pt >= 0 ) then
-		    local n = g_GetSpellInfo(sid)
-			-- print(sid, n, pt)
-			powerTypesUsed[pt] = costInfo[iCost].name;
-		end
-	end
-end
-]]--
-
 function NeedToKnow.DeepCopy(object)
     if type(object) ~= "table" then
         return object
@@ -1033,7 +987,6 @@ do
 end
 
 
-
 -- ----
 -- BARS
 -- ----
@@ -1082,6 +1035,32 @@ function NeedToKnow.SetupSpellCooldown(bar, entry)
             end
         end
     end
+end
+
+mfn_SetStatusBarValue = function (bar,texture,value,value0)
+  local pct0 = 0
+  if value0 then
+    pct0 = value0 / bar.max_value
+    if pct0 > 1 then pct0 = 1 end
+  end
+  
+  -- This happened to me when there was lag right around the time
+  -- a bar was ending
+  if value < 0 then
+    value = 0
+  end
+
+  local pct = value / bar.max_value
+  texture.cur_value = value
+  if pct > 1 then pct = 1 end
+  local w = (pct-pct0) * bar:GetWidth()
+  if w < 1 then 
+      texture:Hide()
+  else
+      texture:SetWidth(w)
+      texture:SetTexCoord(pct0,0, pct0,1, pct,0, pct,1)
+      texture:Show()
+  end
 end
 
 function NeedToKnow.Bar_Update(groupID, barID)

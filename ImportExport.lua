@@ -2,7 +2,6 @@
 
 local addonName, addonTable = ...
 
--- This stuff used to import and export settings
 NEEDTOKNOW.SHORTENINGS= {
     Enabled         = "On",
     AuraName        = "Aura",

@@ -1,6 +1,6 @@
 -- Track player power like energy and combo points
 
--- Kitjan marked  player power as an "experimental" feature. 
+-- Kitjan marked player power as an "experimental" feature. 
 -- NephMakes removed support in NeedToKnow v4.0.27 (Battle for Azeroth). 
 -- Quarantining relevant code here in case it gets revisited. 
 
@@ -63,6 +63,22 @@ function NeedToKnowLoader.SetPowerTypeList(player_CLASS)
             { Setting = tostring(pt), MenuText = NeedToKnow.GetPowerName(pt) } ) 
 	end
 end	
+]]--
+
+--[[
+function NeedToKnowLoader.AddSpellCost(sid, powerTypesUsed)
+    local costInfo = g_GetSpellPowerCost(sid)
+	local iCost
+	for iCost =1,table.getn(costInfo) do
+	    local pt = costInfo[iCost].type
+		-- -2 is used as HEALTH for certain self-harming spells
+		if ( pt >= 0 ) then
+		    local n = g_GetSpellInfo(sid)
+			-- print(sid, n, pt)
+			powerTypesUsed[pt] = costInfo[iCost].name;
+		end
+	end
+end
 ]]--
 
 --[[

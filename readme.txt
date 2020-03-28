@@ -1,11 +1,11 @@
-
-----------------------
+--------------------------------
 NeedToKnow
-by Kitjan, lieandswell
-----------------------
+by Kitjan, NephMakes/lieandswell
+--------------------------------
 
+NeedToKnow lets you track specific buffs, debuffs, totems, and cooldowns as timer bars that always appear in the same place in the same color.
 
-NeedToKnow allows you to monitor specific buffs and debuffs of your choosing as timer bars that always appear in a consistent place on your screen in a consistent color.  It's especially useful for monitoring frequently used short-duration buffs and debuffs.  For example, a rogue could configure NeedToKnow to show timer bars for Slice and Dice, Rupture, and their own stack of Deadly Poison VII.  A death knight could use it to track their own diseases on a mob.  NeedToKnow also works with procs and on-use trinkets.  The number, size, position, and appearance of timer bars are all customizable.  
+NeedToKnow is very useful for frequently used short-duration buffs and debuffs. For example, a rogue could configure NeedToKnow to show timer bars for Slice and Dice, Rupture, and their own stack of Deadly Poison VII.  A death knight could use it to track their own diseases on a mob.  NeedToKnow also works with procs and on-use trinkets.  The number, size, position, and appearance of timer bars are all customizable.  
 
 
 ------------
@@ -20,6 +20,12 @@ When entering your settings, be careful with your spelling and capitalization.  
 ----------
 Change log
 ----------
+
+v4.0.30
+* Fixed moving/sizing bug caused by anchor API change
+
+v4.0.29
+* Updated for patch 8.3
 
 v4.0.28
 * More fixes for UNIT_SPELLCAST event changes
