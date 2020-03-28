@@ -4,7 +4,6 @@
 -- --------------------------------
 
 local addonName, addonTable = ...
--- UI now passes a table to each addon so they don't need to use globals
 
 local trace = print
 --function maybe_trace(...)
@@ -117,7 +116,8 @@ m_scratch.bar_entry =
         isSpellID = false,
     }
 
-local c_UPDATE_INTERVAL = 0.05
+-- local c_UPDATE_INTERVAL = 0.05  -- equivalent to 20 frames per second
+local c_UPDATE_INTERVAL = 0.025  -- equivalent to 40 frames per second
 local c_MAXBARS = 20
 local c_AUTO_SHOT_NAME = g_GetSpellInfo(75)
 	-- Localized name of spell 75 ("Auto Shot" in US English)
@@ -289,8 +289,10 @@ end
 
 function NeedToKnow.ExecutiveFrame_ADDON_LOADED(addon)
     if ( addon == "NeedToKnow") then
-        if ( not NeedToKnow_Visible ) then
-            NeedToKnow_Visible = true
+        -- if ( not NeedToKnow_Visible ) then
+        if ( not NeedToKnow.IsVisible ) then
+            -- NeedToKnow_Visible = true
+            NeedToKnow.IsVisible = true
         end
         
         m_last_cast = {} -- [n] = { spell, target, serial }
@@ -965,13 +967,15 @@ function NeedToKnow.Update()
 end
 
 function NeedToKnow.Show(bShow)
-    NeedToKnow_Visible = bShow
+    -- NeedToKnow_Visible = bShow
+    NeedToKnow.IsVisible = bShow
     for groupID = 1, NeedToKnow.ProfileSettings.nGroups do
         local groupName = "NeedToKnow_Group"..groupID
         local group = _G[groupName]
         local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
         
-        if (NeedToKnow_Visible and groupSettings.Enabled) then
+        -- if (NeedToKnow_Visible and groupSettings.Enabled) then
+        if (NeedToKnow.IsVisible and groupSettings.Enabled) then
             group:Show()
         else
             group:Hide()

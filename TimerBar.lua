@@ -48,8 +48,8 @@ function NeedToKnow.UpdateBarGroup(groupID)
         resizeButton:Show()
     end
 
-    -- Early enough in the loading process (before PLAYER_LOGIN), we might not
-    -- know the position yet
+    -- Early enough in the loading process (before PLAYER_LOGIN), 
+    -- we might not know the position yet
     if groupSettings.Position then
         group:ClearAllPoints()
         local point, relativePoint, xOfs, yOfs = unpack(groupSettings.Position)
@@ -57,7 +57,8 @@ function NeedToKnow.UpdateBarGroup(groupID)
         group:SetScale(groupSettings.Scale)
     end
     
-    if ( NeedToKnow_Visible and groupSettings.Enabled ) then
+    -- if ( NeedToKnow_Visible and groupSettings.Enabled ) then
+    if ( NeedToKnow.IsVisible and groupSettings.Enabled ) then
         group:Show()
     else
         group:Hide()

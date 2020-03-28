@@ -2,7 +2,8 @@
 
 local addonName, addonTable = ...
 
-NEEDTOKNOW.SHORTENINGS= {
+-- NEEDTOKNOW.SHORTENINGS = {
+local SHORTENINGS = {
     Enabled         = "On",
     AuraName        = "Aura",
     --Unit            = "Unit",
@@ -61,7 +62,8 @@ NEEDTOKNOW.SHORTENINGS= {
     --FontOutline = "FOl",
 }
 
-NEEDTOKNOW.LENGTHENINGS= {
+-- NEEDTOKNOW.LENGTHENINGS= {
+local LENGTHENINGS = {
    On = "Enabled",
    Aura = "AuraName",
 --   Unit = "Unit",
@@ -120,7 +122,7 @@ NEEDTOKNOW.LENGTHENINGS= {
     --FontOutline = "FOl";
 }
 
-function NeedToKnowIE.CombineKeyValue(key,value)
+local function CombineKeyValue(key,value)
     local vClean = value
     if type(vClean) == "string" and value:byte(1) ~= 123 then
         if (tostring(tonumber(vClean)) == vClean) or vClean == "true" or vClean == "false" then
@@ -129,7 +131,6 @@ function NeedToKnowIE.CombineKeyValue(key,value)
             vClean = '"' .. tostring(value):gsub('"', '\\"') .. '"'
         end
     end
-
     if key then
         -- not possible for key to contain = right now, so we don't have to sanitize it
         return key .. "=" .. tostring(vClean)
@@ -138,7 +139,8 @@ function NeedToKnowIE.CombineKeyValue(key,value)
     end
 end
 
-function NeedToKnowIE.TableToString(v)
+-- function NeedToKnowIE.TableToString(v)
+local function TableToString(v)
     local i = 1
     local ret= "{"
     for index, value in pairs(v) do
@@ -147,23 +149,195 @@ function NeedToKnowIE.TableToString(v)
         end
         local k
         if index ~= i then
-            k = NEEDTOKNOW.SHORTENINGS[index] or index 
+            -- k = NEEDTOKNOW.SHORTENINGS[index] or index 
+            k = SHORTENINGS[index] or index 
         end
-        if  type(value) == "table" then
-            value = NeedToKnowIE.TableToString(value)
+        if type(value) == "table" then
+            -- value = NeedToKnowIE.TableToString(value)
+            value = TableToString(value)
         end
-        ret = ret .. NeedToKnowIE.CombineKeyValue(k, value)
+        ret = ret .. CombineKeyValue(k, value)
         i = i+1;
     end
     ret = ret .. "}"
     return ret
 end
 
-function NeedToKnowIE.ExportBarSettingsToString(barSettings)
+-- function NeedToKnowIE.ExportBarSettingsToString(barSettings)
+function NeedToKnow.ExportBarSettingsToString(barSettings)
     local pruned = CopyTable(barSettings)
     NeedToKnow.RemoveDefaultValues(pruned, NEEDTOKNOW.BAR_DEFAULTS)
-    return 'bv1:' .. NeedToKnowIE.TableToString(pruned);
+    -- return 'bv1:' .. NeedToKnowIE.TableToString(pruned);
+    return 'bv1:' .. TableToString(pruned);
 end
+
+-- function NeedToKnowIE.StringToTable(text, ofs)
+local function StringToTable(text, ofs)
+    local cur = ofs or 1
+
+    if text:byte(cur+1) == 125 then
+        return {},cur+1
+    end
+
+    local i = 0
+    local ret = {}
+    while text:byte(cur) ~= 125 do
+        if not text:byte(cur) then
+            print("Unexpected end of string")
+            return nil,nil
+        end
+        i = i + 1
+        cur = cur + 1 -- advance past the { or ,
+        local hasKey, eq, delim
+        -- If it's not a quote or a {, it should be a key+equals or value+delimeter
+        if text:byte(cur) ~= 34 and text:byte(cur) ~= 123 then 
+            eq = text:find("=", cur)
+            local comma = text:find(",", cur) 
+            delim = text:find("}", cur) or comma
+            if comma and delim > comma then
+                delim = comma 
+            end
+
+            if not delim then 
+                print("Unexpected end of string")
+                return nil, nil
+            end
+            hasKey = (eq and eq < delim)
+        end
+
+        local k,v
+        if not hasKey then
+            k = i
+        else
+            k = text:sub(cur,eq-1)
+            -- k = NEEDTOKNOW.LENGTHENINGS[k] or k
+            k = LENGTHENINGS[k] or k
+            if not k or k == "" then
+                print("Error parsing key at", cur)
+                return nil,nil
+            end
+            cur = eq+1
+        end
+
+        if not text:byte(cur) then 
+            print("Unexpected end of string")
+            return nil,nil
+        elseif text:byte(cur) == 123 then -- '{'
+            -- v, cur = NeedToKnowIE.StringToTable(text, cur)
+            v, cur = StringToTable(text, cur)
+            if not v then return nil,nil end
+            cur = cur+1
+        else
+            if text:byte(cur) == 34 then -- '"'
+                -- find the closing quote
+                local endq = cur
+                delim=nil
+                while not delim do
+                    endq = text:find('"', endq+1)
+                    if not endq then
+                        print("Could not find closing quote begun at", cur)
+                        return nil, nil
+                    end
+                    if text:byte(endq-1) ~= 92 then -- \
+                        delim = endq+1
+                        if text:byte(delim) ~= 125 and text:byte(delim) ~= 44 then
+                            print("Illegal quote at", endq)
+                            return nil, nil
+                        end
+                    end
+                end
+                v = text:sub(cur+1,delim-2)
+                v = gsub(v, '\\"', '"')
+            else
+                v = text:sub(cur,delim-1)
+                local n = tonumber(v)
+                if tostring(n) == v  then
+                    v = n
+                elseif v == "true" then
+                    v = true
+                elseif v == "false" then
+                    v = false
+                end
+            end
+            if v==nil or v == "" then
+                print("Error parsing value at",cur)
+            end
+            cur = delim
+        end
+
+        ret[k] = v
+    end
+
+    return ret,cur
+end
+
+-- function NeedToKnowIE.ImportBarSettingsFromString(text, bars, barID)
+function NeedToKnow.ImportBarSettingsFromString(text, bars, barID)
+    local pruned
+    if text and text ~= "" then
+        local ver, packed = text:match("bv(%d+):(.*)")
+        if not ver then
+            print("Could not find bar settings header")
+        elseif not packed then
+            print("Could not find bar settings")
+        end
+        -- pruned = NeedToKnowIE.StringToTable(packed)
+        pruned = StringToTable(packed)
+    else
+        pruned = {}
+    end
+    if pruned then
+        NeedToKnow.AddDefaultsToTable(pruned, NEEDTOKNOW.BAR_DEFAULTS)
+        bars[barID] = pruned
+    end
+end
+
+--[[
+local function MemberDump(v, bIndex, filter, indent, recurse)
+	-- Utility debug function
+
+    if v == nil then 
+        print("nil")
+        return
+    elseif type(v) == "table" then
+		if not indent then 
+			indent = " " 
+			print("members")
+		end
+		for index, value in pairs(v) do
+			if (not filter) or (type(index) == "string" and index:find(filter)) then
+				print(indent, index, value);
+				if (recurse and type(value) == "table") then 
+				    MemberDump(value, nil, nil, indent.." | ",true) 
+				end
+			end
+		end
+    else
+        if not indent then indent = "" end
+        print(indent,v)
+    end
+	
+	if type(v) == "table" or not recurse then
+		local mt = getmetatable(v)
+		if ( mt ) then
+			print("metatable")
+			for index, value in pairs(mt) do
+				if (not filter) or (type(index) == "string" and index:find(filter)) then
+					print(indent, index, value);
+				end
+			end
+			if ( mt.__index and bIndex) then
+				print("__index")
+				for index, value in pairs(mt.__index) do
+					if (not filter) or (type(index) == "string" and index:find(filter)) then
+						print(indent, index, value);
+					end
+				end
+			end
+		end
+    end
+end
+]]--
 
 --[[ Test Cases
 /script MemberDump( NeedToKnowIE.StringToTable( '{a,b,c}' ) )
@@ -229,119 +403,3 @@ end
     nil
 ]]--
 
-function NeedToKnowIE.StringToTable(text, ofs)
-    local cur = ofs or 1
-
-    if text:byte(cur+1) == 125 then
-        return {},cur+1
-    end
-
-    local i = 0
-    local ret = {}
-    while text:byte(cur) ~= 125 do
-        if not text:byte(cur) then
-            print("Unexpected end of string")
-            return nil,nil
-        end
-        i = i + 1
-        cur = cur + 1 -- advance past the { or ,
-        local hasKey, eq, delim
-        -- If it's not a quote or a {, it should be a key+equals or value+delimeter
-        if text:byte(cur) ~= 34 and text:byte(cur) ~= 123 then 
-            eq = text:find("=", cur)
-            local comma = text:find(",", cur) 
-            delim = text:find("}", cur) or comma
-            if comma and delim > comma then
-                delim = comma 
-            end
-
-            if not delim then 
-                print("Unexpected end of string")
-                return nil, nil
-            end
-            hasKey = (eq and eq < delim)
-        end
-
-        local k,v
-        if not hasKey then
-            k = i
-        else
-            k = text:sub(cur,eq-1)
-            k = NEEDTOKNOW.LENGTHENINGS[k] or k
-            if not k or k == "" then
-                print("Error parsing key at", cur)
-                return nil,nil
-            end
-            cur = eq+1
-        end
-
-        if not text:byte(cur) then 
-            print("Unexpected end of string")
-            return nil,nil
-        elseif text:byte(cur) == 123 then -- '{'
-            v, cur = NeedToKnowIE.StringToTable(text, cur)
-            if not v then return nil,nil end
-            cur = cur+1
-        else
-            if text:byte(cur) == 34 then -- '"'
-                -- find the closing quote
-                local endq = cur
-                delim=nil
-                while not delim do
-                    endq = text:find('"', endq+1)
-                    if not endq then
-                        print("Could not find closing quote begun at", cur)
-                        return nil, nil
-                    end
-                    if text:byte(endq-1) ~= 92 then -- \
-                        delim = endq+1
-                        if text:byte(delim) ~= 125 and text:byte(delim) ~= 44 then
-                            print("Illegal quote at", endq)
-                            return nil, nil
-                        end
-                    end
-                end
-                v = text:sub(cur+1,delim-2)
-                v = gsub(v, '\\"', '"')
-            else
-                v = text:sub(cur,delim-1)
-                local n = tonumber(v)
-                if tostring(n) == v  then
-                    v = n
-                elseif v == "true" then
-                    v = true
-                elseif v == "false" then
-                    v = false
-                end
-            end
-            if v==nil or v == "" then
-                print("Error parsing value at",cur)
-            end
-            cur = delim
-        end
-
-        ret[k] = v
-    end
-
-    return ret,cur
-end
-
-function NeedToKnowIE.ImportBarSettingsFromString(text, bars, barID)
-    local pruned
-    if text and text ~= "" then
-        local ver, packed = text:match("bv(%d+):(.*)")
-        if not ver then
-            print("Could not find bar settings header")
-        elseif not packed then
-            print("Could not find bar settings")
-        end
-        pruned = NeedToKnowIE.StringToTable(packed)
-    else
-        pruned = {}
-    end
-
-    if pruned then
-        NeedToKnow.AddDefaultsToTable(pruned, NEEDTOKNOW.BAR_DEFAULTS)
-        bars[barID] = pruned
-    end
-end

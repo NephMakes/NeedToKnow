@@ -605,7 +605,6 @@ function NeedToKnowOptions.UIPanel_Appearance_OnSizeChanged(self)
     end
 end
 
-
 function NeedToKnowOptions.OnScrollFrameSized(self)
     local old_value = self.scrollBar:GetValue();
     local scrollFrame = self:GetParent();
@@ -618,7 +617,6 @@ function NeedToKnowOptions.OnScrollFrameSized(self)
     -- Work around a bug in HybridScrollFrame; it can't scroll by whole items (wow 4.1)
     --self.stepSize = self.buttons[1]:GetHeight()*.9
 end
-
 
 function NeedToKnowOptions.UpdateScrollPanel(panel, list, selected, checked)
     local Value = _G[panel:GetName().."Value"]
@@ -723,8 +721,8 @@ NeedToKnowRMB.BarMenu_MoreOptions = {
     { VariableName = "BuffOrDebuff", MenuText = NEEDTOKNOW.BARMENU_BUFFORDEBUFF, Type = "Submenu" },
     { VariableName = "Options", MenuText = "Settings", Type = "Submenu" },
     {},
-    { VariableName = "TimeFormat", MenuText = NEEDTOKNOW.BARMENU_TIMEFORMAT, Type = "Submenu" }, 
     { VariableName = "Show", MenuText = NEEDTOKNOW.BARMENU_SHOW, Type = "Submenu" }, 
+    { VariableName = "TimeFormat", MenuText = NEEDTOKNOW.BARMENU_TIMEFORMAT, Type = "Submenu" }, 
     { VariableName = "VisualCastTime", MenuText = NEEDTOKNOW.BARMENU_VISUALCASTTIME, Type = "Submenu" },
     { VariableName = "BlinkSettings", MenuText = "Blink Settings", Type = "Submenu" }, -- LOCME
     { VariableName = "BarColor", MenuText = NEEDTOKNOW.BARMENU_BARCOLOR, Type = "Color" },
@@ -1251,7 +1249,8 @@ function NeedToKnowRMB.BarMenu_ShowNameDialog(self, a1, a2, checked)
     if ( dialog.variable ~= "ImportExport" ) then
         edit:SetText( barSettings[dialog.variable] );
     else
-        edit:SetText( NeedToKnowIE.ExportBarSettingsToString(barSettings) );
+        -- edit:SetText( NeedToKnowIE.ExportBarSettingsToString(barSettings) );
+        edit:SetText( NeedToKnow.ExportBarSettingsToString(barSettings) );
         edit:HighlightText();
     end
 end
@@ -1263,55 +1262,10 @@ function NeedToKnowRMB.BarMenu_ChooseName(text, variable)
     if ( variable ~= "ImportExport" ) then
         barSettings[variable] = text;
     else
-        NeedToKnowIE.ImportBarSettingsFromString(text, NeedToKnow.ProfileSettings.Groups[groupID]["Bars"], barID);
+        -- NeedToKnowIE.ImportBarSettingsFromString(text, NeedToKnow.ProfileSettings.Groups[groupID]["Bars"], barID);
+        NeedToKnow.ImportBarSettingsFromString(text, NeedToKnow.ProfileSettings.Groups[groupID]["Bars"], barID);
     end
-
     NeedToKnow.Bar_Update(groupID, barID);
-end
-
-local function MemberDump(v, bIndex, filter, indent, recurse)
-	-- Appears to be a utility/debug function not called anywhere
-
-    if v == nil then 
-        print("nil")
-        return
-    elseif type(v) == "table" then
-		if not indent then 
-			indent = " " 
-			print("members")
-		end
-		for index, value in pairs(v) do
-			if (not filter) or (type(index) == "string" and index:find(filter)) then
-				print(indent, index, value);
-				if (recurse and type(value) == "table") then 
-				    MemberDump(value, nil, nil, indent.." | ",true) 
-				end
-			end
-		end
-    else
-        if not indent then indent = "" end
-        print(indent,v)
-    end
-	
-	if type(v) == "table" or not recurse then
-		local mt = getmetatable(v)
-		if ( mt ) then
-			print("metatable")
-			for index, value in pairs(mt) do
-				if (not filter) or (type(index) == "string" and index:find(filter)) then
-					print(indent, index, value);
-				end
-			end
-			if ( mt.__index and bIndex) then
-				print("__index")
-				for index, value in pairs(mt.__index) do
-					if (not filter) or (type(index) == "string" and index:find(filter)) then
-						print(indent, index, value);
-					end
-				end
-			end
-		end
-    end
 end
 
 function NeedToKnowRMB.BarMenu_SetColor()
