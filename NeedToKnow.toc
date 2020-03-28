@@ -17,6 +17,7 @@ Init.lua
 TimerBar.lua
 Power.lua
 ImportExport.lua
+Resize.lua
 Localization.lua
 NeedToKnow.lua
 NeedToKnow_Options.lua

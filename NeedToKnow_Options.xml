@@ -826,7 +826,6 @@
                 <HighlightFont style="GameFontHighlightSmall"/>
             </Button>
 
-
             <Button name="$parentPublicBtn" inherits="UIPanelButtonTemplate" parentKey="PublicBtn">
                 <Size>
                     <AbsDimension x="128" y="22"/>
@@ -850,7 +849,6 @@
                 <NormalFont style="GameFontNormalSmall"/>
                 <HighlightFont style="GameFontHighlightSmall"/>
             </Button>
-
 
             <Button name="$parentPrivateBtn" inherits="UIPanelButtonTemplate" parentKey="PrivateBtn">
                 <Size>

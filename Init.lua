@@ -1,4 +1,4 @@
--- Must be loaded first in .toc
+-- Load after libs and before everything else
 
 local addonName, addonTable = ...
 
@@ -17,9 +17,9 @@ NeedToKnowRMB = {}       -- Right-click bar config menu
                          -- Used by NeedToKnow_Options.lua, NeedToKnow_Options.xml
 
 
--- --------------------
--- Define addon globals
--- --------------------
+-- ------------------------
+-- Define addon-wide values
+-- ------------------------
 
 NEEDTOKNOW.VERSION = GetAddOnMetadata(addonName, "Version")
 -- to update version, change the .toc 

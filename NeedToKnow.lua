@@ -1261,7 +1261,7 @@ function NeedToKnow.Bar_Update(groupID, barID)
             if ( barSettings.BuffOrDebuff == "BUFFCD" ) then
                 local dur = tonumber(barSettings.buffcd_duration)
                 if (not dur or dur < 1) then
-                    print("Internal cooldown bar watching",barSettings.AuraName,"did not set a cooldown duration.  Disabling the bar")
+                    print("Internal cooldown bar watching",barSettings.AuraName,"did not set a cooldown duration. Disabling the bar.")
                     enabled = false
                 end
             end
@@ -1459,8 +1459,12 @@ function NeedToKnow.Bar_OnMouseUp(self, button)
 end
 
 function NeedToKnow.Bar_OnSizeChanged(self)
-    if (self.bar1.cur_value) then mfn_SetStatusBarValue(self, self.bar1, self.bar1.cur_value) end
-    if (self.bar2 and self.bar2.cur_value) then mfn_SetStatusBarValue(self, self.bar2, self.bar2.cur_value, self.bar1.cur_value) end
+    if (self.bar1.cur_value) then 
+    	mfn_SetStatusBarValue(self, self.bar1, self.bar1.cur_value)
+    end
+    if (self.bar2 and self.bar2.cur_value) then 
+    	mfn_SetStatusBarValue(self, self.bar2, self.bar2.cur_value, self.bar1.cur_value)
+    end
 end
 
 function NeedToKnow.ComputeBarText(buffName, count, extended, buff_stacks, bar)

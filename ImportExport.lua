@@ -1,6 +1,6 @@
 -- Import and export bar settings as concise string
 
-local addonName, addonTable = ...
+-- local addonName, addonTable = ...
 
 -- NEEDTOKNOW.SHORTENINGS = {
 local SHORTENINGS = {
@@ -163,14 +163,6 @@ local function TableToString(v)
     return ret
 end
 
--- function NeedToKnowIE.ExportBarSettingsToString(barSettings)
-function NeedToKnow.ExportBarSettingsToString(barSettings)
-    local pruned = CopyTable(barSettings)
-    NeedToKnow.RemoveDefaultValues(pruned, NEEDTOKNOW.BAR_DEFAULTS)
-    -- return 'bv1:' .. NeedToKnowIE.TableToString(pruned);
-    return 'bv1:' .. TableToString(pruned);
-end
-
 -- function NeedToKnowIE.StringToTable(text, ofs)
 local function StringToTable(text, ofs)
     local cur = ofs or 1
@@ -290,6 +282,14 @@ function NeedToKnow.ImportBarSettingsFromString(text, bars, barID)
         NeedToKnow.AddDefaultsToTable(pruned, NEEDTOKNOW.BAR_DEFAULTS)
         bars[barID] = pruned
     end
+end
+
+-- function NeedToKnowIE.ExportBarSettingsToString(barSettings)
+function NeedToKnow.ExportBarSettingsToString(barSettings)
+    local pruned = CopyTable(barSettings)
+    NeedToKnow.RemoveDefaultValues(pruned, NEEDTOKNOW.BAR_DEFAULTS)
+    -- return 'bv1:' .. NeedToKnowIE.TableToString(pruned);
+    return 'bv1:' .. TableToString(pruned);
 end
 
 --[[

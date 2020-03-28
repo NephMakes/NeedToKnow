@@ -1,7 +1,7 @@
 -- This file contains (or at least will contain) the code for 
 -- the timer bars themselves
 
-local addonName, addonTable = ...
+-- local addonName, addonTable = ...
 
 function NeedToKnow.UpdateBarGroup(groupID)
     local groupName = "NeedToKnow_Group"..groupID

@@ -1,10 +1,12 @@
 -- Track player power like energy and combo points
-
--- Kitjan marked player power as an "experimental" feature. 
--- NephMakes removed support in NeedToKnow v4.0.27 (Battle for Azeroth). 
+-- 
+-- Kitjan marked power tracking as "experimental". 
+-- NephMakes removed support in NeedToKnow v4.0.27 (Battle for Azeroth) 
+-- because it was broken and somewhat out of scope. Fight feature bloat! 
+-- 
 -- Quarantining relevant code here in case it gets revisited. 
 
-local addonName, addonTable = ...
+-- local addonName, addonTable = ...
 
 NEEDTOKNOW.SPELL_POWER_LEGACY_CP = -1
 -- Since i've seen the built-in stuff using -2, I'm going to go further negative

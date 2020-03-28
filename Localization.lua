@@ -6,7 +6,7 @@ Thanks a bunch!
 
 --]]
 
--- NEEDTOKNOW = {};
+-- NEEDTOKNOW defined in Init.lua
 
 -- Define defaults in enUS
     NEEDTOKNOW.ALTERNATE_POWER = "Alternate Power";

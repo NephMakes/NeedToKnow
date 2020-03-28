@@ -502,7 +502,6 @@ function NeedToKnowOptions.UIPanel_Profile_CopySelected(panel)
     end
 end
 
-
 function NeedToKnowOptions.UIPanel_Profile_RenameSelected(panel)
     local scrollPanel = panel.Profiles
     local edit = panel.NewName
@@ -678,7 +677,7 @@ end
 -- BAR GUI
 -- --------
 
-NeedToKnowRMB.CurrentBar = { groupID = 1, barID = 1 };        -- a dirty hack, i know.  
+NeedToKnowRMB.CurrentBar = { groupID = 1, barID = 1 };  -- a dirty hack, i know.  
 
 StaticPopupDialogs["NEEDTOKNOW.CHOOSENAME_DIALOG"] = {
     text = NEEDTOKNOW.CHOOSENAME_DIALOG,
@@ -1193,10 +1192,10 @@ function NeedToKnowRMB.BarMenu_ChooseSetting(self, a1, a2, checked)
     local barID = NeedToKnowRMB.CurrentBar["barID"];
     local barSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID]
     local v = NeedToKnowRMB.VariableRedirects[UIDROPDOWNMENU_MENU_VALUE] or UIDROPDOWNMENU_MENU_VALUE
+
     barSettings[v] = self.value;
     NeedToKnow.Bar_Update(groupID, barID);
-    
-    if ( v == "BuffOrDebuff" ) then
+        if ( v == "BuffOrDebuff" ) then
         NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
     end
 end
@@ -1216,7 +1215,6 @@ function NeedToKnowRMB.EditBox_Numeric_OnTextChanged(self, isUserInput)
             self:SetText(culled);
         end
     end
-    
     if ( NeedToKnowRMB.EditBox_Original_OnTextChanged ) then
         NeedToKnowRMB.EditBox_Original_OnTextChanged(self, isUserInput);
     end
@@ -1305,6 +1303,9 @@ end
 -- RESIZE BUTTON
 -- -------------
 
+--[[
+-- Moved to Resize.lua
+
 function NeedToKnow.Resizebutton_OnEnter(self)
     local tooltip = _G["GameTooltip"];
     GameTooltip_SetDefaultAnchor(tooltip, self);
@@ -1378,3 +1379,4 @@ function NeedToKnow.SavePosition(group, groupID)
     local point, _, relativePoint, xOfs, yOfs = group:GetPoint();
     NeedToKnow.ProfileSettings.Groups[groupID]["Position"] = {point, relativePoint, xOfs, yOfs};
 end
+]]--
