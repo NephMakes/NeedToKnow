@@ -6,11 +6,7 @@ local addonName, addonTable = ...
 NeedToKnow = {}
 NEEDTOKNOW = {}
 
--- We want to eventually be creating fewer global variables 
-
--- NeedToKnowIE = {}        -- Used by ImportExport.lua, NeedToKnow_Options.lua
--- NeedToKnow_Visible = {}  -- Used by NeedToKnow.lua, TimerBar.lua
-
+-- We want to eventually be creating fewer global variables and get rid of these: 
 NeedToKnowLoader = {}    -- Used by NeedToKnow.lua
 NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
 NeedToKnowRMB = {}       -- Right-click bar config menu
@@ -120,3 +116,55 @@ NEEDTOKNOW.DEFAULTS = {
 }
 
 
+-- -------------------
+-- SharedMedia support
+-- -------------------
+
+NeedToKnow.LSM = LibStub("LibSharedMedia-3.0", true)
+local barTextures = {
+	["Aluminum"] =   [[Interface\Addons\NeedToKnow\Textures\Aluminum.tga]],
+	["Armory"] =     [[Interface\Addons\NeedToKnow\Textures\Armory.tga]],
+	["BantoBar"] =   [[Interface\Addons\NeedToKnow\Textures\BantoBar.tga]],
+	["DarkBottom"] = [[Interface\Addons\NeedToKnow\Textures\Darkbottom.tga]],
+	["Default"] =    [[Interface\Addons\NeedToKnow\Textures\Default.tga]],
+	["Flat"] =       [[Interface\Addons\NeedToKnow\Textures\Flat.tga]],
+	["Glaze"] =      [[Interface\Addons\NeedToKnow\Textures\Glaze.tga]],
+	["Gloss"] =      [[Interface\Addons\NeedToKnow\Textures\Gloss.tga]],
+	["Graphite"] =   [[Interface\Addons\NeedToKnow\Textures\Graphite.tga]],
+	["Minimalist"] = [[Interface\Addons\NeedToKnow\Textures\Minimalist.tga]],
+	["Otravi"] =     [[Interface\Addons\NeedToKnow\Textures\Otravi.tga]],
+	["Smooth"] =     [[Interface\Addons\NeedToKnow\Textures\Smooth.tga]],
+	["Smooth v2"] =  [[Interface\Addons\NeedToKnow\Textures\Smoothv2.tga]],
+	["Striped"] =    [[Interface\Addons\NeedToKnow\Textures\Striped.tga]]
+}
+for k, v in pairs(barTextures) do
+	NeedToKnow.LSM:Register("statusbar", k, v) 
+end
+
+
+-- -----------------
+-- Utility functions
+-- -----------------
+
+--function maybe_trace(...)
+  --local so_far = ""
+  --local p = _G
+  --for idx = 1,40,1 do
+      --local v = select(idx,...)
+      --if not v then 
+        --break 
+      --end
+      --p = p[v]
+      --if not p then
+        --if so_far == "" then
+          --trace("global variable",v,"does not exist")
+        --else
+          --trace(so_far,"does not have member",v)
+        --end
+        --return;
+      --end
+      --so_far = so_far .. "." .. v
+  --end
+  --trace(so_far,"=",p)
+--end
+--

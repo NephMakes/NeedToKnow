@@ -6,28 +6,6 @@
 local addonName, addonTable = ...
 
 local trace = print
---function maybe_trace(...)
-  --local so_far = ""
-  --local p = _G
-  --for idx = 1,40,1 do
-      --local v = select(idx,...)
-      --if not v then 
-        --break 
-      --end
-      --p = p[v]
-      --if not p then
-        --if so_far == "" then
-          --trace("global variable",v,"does not exist")
-        --else
-          --trace(so_far,"does not have member",v)
-        --end
-        --return;
-      --end
-      --so_far = so_far .. "." .. v
-  --end
-  --trace(so_far,"=",p)
---end
---
 
 -- -------------
 -- ADDON MEMBERS
@@ -133,27 +111,6 @@ local c_AURAEVENTS = {
     SPELL_AURA_BROKEN_SPELL = true
 }
     
--- -------------------
--- SharedMedia Support
--- -------------------
-
-    NeedToKnow.LSM = LibStub("LibSharedMedia-3.0", true)
-    
-    if not NeedToKnow.LSM:Fetch("statusbar", "Aluminum", true) then NeedToKnow.LSM:Register("statusbar", "Aluminum",           [[Interface\Addons\NeedToKnow\Textures\Aluminum.tga]]) end
-    if not NeedToKnow.LSM:Fetch("statusbar", "Armory", true) then NeedToKnow.LSM:Register("statusbar", "Armory",             [[Interface\Addons\NeedToKnow\Textures\Armory.tga]]) end
-    if not NeedToKnow.LSM:Fetch("statusbar", "BantoBar", true) then NeedToKnow.LSM:Register("statusbar", "BantoBar",           [[Interface\Addons\NeedToKnow\Textures\BantoBar.tga]]) end
-    if not NeedToKnow.LSM:Fetch("statusbar", "DarkBottom", true) then NeedToKnow.LSM:Register("statusbar", "DarkBottom",         [[Interface\Addons\NeedToKnow\Textures\Darkbottom.tga]]) end
-    if not NeedToKnow.LSM:Fetch("statusbar", "Default", true) then NeedToKnow.LSM:Register("statusbar", "Default",            [[Interface\Addons\NeedToKnow\Textures\Default.tga]]) end
-    if not NeedToKnow.LSM:Fetch("statusbar", "Flat", true) then NeedToKnow.LSM:Register("statusbar", "Flat",               [[Interface\Addons\NeedToKnow\Textures\Flat.tga]]) end
-    if not NeedToKnow.LSM:Fetch("statusbar", "Glaze", true) then NeedToKnow.LSM:Register("statusbar", "Glaze",              [[Interface\Addons\NeedToKnow\Textures\Glaze.tga]]) end
-    if not NeedToKnow.LSM:Fetch("statusbar", "Gloss", true) then NeedToKnow.LSM:Register("statusbar", "Gloss",              [[Interface\Addons\NeedToKnow\Textures\Gloss.tga]]) end
-    if not NeedToKnow.LSM:Fetch("statusbar", "Graphite", true) then NeedToKnow.LSM:Register("statusbar", "Graphite",           [[Interface\Addons\NeedToKnow\Textures\Graphite.tga]]) end
-    if not NeedToKnow.LSM:Fetch("statusbar", "Minimalist", true) then NeedToKnow.LSM:Register("statusbar", "Minimalist",         [[Interface\Addons\NeedToKnow\Textures\Minimalist.tga]]) end
-    if not NeedToKnow.LSM:Fetch("statusbar", "Otravi", true) then NeedToKnow.LSM:Register("statusbar", "Otravi",             [[Interface\Addons\NeedToKnow\Textures\Otravi.tga]]) end
-    if not NeedToKnow.LSM:Fetch("statusbar", "Smooth", true) then NeedToKnow.LSM:Register("statusbar", "Smooth",             [[Interface\Addons\NeedToKnow\Textures\Smooth.tga]]) end
-    if not NeedToKnow.LSM:Fetch("statusbar", "Smooth v2", true) then NeedToKnow.LSM:Register("statusbar", "Smooth v2",          [[Interface\Addons\NeedToKnow\Textures\Smoothv2.tga]]) end
-    if not NeedToKnow.LSM:Fetch("statusbar", "Striped", true) then NeedToKnow.LSM:Register("statusbar", "Striped",            [[Interface\Addons\NeedToKnow\Textures\Striped.tga]]) end
-
 -- ---------------
 -- EXECUTIVE FRAME
 -- ---------------
