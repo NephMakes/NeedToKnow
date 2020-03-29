@@ -9,10 +9,12 @@
         </Anchors>
         <Scripts>
             <OnLoad>
-                UIDropDownMenu_Initialize(self, NeedToKnowRMB.BarMenu_Initialize, "MENU");
+                -- UIDropDownMenu_Initialize(self, NeedToKnowRMB.BarMenu_Initialize, "MENU");
+                UIDropDownMenu_Initialize(self, NeedToKnow.BarMenu.BarMenu_Initialize, "MENU");
             </OnLoad>
             <OnShow>
-                UIDropDownMenu_Initialize(self, NeedToKnowRMB.BarMenu_Initialize, "MENU");
+                -- UIDropDownMenu_Initialize(self, NeedToKnowRMB.BarMenu_Initialize, "MENU");
+                UIDropDownMenu_Initialize(self, NeedToKnow.BarMenu.BarMenu_Initialize, "MENU");
             </OnShow>
         </Scripts>
     </Frame>

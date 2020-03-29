@@ -21,5 +21,6 @@ Resize.lua
 Localization.lua
 NeedToKnow.lua
 NeedToKnow_Options.lua
+BarMenu.lua
 NeedToKnow.xml
 NeedToKnow_Options.xml

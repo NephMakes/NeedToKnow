@@ -2,15 +2,19 @@
 
 local addonName, addonTable = ...
 
+
+-- ------------------------
 -- Declare global variables
+-- ------------------------
+
 NeedToKnow = {}
 NEEDTOKNOW = {}
 
 -- We want to eventually be creating fewer global variables and get rid of these: 
 NeedToKnowLoader = {}    -- Used by NeedToKnow.lua
 NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
-NeedToKnowRMB = {}       -- Right-click bar config menu
-                         -- Used by NeedToKnow_Options.lua, NeedToKnow_Options.xml
+-- NeedToKnowRMB = {}       -- Right-click bar config menu
+                         -- Used by NeedToKnow.lua, NeedToKnow_Options.lua, NeedToKnow_Options.xml
 
 
 -- ------------------------
@@ -83,13 +87,13 @@ NEEDTOKNOW.BAR_DEFAULTS = {
     append_usable   = false,
 }
 NEEDTOKNOW.GROUP_DEFAULTS = {
-    Enabled          = true,
-    NumberBars       = 3,
-    Scale            = 1.0,
-    Width            = 270,
-    Bars             = { NEEDTOKNOW.BAR_DEFAULTS, NEEDTOKNOW.BAR_DEFAULTS, NEEDTOKNOW.BAR_DEFAULTS },
-    Position         = { "TOPLEFT", "TOPLEFT", 100, -100 },
-    FixedDuration    = 0, 
+    Enabled       = true,
+    NumberBars    = 3,
+    Scale         = 1.0,
+    Width         = 270,
+    Bars          = { NEEDTOKNOW.BAR_DEFAULTS, NEEDTOKNOW.BAR_DEFAULTS, NEEDTOKNOW.BAR_DEFAULTS },
+    Position      = { "TOPLEFT", "TOPLEFT", 100, -100 },
+    FixedDuration = 0, 
 }
 NEEDTOKNOW.PROFILE_DEFAULTS = {
     name        = "Default",

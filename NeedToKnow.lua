@@ -1411,7 +1411,8 @@ function NeedToKnow.Bar_OnMouseUp(self, button)
     if ( button == "RightButton" ) then
         -- PlaySound("UChatScrollButton");
         PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON);
-        NeedToKnowRMB.ShowMenu(self);
+        -- NeedToKnowRMB.ShowMenu(self);
+        NeedToKnow.BarMenu.ShowMenu(self);
      end
 end
 
