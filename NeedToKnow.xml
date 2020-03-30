@@ -1,7 +1,7 @@
 ﻿<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\..\..\Blizza~1\FrameXML\UI.xsd">
 
-    <!-- .xml files must be loaded last in the .toc -->
+    <!-- These .xml files must be loaded last in .toc -->
 
     <Frame name="NeedToKnow_GroupTemplate" virtual="true">
         <Size>
@@ -15,7 +15,7 @@
             </Layer>
         </Layers>
         <Frames>
-            <Button name="$parentResizeButton">
+            <Button name="$parentResizeButton" parentKey="ResizeButton">
                 <Size>
                     <AbsDimension x="20" y="20"/>
                 </Size>
@@ -24,7 +24,7 @@
                 </Anchors>
                 <Layers>
                     <Layer level="BACKGROUND">
-                        <Texture name="$parentTexture" file="Interface\AddOns\NeedToKnow\Textures\Resize">
+                        <Texture name="$parentTexture" parentKey="Texture" file="Interface\AddOns\NeedToKnow\Textures\Resize">
                             <Size>
                                 <AbsDimension x="10" y="10"/>
                             </Size>
@@ -33,21 +33,19 @@
                 </Layers>
                 <Scripts>
                     <OnLoad>
-                        getglobal(self:GetName().."Texture"):SetVertexColor(0.6, 0.6, 0.6);
+                    	NeedToKnow.ResizeButton.OnLoad(self)
                     </OnLoad>
                     <OnMouseDown>
-                        NeedToKnow.StartSizing(self, button);
+                        NeedToKnow.ResizeButton.OnMouseDown(self)
                     </OnMouseDown>
                     <OnMouseUp>
-                        NeedToKnow.StopSizing(self, button);
+                        NeedToKnow.ResizeButton.OnMouseUp(self)
                     </OnMouseUp>
                     <OnEnter>
-                        NeedToKnow.Resizebutton_OnEnter(self);
-                        getglobal(self:GetName().."Texture"):SetVertexColor(1, 1, 1);
+                        NeedToKnow.ResizeButton.OnEnter(self)
                     </OnEnter>
                     <OnLeave>
-                        GameTooltip:Hide();
-                        getglobal(self:GetName().."Texture"):SetVertexColor(0.6, 0.6, 0.6);
+                    	NeedToKnow.ResizeButton.OnLeave(self)
                     </OnLeave>
                 </Scripts>
             </Button>

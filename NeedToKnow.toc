@@ -1,6 +1,6 @@
 ## Interface: 080300
 ## Title: NeedToKnow
-## Author: Kitjan, lieandswell
+## Author: NephMakes, Kitjan, lieandswell
 ## Version: 4.0.31
 ## Notes: Timer bars for buffs, debuffs, cooldowns, etc.
 ## X-Credits: Bilt, Fxfighter EU-Echsenkessel, metalchoir, sp00n, Vlakarados, wowui.cn
@@ -18,7 +18,6 @@ Localization.lua
 BarGroup.lua
 Power.lua
 ImportExport.lua
-Resize.lua
 NeedToKnow.lua
 NeedToKnow_Options.lua
 BarMenu.lua

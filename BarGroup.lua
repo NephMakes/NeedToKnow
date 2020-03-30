@@ -4,8 +4,8 @@
 -- Bar Group
 -- ---------
 
--- NeedToKnow.BarGroup = {}
--- local BarGroup = NeedToKnow.BarGroup
+NeedToKnow.BarGroup = {}
+local BarGroup = NeedToKnow.BarGroup
 
 function NeedToKnow.UpdateBarGroup(groupID)
     local groupName = "NeedToKnow_Group"..groupID
@@ -31,8 +31,13 @@ function NeedToKnow.UpdateBarGroup(groupID)
         end
     end
 
-    local resizeButton = _G[groupName.."ResizeButton"]
+    local resizeButton = group.ResizeButton
     resizeButton:SetPoint("BOTTOMRIGHT", bar, "BOTTOMRIGHT", 8, -8)
+    if ( NeedToKnow.CharSettings["Locked"] ) then
+        resizeButton:Hide()
+    else
+        resizeButton:Show()
+    end
 
     local barID = groupSettings.NumberBars+1
     while true do
@@ -44,12 +49,6 @@ function NeedToKnow.UpdateBarGroup(groupID)
         else
             break
         end
-    end
-
-    if ( NeedToKnow.CharSettings["Locked"] ) then
-        resizeButton:Hide()
-    else
-        resizeButton:Show()
     end
 
     -- Early enough in the loading process (before PLAYER_LOGIN), 
@@ -68,7 +67,7 @@ function NeedToKnow.UpdateBarGroup(groupID)
     end
 end
 
-function NeedToKnow.SetWidth(groupID, width)    
+function NeedToKnow.SetWidth(groupID, width)
     for barID = 1, NeedToKnow.ProfileSettings.Groups[groupID]["NumberBars"] do
         local bar = _G["NeedToKnow_Group"..groupID.."Bar"..barID];
         local background = _G[bar:GetName().."Background"];
@@ -86,72 +85,107 @@ function NeedToKnow.SavePosition(group, groupID)
     NeedToKnow.ProfileSettings.Groups[groupID]["Position"] = {point, relativePoint, xOfs, yOfs};
 end
 
+--[[
+function BarGroup.SetWidth(groupID, width)
+	-- called by ResizeButton:OnUpdate()
+end
+
+function BarGroup.SavePosition(group, groupID)
+	-- called by ResizeButton:OnMouseUp()
+end
+]]--
+
+--[[
+function BarGroup:SetWidth(width)
+	-- would be called by ResizeButton:OnUpdate()
+	-- but method needs to be defined before it can be called
+	-- and would be overriding normal frame:SetWidth() method
+end
+
+function BarGroup:SavePosition()
+	-- would be called by ResizeButton:OnMouseUp()
+	-- but method needs to be defined before it can be called
+end
+]]--
+
 
 -- -------------
 -- Resize Button
 -- -------------
 
--- NeedToKnow.ResizeButton = {}
--- local ResizeButton = NeedToKnow.ResizeButton
+NeedToKnow.ResizeButton = {}
+local ResizeButton = NeedToKnow.ResizeButton
 
-function NeedToKnow.Resizebutton_OnEnter(self)
-	-- self is Resize button
-    local tooltip = _G["GameTooltip"];
-    GameTooltip_SetDefaultAnchor(tooltip, self);
-    tooltip:AddLine(NEEDTOKNOW.RESIZE_TOOLTIP, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1);
-    tooltip:Show();
+function ResizeButton:OnLoad()
+	self.Texture:SetVertexColor(0.6, 0.6, 0.6)
 end
 
-function NeedToKnow.StartSizing(self, button)
-	-- self is Resize button
-    local group = self:GetParent();
-    local groupID = self:GetParent():GetID();
-    group.oldScale = group:GetScale();
-    group.oldX = group:GetLeft();
-    group.oldY = group:GetTop();
-		group:ClearAllPoints();
-		group:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", group.oldX, group.oldY);
-    self.oldCursorX, self.oldCursorY = GetCursorPosition(UIParent);
-    self.oldWidth = _G[group:GetName().."Bar1"]:GetWidth();
-    self:SetScript("OnUpdate", NeedToKnow.Sizing_OnUpdate);
+function ResizeButton:OnEnter()
+    local tooltip = _G["GameTooltip"]
+    GameTooltip_SetDefaultAnchor(tooltip, self)
+    tooltip:AddLine(NEEDTOKNOW.RESIZE_TOOLTIP, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
+    tooltip:Show()
+	self.Texture:SetVertexColor(1, 1, 1)
 end
 
-function NeedToKnow.Sizing_OnUpdate(self)
-	-- self is Resize button
-    local uiScale = UIParent:GetScale();
-    local cursorX, cursorY = GetCursorPosition(UIParent);
-    local group = self:GetParent();
-    local groupID = self:GetParent():GetID();
-
-    -- calculate & set new scale
-    local newYScale = group.oldScale * (cursorY/uiScale - group.oldY*group.oldScale) / (self.oldCursorY/uiScale - group.oldY*group.oldScale) ;
-    local newScale = max(0.25, newYScale);
-    
-    -- clamp the scale so bars are whole number of pixels tall
-    local bar1 = _G[group:GetName().."Bar1"]
-    local barHeight = bar1:GetHeight()
-    local newHeight = newScale * barHeight
-    newHeight = math.floor(newHeight + 0.0002)
-    newScale = newHeight / barHeight
-    group:SetScale(newScale);
-
-    -- set new frame coords to keep same on-screen position
-    local newX = group.oldX * group.oldScale / newScale;
-    local newY = group.oldY * group.oldScale / newScale;
-    group:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", newX, newY);
-
-    -- calculate & set new bar width
-    local newWidth = max(50, ((cursorX - self.oldCursorX)/uiScale + self.oldWidth * group.oldScale)/newScale);
-    NeedToKnow.SetWidth(groupID, newWidth);
+function ResizeButton:OnLeave()
+	GameTooltip:Hide()
+	self.Texture:SetVertexColor(0.6, 0.6, 0.6)
 end
 
-function NeedToKnow.StopSizing(self, button)
-	-- self is Resize button
+function ResizeButton:OnMouseDown()
+	-- Start sizing
+	local group = self:GetParent()
+	local groupID = group:GetID()
+	group.oldScale = group:GetScale()
+	group.oldX = group:GetLeft()
+	group.oldY = group:GetTop()
+	group:ClearAllPoints()
+	group:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", group.oldX, group.oldY)
+	self.oldCursorX, self.oldCursorY = GetCursorPosition(UIParent)
+	self.oldWidth = _G[group:GetName().."Bar1"]:GetWidth()
+	self:SetScript("OnUpdate", ResizeButton.OnUpdate)
+end
+
+function ResizeButton:OnMouseUp()
+	-- Stop sizing
     self:SetScript("OnUpdate", nil)
-    local groupID = self:GetParent():GetID();
-    NeedToKnow.ProfileSettings.Groups[groupID]["Scale"] = self:GetParent():GetScale();
-    NeedToKnow.SavePosition(self:GetParent(), groupID);
+	local group = self:GetParent()
+	local groupID = group:GetID()
+    NeedToKnow.ProfileSettings.Groups[groupID]["Scale"] = group:GetScale()
+    NeedToKnow.SavePosition(group, groupID)
+    -- BarGroup.SavePosition(group)
+    -- group:SavePosition()
 end
+
+function ResizeButton:OnUpdate()
+	local uiScale = UIParent:GetScale()
+	local cursorX, cursorY = GetCursorPosition(UIParent)
+	local group = self:GetParent()
+	local groupID = group:GetID()
+
+	-- calculate and set new scale
+	local newYScale = group.oldScale * (cursorY/uiScale - group.oldY*group.oldScale) / (self.oldCursorY/uiScale - group.oldY*group.oldScale)
+	local newScale = max(0.25, newYScale)
+	local bar1 = _G[group:GetName().."Bar1"]
+	local barHeight = bar1:GetHeight()
+	local newHeight = newScale * barHeight
+	newHeight = math.floor(newHeight + 0.0002)
+	newScale = newHeight / barHeight  -- clamp so bars are whole number of pixels tall
+	group:SetScale(newScale)
+
+	-- set new frame coords to keep same on-screen position
+	local newX = group.oldX * group.oldScale / newScale
+	local newY = group.oldY * group.oldScale / newScale
+	group:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", newX, newY)
+
+	-- calculate & set new bar width
+	local newWidth = max(50, ((cursorX - self.oldCursorX)/uiScale + self.oldWidth * group.oldScale)/newScale)
+	NeedToKnow.SetWidth(groupID, newWidth)
+	-- BarGroup.SetWidth(group, groupId, newWidth)
+	-- group:SetWidth(newWidth)
+end
+
 
 
 

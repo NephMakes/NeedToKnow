@@ -51,56 +51,49 @@ local mfn_AuraCheck_POWER
 local mfn_EnergyBar_OnUpdate
 
 local m_scratch = {}
-m_scratch.all_stacks = 
-    {
-        min = 
-        {
-            buffName = "", 
-            duration = 0, 
-            expirationTime = 0, 
-            iconPath = "",
-            caster = ""
-        },
-        max = 
-        {
-            duration = 0, 
-            expirationTime = 0, 
-        },
-        total = 0,
-        total_ttn = { 0, 0, 0 }
-    }
-m_scratch.buff_stacks = 
-    {
-        min = 
-        {
-            buffName = "", 
-            duration = 0, 
-            expirationTime = 0, 
-            iconPath = "",
-            caster = ""
-        },
-        max = 
-        {
-            duration = 0, 
-            expirationTime = 0, 
-        },
-        total = 0,
-        total_ttn = { 0, 0, 0 }
-    }
-m_scratch.bar_entry = 
-    {
-        idxName = 0,
-        barSpell = "",
-        isSpellID = false,
-    }
+m_scratch.all_stacks = {
+	min = {
+		buffName = "", 
+		duration = 0, 
+		expirationTime = 0, 
+		iconPath = "",
+		caster = ""
+	},
+	max = {
+		duration = 0, 
+		expirationTime = 0, 
+	},
+	total = 0,
+	total_ttn = { 0, 0, 0 }
+}
+m_scratch.buff_stacks = {
+	min = {
+		buffName = "", 
+		duration = 0, 
+		expirationTime = 0, 
+		iconPath = "",
+		caster = ""
+	},
+	max = {
+		duration = 0, 
+		expirationTime = 0, 
+	},
+	total = 0,
+	total_ttn = { 0, 0, 0 }
+}
+m_scratch.bar_entry = {
+	idxName = 0,
+	barSpell = "",
+	isSpellID = false,
+}
 
--- local c_UPDATE_INTERVAL = 0.05  -- equivalent to 20 frames per second
 local c_UPDATE_INTERVAL = 0.025  -- equivalent to 40 frames per second
 local c_MAXBARS = 20
-local c_AUTO_SHOT_NAME = g_GetSpellInfo(75)
-	-- Localized name of spell 75 ("Auto Shot" in US English)
+local c_AUTO_SHOT_NAME = g_GetSpellInfo(75) -- Localized name for Auto Shot
 
--- COMBAT_LOG_EVENT_UNFILTERED events where select(6,...) is the caster, 9 is the spellid, and 10 is the spell name. Used for Target-of-target monitoring. 
+-- COMBAT_LOG_EVENT_UNFILTERED events where select(6,...) is the caster, 
+-- 9 is the spellid, and 10 is the spell name. 
+-- Used for Target-of-target monitoring. 
 local c_AURAEVENTS = {
     SPELL_AURA_APPLIED = true,
     SPELL_AURA_REMOVED = true,
@@ -123,7 +116,6 @@ function NeedToKnow.ExecutiveFrame_OnEvent(self, event, ...)
     end
 end
 
--- function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SENT(unit, spell, rank_str, tgt, serialno)
 function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SENT(unit, tgt, lineID, spellID)
     if unit == "player" then
         -- TODO: I hate to pay this memory cost for every "spell" ever cast.
@@ -246,9 +238,7 @@ end
 
 function NeedToKnow.ExecutiveFrame_ADDON_LOADED(addon)
     if ( addon == "NeedToKnow") then
-        -- if ( not NeedToKnow_Visible ) then
         if ( not NeedToKnow.IsVisible ) then
-            -- NeedToKnow_Visible = true
             NeedToKnow.IsVisible = true
         end
         
@@ -274,7 +264,7 @@ function NeedToKnow.ExecutiveFrame_PLAYER_LOGIN()
         NeedToKnow.is_DK = 1
     elseif player_CLASS == "DRUID" then
         NeedToKnow.is_Druid = 1
-        -- Is this actually used for anything? Seems like a vestige of power tracking
+        -- Is this actually used for anything? Seems left over from power tracking
     end
 
     -- NeedToKnowLoader.SetPowerTypeList(player_CLASS)
@@ -1699,7 +1689,8 @@ function NeedToKnow.GetUtilityTooltips()
 end
 
 --[[
--- Appears to be vestigal code. Temporary enchants aren't a thing anymore. 
+-- I don't think temporary enchants aren't a thing anymore, 
+-- but keeping this for potential use in WoW Classic
 function NeedToKnow.DetermineTempEnchantFromTooltip(i_invID)
     local tt1,tt2 = NeedToKnow.GetUtilityTooltips()
     
