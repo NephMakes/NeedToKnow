@@ -14,11 +14,11 @@ libs\LibStub\LibStub.lua
 libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
 libs\LibSharedMedia-3.0\lib.xml
 Init.lua
-TimerBar.lua
+Localization.lua
+BarGroup.lua
 Power.lua
 ImportExport.lua
 Resize.lua
-Localization.lua
 NeedToKnow.lua
 NeedToKnow_Options.lua
 BarMenu.lua

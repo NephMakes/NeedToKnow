@@ -1314,8 +1314,8 @@ function NeedToKnow.SetScripts(bar)
     elseif ( "EQUIPSLOT" == bar.settings.BuffOrDebuff ) then
         bar:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
     --[[
-    -- DEPRECATED: Dropped support for player power in v4.0.27
     elseif ( "POWER" == bar.settings.BuffOrDebuff ) then
+	    -- DEPRECATED: Dropped support for player power in NeedToKnow v4.0.27
         if bar.settings.AuraName == tostring(NEEDTOKNOW.SPELL_POWER_STAGGER) then
           bar:RegisterEvent("UNIT_HEALTH")
         else
@@ -1699,7 +1699,7 @@ function NeedToKnow.GetUtilityTooltips()
 end
 
 --[[
--- Appears to be vestigal code  Temporary enchant's aren't a thing anymore. 
+-- Appears to be vestigal code. Temporary enchants aren't a thing anymore. 
 function NeedToKnow.DetermineTempEnchantFromTooltip(i_invID)
     local tt1,tt2 = NeedToKnow.GetUtilityTooltips()
     

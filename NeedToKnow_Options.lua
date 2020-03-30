@@ -13,9 +13,6 @@ local fontList = LSM:List("font");
 local NeedToKnow_OldProfile = nil;
 local NeedToKnow_OldSettings = nil;
 
--- NeedToKnowOptions = {}
--- NeedToKnowRMB = {}
-
 function NeedToKnow.FindProfileByName(profName)
     local key
     for k,t in pairs(NeedToKnow_Profiles) do
@@ -72,7 +69,6 @@ function NeedToKnow.LockToggle(bLock)
     end
 
     NeedToKnow.Show(true);
-    -- PlaySound("UChatScrollButton");
     PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON);
 
     if NeedToKnow.CharSettings["Locked"] ~= bLock then
@@ -100,7 +96,7 @@ function NeedToKnowOptions.UIPanel_OnLoad(self)
 end
 
 function NeedToKnowOptions.UIPanel_OnShow()
-    NeedToKnow_OldProfile =NeedToKnow.ProfileSettings;
+    NeedToKnow_OldProfile = NeedToKnow.ProfileSettings;
     NeedToKnow_OldSettings = CopyTable(NeedToKnow.ProfileSettings);
     NeedToKnowOptions.UIPanel_Update();
 end

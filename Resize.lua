@@ -2,8 +2,11 @@
 
 -- local addonName, addonTable = ...
 
-NeedToKnow.ResizeButton = {}
-local ResizeButton = NeedToKnow.ResizeButton
+-- NeedToKnow.ResizeButton = {}
+-- local ResizeButton = NeedToKnow.ResizeButton
+
+--[[
+-- Moved to BarGroup.lua
 
 function NeedToKnow.Resizebutton_OnEnter(self)
 	-- self is Resize button
@@ -63,27 +66,4 @@ function NeedToKnow.StopSizing(self, button)
     NeedToKnow.ProfileSettings.Groups[groupID]["Scale"] = self:GetParent():GetScale();
     NeedToKnow.SavePosition(self:GetParent(), groupID);
 end
-
-
-
--- TO DO: Move this to BarConfig.lua or equivalent
--- TO DO: Should be something like BarGroup:SetWidth()
-function NeedToKnow.SetWidth(groupID, width)    
-    for barID = 1, NeedToKnow.ProfileSettings.Groups[groupID]["NumberBars"] do
-        local bar = _G["NeedToKnow_Group"..groupID.."Bar"..barID];
-        local background = _G[bar:GetName().."Background"];
-        local text = _G[bar:GetName().."Text"];
-        bar:SetWidth(width);
-        text:SetWidth(width-60);
-        NeedToKnow.SizeBackground(bar, bar.settings.show_icon);
-    end
-    NeedToKnow.ProfileSettings.Groups[groupID]["Width"] = width;  -- move this to StopSizing?
-end
-
--- TO DO: Move this to BarConfig.lua or equivalent
--- TO DO: Should be something like BarGroup:SavePosition()
-function NeedToKnow.SavePosition(group, groupID)
-    groupID = groupID or group:GetID();
-    local point, _, relativePoint, xOfs, yOfs = group:GetPoint();
-    NeedToKnow.ProfileSettings.Groups[groupID]["Position"] = {point, relativePoint, xOfs, yOfs};
-end
+]]--

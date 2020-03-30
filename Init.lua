@@ -13,9 +13,8 @@ NEEDTOKNOW = {}
 -- We want to eventually be creating fewer global variables and get rid of these: 
 NeedToKnowLoader = {}    -- Used by NeedToKnow.lua
 NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
--- NeedToKnowRMB = {}       -- Right-click bar config menu
-                         -- Used by NeedToKnow.lua, NeedToKnow_Options.lua, NeedToKnow_Options.xml
-
+-- NeedToKnowRMB = {}    -- Used by NeedToKnow.lua, NeedToKnow_Options.lua, NeedToKnow_Options.xml
+                         -- (Right-click bar config menu)
 
 -- ------------------------
 -- Define addon-wide values

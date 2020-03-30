@@ -52,7 +52,6 @@ Thanks a bunch!
     NEEDTOKNOW.BARMENU_SHOW_TTN2 = "Second Tooltip Number";
     NEEDTOKNOW.BARMENU_SHOW_TTN3 = "Third Tooltip Number";
 
-
     NEEDTOKNOW.UIPANEL_SUBTEXT1 = "These options allow you to customize NeedToKnow's timer bar groups.";
 --    NEEDTOKNOW.UIPANEL_SUBTEXT2 = "Bars work when locked. When unlocked, you can move/size bar groups and right click individual bars for more settings. You can also type '/needtoknow' or '/ntk' to lock/unlock.";
     NEEDTOKNOW.UIPANEL_BARGROUP = "Group ";
@@ -79,7 +78,6 @@ Thanks a bunch!
     NEEDTOKNOW.UIPANEL_BARFONT = "Bar font";
     NEEDTOKNOW.UIPANEL_FONT = "Font";
     NEEDTOKNOW.UIPANEL_FONT_OUTLINE = "Font Outline";
-
 
     NEEDTOKNOW.UIPANEL_PROFILES_SUBTEXT1 = "These options allow you to manage profiles.  Each profile is a complete NeedToKnow configuration for one talent spec.\nBy default, profiles are per-character (and have character: in front of their name.) Per-character profiles are only available to this character.  Profiles can be switched between per-character and per-account so that the same profile can be used by multiple characters on the same account.";
     NEEDTOKNOW.UIPANEL_CURRENTPRIMARY = "Current Primary Profile:";

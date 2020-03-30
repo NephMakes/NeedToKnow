@@ -1,4 +1,4 @@
-﻿-- Right-click bar configuration menu
+﻿-- Right-click menu to configure timer bar
 
 -- TO DO: 
 -- Bar menu only works properly if loaded after NeedToKnow_Options.lua
@@ -33,12 +33,6 @@ StaticPopupDialogs["NEEDTOKNOW.CHOOSENAME_DIALOG"] = {
         self:GetParent():Hide();
     end,
     OnHide = function(self)
-    -- Removed for wow 3.3.5, it seems like there is a focus stack
-    -- now that obsoletes this anyway. If not, there isn't a 
-    -- single ChatFrameEditBox anymore, there's ChatFrame1EditBox etc.
-        -- if ( ChatFrameEditBox:IsVisible() ) then
-        --    ChatFrameEditBox:SetFocus();
-        -- end
         self.editBox:SetText("");
     end,
     timeout = 0,
