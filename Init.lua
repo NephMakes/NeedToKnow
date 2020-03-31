@@ -16,9 +16,9 @@ NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
 -- NeedToKnowRMB = {}    -- Used by NeedToKnow.lua, NeedToKnow_Options.lua, NeedToKnow_Options.xml
                          -- (Right-click bar config menu)
 
--- ------------------------
--- Define addon-wide values
--- ------------------------
+-- ---------------------
+-- Addon-wide parameters
+-- ---------------------
 
 NEEDTOKNOW.VERSION = GetAddOnMetadata(addonName, "Version")
 -- to update version, change the .toc 

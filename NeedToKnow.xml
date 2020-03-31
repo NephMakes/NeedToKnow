@@ -3,54 +3,47 @@
 
     <!-- These .xml files must be loaded last in .toc -->
 
-    <Frame name="NeedToKnow_GroupTemplate" virtual="true">
-        <Size>
-            <AbsDimension x="1" y="1"/>
-        </Size>
-        <Layers>
-            <Layer level="BACKGROUND">
-                <Texture setAllPoints="true">
-                    <Color r="0" g="0" b="0" a="0"/>
-                </Texture>
-            </Layer>
-        </Layers>
-        <Frames>
-            <Button name="$parentResizeButton" parentKey="ResizeButton">
-                <Size>
-                    <AbsDimension x="20" y="20"/>
-                </Size>
-                <Anchors>
-                    <Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOMRIGHT"/>
-                </Anchors>
-                <Layers>
-                    <Layer level="BACKGROUND">
-                        <Texture name="$parentTexture" parentKey="Texture" file="Interface\AddOns\NeedToKnow\Textures\Resize">
-                            <Size>
-                                <AbsDimension x="10" y="10"/>
-                            </Size>
-                        </Texture>
-                    </Layer>
-                </Layers>
-                <Scripts>
-                    <OnLoad>
-                    	NeedToKnow.ResizeButton.OnLoad(self)
-                    </OnLoad>
-                    <OnMouseDown>
-                        NeedToKnow.ResizeButton.OnMouseDown(self)
-                    </OnMouseDown>
-                    <OnMouseUp>
-                        NeedToKnow.ResizeButton.OnMouseUp(self)
-                    </OnMouseUp>
-                    <OnEnter>
-                        NeedToKnow.ResizeButton.OnEnter(self)
-                    </OnEnter>
-                    <OnLeave>
-                    	NeedToKnow.ResizeButton.OnLeave(self)
-                    </OnLeave>
-                </Scripts>
-            </Button>
-        </Frames>
-    </Frame>
+	<Frame name="NeedToKnow_GroupTemplate" virtual="true">
+		<Size>
+			<AbsDimension x="1" y="1"/>
+		</Size>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture setAllPoints="true">
+					<Color r="0" g="0" b="0" a="0"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Button name="$parentResizeButton" parentKey="ResizeButton">
+				<Size>
+					<AbsDimension x="20" y="20"/>
+				</Size>
+				<Anchors>
+					<Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOMRIGHT"/>
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture name="$parentTexture" parentKey="Texture" file="Interface\AddOns\NeedToKnow\Textures\Resize">
+							<Size>
+								<AbsDimension x="10" y="10"/>
+							</Size>
+						</Texture>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnLoad>
+						NeedToKnow.ResizeButton.OnLoad(self)
+					</OnLoad>
+				</Scripts>
+			</Button>
+		</Frames>
+		<Scripts>
+			<OnLoad>
+				NeedToKnow.BarGroup.OnLoad(self)
+			</OnLoad>
+		</Scripts>
+	</Frame>
 
     <Frame name="NeedToKnow_BarTemplate" toplevel="true" enableMouse="true" virtual="true">
         <Size>
@@ -58,7 +51,7 @@
         </Size>
         <Layers>
             <Layer level="BACKGROUND">
-                <Texture name="$parentBackground" setAllPoints="true">
+                <Texture name="$parentBackground" parentKey="Background" setAllPoints="true">
                     <Color r="1" g="1" b="1" a="1"/>
                     <Size>
                         <AbsDimension x="277" y="24"/>
@@ -73,7 +66,7 @@
                 </Texture>
             </Layer>
             <Layer level="BORDER">
-                <Texture name="$parentTexture">
+                <Texture name="$parentTexture" parentKey="Texture">
                     <Anchors>
                         <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
                             <Offset>
@@ -89,7 +82,7 @@
                 </Texture>
             </Layer>
             <Layer level="OVERLAY">
-                <FontString name="$parentText" inherits="GameFontHighlight" justifyH="LEFT">
+                <FontString name="$parentText" parentKey="Text" inherits="GameFontHighlight" justifyH="LEFT">
                     <Size>
                         <AbsDimension x="160" y="16"/>
                     </Size>
@@ -101,7 +94,7 @@
                         </Anchor>
                     </Anchors>
                 </FontString>
-                <FontString name="$parentTime" inherits="GameFontHighlight" justifyH="RIGHT">
+                <FontString name="$parentTime" parentKey="Time" inherits="GameFontHighlight" justifyH="RIGHT">
                     <Size>
                         <AbsDimension x="60" y="16"/>
                     </Size>
@@ -113,7 +106,7 @@
                         </Anchor>
                     </Anchors>
                 </FontString>
-                <Texture name="$parentSpark" file="Interface\CastingBar\UI-CastingBar-Spark" alphaMode="ADD">
+                <Texture name="$parentSpark" parentKey="Spark" file="Interface\CastingBar\UI-CastingBar-Spark" alphaMode="ADD">
                     <Size>
                         <AbsDimension x="32" y="60"/>
                     </Size>
@@ -147,8 +140,11 @@
                 self:GetParent():StartMoving();
             </OnDragStart>
             <OnDragStop>
-                self:GetParent():StopMovingOrSizing();
-                NeedToKnow.SavePosition(self:GetParent(), self:GetParent():GetID());
+                -- self:GetParent():StopMovingOrSizing();
+                -- NeedToKnow.SavePosition(self:GetParent(), self:GetParent():GetID());
+            	local group = self:GetParent()
+            	group:StopMovingOrSizing()
+                group:SavePosition()
             </OnDragStop>
         </Scripts>
     </Frame>
