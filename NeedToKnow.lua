@@ -906,22 +906,21 @@ function NeedToKnow.RestoreTableFromCopy(dest, source)
 end
 
 function NeedToKnow.Update()
-    if UnitExists("player") and NeedToKnow.ProfileSettings then
-        for groupID = 1, NeedToKnow.ProfileSettings.nGroups do
-            NeedToKnow.UpdateBarGroup(groupID)
-        end
-    end
+	if UnitExists("player") and NeedToKnow.ProfileSettings then
+		for groupID = 1, NeedToKnow.ProfileSettings.nGroups do
+			local group = _G["NeedToKnow_Group"..groupID]
+			group:Update()
+		end
+	end
 end
 
 function NeedToKnow.Show(bShow)
-    -- NeedToKnow_Visible = bShow
     NeedToKnow.IsVisible = bShow
     for groupID = 1, NeedToKnow.ProfileSettings.nGroups do
         local groupName = "NeedToKnow_Group"..groupID
         local group = _G[groupName]
         local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
         
-        -- if (NeedToKnow_Visible and groupSettings.Enabled) then
         if (NeedToKnow.IsVisible and groupSettings.Enabled) then
             group:Show()
         else

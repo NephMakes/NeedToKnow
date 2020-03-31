@@ -149,17 +149,19 @@ function NeedToKnowOptions.NumberbarsWidget_Update(groupID)
 end
 
 function NeedToKnowOptions.NumberbarsButton_OnClick(self, increment)
-    local groupID = self:GetParent():GetParent():GetID();
-    local oldNumber = NeedToKnow.ProfileSettings.Groups[groupID]["NumberBars"];
-    if ( oldNumber == 1 ) and ( increment < 0 ) then 
-        return;
-    elseif ( oldNumber == NEEDTOKNOW.MAXBARS ) and ( increment > 0 ) then
-        return;
-    end
-    NeedToKnow.ProfileSettings.Groups[groupID]["NumberBars"] = oldNumber + increment;
-    -- NeedToKnow.Group_Update(groupID);
-    NeedToKnow.UpdateBarGroup(groupID);
-    NeedToKnowOptions.NumberbarsWidget_Update(groupID);
+	local groupID = self:GetParent():GetParent():GetID();
+	local oldNumber = NeedToKnow.ProfileSettings.Groups[groupID]["NumberBars"];
+	if ( oldNumber == 1 ) and ( increment < 0 ) then 
+		return;
+	elseif ( oldNumber == NEEDTOKNOW.MAXBARS ) and ( increment > 0 ) then
+		return;
+	end
+	NeedToKnow.ProfileSettings.Groups[groupID]["NumberBars"] = oldNumber + increment;
+
+	local group = _G["NeedToKnow_Group"..groupID]
+	group:Update()
+
+	NeedToKnowOptions.NumberbarsWidget_Update(groupID);
 end
 
 function NeedToKnowOptions.FixedDurationEditBox_OnTextChanged(self)

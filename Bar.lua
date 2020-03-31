@@ -55,15 +55,23 @@ function Bar:OnMouseUp(button)
 end
 
 --[[
-function Bar:ShowMenu()
+
+function Bar:SetAppearance()
+	-- replaces NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
 end
+
+function Bar:SetBackground()
+	-- replaces NeedToKnow.SizeBackground(bar, i_show_icon)
+end
+
+function Bar:SetValue()
+	-- replaces mfn_SetStatusBarValue(bar,texture,value,value0)
+end
+
 ]]--
 
 --[[
 function Bar:Update()
-end
-
-function Bar:SetValue()
 end
 
 function Bar:SetScripts()
