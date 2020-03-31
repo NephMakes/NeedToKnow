@@ -6,7 +6,6 @@
 
 -- local addonName, addonTable = ...
 
-NeedToKnow.BarMenu = {}
 local NeedToKnowRMB = NeedToKnow.BarMenu
 
 NeedToKnowRMB.CurrentBar = { groupID = 1, barID = 1 };  -- a dirty hack, i know.  

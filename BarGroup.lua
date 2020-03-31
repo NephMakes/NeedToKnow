@@ -4,7 +4,6 @@
 -- Bar Group
 -- ---------
 
-NeedToKnow.BarGroup = {}
 local BarGroup = NeedToKnow.BarGroup
 
 function BarGroup:OnLoad()
@@ -125,7 +124,6 @@ end
 -- Resize Button
 -- -------------
 
-NeedToKnow.ResizeButton = {}
 local ResizeButton = NeedToKnow.ResizeButton
 
 function ResizeButton:OnLoad()

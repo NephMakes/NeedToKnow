@@ -16,6 +16,14 @@ NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
 -- NeedToKnowRMB = {}    -- Used by NeedToKnow.lua, NeedToKnow_Options.lua, NeedToKnow_Options.xml
                          -- (Right-click bar config menu)
 
+-- Namespaces
+NeedToKnow.Bar = {}
+NeedToKnow.BarMenu = {}
+NeedToKnow.BarGroup = {}
+NeedToKnow.ResizeButton = {}
+-- NeedToKnow.ExecutiveFrame = {}
+
+
 -- ---------------------
 -- Addon-wide parameters
 -- ---------------------

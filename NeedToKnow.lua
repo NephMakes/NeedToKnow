@@ -1397,6 +1397,8 @@ function NeedToKnow.ClearScripts(bar)
     end
 end
 
+--[[
+-- Now in Bar.lua as Bar:OnMouseUp()
 function NeedToKnow.Bar_OnMouseUp(self, button)
     if ( button == "RightButton" ) then
         -- PlaySound("UChatScrollButton");
@@ -1405,6 +1407,7 @@ function NeedToKnow.Bar_OnMouseUp(self, button)
         NeedToKnow.BarMenu.ShowMenu(self);
      end
 end
+]]--
 
 function NeedToKnow.Bar_OnSizeChanged(self)
     if (self.bar1.cur_value) then 

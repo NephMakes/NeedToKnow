@@ -15,6 +15,7 @@ libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
 libs\LibSharedMedia-3.0\lib.xml
 Init.lua
 Localization.lua
+Bar.lua
 BarGroup.lua
 Power.lua
 ImportExport.lua
