@@ -15,12 +15,14 @@ libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
 libs\LibSharedMedia-3.0\lib.xml
 Init.lua
 Localization.lua
+Cooldown.lua
 Bar.lua
 BarGroup.lua
-ImportExport.lua
 ExecutiveFrame.lua
+Profile.lua
 NeedToKnow.lua
 NeedToKnow_Options.lua
 BarMenu.lua
+ImportExport.lua
 NeedToKnow.xml
 NeedToKnow_Options.xml

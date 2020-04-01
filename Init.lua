@@ -189,16 +189,21 @@ addonTable.m_last_cast = {}
 addonTable.m_last_cast_head = {}
 addonTable.m_last_cast_tail = {}
 addonTable.m_last_guid = {}
-
 addonTable.m_bInCombat = {}
 addonTable.m_bCombatWithBoss = {}
-
 
 -- Bar
 addonTable.mfn_SetStatusBarValue = {}
 addonTable.mfn_Bar_AuraCheck = {}
 
 -- Cooldown
+addonTable.mfn_GetSpellCooldown = {}
+addonTable.mfn_GetSpellChargesCooldown = {}
+addonTable.mfn_GetAutoShotCooldown = {}
+addonTable.mfn_GetUnresolvedCooldown = {}
+addonTable.mfn_AuraCheck_CASTCD = {}
+addonTable.mfn_AuraCheck_BUFFCD = {}
+addonTable.mfn_AuraCheck_EQUIPSLOT = {}
 
 -- Power
 -- addonTable.mfn_AuraCheck_POWER = {}

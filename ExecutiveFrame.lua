@@ -128,6 +128,7 @@ function ExecutiveFrame:PLAYER_LOGIN()
 
 	if ( NeedToKnow.is_DK ) then
 		NeedToKnow.RegisterSpellcastSent();
+		-- So we can filter rune cooldowns out of ability cooldowns
 	end
 	NeedToKnow.Update()
 
@@ -139,7 +140,7 @@ function ExecutiveFrame:PLAYER_LOGIN()
 end
 
 function NeedToKnow.Update()
-	if UnitExists("player") and NeedToKnow.ProfileSettings then
+	if ( UnitExists("player") and NeedToKnow.ProfileSettings ) then
 		for groupID = 1, NeedToKnow.ProfileSettings.nGroups do
 			local group = _G["NeedToKnow_Group"..groupID]
 			group:Update()
@@ -154,7 +155,7 @@ function NeedToKnow.Show(bShow)
 		local group = _G[groupName]
 		local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
 	
-		if (NeedToKnow.IsVisible and groupSettings.Enabled) then
+		if ( NeedToKnow.IsVisible and groupSettings.Enabled ) then
 			group:Show()
 		else
 			group:Hide()
@@ -179,13 +180,11 @@ end
 function ExecutiveFrame:PLAYER_TALENT_UPDATE()
 	if NeedToKnow.CharSettings then
 		local spec = g_GetActiveTalentGroup()
-
 		local profile_key = NeedToKnow.CharSettings.Specs[spec]
 		if not profile_key then
 			print("NeedToKnow: Switching to spec",spec,"for the first time")
 			profile_key = NeedToKnow.CreateProfile(CopyTable(NEEDTOKNOW.PROFILE_DEFAULTS), spec)
 		end
-
 		NeedToKnow.ChangeProfile(profile_key);
 	end
 end
@@ -197,8 +196,8 @@ end
 
 function ExecutiveFrame:UNIT_TARGET(unitTargeting)
 	-- Determine if in combat with boss, for bars that blink only for bosses
-    if m_bInCombat and not m_bCombatWithBoss then
-        if UnitLevel(unitTargeting .. 'target') == -1 then
+    if ( m_bInCombat and not m_bCombatWithBoss ) then
+        if ( UnitLevel(unitTargeting .. 'target') == -1 ) then
             m_bCombatWithBoss = true
             if NeedToKnow.BossStateBars then
                 for bar, unused in pairs(NeedToKnow.BossStateBars) do
@@ -215,19 +214,19 @@ function ExecutiveFrame:PLAYER_REGEN_DISABLED(unitTargeting)
     m_bCombatWithBoss = false
     if IsInRaid() then
         for i = 1, 40 do
-            if UnitLevel("raid"..i.."target") == -1 then
+            if ( UnitLevel("raid"..i.."target") == -1 ) then
                 m_bCombatWithBoss = true;
                 break;
             end
         end
     elseif IsInGroup() then
         for i = 1, 5 do
-            if UnitLevel("party"..i.."target") == -1 then
+            if ( UnitLevel("party"..i.."target") == -1 ) then
                 m_bCombatWithBoss = true;
                 break;
             end
         end
-    elseif UnitLevel("target") == -1 then
+    elseif ( UnitLevel("target") == -1 ) then
         m_bCombatWithBoss = true
     end
     if NeedToKnow.BossStateBars then
@@ -347,7 +346,7 @@ function ExecutiveFrame:UNIT_SPELLCAST_SENT(unit, tgt, lineID, spellID)
         -- TODO: I hate to pay this memory cost for every "spell" ever cast.
         --       Would be nice to at least garbage collect this data at some point, but that
         --       may add more overhead than just keeping track of 100 spells.
-        if not m_last_sent then
+        if ( not m_last_sent ) then
             m_last_sent = {}
         end
         m_last_sent[spellID] = g_GetTime()

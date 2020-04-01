@@ -14,14 +14,14 @@ function Bar:OnLoad()
 	--	self.ShowMenu = Bar.ShowMenu
 
 	-- Appearance
-	--	self.Update = Bar.Update
-	--	self.SetBackground = Bar.SetBackground
+	--	self.SetBackgroundSize = Bar.SetBackgroundSize
 
 	-- Function
+	--	self.SetValue = Bar.SetValue
+	--	self.Update = Bar.Update
 	--	self:SetScript("OnEvent", Bar.OnEvent)
 	--	self.SetScripts = Bar.SetScripts
 	--	self.ClearScripts = Bar.ClearScripts
-	--	self.SetValue = Bar.SetValue
 end
 
 
