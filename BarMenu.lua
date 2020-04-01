@@ -111,14 +111,14 @@ NeedToKnowRMB.BarMenu_SubMenus = {
     Opt_EQUIPSLOT = {
         { VariableName = "append_cd", MenuText = "Append \"CD\"" }, -- LOCME
     },
-    Opt_POWER = {
-      { VariableName = "Unit", MenuText = NEEDTOKNOW.BARMENU_CHOOSEUNIT, Type = "Submenu" },
-      { VariableName = "power_sole", MenuText = "Only Show When Primary" }, -- LOCME
-    },
     Opt_BUFFCD = {
         { VariableName = "buffcd_duration", MenuText = "Cooldown duration...", Type = "Dialog", DialogText = "BUFFCD_DURATION_DIALOG", Numeric=true },
         { VariableName = "buffcd_reset_spells", MenuText = "Reset on buff...", Type = "Dialog", DialogText = "BUFFCD_RESET_DIALOG" },
         { VariableName = "append_cd", MenuText = "Append \"CD\"" }, -- LOCME
+    },
+    Opt_POWER = {
+      { VariableName = "Unit", MenuText = NEEDTOKNOW.BARMENU_CHOOSEUNIT, Type = "Submenu" },
+      { VariableName = "power_sole", MenuText = "Only Show When Primary" }, -- LOCME
     },
     Opt_USABLE = {
         { VariableName = "usable_duration", MenuText = "Usable duration...",  Type = "Dialog", DialogText = "USABLE_DURATION_DIALOG", Numeric=true },

@@ -26,10 +26,18 @@ local g_GetSpecializationSpells = GetSpecializationSpells
 local g_GetSpellInfo = GetSpellInfo
 local g_GetSpellPowerCost = GetSpellPowerCost
 
-local m_last_guid, m_last_cast, m_last_sent, m_last_cast_head, m_last_cast_tail
-local m_bInCombat, m_bCombatWithBoss
+local m_last_cast       = addonTable.m_last_cast
+local m_last_cast_head  = addonTable.m_last_cast_head
+local m_last_cast_tail  = addonTable.m_last_cast_tail
+local m_last_guid       = addonTable.m_last_guid
+local m_bInCombat       = addonTable.m_bInCombat
+local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
+-- local m_last_guid, m_last_cast, m_last_sent, m_last_cast_head, m_last_cast_tail
+-- local m_bInCombat, m_bCombatWithBoss
 
-local mfn_Bar_AuraCheck
+local mfn_Bar_AuraCheck = addonTable.mfn_Bar_AuraCheck
+
+-- local mfn_Bar_AuraCheck
 local mfn_AuraCheck_Single
 local mfn_AuraCheck_TOTEM
 local mfn_AuraCheck_BUFFCD
@@ -46,9 +54,9 @@ local mfn_SetStatusBarValue
 local mfn_ResetScratchStacks
 local mfn_UpdateVCT
 
--- TO DO: Move these to Power.lua
-local mfn_AuraCheck_POWER
-local mfn_EnergyBar_OnUpdate
+-- Moved to Power.lua
+-- local mfn_AuraCheck_POWER
+-- local mfn_EnergyBar_OnUpdate
 
 local m_scratch = {}
 m_scratch.all_stacks = {
@@ -108,6 +116,7 @@ local c_AURAEVENTS = {
 -- EXECUTIVE FRAME
 -- ---------------
 
+--[[
 function NeedToKnow.ExecutiveFrame_OnEvent(self, event, ...)
     local fnName = "ExecutiveFrame_"..event
     local fn = NeedToKnow[fnName]
@@ -115,7 +124,9 @@ function NeedToKnow.ExecutiveFrame_OnEvent(self, event, ...)
         fn(...)
     end
 end
+]]--
 
+--[[
 function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SENT(unit, tgt, lineID, spellID)
     if unit == "player" then
         -- TODO: I hate to pay this memory cost for every "spell" ever cast.
@@ -150,7 +161,9 @@ function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SENT(unit, tgt, lineID, spellI
         end
     end
 end
+]]--
 
+--[[
 function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID, spellID)
     if unit == "player" then
         local found
@@ -181,7 +194,9 @@ function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID
         end
     end
 end
+]]--
 
+--[[
 function NeedToKnow.ExecutiveFrame_COMBAT_LOG_EVENT_UNFILTERED()
 
     local tod, event, hideCaster, guidCaster, sourceName, sourceFlags, sourceRaidFlags, guidTarget, nameTarget, _, _, spellid, spell = CombatLogGetCurrentEventInfo()
@@ -235,7 +250,9 @@ function NeedToKnow.ExecutiveFrame_COMBAT_LOG_EVENT_UNFILTERED()
         end
     end
 end
+]]--
 
+--[[
 function NeedToKnow.ExecutiveFrame_ADDON_LOADED(addon)
     if ( addon == "NeedToKnow") then
         if ( not NeedToKnow.IsVisible ) then
@@ -253,7 +270,9 @@ function NeedToKnow.ExecutiveFrame_ADDON_LOADED(addon)
         SLASH_NEEDTOKNOW2 = "/ntk"
     end
 end
+]]--
 
+--[[
 function NeedToKnow.ExecutiveFrame_PLAYER_LOGIN()
     NeedToKnowLoader.SafeUpgrade()
     NeedToKnow.ExecutiveFrame_PLAYER_TALENT_UPDATE()
@@ -289,7 +308,9 @@ function NeedToKnow.ExecutiveFrame_PLAYER_LOGIN()
 
     NeedToKnow.RefreshRaidMemberNames()
 end
+]]--
 
+--[[
 function NeedToKnow.RegisterSpellcastSent()
     if ( NeedToKnow.nRegisteredSent ) then
         NeedToKnow.nRegisteredSent = NeedToKnow.nRegisteredSent + 1
@@ -310,7 +331,9 @@ function NeedToKnow.UnregisterSpellcastSent()
         end
     end
 end
+]]--
 
+--[[
 function NeedToKnow.ExecutiveFrame_ACTIVE_TALENT_GROUP_CHANGED()
     -- This is the only event we're guaranteed to get on a talent switch,
     -- so we have to listen for it.  However, the client may not yet have
@@ -333,7 +356,9 @@ function NeedToKnow.ExecutiveFrame_PLAYER_TALENT_UPDATE()
         NeedToKnow.ChangeProfile(profile_key);
     end
 end
+]]--
 
+--[[
 function NeedToKnow.ExecutiveFrame_UNIT_TARGET(unitTargeting)
     if m_bInCombat and not m_bCombatWithBoss then
         if UnitLevel(unitTargeting .. 'target') == -1 then
@@ -346,7 +371,9 @@ function NeedToKnow.ExecutiveFrame_UNIT_TARGET(unitTargeting)
         end
     end
 end
+]]--
 
+--[[
 function NeedToKnow.GetNameAndServer(unit)
     local name, server = UnitName(unit)
     if ( name and server ) then 
@@ -354,7 +381,9 @@ function NeedToKnow.GetNameAndServer(unit)
     end
     return name
 end
+]]--
 
+--[[
 function NeedToKnow.RefreshRaidMemberNames()
     NeedToKnow.raid_members = {}
 
@@ -386,11 +415,15 @@ function NeedToKnow.RefreshRaidMemberNames()
         NeedToKnow.raid_members[name] = unit
     end
 end
+]]--
 
+--[[
 function NeedToKnow.ExecutiveFrame_GROUP_ROSTER_UPDATE()
     NeedToKnow.RefreshRaidMemberNames();
 end
+]]--
 
+--[[
 function NeedToKnow.ExecutiveFrame_PLAYER_REGEN_DISABLED(unitTargeting)
     m_bInCombat = true
     m_bCombatWithBoss = false
@@ -417,7 +450,9 @@ function NeedToKnow.ExecutiveFrame_PLAYER_REGEN_DISABLED(unitTargeting)
         end
     end
 end
+]]--
 
+--[[
 function NeedToKnow.ExecutiveFrame_PLAYER_REGEN_ENABLED(unitTargeting)
     m_bInCombat = false
     m_bCombatWithBoss = false
@@ -427,6 +462,7 @@ function NeedToKnow.ExecutiveFrame_PLAYER_REGEN_ENABLED(unitTargeting)
         end
     end
 end
+]]--
 
 function NeedToKnow.RemoveDefaultValues(t, def, k)
   if not k then k = "" end
@@ -905,6 +941,7 @@ function NeedToKnow.RestoreTableFromCopy(dest, source)
     end
 end
 
+--[[
 function NeedToKnow.Update()
 	if UnitExists("player") and NeedToKnow.ProfileSettings then
 		for groupID = 1, NeedToKnow.ProfileSettings.nGroups do
@@ -913,7 +950,9 @@ function NeedToKnow.Update()
 		end
 	end
 end
+]]--
 
+--[[
 function NeedToKnow.Show(bShow)
     NeedToKnow.IsVisible = bShow
     for groupID = 1, NeedToKnow.ProfileSettings.nGroups do
@@ -928,13 +967,16 @@ function NeedToKnow.Show(bShow)
         end
     end
 end
+]]--
 
+--[[
 do
     local executiveFrame = CreateFrame("Frame", "NeedToKnow_ExecutiveFrame")
     executiveFrame:SetScript("OnEvent", NeedToKnow.ExecutiveFrame_OnEvent)
     executiveFrame:RegisterEvent("ADDON_LOADED")
     executiveFrame:RegisterEvent("PLAYER_LOGIN")
 end
+]]--
 
 
 -- ----
@@ -1072,6 +1114,7 @@ function NeedToKnow.Bar_Update(groupID, barID)
     if ( bar.bar2 ) then
         bar.bar2:SetTexture(NeedToKnow.LSM:Fetch("statusbar", NeedToKnow.ProfileSettings["BarTexture"]))
     end
+
     local fontPath = NeedToKnow.LSM:Fetch("font", NeedToKnow.ProfileSettings["BarFont"])
     if ( fontPath ) then
         local ol = NeedToKnow.ProfileSettings["FontOutline"]
@@ -1095,7 +1138,7 @@ function NeedToKnow.Bar_Update(groupID, barID)
     background:SetVertexColor(unpack(NeedToKnow.ProfileSettings["BkgdColor"]))
 
     -- Set up the Visual Cast Time overlay.  It isn't a part of the template 
-    -- because most bars won't use it and thus don't need to pay the cost of
+    -- because most bars won't use it and thus don't need to pay the memory cost of
     -- a hidden frame
     if ( barSettings.vct_enabled ) then
         if ( nil == bar.vct ) then
@@ -1187,11 +1230,13 @@ function NeedToKnow.Bar_Update(groupID, barID)
                 bar.fnCheck = mfn_AuraCheck_USABLE
             elseif "EQUIPSLOT" == barSettings.BuffOrDebuff then
                 bar.fnCheck = mfn_AuraCheck_EQUIPSLOT
+            --[[
             elseif "POWER" == barSettings.BuffOrDebuff then
                 bar.fnCheck = mfn_AuraCheck_POWER
                 bar.is_counter = true
                 bar.ticker = nil
                 bar.ticking = false
+            ]]--
             elseif "CASTCD" == barSettings.BuffOrDebuff then
                 bar.fnCheck = mfn_AuraCheck_CASTCD
                 for idx, entry in ipairs(bar.spells) do
@@ -1304,7 +1349,6 @@ function NeedToKnow.SetScripts(bar)
         bar:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
     --[[
     elseif ( "POWER" == bar.settings.BuffOrDebuff ) then
-	    -- DEPRECATED: Dropped support for player power in NeedToKnow v4.0.27
         if bar.settings.AuraName == tostring(NEEDTOKNOW.SPELL_POWER_STAGGER) then
           bar:RegisterEvent("UNIT_HEALTH")
         else
@@ -1395,18 +1439,6 @@ function NeedToKnow.ClearScripts(bar)
         end
     end
 end
-
---[[
--- Now in Bar.lua as Bar:OnMouseUp()
-function NeedToKnow.Bar_OnMouseUp(self, button)
-    if ( button == "RightButton" ) then
-        -- PlaySound("UChatScrollButton");
-        PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON);
-        -- NeedToKnowRMB.ShowMenu(self);
-        NeedToKnow.BarMenu.ShowMenu(self);
-     end
-end
-]]--
 
 function NeedToKnow.Bar_OnSizeChanged(self)
     if (self.bar1.cur_value) then 
@@ -1521,11 +1553,13 @@ function NeedToKnow.PrettyName(barSettings)
         local idx = tonumber(barSettings.AuraName)
         if idx then return NEEDTOKNOW.ITEM_NAMES[idx] end
         return ""
+    --[[
     elseif ( barSettings.BuffOrDebuff == "POWER" ) then
-    	-- DEPRECATED: Dropping support for power in v4.1
+    	-- DEPRECATED: Player power no longer supported
         local idx = tonumber(barSettings.AuraName)
         if idx then return NeedToKnow.GetPowerName(idx) end
         return ""
+    ]]--
     else
         return barSettings.AuraName
     end
@@ -1609,7 +1643,10 @@ function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
         end
 
         bar.time:Show()
+    --[[
     elseif bar.is_counter then
+    	-- Bar is tracking player power?
+
         bar.max_value = 1
         local pct = buff_stacks.total_ttn[1] / buff_stacks.total_ttn[2]
         mfn_SetStatusBarValue(bar,bar.bar1,pct)
@@ -1621,6 +1658,7 @@ function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
         if ( bar.vct ) then
             bar.vct:Hide()
         end
+    ]]--
     else
         -- Hide the time text and spark for auras with "infinite" duration
         bar.max_value = 1
@@ -1691,8 +1729,8 @@ function NeedToKnow.GetUtilityTooltips()
 end
 
 --[[
--- I don't think temporary enchants aren't a thing anymore, 
--- but keeping this for potential use in WoW Classic
+-- NephMakes: I don't think temporary enchants aren't a thing anymore, 
+--            but keeping this for potential use in WoW Classic
 function NeedToKnow.DetermineTempEnchantFromTooltip(i_invID)
     local tt1,tt2 = NeedToKnow.GetUtilityTooltips()
     
@@ -2002,7 +2040,8 @@ mfn_AuraCheck_EQUIPSLOT = function (bar, bar_entry, all_stacks)
     end
 end
 
--- TO DO: Move this to Power.lua
+--[[
+-- Moved to Power.lua
 mfn_AuraCheck_POWER = function (bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper for power and combo points.  The current
     -- amount is reported as the first tooltip number rather than 
@@ -2071,6 +2110,7 @@ mfn_AuraCheck_POWER = function (bar, bar_entry, all_stacks)
         end
     end
 end
+]]--
 
 mfn_AuraCheck_CASTCD = function(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper that checks for spell/item use cooldowns
@@ -2609,7 +2649,8 @@ function NeedToKnow.Bar_OnUpdate(self, elapsed)
     end
 end 
 
--- TO DO: Move this to Power.lua
+--[[
+-- Moved to Power.lua
 mfn_EnergyBar_OnUpdate = function(bar, elapsed)
     local now = g_GetTime()
     if ( now > bar.nextUpdate ) then
@@ -2634,6 +2675,7 @@ mfn_EnergyBar_OnUpdate = function(bar, elapsed)
         end
     end
 end
+]]--
 
 local fnAuraCheckIfUnitMatches = function(self, unit)
     if ( unit == self.unit )  then

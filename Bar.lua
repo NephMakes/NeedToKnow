@@ -3,6 +3,7 @@
 local Bar = NeedToKnow.Bar
 
 function Bar:OnLoad()
+	-- Config interface
 	self:RegisterForDrag("LeftButton")
 	self:SetScript("OnEnter", Bar.OnEnter)
 	self:SetScript("OnLeave", Bar.OnLeave)
@@ -12,14 +13,21 @@ function Bar:OnLoad()
 	self:SetScript("OnMouseUp", Bar.OnMouseUp)
 	--	self.ShowMenu = Bar.ShowMenu
 
+	-- Appearance
 	--	self.Update = Bar.Update
 	--	self.SetBackground = Bar.SetBackground
 
+	-- Function
 	--	self:SetScript("OnEvent", Bar.OnEvent)
 	--	self.SetScripts = Bar.SetScripts
 	--	self.ClearScripts = Bar.ClearScripts
 	--	self.SetValue = Bar.SetValue
 end
+
+
+-- --------------------
+-- Bar config interface
+-- --------------------
 
 function Bar:OnEnter()
 	local tooltip = _G["GameTooltip"]
@@ -54,30 +62,50 @@ function Bar:OnMouseUp(button)
 	end
 end
 
+
+-- --------------
+-- Bar appearance
+-- --------------
+
 --[[
 
 function Bar:SetAppearance()
-	-- replaces NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
+	-- replaces NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)?
 end
 
-function Bar:SetBackground()
+function Bar:SetBackgroundSize()
 	-- replaces NeedToKnow.SizeBackground(bar, i_show_icon)
-end
-
-function Bar:SetValue()
-	-- replaces mfn_SetStatusBarValue(bar,texture,value,value0)
 end
 
 ]]--
 
+-- ------------
+-- Bar function
+-- ------------
+
 --[[
+function Bar:SetValue()
+	-- replaces mfn_SetStatusBarValue(bar,texture,value,value0)
+end
+
 function Bar:Update()
+end
+
+function Bar:Lock()
+	-- Set bar for gameplay
+end
+
+function Bar:Unlock()
+	-- Set bar for user config
 end
 
 function Bar:SetScripts()
 end
 
 function Bar:ClearScripts()
+end
+
+function Bar:OnUpdate()
 end
 
 function Bar:OnEvent()

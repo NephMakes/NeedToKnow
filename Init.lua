@@ -16,12 +16,12 @@ NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
 -- NeedToKnowRMB = {}    -- Used by NeedToKnow.lua, NeedToKnow_Options.lua, NeedToKnow_Options.xml
                          -- (Right-click bar config menu)
 
--- Namespaces
+-- Define namespaces
+NeedToKnow.ExecutiveFrame = {}
 NeedToKnow.Bar = {}
 NeedToKnow.BarMenu = {}
 NeedToKnow.BarGroup = {}
 NeedToKnow.ResizeButton = {}
--- NeedToKnow.ExecutiveFrame = {}
 
 
 -- ---------------------
@@ -178,4 +178,30 @@ end
   --end
   --trace(so_far,"=",p)
 --end
---
+
+
+-- ---------------------
+-- Kitjan's addon locals
+-- ---------------------
+
+-- Executive Frame
+addonTable.m_last_cast = {}
+addonTable.m_last_cast_head = {}
+addonTable.m_last_cast_tail = {}
+addonTable.m_last_guid = {}
+
+addonTable.m_bInCombat = {}
+addonTable.m_bCombatWithBoss = {}
+
+
+-- Bar
+addonTable.mfn_SetStatusBarValue = {}
+addonTable.mfn_Bar_AuraCheck = {}
+
+-- Cooldown
+
+-- Power
+-- addonTable.mfn_AuraCheck_POWER = {}
+-- addonTable.mfn_EnergyBar_OnUpdate = {}
+
+

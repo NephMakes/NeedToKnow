@@ -17,8 +17,8 @@ Init.lua
 Localization.lua
 Bar.lua
 BarGroup.lua
-Power.lua
 ImportExport.lua
+ExecutiveFrame.lua
 NeedToKnow.lua
 NeedToKnow_Options.lua
 BarMenu.lua

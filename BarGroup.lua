@@ -18,7 +18,7 @@ end
 function BarGroup:Update()
 	local groupID = self:GetID()
 	local groupName = self:GetName()
-    local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
+	local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
 
 	local bar
 	for barID = 1, groupSettings.NumberBars do
@@ -95,9 +95,9 @@ end
 
 function BarGroup:SavePosition()
 	local groupID = self:GetID()
-    local point, _, relativePoint, xOfs, yOfs = self:GetPoint()
-    NeedToKnow.ProfileSettings.Groups[groupID]["Position"] = {point, relativePoint, xOfs, yOfs}
-    NeedToKnow.ProfileSettings.Groups[groupID]["Scale"] = self:GetScale()
+	local point, _, relativePoint, xOfs, yOfs = self:GetPoint()
+	NeedToKnow.ProfileSettings.Groups[groupID]["Position"] = {point, relativePoint, xOfs, yOfs}
+	NeedToKnow.ProfileSettings.Groups[groupID]["Scale"] = self:GetScale()
 end
 
 function BarGroup:SaveBarWidth()
@@ -120,10 +120,10 @@ function ResizeButton:OnLoad()
 end
 
 function ResizeButton:OnEnter()
-    local tooltip = _G["GameTooltip"]
-    GameTooltip_SetDefaultAnchor(tooltip, self)
-    tooltip:AddLine(NEEDTOKNOW.RESIZE_TOOLTIP, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
-    tooltip:Show()
+	local tooltip = _G["GameTooltip"]
+	GameTooltip_SetDefaultAnchor(tooltip, self)
+	tooltip:AddLine(NEEDTOKNOW.RESIZE_TOOLTIP, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
+	tooltip:Show()
 	self.Texture:SetVertexColor(1, 1, 1)
 end
 
