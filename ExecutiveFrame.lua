@@ -3,10 +3,50 @@
 local addonName, addonTable = ...
 local ExecutiveFrame = NeedToKnow.ExecutiveFrame
 
+local MAX_BARGROUPS = 4
 
--- ---------------------
--- Kitjan's addon locals
--- ---------------------
+local function GetNameAndServer(unit)
+	local name, server = UnitName(unit)
+	if ( name and server ) then 
+		return name .. '-' .. server
+	end
+	return name
+end
+
+local function RefreshRaidMemberNames()
+	NeedToKnow.raid_members = {}
+
+	-- Kitjan: Raid pets don't get server name decoration in combat log
+	if IsInRaid() then
+		for i = 1, 40 do
+			local unit = "raid"..i
+			-- local name = NeedToKnow.GetNameAndServer(unit)
+			local name = GetNameAndServer(unit)
+			if ( name ) then NeedToKnow.raid_members[name] = unit end
+		end
+	elseif IsInGroup() then
+		for i = 1, 5 do
+			local unit = "party"..i
+			-- local name = NeedToKnow.GetNameAndServer(unit)
+			local name = GetNameAndServer(unit)
+			if ( name ) then NeedToKnow.raid_members[name] = unit end
+		end
+	end
+
+	-- Also get the player and their pet in directly
+	-- (don't need NameAndServer since the player will always have a nil server.)
+	local unit = "player"
+	local name = UnitName(unit)
+	NeedToKnow.raid_members[name] = unit
+
+	unit = "pet"
+	name = UnitName(unit)
+	if ( name ) then
+		NeedToKnow.raid_members[name] = unit
+	end
+end
+
+-- Kitjan's addon locals:
 
 -- Local version of global functions
 local g_GetActiveTalentGroup = _G.GetSpecialization
@@ -30,35 +70,44 @@ local mfn_Bar_AuraCheck = addonTable.mfn_Bar_AuraCheck
 -- Addon setup
 -- -----------
 
-function NeedToKnow.ExecutiveFrame_OnEvent(self, event, ...)
-	local fnName = "ExecutiveFrame_"..event
-	local fn = NeedToKnow[fnName]
+function ExecutiveFrame:OnEvent(event, ...)
+	local fn = self[event]
 	if ( fn ) then
-		fn(...)
+		fn(self, ...)
 	end
 end
+do
+	ExecutiveFrame:SetScript("OnEvent", ExecutiveFrame.OnEvent)
+	ExecutiveFrame:RegisterEvent("ADDON_LOADED")
+	ExecutiveFrame:RegisterEvent("PLAYER_LOGIN")
+end
 
-function NeedToKnow.ExecutiveFrame_ADDON_LOADED(addon)
+function ExecutiveFrame:ADDON_LOADED(addon)
 	if ( addon == "NeedToKnow") then
 		if ( not NeedToKnow.IsVisible ) then
 			NeedToKnow.IsVisible = true
 		end
-	
+
+		SlashCmdList["NEEDTOKNOW"] = NeedToKnow.SlashCommand
+		SLASH_NEEDTOKNOW1 = "/needtoknow"
+		SLASH_NEEDTOKNOW2 = "/ntk"
+
+		self.BarGroup = {}
+		for groupID = 1, MAX_BARGROUPS do
+			self.BarGroup[groupID] = _G["NeedToKnow_Group"..groupID]
+		end
+
 		m_last_cast = {} -- [n] = { spell, target, serial }
 		m_last_cast_head = 1
 		m_last_cast_tail = 1
 		m_last_guid = {} -- [spell][guidTarget] = { time, dur, expiry }
 		NeedToKnow.totem_drops = {} -- array 1-4 of precise times the totems appeared
-	
-		SlashCmdList["NEEDTOKNOW"] = NeedToKnow.SlashCommand
-		SLASH_NEEDTOKNOW1 = "/needtoknow"
-		SLASH_NEEDTOKNOW2 = "/ntk"
 	end
 end
 
-function NeedToKnow.ExecutiveFrame_PLAYER_LOGIN()
+function ExecutiveFrame:PLAYER_LOGIN()
 	NeedToKnowLoader.SafeUpgrade()
-	NeedToKnow.ExecutiveFrame_PLAYER_TALENT_UPDATE()
+	self:PLAYER_TALENT_UPDATE()
 	NeedToKnow.guidPlayer = UnitGUID("player")
 
 	local _, player_CLASS = UnitClass("player")
@@ -68,28 +117,25 @@ function NeedToKnow.ExecutiveFrame_PLAYER_LOGIN()
 		NeedToKnow.is_Druid = 1
 		-- Is this actually used for anything? Maybe leftover from power tracking
 	end
-
 	-- NeedToKnowLoader.SetPowerTypeList(player_CLASS)
 
-	NeedToKnow_ExecutiveFrame:RegisterEvent("PLAYER_TALENT_UPDATE")
-	NeedToKnow_ExecutiveFrame:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
-	NeedToKnow_ExecutiveFrame:RegisterEvent("UNIT_TARGET")
-	NeedToKnow_ExecutiveFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
-	NeedToKnow_ExecutiveFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-	NeedToKnow_ExecutiveFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+	self:RegisterEvent("PLAYER_TALENT_UPDATE")
+	self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+	self:RegisterEvent("UNIT_TARGET")
+	self:RegisterEvent("PLAYER_REGEN_DISABLED")
+	self:RegisterEvent("PLAYER_REGEN_ENABLED")
+	self:RegisterEvent("GROUP_ROSTER_UPDATE")
 
 	if ( NeedToKnow.is_DK ) then
 		NeedToKnow.RegisterSpellcastSent();
 	end
 	NeedToKnow.Update()
 
-	NeedToKnow_ExecutiveFrame:UnregisterEvent("PLAYER_LOGIN")
-	NeedToKnow_ExecutiveFrame:UnregisterEvent("ADDON_LOADED")
-	NeedToKnow.ExecutiveFrame_ADDON_LOADED = nil
-	NeedToKnow.ExecutiveFrame_PLAYER_LOGIN = nil
+	self:UnregisterEvent("PLAYER_LOGIN")
+	self:UnregisterEvent("ADDON_LOADED")
 	NeedToKnowLoader = nil
 
-	NeedToKnow.RefreshRaidMemberNames()
+	RefreshRaidMemberNames()
 end
 
 function NeedToKnow.Update()
@@ -116,48 +162,54 @@ function NeedToKnow.Show(bShow)
 	end
 end
 
-do
-	local executiveFrame = CreateFrame("Frame", "NeedToKnow_ExecutiveFrame")
-	executiveFrame:SetScript("OnEvent", NeedToKnow.ExecutiveFrame_OnEvent)
-	executiveFrame:RegisterEvent("ADDON_LOADED")
-	executiveFrame:RegisterEvent("PLAYER_LOGIN")
-end
-
 
 -- ----------------------------
 -- Player settings and profiles
 -- ----------------------------
 
-function NeedToKnow.ExecutiveFrame_ACTIVE_TALENT_GROUP_CHANGED()
-    -- This is the only event we're guaranteed to get on a talent switch,
-    -- so we have to listen for it.  However, the client may not yet have
-    -- the spellbook updates, so trying to evaluate the cooldowns may fail.
-    -- This is one of the reasons the cooldown logic has to fail silently
-    -- and try again later
-    NeedToKnow.ExecutiveFrame_PLAYER_TALENT_UPDATE()
+function ExecutiveFrame:ACTIVE_TALENT_GROUP_CHANGED()
+	-- Kitjan: This is the only event we're guaranteed to get on a talent switch,
+	-- so we have to listen for it.  However, the client may not yet have
+	-- the spellbook updates, so trying to evaluate the cooldowns may fail.
+	-- This is one of the reasons the cooldown logic has to fail silently
+	-- and try again later
+	self:PLAYER_TALENT_UPDATE()
 end
 
-function NeedToKnow.ExecutiveFrame_PLAYER_TALENT_UPDATE()
-    if NeedToKnow.CharSettings then
-        local spec = g_GetActiveTalentGroup()
+function ExecutiveFrame:PLAYER_TALENT_UPDATE()
+	if NeedToKnow.CharSettings then
+		local spec = g_GetActiveTalentGroup()
 
-        local profile_key = NeedToKnow.CharSettings.Specs[spec]
-        if not profile_key then
-            print("NeedToKnow: Switching to spec",spec,"for the first time")
-            profile_key = NeedToKnow.CreateProfile(CopyTable(NEEDTOKNOW.PROFILE_DEFAULTS), spec)
-        end
-    
-        NeedToKnow.ChangeProfile(profile_key);
-    end
+		local profile_key = NeedToKnow.CharSettings.Specs[spec]
+		if not profile_key then
+			print("NeedToKnow: Switching to spec",spec,"for the first time")
+			profile_key = NeedToKnow.CreateProfile(CopyTable(NEEDTOKNOW.PROFILE_DEFAULTS), spec)
+		end
+
+		NeedToKnow.ChangeProfile(profile_key);
+	end
 end
-
 
 
 -- ----------------
 -- Combat functions
 -- ----------------
 
-function NeedToKnow.ExecutiveFrame_PLAYER_REGEN_DISABLED(unitTargeting)
+function ExecutiveFrame:UNIT_TARGET(unitTargeting)
+	-- Determine if in combat with boss, for bars that blink only for bosses
+    if m_bInCombat and not m_bCombatWithBoss then
+        if UnitLevel(unitTargeting .. 'target') == -1 then
+            m_bCombatWithBoss = true
+            if NeedToKnow.BossStateBars then
+                for bar, unused in pairs(NeedToKnow.BossStateBars) do
+                    mfn_Bar_AuraCheck(bar)
+                end
+            end
+        end
+    end
+end
+
+function ExecutiveFrame:PLAYER_REGEN_DISABLED(unitTargeting)
 	-- Determine if in combat with boss, for bars that blink only for bosses
     m_bInCombat = true
     m_bCombatWithBoss = false
@@ -185,7 +237,7 @@ function NeedToKnow.ExecutiveFrame_PLAYER_REGEN_DISABLED(unitTargeting)
     end
 end
 
-function NeedToKnow.ExecutiveFrame_PLAYER_REGEN_ENABLED(unitTargeting)
+function ExecutiveFrame:PLAYER_REGEN_ENABLED(unitTargeting)
 	-- For bars that blink only for bosses
     m_bInCombat = false
     m_bCombatWithBoss = false
@@ -196,12 +248,11 @@ function NeedToKnow.ExecutiveFrame_PLAYER_REGEN_ENABLED(unitTargeting)
     end
 end
 
-
-
-function NeedToKnow.ExecutiveFrame_GROUP_ROSTER_UPDATE()
-    NeedToKnow.RefreshRaidMemberNames();
+function ExecutiveFrame:GROUP_ROSTER_UPDATE()
+	RefreshRaidMemberNames();
 end
 
+--[[
 function NeedToKnow.RefreshRaidMemberNames()
     NeedToKnow.raid_members = {}
 
@@ -210,13 +261,15 @@ function NeedToKnow.RefreshRaidMemberNames()
     if IsInRaid() then
         for i = 1, 40 do
             local unit = "raid"..i
-            local name = NeedToKnow.GetNameAndServer(unit)
+            -- local name = NeedToKnow.GetNameAndServer(unit)
+            local name = GetNameAndServer(unit)
             if ( name ) then NeedToKnow.raid_members[name] = unit end
         end
     elseif IsInGroup() then
         for i = 1, 5 do
             local unit = "party"..i
-            local name = NeedToKnow.GetNameAndServer(unit)
+            -- local name = NeedToKnow.GetNameAndServer(unit)
+            local name = GetNameAndServer(unit)
             if ( name ) then NeedToKnow.raid_members[name] = unit end
         end
     end
@@ -233,17 +286,9 @@ function NeedToKnow.RefreshRaidMemberNames()
         NeedToKnow.raid_members[name] = unit
     end
 end
+]]--
 
-function NeedToKnow.GetNameAndServer(unit)
-    local name, server = UnitName(unit)
-    if ( name and server ) then 
-        return name .. '-' .. server
-    end
-    return name
-end
-
-
-function NeedToKnow.ExecutiveFrame_COMBAT_LOG_EVENT_UNFILTERED()
+function ExecutiveFrame:COMBAT_LOG_EVENT_UNFILTERED()
 
     local tod, event, hideCaster, guidCaster, sourceName, sourceFlags, sourceRaidFlags, guidTarget, nameTarget, _, _, spellid, spell = CombatLogGetCurrentEventInfo()
 
@@ -289,7 +334,7 @@ function NeedToKnow.ExecutiveFrame_COMBAT_LOG_EVENT_UNFILTERED()
             if ( found == last ) then
                 m_last_cast_tail = 1
                 m_last_cast_head = 1
-                NeedToKnow_ExecutiveFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+                self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
             else
                 m_last_cast_head = found+1
             end
@@ -297,8 +342,7 @@ function NeedToKnow.ExecutiveFrame_COMBAT_LOG_EVENT_UNFILTERED()
     end
 end
 
-
-function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SENT(unit, tgt, lineID, spellID)
+function ExecutiveFrame:UNIT_SPELLCAST_SENT(unit, tgt, lineID, spellID)
     if unit == "player" then
         -- TODO: I hate to pay this memory cost for every "spell" ever cast.
         --       Would be nice to at least garbage collect this data at some point, but that
@@ -323,17 +367,17 @@ function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SENT(unit, tgt, lineID, spellI
             if ( m_last_cast_tail == 2 ) then
                 m_last_cast_head = 1
                 if ( m_last_guid[spellID] ) then
-                    NeedToKnow_ExecutiveFrame:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
-                    NeedToKnow_ExecutiveFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+                    self:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+                    self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
                 else
-                    NeedToKnow_ExecutiveFrame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+                    self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
                 end
             end
         end
     end
 end
 
-function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID, spellID)
+function ExecutiveFrame:UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID, spellID)
     if unit == "player" then
         local found
         local t = m_last_cast
@@ -356,7 +400,7 @@ function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID
             if ( found == last ) then
                 m_last_cast_tail = 1
                 m_last_cast_head = 1
-                NeedToKnow_ExecutiveFrame:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+                self:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
             else
                 m_last_cast_head = found+1
             end
@@ -365,37 +409,25 @@ function NeedToKnow.ExecutiveFrame_UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID
 end
 
 function NeedToKnow.RegisterSpellcastSent()
-    if ( NeedToKnow.nRegisteredSent ) then
-        NeedToKnow.nRegisteredSent = NeedToKnow.nRegisteredSent + 1
-    else
-        NeedToKnow.nRegisteredSent = 1
-        NeedToKnow_ExecutiveFrame:RegisterEvent("UNIT_SPELLCAST_SENT")
-    end
+	if ( NeedToKnow.nRegisteredSent ) then
+		NeedToKnow.nRegisteredSent = NeedToKnow.nRegisteredSent + 1
+	else
+		NeedToKnow.nRegisteredSent = 1
+		ExecutiveFrame:RegisterEvent("UNIT_SPELLCAST_SENT")
+	end
 end
 
 function NeedToKnow.UnregisterSpellcastSent()
-    if ( NeedToKnow.nRegisteredSent ) then
-        NeedToKnow.nRegisteredSent = NeedToKnow.nRegisteredSent - 1
-        if ( 0 == NeedToKnow.nRegisteredSent ) then
-            NeedToKnow.nRegisteredSent = nil
-            NeedToKnow_ExecutiveFrame:UnregisterEvent("UNIT_SPELLCAST_SENT")
-            NeedToKnow_ExecutiveFrame:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
-            NeedToKnow_ExecutiveFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-        end
-    end
+	if ( NeedToKnow.nRegisteredSent ) then
+		NeedToKnow.nRegisteredSent = NeedToKnow.nRegisteredSent - 1
+		if ( 0 == NeedToKnow.nRegisteredSent ) then
+			NeedToKnow.nRegisteredSent = nil
+			ExecutiveFrame:UnregisterEvent("UNIT_SPELLCAST_SENT")
+			ExecutiveFrame:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+			ExecutiveFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+		end
+	end
 end
 
-function NeedToKnow.ExecutiveFrame_UNIT_TARGET(unitTargeting)
-    if m_bInCombat and not m_bCombatWithBoss then
-        if UnitLevel(unitTargeting .. 'target') == -1 then
-            m_bCombatWithBoss = true
-            if NeedToKnow.BossStateBars then
-                for bar, unused in pairs(NeedToKnow.BossStateBars) do
-                    mfn_Bar_AuraCheck(bar)
-                end
-            end
-        end
-    end
-end
 
 

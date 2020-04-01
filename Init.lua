@@ -17,7 +17,7 @@ NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
                          -- (Right-click bar config menu)
 
 -- Define namespaces
-NeedToKnow.ExecutiveFrame = {}
+NeedToKnow.ExecutiveFrame = CreateFrame("Frame", "NeedToKnow_ExecutiveFrame")
 NeedToKnow.Bar = {}
 NeedToKnow.BarMenu = {}
 NeedToKnow.BarGroup = {}
