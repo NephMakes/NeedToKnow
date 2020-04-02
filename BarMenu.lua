@@ -62,10 +62,10 @@ NeedToKnowRMB.BarMenu_SubMenus = {
           { Setting = "TOTEM", MenuText = NEEDTOKNOW.BARMENU_TOTEM },
           { Setting = "CASTCD", MenuText = NEEDTOKNOW.BARMENU_CASTCD },
           { Setting = "BUFFCD", MenuText = NEEDTOKNOW.BARMENU_BUFFCD },
+          { Setting = "EQUIPSLOT", MenuText = NEEDTOKNOW.BARMENU_EQUIPSLOT },
 -- Now that Victory Rush adds a buff when you can use it, this confusing option is being removed.
 -- The code that drives it remains so that any existing users' bars won't break.
 --          { Setting = "USABLE", MenuText = NEEDTOKNOW.BARMENU_USABLE },
-          { Setting = "EQUIPSLOT", MenuText = NEEDTOKNOW.BARMENU_EQUIPSLOT },
 --          { Setting = "POWER", MenuText = NEEDTOKNOW.BARMENU_POWER }
 -- Disabling POWER option since it looks like Kitjan never finished implementing it
     },

@@ -22,6 +22,8 @@ NeedToKnow.Bar = {}
 NeedToKnow.BarMenu = {}
 NeedToKnow.BarGroup = {}
 NeedToKnow.ResizeButton = {}
+NeedToKnow.Cooldown = {}
+
 
 
 -- ---------------------
@@ -192,21 +194,11 @@ addonTable.m_last_guid = {}
 addonTable.m_bInCombat = {}
 addonTable.m_bCombatWithBoss = {}
 
--- Bar
-addonTable.mfn_SetStatusBarValue = {}
-addonTable.mfn_Bar_AuraCheck = {}
-
 -- Cooldown
-addonTable.mfn_GetSpellCooldown = {}
-addonTable.mfn_GetSpellChargesCooldown = {}
-addonTable.mfn_GetAutoShotCooldown = {}
-addonTable.mfn_GetUnresolvedCooldown = {}
-addonTable.mfn_AuraCheck_CASTCD = {}
-addonTable.mfn_AuraCheck_BUFFCD = {}
-addonTable.mfn_AuraCheck_EQUIPSLOT = {}
+addonTable.mfn_GetSpellCooldown = function() end
+addonTable.mfn_GetSpellChargesCooldown = function() end
+addonTable.mfn_GetAutoShotCooldown = function() end
+addonTable.mfn_GetUnresolvedCooldown = function() end
 
--- Power
--- addonTable.mfn_AuraCheck_POWER = {}
--- addonTable.mfn_EnergyBar_OnUpdate = {}
 
 

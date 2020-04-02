@@ -16,7 +16,6 @@ end
 local function RefreshRaidMemberNames()
 	NeedToKnow.raid_members = {}
 
-	-- Kitjan: Raid pets don't get server name decoration in combat log
 	if IsInRaid() then
 		for i = 1, 40 do
 			local unit = "raid"..i
@@ -32,9 +31,11 @@ local function RefreshRaidMemberNames()
 			if ( name ) then NeedToKnow.raid_members[name] = unit end
 		end
 	end
+	-- Kitjan: Raid pets don't get server name decoration in combat log
 
-	-- Also get the player and their pet in directly
-	-- (don't need NameAndServer since the player will always have a nil server.)
+	-- Get the player and their pet in directly
+	-- (player will always have a nil server)
+
 	local unit = "player"
 	local name = UnitName(unit)
 	NeedToKnow.raid_members[name] = unit
@@ -62,7 +63,7 @@ local m_last_guid = addonTable.m_last_guid
 local m_bInCombat = addonTable.m_bInCombat
 local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
 
--- Other functions
+-- Other functions defined elsewhere
 local mfn_Bar_AuraCheck = addonTable.mfn_Bar_AuraCheck
 
 

@@ -34,9 +34,18 @@ local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
 -- local m_last_guid, m_last_cast, m_last_sent, m_last_cast_head, m_last_cast_tail
 -- local m_bInCombat, m_bCombatWithBoss
 
-local mfn_Bar_AuraCheck = addonTable.mfn_Bar_AuraCheck
+local Cooldown = NeedToKnow.Cooldown
+local mfn_GetSpellCooldown        = Cooldown.GetSpellCooldown
+local mfn_GetSpellChargesCooldown = Cooldown.GetSpellChargesCooldown
+local mfn_GetAutoShotCooldown     = Cooldown.GetAutoShotCooldown
+local mfn_GetUnresolvedCooldown   = Cooldown.GetUnresolvedCooldown
 
--- local mfn_Bar_AuraCheck
+-- local mfn_GetSpellCooldown
+-- local mfn_GetSpellChargesCooldown
+-- local mfn_GetAutoShotCooldown
+-- local mfn_GetUnresolvedCooldown
+
+local mfn_Bar_AuraCheck
 local mfn_AuraCheck_Single
 local mfn_AuraCheck_TOTEM
 local mfn_AuraCheck_BUFFCD
@@ -44,18 +53,10 @@ local mfn_AuraCheck_USABLE
 local mfn_AuraCheck_EQUIPSLOT
 local mfn_AuraCheck_CASTCD
 local mfn_AuraCheck_AllStacks
-local mfn_GetUnresolvedCooldown
-local mfn_GetAutoShotCooldown
-local mfn_GetSpellChargesCooldown
-local mfn_GetSpellCooldown
 local mfn_AddInstanceToStacks
 local mfn_SetStatusBarValue
 local mfn_ResetScratchStacks
 local mfn_UpdateVCT
-
--- Moved to Power.lua
--- local mfn_AuraCheck_POWER
--- local mfn_EnergyBar_OnUpdate
 
 local m_scratch = {}
 m_scratch.all_stacks = {
@@ -116,6 +117,7 @@ local c_AURAEVENTS = {
 -- BARS
 -- ----
 
+--[[
 function NeedToKnow.SetupSpellCooldown(bar, entry)
     -- Attempt to figure out if a name is an item or a spell, and if a spell
     -- try to choose a spell with that name that has a cooldown
@@ -161,6 +163,7 @@ function NeedToKnow.SetupSpellCooldown(bar, entry)
         end
     end
 end
+]]--
 
 mfn_SetStatusBarValue = function (bar,texture,value,value0)
   local pct0 = 0
@@ -374,7 +377,8 @@ function NeedToKnow.Bar_Update(groupID, barID)
                 bar.fnCheck = mfn_AuraCheck_CASTCD
                 for idx, entry in ipairs(bar.spells) do
                     table.insert(bar.cd_functions, mfn_GetSpellCooldown)
-                    NeedToKnow.SetupSpellCooldown(bar, entry)
+                    -- NeedToKnow.SetupSpellCooldown(bar, entry)
+                    Cooldown.SetupSpellCooldown(bar, entry)
                 end
             elseif barSettings.show_all_stacks then
                 bar.fnCheck = mfn_AuraCheck_AllStacks
@@ -385,7 +389,8 @@ function NeedToKnow.Bar_Update(groupID, barID)
             if ( barSettings.BuffOrDebuff == "BUFFCD" ) then
                 local dur = tonumber(barSettings.buffcd_duration)
                 if (not dur or dur < 1) then
-                    print("Internal cooldown bar watching",barSettings.AuraName,"did not set a cooldown duration. Disabling the bar.")
+                    -- print("NeedToKnow: Internal cooldown bar watching", barSettings.AuraName, "did not set a cooldown duration. Disabling the bar.")
+                    print("NeedToKnow: Please set internal cooldown duration for:", barSettings.AuraName)
                     enabled = false
                 end
             end
@@ -687,8 +692,8 @@ function NeedToKnow.PrettyName(barSettings)
         if idx then return NEEDTOKNOW.ITEM_NAMES[idx] end
         return ""
     --[[
+	-- Player power no longer supported
     elseif ( barSettings.BuffOrDebuff == "POWER" ) then
-    	-- DEPRECATED: Player power no longer supported
         local idx = tonumber(barSettings.AuraName)
         if idx then return NeedToKnow.GetPowerName(idx) end
         return ""
@@ -831,6 +836,7 @@ function NeedToKnow.ConfigureBlinkingBar(bar)
     end
 end
 
+--[[
 function NeedToKnow.GetUtilityTooltips()
     if ( not NeedToKnow_Tooltip1 ) then
         for idxTip = 1,2 do
@@ -860,10 +866,11 @@ function NeedToKnow.GetUtilityTooltips()
     tt2:ClearLines()
     return tt1,tt2
 end
+]]--
 
---[[
 -- NephMakes: I don't think temporary enchants aren't a thing anymore, 
---            but keeping this for potential use in WoW Classic
+-- but keep this for potential use in WoW Classic
+--[[
 function NeedToKnow.DetermineTempEnchantFromTooltip(i_invID)
     local tt1,tt2 = NeedToKnow.GetUtilityTooltips()
     
@@ -904,6 +911,7 @@ function NeedToKnow.DetermineTempEnchantFromTooltip(i_invID)
 end
 ]]--
 
+--[[
 function NeedToKnow.DetermineShortCooldownFromTooltip(spell)
     -- Looks at the tooltip for the given spell to see if a cooldown 
     -- is listed with a duration in seconds.  Longer cooldowns don't
@@ -948,7 +956,9 @@ function NeedToKnow.DetermineShortCooldownFromTooltip(spell)
 
     return NeedToKnow.short_cds[spell]
 end
+]]--
 
+--[[
 function NeedToKnow.TryToFindSpellWithCD(barSpell)
     -- Search the player's spellbook for a spell that matches 
     -- todo: cache this result?
@@ -973,7 +983,9 @@ function NeedToKnow.TryToFindSpellWithCD(barSpell)
         end
     end
 end
+]]--
 
+--[[
 function NeedToKnow.GetItemIDString(id_or_name)
     local _, link = GetItemInfo(id_or_name)
     if link then
@@ -983,7 +995,9 @@ function NeedToKnow.GetItemIDString(id_or_name)
         end
     end
 end
+]]--
 
+--[[
 mfn_GetAutoShotCooldown = function(bar)
     -- Helper for mfn_AuraCheck_CASTCD which gets the autoshot cooldown
     local tNow = g_GetTime()
@@ -994,7 +1008,9 @@ mfn_GetAutoShotCooldown = function(bar)
         bar.tAutoShotStart = nil
     end
 end
+]]--
 
+--[[
 mfn_GetUnresolvedCooldown = function(bar, entry)
     -- Helper for mfn_AuraCheck_CASTCD for names we haven't figured out yet
     NeedToKnow.SetupSpellCooldown(bar, entry)
@@ -1003,7 +1019,9 @@ mfn_GetUnresolvedCooldown = function(bar, entry)
         return fn(bar, entry)
     end
 end
+]]--
 
+--[[
 mfn_GetSpellCooldown = function(bar, entry)
     -- Wrapper around GetSpellCooldown with extra sauce
     -- Expected to return start, cd_len, enable, buffName, iconpath
@@ -1063,7 +1081,9 @@ mfn_GetSpellCooldown = function(bar, entry)
         end
     end
 end
+]]--
 
+--[[
 mfn_GetSpellChargesCooldown = function(bar, entry)
     local barSpell = entry.id or entry.name
     local cur, max, charge_start, recharge = GetSpellCharges(barSpell)
@@ -1079,7 +1099,9 @@ mfn_GetSpellChargesCooldown = function(bar, entry)
         end
     end
 end
+]]--
 
+--[[
 function NeedToKnow.GetItemCooldown(bar, entry)
     -- Wrapper around GetItemCooldown
     -- Expected to return start, cd_len, enable, buffName, iconpath
@@ -1089,6 +1111,7 @@ function NeedToKnow.GetItemCooldown(bar, entry)
         return start, cd_len, enable, name, icon
     end
 end
+]]--
 
 mfn_AddInstanceToStacks = function (all_stacks, bar_entry, duration, name, count, expirationTime, iconPath, caster, tt1, tt2, tt3)
     if duration then
@@ -1159,7 +1182,8 @@ mfn_AuraCheck_EQUIPSLOT = function (bar, bar_entry, all_stacks)
         if id then
             local item_entry = m_scratch.bar_entry
             item_entry.id = id
-            local start, cd_len, enable, name, icon = NeedToKnow.GetItemCooldown(bar, item_entry)
+            -- local start, cd_len, enable, name, icon = NeedToKnow.GetItemCooldown(bar, item_entry)
+            local start, cd_len, enable, name, icon = Cooldown.GetItemCooldown(bar, item_entry)
             if ( start and start > 0 ) then
                 mfn_AddInstanceToStacks(all_stacks, bar_entry, 
                        cd_len,                                     -- duration
@@ -1172,78 +1196,6 @@ mfn_AuraCheck_EQUIPSLOT = function (bar, bar_entry, all_stacks)
         end
     end
 end
-
---[[
--- Moved to Power.lua
-mfn_AuraCheck_POWER = function (bar, bar_entry, all_stacks)
-    -- Bar_AuraCheck helper for power and combo points.  The current
-    -- amount is reported as the first tooltip number rather than 
-    -- stacks since 1 stack doesn't get displayed normally
-
-    local spellName, _, spellIconPath
-    local cpt = UnitPowerType(bar.unit)
-    local pt = bar_entry.id
-
-    if ( pt ) then
-        if pt == NEEDTOKNOW.SPELL_POWER_PRIMARY then pt = cpt end
-        if (pt == NEEDTOKNOW.SPELL_POWER_LEGACY_CP) then pt = SPELL_POWER_COMBO_POINTS end
-
-        local curPower, maxPower;
-        if (pt == NEEDTOKNOW.SPELL_POWER_STAGGER ) then
-		    curPower = UnitStagger(bar.unit)
-			maxPower = UnitHealthMax(bar.unit)
-        else
-            curPower = UnitPower(bar.unit, pt)
-            maxPower = UnitPowerMax(bar.unit, pt)
-        end
-
-        if ( maxPower and maxPower > 0 and
-             (not bar.settings.power_sole or pt == cpt) ) 
-        then
-            local bTick = false
-            if pt == 3 then -- SPELL_POWER_ENERGY
-                if (pt == cpt) then
-                    bar.power_regen = GetPowerRegen()
-                end
-                if (bar.power_regen and bar.power_regen > 0) then
-                    bTick = true
-                end
-            end
-            if bTick then
-                if not bar.ticking then
-                    bar.ticker = mfn_EnergyBar_OnUpdate
-                    bar:SetScript("OnUpdate", bar.ticker)
-                    bar.ticking = true
-                end
-            elseif bar.ticking then
-                bar:SetScript("OnUpdate", nil)
-                bar.ticking = false
-            end
-
-            if bar.ticking then                
-                local now = g_GetTime()
-                if not bar.tPower or now - bar.tPower > 2 or bar.last_power ~= curPower then
-                    bar.tPower = now
-                    bar.last_power = curPower
-                    bar.last_power_max = maxPower
-
-                end
-            end
-
-            mfn_AddInstanceToStacks(all_stacks, bar_entry, 
-                   0,                                          -- duration
-                   NeedToKnow.GetPowerName(pt),                -- name
-                   1,                                          -- count
-                   0,                                          -- expiration time
-                   nil,                                        -- icon path
-                   bar.unit,                                   -- caster
-                   curPower,                                   -- tooltip #1
-                   maxPower,                                   -- tooltip #2
-                   floor(curPower*1000/maxPower)/10 )          -- tooltip #3
-        end
-    end
-end
-]]--
 
 mfn_AuraCheck_CASTCD = function(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper that checks for spell/item use cooldowns
@@ -1781,34 +1733,6 @@ function NeedToKnow.Bar_OnUpdate(self, elapsed)
         end
     end
 end 
-
---[[
--- Moved to Power.lua
-mfn_EnergyBar_OnUpdate = function(bar, elapsed)
-    local now = g_GetTime()
-    if ( now > bar.nextUpdate ) then
-        bar.nextUpdate = now + c_UPDATE_INTERVAL
-        local delta = now - bar.tPower
-        local predicted = bar.last_power + bar.power_regen * delta
-        local bCapped = false
-        if predicted >= bar.last_power_max then
-            predicted = bar.last_power_max
-            bCapped = true
-        elseif predicted <= 0 then
-            predicted = 0
-            bCapped = true
-        end
-
-        bar.max_value = bar.last_power_max
-        mfn_SetStatusBarValue(bar, bar.bar1, predicted);
-
-        if bCapped then
-            bar.ticking = false
-            bar:SetScript("OnUpdate", nil)
-        end
-    end
-end
-]]--
 
 local fnAuraCheckIfUnitMatches = function(self, unit)
     if ( unit == self.unit )  then
