@@ -8,9 +8,9 @@
 
 local addonName, addonTable = ...
 
-local mfn_AddInstanceToStacks = addonTable.mfn_AddInstanceToStacks
-local mfn_EnergyBar_OnUpdate = addonTable.mfn_EnergyBar_OnUpdate
-local mfn_SetStatusBarValue = addonTable.mfn_SetStatusBarValue
+-- local mfn_AddInstanceToStacks = addonTable.mfn_AddInstanceToStacks
+-- local mfn_EnergyBar_OnUpdate = addonTable.mfn_EnergyBar_OnUpdate
+-- local mfn_SetStatusBarValue = addonTable.mfn_SetStatusBarValue
 
 
 NEEDTOKNOW.SPELL_POWER_LEGACY_CP = -1

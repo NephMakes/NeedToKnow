@@ -5,6 +5,33 @@ local ExecutiveFrame = NeedToKnow.ExecutiveFrame
 
 local MAX_BARGROUPS = 4
 
+
+-- ----------------------
+-- Kitjan's addon locals:
+-- ----------------------
+
+-- Local version of global functions
+local g_GetActiveTalentGroup = _G.GetSpecialization
+local g_GetTime = GetTime
+
+-- Spellcast tracking
+local m_last_cast      = addonTable.m_last_cast
+local m_last_cast_head = addonTable.m_last_cast_head
+local m_last_cast_tail = addonTable.m_last_cast_tail
+local m_last_guid      = addonTable.m_last_guid
+
+-- For bars that blink only for bosses
+local m_bInCombat       = addonTable.m_bInCombat
+local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
+
+-- Other functions defined elsewhere
+local mfn_Bar_AuraCheck = addonTable.mfn_Bar_AuraCheck
+
+
+-- ---------------
+-- Local functions
+-- ---------------
+
 local function GetNameAndServer(unit)
 	local name, server = UnitName(unit)
 	if ( name and server ) then 
@@ -46,25 +73,6 @@ local function RefreshRaidMemberNames()
 		NeedToKnow.raid_members[name] = unit
 	end
 end
-
--- Kitjan's addon locals:
-
--- Local version of global functions
-local g_GetActiveTalentGroup = _G.GetSpecialization
-local g_GetTime = GetTime
-
--- Spellcast tracking
-local m_last_cast = addonTable.m_last_cast
-local m_last_cast_head = addonTable.m_last_cast_head
-local m_last_cast_tail = addonTable.m_last_cast_tail
-local m_last_guid = addonTable.m_last_guid
-
--- For bars that blink only for bosses
-local m_bInCombat = addonTable.m_bInCombat
-local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
-
--- Other functions defined elsewhere
-local mfn_Bar_AuraCheck = addonTable.mfn_Bar_AuraCheck
 
 
 -- -----------

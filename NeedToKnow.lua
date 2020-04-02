@@ -39,13 +39,14 @@ local mfn_GetSpellCooldown        = Cooldown.GetSpellCooldown
 local mfn_GetSpellChargesCooldown = Cooldown.GetSpellChargesCooldown
 local mfn_GetAutoShotCooldown     = Cooldown.GetAutoShotCooldown
 local mfn_GetUnresolvedCooldown   = Cooldown.GetUnresolvedCooldown
-
 -- local mfn_GetSpellCooldown
 -- local mfn_GetSpellChargesCooldown
 -- local mfn_GetAutoShotCooldown
 -- local mfn_GetUnresolvedCooldown
 
-local mfn_Bar_AuraCheck
+local mfn_Bar_AuraCheck = addonTable.mfn_Bar_AuraCheck
+-- local mfn_Bar_AuraCheck
+
 local mfn_AuraCheck_Single
 local mfn_AuraCheck_TOTEM
 local mfn_AuraCheck_BUFFCD

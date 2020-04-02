@@ -194,11 +194,7 @@ addonTable.m_last_guid = {}
 addonTable.m_bInCombat = {}
 addonTable.m_bCombatWithBoss = {}
 
--- Cooldown
-addonTable.mfn_GetSpellCooldown = function() end
-addonTable.mfn_GetSpellChargesCooldown = function() end
-addonTable.mfn_GetAutoShotCooldown = function() end
-addonTable.mfn_GetUnresolvedCooldown = function() end
+function addonTable.mfn_Bar_AuraCheck() end
 
 
 
