@@ -14,7 +14,7 @@ local g_GetSpellPowerCost = GetSpellPowerCost
 local g_GetSpellTabInfo   = GetSpellTabInfo
 local g_GetNumSpellTabs   = GetNumSpellTabs
 
-local c_AUTO_SHOT_NAME = g_GetSpellInfo(75) -- Localized name for Auto Shot
+local c_AUTO_SHOT_NAME = g_GetSpellInfo(75)  -- Localized name for Auto Shot
 
 local m_last_cast      = addonTable.m_last_cast
 local m_last_cast_head = addonTable.m_last_cast_head
@@ -213,7 +213,7 @@ function Cooldown.GetSpellCooldown(bar, entry)
             -- Filter out conditions like Stealth while stealthed
             start = nil
         elseif ( NeedToKnow.is_DK == 1 ) then
-		    local usesRunes=nil
+		    local usesRunes = nil
 		    local costInfo = g_GetSpellPowerCost(spellId)
 			local nCosts = table.getn(costInfo)
 			for iCost = 1, nCosts do
@@ -282,7 +282,6 @@ end
 
 function Cooldown.GetUnresolvedCooldown(bar, entry)
 	-- Helper for mfn_AuraCheck_CASTCD for names we haven't figured out yet
-	-- NeedToKnow.SetupSpellCooldown(bar, entry)
 	Cooldown.SetupSpellCooldown(bar, entry)
 	local fn = bar.cd_functions[entry.idxName]
 	if ( Cooldown.GetUnresolvedCooldown ~= fn ) then

@@ -16,13 +16,13 @@ NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
 -- NeedToKnowRMB = {}    -- Used by NeedToKnow.lua, NeedToKnow_Options.lua, NeedToKnow_Options.xml
                          -- (Right-click bar config menu)
 
--- Define namespaces
+-- Namespaces
 NeedToKnow.ExecutiveFrame = CreateFrame("Frame", "NeedToKnow_ExecutiveFrame")
 NeedToKnow.Bar = {}
-NeedToKnow.BarMenu = {}
-NeedToKnow.BarGroup = {}
-NeedToKnow.ResizeButton = {}
 NeedToKnow.Cooldown = {}
+NeedToKnow.BarGroup = {}
+NeedToKnow.BarMenu = {}
+NeedToKnow.ResizeButton = {}
 
 
 
@@ -92,7 +92,7 @@ NEEDTOKNOW.BAR_DEFAULTS = {
     buffcd_duration = 0,
     buffcd_reset_spells = "",
     usable_duration = 0,
-    append_cd       = true,
+    append_cd       = false,
     append_usable   = false,
 }
 NEEDTOKNOW.GROUP_DEFAULTS = {
@@ -133,22 +133,23 @@ NEEDTOKNOW.DEFAULTS = {
 -- SharedMedia support
 -- -------------------
 
+-- LibSharedMedia library
 NeedToKnow.LSM = LibStub("LibSharedMedia-3.0", true)
 local barTextures = {
-	["Aluminum"] =   [[Interface\Addons\NeedToKnow\Textures\Aluminum.tga]],
-	["Armory"] =     [[Interface\Addons\NeedToKnow\Textures\Armory.tga]],
-	["BantoBar"] =   [[Interface\Addons\NeedToKnow\Textures\BantoBar.tga]],
+	["Aluminum"]   = [[Interface\Addons\NeedToKnow\Textures\Aluminum.tga]],
+	["Armory"]     = [[Interface\Addons\NeedToKnow\Textures\Armory.tga]],
+	["BantoBar"]   = [[Interface\Addons\NeedToKnow\Textures\BantoBar.tga]],
 	["DarkBottom"] = [[Interface\Addons\NeedToKnow\Textures\Darkbottom.tga]],
-	["Default"] =    [[Interface\Addons\NeedToKnow\Textures\Default.tga]],
-	["Flat"] =       [[Interface\Addons\NeedToKnow\Textures\Flat.tga]],
-	["Glaze"] =      [[Interface\Addons\NeedToKnow\Textures\Glaze.tga]],
-	["Gloss"] =      [[Interface\Addons\NeedToKnow\Textures\Gloss.tga]],
-	["Graphite"] =   [[Interface\Addons\NeedToKnow\Textures\Graphite.tga]],
+	["Default"]    = [[Interface\Addons\NeedToKnow\Textures\Default.tga]],
+	["Flat"]       = [[Interface\Addons\NeedToKnow\Textures\Flat.tga]],
+	["Glaze"]      = [[Interface\Addons\NeedToKnow\Textures\Glaze.tga]],
+	["Gloss"]      = [[Interface\Addons\NeedToKnow\Textures\Gloss.tga]],
+	["Graphite"]   = [[Interface\Addons\NeedToKnow\Textures\Graphite.tga]],
 	["Minimalist"] = [[Interface\Addons\NeedToKnow\Textures\Minimalist.tga]],
-	["Otravi"] =     [[Interface\Addons\NeedToKnow\Textures\Otravi.tga]],
-	["Smooth"] =     [[Interface\Addons\NeedToKnow\Textures\Smooth.tga]],
-	["Smooth v2"] =  [[Interface\Addons\NeedToKnow\Textures\Smoothv2.tga]],
-	["Striped"] =    [[Interface\Addons\NeedToKnow\Textures\Striped.tga]]
+	["Otravi"]     = [[Interface\Addons\NeedToKnow\Textures\Otravi.tga]],
+	["Smooth"]     = [[Interface\Addons\NeedToKnow\Textures\Smooth.tga]],
+	["Smooth v2"]  = [[Interface\Addons\NeedToKnow\Textures\Smoothv2.tga]],
+	["Striped"]    = [[Interface\Addons\NeedToKnow\Textures\Striped.tga]]
 }
 for k, v in pairs(barTextures) do
 	NeedToKnow.LSM:Register("statusbar", k, v) 
@@ -159,28 +160,29 @@ end
 -- Utility functions
 -- -----------------
 
---function maybe_trace(...)
-  --local so_far = ""
-  --local p = _G
-  --for idx = 1,40,1 do
-      --local v = select(idx,...)
-      --if not v then 
-        --break 
-      --end
-      --p = p[v]
-      --if not p then
-        --if so_far == "" then
-          --trace("global variable",v,"does not exist")
-        --else
-          --trace(so_far,"does not have member",v)
-        --end
-        --return;
-      --end
-      --so_far = so_far .. "." .. v
-  --end
-  --trace(so_far,"=",p)
---end
-
+--[[
+function maybe_trace(...)
+	local so_far = ""
+	local p = _G
+	for idx = 1, 40, 1 do
+		local v = select(idx,...)
+		if not v then 
+			break 
+		end
+		p = p[v]
+		if not p then
+			if so_far == "" then
+				trace("global variable", v, "does not exist")
+			else
+				trace(so_far, "does not have member", v)
+			end
+			return;
+		end
+		so_far = so_far.."."..v
+	end
+	trace(so_far, "=", p)
+end
+]]--
 
 -- ---------------------
 -- Kitjan's addon locals
@@ -194,7 +196,6 @@ addonTable.m_last_guid = {}
 addonTable.m_bInCombat = {}
 addonTable.m_bCombatWithBoss = {}
 
-function addonTable.mfn_Bar_AuraCheck() end
-
+function addonTable.mfn_Bar_AuraCheck() end  -- I don't think this works as is
 
 

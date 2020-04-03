@@ -1,18 +1,20 @@
 -- local addonName, addonTable = ...
 
+local BarGroup = NeedToKnow.BarGroup
+local ResizeButton = NeedToKnow.ResizeButton
+local Bar = NeedToKnow.Bar
+
 -- ---------
 -- Bar Group
 -- ---------
 
-local BarGroup = NeedToKnow.BarGroup
-
 function BarGroup:OnLoad()
-	self.Update = BarGroup.Update
-	self.SetPosition = BarGroup.SetPosition
-	self.SetBarWidth = BarGroup.SetBarWidth
+	self.Update       = BarGroup.Update
+	self.SetPosition  = BarGroup.SetPosition
+	self.SetBarWidth  = BarGroup.SetBarWidth
 	self.SavePosition = BarGroup.SavePosition
 	self.SaveBarWidth = BarGroup.SaveBarWidth
-	self.bar = {}  -- Table for Bar frames
+	self.bar = {}     -- Table for Bar frames
 end
 
 function BarGroup:Update()
@@ -39,7 +41,8 @@ function BarGroup:Update()
 		NeedToKnow.Bar_Update(groupID, barID)
 
 		if ( not groupSettings.Enabled ) then
-			NeedToKnow.ClearScripts(bar)
+			-- NeedToKnow.ClearScripts(bar)
+			bar:ClearScripts()
 		end
 	end
 
@@ -57,7 +60,8 @@ function BarGroup:Update()
 		bar = self.bar[barID]
 		if ( bar ) then
 			bar:Hide()
-			NeedToKnow.ClearScripts(bar)
+			-- NeedToKnow.ClearScripts(bar)
+			bar:ClearScripts()
 			barID = barID + 1
 		else
 			break
@@ -89,7 +93,8 @@ function BarGroup:SetBarWidth(width)
 		local bar = self.bar[barID]
 		bar:SetWidth(width)
 		bar.Text:SetWidth(width - 60)
-		NeedToKnow.SizeBackground(bar, bar.settings.show_icon)
+		-- NeedToKnow.SizeBackground(bar, bar.settings.show_icon)
+		bar:SetBackgroundSize(bar.settings.show_icon)
 	end
 end
 
@@ -108,8 +113,6 @@ end
 -- -------------
 -- Resize Button
 -- -------------
-
-local ResizeButton = NeedToKnow.ResizeButton
 
 function ResizeButton:OnLoad()
 	self.Texture:SetVertexColor(0.6, 0.6, 0.6)

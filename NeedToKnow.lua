@@ -5,6 +5,9 @@
 
 local addonName, addonTable = ...
 
+local Bar = NeedToKnow.Bar
+local Cooldown = NeedToKnow.Cooldown
+
 local trace = print
 
 -- -------------
@@ -34,7 +37,6 @@ local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
 -- local m_last_guid, m_last_cast, m_last_sent, m_last_cast_head, m_last_cast_tail
 -- local m_bInCombat, m_bCombatWithBoss
 
-local Cooldown = NeedToKnow.Cooldown
 local mfn_GetSpellCooldown        = Cooldown.GetSpellCooldown
 local mfn_GetSpellChargesCooldown = Cooldown.GetSpellChargesCooldown
 local mfn_GetAutoShotCooldown     = Cooldown.GetAutoShotCooldown
@@ -44,9 +46,11 @@ local mfn_GetUnresolvedCooldown   = Cooldown.GetUnresolvedCooldown
 -- local mfn_GetAutoShotCooldown
 -- local mfn_GetUnresolvedCooldown
 
+-- local mfn_SetStatusBarValue = Bar.SetValue
+
+-- local mfn_SetStatusBarValue
 local mfn_Bar_AuraCheck = addonTable.mfn_Bar_AuraCheck
 -- local mfn_Bar_AuraCheck
-
 local mfn_AuraCheck_Single
 local mfn_AuraCheck_TOTEM
 local mfn_AuraCheck_BUFFCD
@@ -55,7 +59,6 @@ local mfn_AuraCheck_EQUIPSLOT
 local mfn_AuraCheck_CASTCD
 local mfn_AuraCheck_AllStacks
 local mfn_AddInstanceToStacks
-local mfn_SetStatusBarValue
 local mfn_ResetScratchStacks
 local mfn_UpdateVCT
 
@@ -119,53 +122,7 @@ local c_AURAEVENTS = {
 -- ----
 
 --[[
-function NeedToKnow.SetupSpellCooldown(bar, entry)
-    -- Attempt to figure out if a name is an item or a spell, and if a spell
-    -- try to choose a spell with that name that has a cooldown
-    -- This may fail for valid names if the client doesn't have the data for
-    -- that spell yet (just logged in or changed talent specs), in which case 
-    -- we mark that spell to try again later
-
-    local id = entry.id
-    local name = entry.name
-    local idx = entry.idxName
-    if not id then
-        if ( name == "Auto Shot" or
-             name == c_AUTO_SHOT_NAME ) 
-        then
-            bar.settings.bAutoShot = true
-            bar.cd_functions[idx] = mfn_GetAutoShotCooldown
-        else
-            local item_id = NeedToKnow.GetItemIDString(name)
-            if item_id then
-                entry.id = item_id
-                entry.name = nil
-                bar.cd_functions[idx] = NeedToKnow.GetItemCooldown
-            else
-                local betterSpellID
-                betterSpellID = NeedToKnow.TryToFindSpellWithCD(name)
-                if nil ~= betterSpell then
-                    entry.id = betterSpell
-                    entry.name = nil
-                    bar.cd_functions[idx] = mfn_GetSpellCooldown
-                elseif not GetSpellCooldown(name) then
-                    bar.cd_functions[idx] = mfn_GetUnresolvedCooldown
-                else
-                    bar.cd_functions[idx] = mfn_GetSpellCooldown
-                end
-
-                if ( bar.cd_functions[idx] == mfn_GetSpellCooldown ) then
-                    local key = entry.id or entry.name
-                    if ( bar.settings.show_charges and GetSpellCharges(key) ) then
-                        bar.cd_functions[idx] = mfn_GetSpellChargesCooldown
-                    end
-                end
-            end
-        end
-    end
-end
-]]--
-
+-- Is now Bar:SetValue(texture, value, value0)
 mfn_SetStatusBarValue = function (bar,texture,value,value0)
   local pct0 = 0
   if value0 then
@@ -191,6 +148,7 @@ mfn_SetStatusBarValue = function (bar,texture,value,value0)
       texture:Show()
   end
 end
+]]--
 
 function NeedToKnow.Bar_Update(groupID, barID)
     -- Called when the configuration of the bar has changed, when the addon
@@ -246,7 +204,8 @@ function NeedToKnow.Bar_Update(groupID, barID)
     end
 
     bar.max_value = 1
-    mfn_SetStatusBarValue(bar,bar.bar1,1)
+    -- mfn_SetStatusBarValue(bar,bar.bar1,1)
+    bar:SetValue(bar.bar1, 1)
     bar.bar1:SetTexture(NeedToKnow.LSM:Fetch("statusbar", NeedToKnow.ProfileSettings["BarTexture"]))
     if ( bar.bar2 ) then
         bar.bar2:SetTexture(NeedToKnow.LSM:Fetch("statusbar", NeedToKnow.ProfileSettings["BarTexture"]))
@@ -269,7 +228,8 @@ function NeedToKnow.Bar_Update(groupID, barID)
     
     bar:SetWidth(groupSettings.Width)
     bar.text:SetWidth(groupSettings.Width-60)
-    NeedToKnow.SizeBackground(bar, barSettings.show_icon)
+    -- NeedToKnow.SizeBackground(bar, barSettings.show_icon)
+    bar:SetBackgroundSize(barSettings.show_icon)
 
     background:SetHeight(bar:GetHeight() + 2*NeedToKnow.ProfileSettings["BarPadding"])
     background:SetVertexColor(unpack(NeedToKnow.ProfileSettings["BkgdColor"]))
@@ -400,11 +360,13 @@ function NeedToKnow.Bar_Update(groupID, barID)
             -- Events were cleared while unlocked, so need to check the bar again now
             mfn_Bar_AuraCheck(bar)
         else
-            NeedToKnow.ClearScripts(bar)
+            -- NeedToKnow.ClearScripts(bar)
+            bar:ClearScripts()
             bar:Hide()
         end
     else
-        NeedToKnow.ClearScripts(bar)
+        -- NeedToKnow.ClearScripts(bar)
+        bar:ClearScripts()
         -- Set up the bar to be configured
         bar:EnableMouse(true)
 
@@ -461,6 +423,8 @@ function NeedToKnow.Bar_Update(groupID, barID)
     end
 end
 
+--[[
+-- Is now Bar:CheckCombatLogRegistration(force)
 function NeedToKnow.CheckCombatLogRegistration(bar, force)
     if UnitExists(bar.unit) then
         bar:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -468,6 +432,7 @@ function NeedToKnow.CheckCombatLogRegistration(bar, force)
         bar:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     end
 end
+]]--
 
 function NeedToKnow.SetScripts(bar)
     bar:SetScript("OnEvent", NeedToKnow.Bar_OnEvent)
@@ -502,7 +467,8 @@ function NeedToKnow.SetScripts(bar)
         bar:RegisterEvent("PLAYER_TARGET_CHANGED")
         bar:RegisterEvent("UNIT_TARGET")
         -- WORKAROUND: Don't get UNIT_AURA for targettarget
-        NeedToKnow.CheckCombatLogRegistration(bar)
+        -- NeedToKnow.CheckCombatLogRegistration(bar)
+        bar:CheckCombatLogRegistration()
     else
         bar:RegisterEvent("UNIT_AURA")
     end
@@ -549,6 +515,8 @@ function NeedToKnow.SetScripts(bar)
     end
 end
 
+--[[
+-- Is now Bar:ClearScripts()
 function NeedToKnow.ClearScripts(bar)
     bar:SetScript("OnEvent", nil)
     bar:SetScript("OnUpdate", nil)
@@ -578,7 +546,10 @@ function NeedToKnow.ClearScripts(bar)
         end
     end
 end
+]]--
 
+--[[
+-- Is now Bar:OnSizeChanged()
 function NeedToKnow.Bar_OnSizeChanged(self)
     if (self.bar1.cur_value) then 
     	mfn_SetStatusBarValue(self, self.bar1, self.bar1.cur_value)
@@ -587,6 +558,7 @@ function NeedToKnow.Bar_OnSizeChanged(self)
     	mfn_SetStatusBarValue(self, self.bar2, self.bar2.cur_value, self.bar1.cur_value)
     end
 end
+]]--
 
 function NeedToKnow.ComputeBarText(buffName, count, extended, buff_stacks, bar)
     -- AuraCheck calls on this to compute the "text" of the bar
@@ -661,6 +633,8 @@ mfn_UpdateVCT = function (bar)
     end
 end
 
+--[[
+-- Is now Bar:SetBackgroundSize(showIcon)
 function NeedToKnow.SizeBackground(bar, i_show_icon)
     local background = _G[bar:GetName() .. "Background"]
     local bgWidth = bar:GetWidth() + 2*NeedToKnow.ProfileSettings["BarPadding"]
@@ -676,6 +650,7 @@ function NeedToKnow.SizeBackground(bar, i_show_icon)
     background:SetWidth(bgWidth)
     background:SetPoint("TOPLEFT", bar, "TOPLEFT", x, y)
 end
+]]--
 
 function NeedToKnow.CreateBar2(bar)
     if ( not bar.bar2 ) then
@@ -709,10 +684,12 @@ function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
     if ( bar.settings.show_icon and bar.iconPath and bar.icon ) then
         bar.icon:SetTexture(bar.iconPath)
         bar.icon:Show()
-        NeedToKnow.SizeBackground(bar, true)
+        -- NeedToKnow.SizeBackground(bar, true)
+        bar:SetBackgroundSize(true)
     elseif bar.icon then
         bar.icon:Hide()
-        NeedToKnow.SizeBackground(bar, false)
+        -- NeedToKnow.SizeBackground(bar, false)
+        bar:SetBackgroundSize(true)
     end
 
     bar.bar1:SetVertexColor(bar.settings.BarColor.r, bar.settings.BarColor.g, bar.settings.BarColor.b)
@@ -802,8 +779,12 @@ function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
         -- Hide the time text and spark for auras with "infinite" duration
         bar.max_value = 1
 
-        mfn_SetStatusBarValue(bar,bar.bar1,1)
-        if bar.bar2 then mfn_SetStatusBarValue(bar,bar.bar2,1) end
+        -- mfn_SetStatusBarValue(bar,bar.bar1,1)
+        bar:SetValue(bar.bar1, 1)
+        if bar.bar2 then 
+        	-- mfn_SetStatusBarValue(bar,bar.bar2,1) 
+        	bar:SetValue(bar.bar2, 1) 
+        end
 
         bar.time:Hide()
         bar.spark:Hide()
@@ -826,48 +807,18 @@ function NeedToKnow.ConfigureBlinkingBar(bar)
     bar.time:Hide()
     bar.spark:Hide()
     bar.max_value = 1
-    mfn_SetStatusBarValue(bar,bar.bar1,1)
+    -- mfn_SetStatusBarValue(bar,bar.bar1,1)
+    bar:SetValue(bar.bar1, 1)
     
     if ( bar.icon ) then
         bar.icon:Hide()
-        NeedToKnow.SizeBackground(bar, false)
+        -- NeedToKnow.SizeBackground(bar, false)
+        bar:SetBackgroundSize(false)
     end
     if ( bar.bar2 ) then
         bar.bar2:Hide()
     end
 end
-
---[[
-function NeedToKnow.GetUtilityTooltips()
-    if ( not NeedToKnow_Tooltip1 ) then
-        for idxTip = 1,2 do
-            local ttname = "NeedToKnow_Tooltip"..idxTip
-            local tt = CreateFrame("GameTooltip", ttname)
-            tt:SetOwner(UIParent, "ANCHOR_NONE")
-            tt.left = {}
-            tt.right = {}
-            -- Most of the tooltip lines share the same text widget,
-            -- But we need to query the third one for cooldown info
-            for i = 1, 30 do
-                tt.left[i] = tt:CreateFontString()
-                tt.left[i]:SetFontObject(GameFontNormal)
-                if i < 5 then
-                    tt.right[i] = tt:CreateFontString()
-                    tt.right[i]:SetFontObject(GameFontNormal)
-                    tt:AddFontStrings(tt.left[i], tt.right[i])
-                else
-                    tt:AddFontStrings(tt.left[i], tt.right[4])
-                end
-            end 
-         end
-    end
-    local tt1,tt2 = NeedToKnow_Tooltip1, NeedToKnow_Tooltip2
-    
-    tt1:ClearLines()
-    tt2:ClearLines()
-    return tt1,tt2
-end
-]]--
 
 -- NephMakes: I don't think temporary enchants aren't a thing anymore, 
 -- but keep this for potential use in WoW Classic
@@ -912,207 +863,6 @@ function NeedToKnow.DetermineTempEnchantFromTooltip(i_invID)
 end
 ]]--
 
---[[
-function NeedToKnow.DetermineShortCooldownFromTooltip(spell)
-    -- Looks at the tooltip for the given spell to see if a cooldown 
-    -- is listed with a duration in seconds.  Longer cooldowns don't
-    -- need this logic, so we don't need to do unit conversion
-
-    if not NeedToKnow.short_cds then
-        NeedToKnow.short_cds = {}
-    end
-    if not NeedToKnow.short_cds[spell] then
-        -- Figure out what a cooldown in seconds should look like
-        local ref = SecondsToTime(10):lower()
-        local unit_ref = ref:match("10 (.+)")
-
-        -- Get the number and unit of the cooldown from the tooltip
-        local tt1 = NeedToKnow.GetUtilityTooltips()
-        local lnk = GetSpellLink(spell)
-        local cd, n_cd, unit_cd
-        if lnk and lnk ~= "" then
-            tt1:SetHyperlink( lnk )
-            
-            for iTT=3,2,-1 do
-                cd = tt1.right[iTT]:GetText()
-                if cd then 
-                    cd = cd:lower()
-                    n_cd, unit_cd = cd:match("(%d+) (.+) ")
-                end
-                if n_cd then break end
-            end
-        end
-
-        -- unit_ref will be "|4sec:sec;" in english, so do a find rather than a ==
-        if not n_cd then 
-            -- If we couldn't parse the tooltip, assume there's no cd
-            NeedToKnow.short_cds[spell] = 0
-        elseif unit_ref:find(unit_cd) then
-            NeedToKnow.short_cds[spell] = tonumber(n_cd)
-        else
-            -- Not a short cooldown.  Record it as a minute
-            NeedToKnow.short_cds[spell] = 60
-        end
-    end
-
-    return NeedToKnow.short_cds[spell]
-end
-]]--
-
---[[
-function NeedToKnow.TryToFindSpellWithCD(barSpell)
-    -- Search the player's spellbook for a spell that matches 
-    -- todo: cache this result?
-
-    if NeedToKnow.DetermineShortCooldownFromTooltip(barSpell) > 0 then return barSpell end
-    
-    for iBook = 1, g_GetNumSpellTabs() do
-        local sBook,_,iFirst,nSpells = g_GetSpellTabInfo(iBook)
-        for iSpell=iFirst+1, iFirst+nSpells do
-            local sName = g_GetSpellInfo(iSpell, sBook)
-            if sName == barSpell then
-                local sLink = GetSpellLink(iSpell, sBook)
-                local sID = sLink:match("spell:(%d+)")
-                local start = GetSpellCooldown(sID)
-                if start then
-                    local ttcd = NeedToKnow.DetermineShortCooldownFromTooltip(sID)
-                    if ttcd and ttcd>0 then
-                        return sID
-                    end
-                end
-            end
-        end
-    end
-end
-]]--
-
---[[
-function NeedToKnow.GetItemIDString(id_or_name)
-    local _, link = GetItemInfo(id_or_name)
-    if link then
-        local idstring = link:match("item:(%d+):")
-        if idstring then
-            return idstring
-        end
-    end
-end
-]]--
-
---[[
-mfn_GetAutoShotCooldown = function(bar)
-    -- Helper for mfn_AuraCheck_CASTCD which gets the autoshot cooldown
-    local tNow = g_GetTime()
-    if ( bar.tAutoShotStart and bar.tAutoShotStart + bar.tAutoShotCD > tNow ) then
-        local n, _, icon = g_GetSpellInfo(75)
-        return bar.tAutoShotStart, bar.tAutoShotCD, 1, c_AUTO_SHOT_NAME, icon
-    else
-        bar.tAutoShotStart = nil
-    end
-end
-]]--
-
---[[
-mfn_GetUnresolvedCooldown = function(bar, entry)
-    -- Helper for mfn_AuraCheck_CASTCD for names we haven't figured out yet
-    NeedToKnow.SetupSpellCooldown(bar, entry)
-    local fn = bar.cd_functions[entry.idxName]
-    if mfn_GetUnresolvedCooldown ~= fn then
-        return fn(bar, entry)
-    end
-end
-]]--
-
---[[
-mfn_GetSpellCooldown = function(bar, entry)
-    -- Wrapper around GetSpellCooldown with extra sauce
-    -- Expected to return start, cd_len, enable, buffName, iconpath
-    local barSpell = entry.id or entry.name
-    local start, cd_len, enable = GetSpellCooldown(barSpell)
-    if start and start > 0 then
-        local spellName, _, spellIconPath, _, _, _, spellId = g_GetSpellInfo(barSpell)
-        if not spellName then 
-            if not NeedToKnow.GSIBroken then 
-                NeedToKnow.GSIBroken = {} 
-            end
-            if  not NeedToKnow.GSIBroken[barSpell] then
-                print("NeedToKnow: Warning! Unable to get spell info for",barSpell,".  Try using Spell ID instead.")
-                NeedToKnow.GSIBroken[barSpell] = true;
-            end
-            spellName = tostring(barSpell)
-        end
-
-        if 0 == enable then 
-            -- Filter out conditions like Stealth while stealthed
-            start = nil
-        elseif NeedToKnow.is_DK == 1 then
-		    local usesRunes=nil
-		    local costInfo = g_GetSpellPowerCost(spellId)
-			local nCosts = table.getn(costInfo)
-			for iCost=1,nCosts do
-			    if costInfo[iCost].type == SPELL_POWER_RUNES then  
-				    usesRunes=true
-				end
-			end
-
-			if ( usesRunes ) then
-				-- Filter out rune cooldown artificially extending the cd
-				if cd_len <= 10 then
-					local tNow = g_GetTime()
-					if bar.expirationTime and tNow < bar.expirationTime then
-						-- We've already seen the correct CD for this; keep using it
-						start = bar.expirationTime - bar.duration
-						cd_len = bar.duration
-					elseif m_last_sent and m_last_sent[spellName] and m_last_sent[spellName] > (tNow - 1.5) then
-						-- We think the spell was just cast, and a CD just started but it's short.
-						-- Look at the tooltip to tell what the correct CD should be. If it's supposed
-						-- to be short (Ghoul Frenzy, Howling Blast), then start a CD bar
-						cd_len = NeedToKnow.DetermineShortCooldownFromTooltip(barSpell)
-						if cd_len == 0 or cd_len > 10 then
-							start = nil
-						end
-					else
-						start = nil
-					end
-				end
-			end
-        end
-        
-        if start then
-            return start, cd_len, enable, spellName, spellIconPath
-        end
-    end
-end
-]]--
-
---[[
-mfn_GetSpellChargesCooldown = function(bar, entry)
-    local barSpell = entry.id or entry.name
-    local cur, max, charge_start, recharge = GetSpellCharges(barSpell)
-    if ( cur ~= max ) then
-        local start, cd_len, enable, spellName, spellIconPath 
-        if ( cur == 0 ) then
-            start, cd_len, enable, spellName, spellIconPath = mfn_GetSpellCooldown(bar, entry)
-            return start, cd_len, enable, spellName, spellIconPath, max, charge_start
-        else
-            local spellName, _, spellIconPath = g_GetSpellInfo(barSpell)
-            if not spellName then spellName = barSpell end
-            return charge_start, recharge, 1, spellName, spellIconPath, max-cur
-        end
-    end
-end
-]]--
-
---[[
-function NeedToKnow.GetItemCooldown(bar, entry)
-    -- Wrapper around GetItemCooldown
-    -- Expected to return start, cd_len, enable, buffName, iconpath
-    local start, cd_len, enable = GetItemCooldown(entry.id)
-    if start then
-        local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(entry.id)
-        return start, cd_len, enable, name, icon
-    end
-end
-]]--
 
 mfn_AddInstanceToStacks = function (all_stacks, bar_entry, duration, name, count, expirationTime, iconPath, caster, tt1, tt2, tt3)
     if duration then
@@ -1698,7 +1448,8 @@ function NeedToKnow.Bar_OnUpdate(self, elapsed)
                 end
                 bar1_timeLeft = 0
             end
-            mfn_SetStatusBarValue(self, self.bar1, bar1_timeLeft);
+            -- mfn_SetStatusBarValue(self, self.bar1, bar1_timeLeft);
+            self:SetValue(self.bar1, bar1_timeLeft);
             if ( self.settings.show_time ) then
                 local fn = NeedToKnow[self.settings.TimeFormat]
                 local oldText = self.time:GetText()
@@ -1725,7 +1476,8 @@ function NeedToKnow.Bar_OnUpdate(self, elapsed)
             
             if ( self.max_expirationTime ) then
                 local bar2_timeLeft = self.max_expirationTime - g_GetTime()
-                mfn_SetStatusBarValue(self, self.bar2, bar2_timeLeft, bar1_timeLeft)
+                -- mfn_SetStatusBarValue(self, self.bar2, bar2_timeLeft, bar1_timeLeft)
+                self:SetValue(self.bar2, bar2_timeLeft, bar1_timeLeft)
             end
             
             if ( self.vct_refresh ) then
@@ -1783,14 +1535,16 @@ EDT["UNIT_AURA"] = fnAuraCheckIfUnitMatches
 EDT["UNIT_HEALTH"] = mfn_Bar_AuraCheck
 EDT["PLAYER_TARGET_CHANGED"] = function(self, unit)
     if self.unit == "targettarget" then
-        NeedToKnow.CheckCombatLogRegistration(self)
+        -- NeedToKnow.CheckCombatLogRegistration(self)
+        self:CheckCombatLogRegistration()
     end
     mfn_Bar_AuraCheck(self)
 end  
 EDT["PLAYER_FOCUS_CHANGED"] = EDT["PLAYER_TARGET_CHANGED"]
 EDT["UNIT_TARGET"] = function(self, unit)
     if unit == "target" and self.unit == "targettarget" then
-        NeedToKnow.CheckCombatLogRegistration(self)
+        -- NeedToKnow.CheckCombatLogRegistration(self)
+        self:CheckCombatLogRegistration()
     end
     mfn_Bar_AuraCheck(self)
 end  

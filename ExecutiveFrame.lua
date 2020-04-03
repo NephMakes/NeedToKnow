@@ -25,7 +25,7 @@ local m_bInCombat       = addonTable.m_bInCombat
 local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
 
 -- Other functions defined elsewhere
-local mfn_Bar_AuraCheck = addonTable.mfn_Bar_AuraCheck
+local mfn_Bar_AuraCheck = addonTable.mfn_Bar_AuraCheck  -- I don't think this works as is
 
 
 -- ---------------
@@ -187,11 +187,11 @@ function ExecutiveFrame:ACTIVE_TALENT_GROUP_CHANGED()
 end
 
 function ExecutiveFrame:PLAYER_TALENT_UPDATE()
-	if NeedToKnow.CharSettings then
+	if ( NeedToKnow.CharSettings ) then
 		local spec = g_GetActiveTalentGroup()
 		local profile_key = NeedToKnow.CharSettings.Specs[spec]
-		if not profile_key then
-			print("NeedToKnow: Switching to spec",spec,"for the first time")
+		if ( not profile_key ) then
+			print("NeedToKnow: Switching to spec", spec, "for the first time")
 			profile_key = NeedToKnow.CreateProfile(CopyTable(NEEDTOKNOW.PROFILE_DEFAULTS), spec)
 		end
 		NeedToKnow.ChangeProfile(profile_key);

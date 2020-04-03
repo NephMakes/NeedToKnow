@@ -5,8 +5,13 @@
 -- (the menu items are blank otherwise). Why? Make it more robust and independent. 
 
 -- local addonName, addonTable = ...
-
+-- local BarMenu = NeedToKnow.BarMenu
 local NeedToKnowRMB = NeedToKnow.BarMenu
+
+-- Note: 
+-- NeedToKnow.BarMenu = CreateFrame("Frame", "NeedToKnowDropDown", nil, "NeedToKnow_DropDownTemplate")
+-- Won't work because XML templates loaded last
+-- Also, BarMenu:Methods() might clash with inherited UIDropDownMenuTemplate
 
 NeedToKnowRMB.CurrentBar = { groupID = 1, barID = 1 };  -- a dirty hack, i know.  
 
