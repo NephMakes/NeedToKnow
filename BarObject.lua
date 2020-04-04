@@ -11,12 +11,13 @@ function Bar:OnLoad()
 	self:SetScript("OnDragStart",   Bar.OnDragStart)
 	self:SetScript("OnDragStop",    Bar.OnDragStop)
 	self:SetScript("OnSizeChanged", Bar.OnSizeChanged)
+
 	self.SetValue                 = Bar.SetValue
 	-- self.Update = Bar.Update
 	-- self.SetAppearance = Bar.SetAppearance
 	self.SetBackgroundSize = Bar.SetBackgroundSize
 	-- self.Lock = Bar.Lock
-	-- self.Unlock = Bar.Unlock
+	self.Unlock = Bar.Unlock
 	self.StartBlink = Bar.StartBlink
 
 	-- Defined in BarEngine.lua: 
@@ -51,11 +52,13 @@ function Bar:OnDragStop()
 end
 
 function Bar:OnSizeChanged()
-	if ( self.bar1.cur_value ) then 
-		self:SetValue(self.bar1, self.bar1.cur_value)
+	local bar1 = self.bar1
+	local bar2 = self.bar2
+	if ( bar1.cur_value ) then 
+		self:SetValue(bar1, bar1.cur_value)
 	end
-	if ( self.bar2 and self.bar2.cur_value ) then 
-		self:SetValue(self.bar2, self.bar2.cur_value, self.bar1.cur_value)
+	if ( bar2 and bar2.cur_value ) then 
+		self:SetValue(bar2, bar2.cur_value, bar1.cur_value)
 	end
 end
 
@@ -67,34 +70,23 @@ function Bar:OnMouseUp(button)
 end
 
 function Bar:SetValue(texture, value, value0)
+	-- Called by Bar:OnUpdate(), so we want to be efficient
+	value = math.max(value, 0)
+	local pct = math.min(value/self.max_value, 1)
 	local pct0 = 0
 	if ( value0 ) then
-		pct0 = value0 / self.max_value
-		if ( pct0 > 1 ) then 
-			pct0 = 1
-		end
+		pct0 = math.min(value0/self.max_value, 1)
 	end
 
-	if ( value < 0 ) then
-		-- Kitjan: Happened to me when there was lag 
-		-- right around the time a bar was ending
-		value = 0
-	end
-
-	local pct = value / self.max_value
-	texture.cur_value = value
-	if ( pct > 1 ) then 
-		pct = 1 
-	end
-
-	local w = (pct - pct0) * self:GetWidth()
-	if ( w < 1 ) then 
+	local width = (pct - pct0) * self:GetWidth()
+	if ( width < 1 ) then 
 		texture:Hide()
 	else
-		texture:SetWidth(w)
+		texture:SetWidth(width)
 		texture:SetTexCoord(pct0,0, pct0,1, pct,0, pct,1)
 		texture:Show()
 	end
+	texture.cur_value = value  -- Do we really need to do this every OnUpdate()?
 end
 
 --[[
@@ -121,11 +113,65 @@ end
 function Bar:Lock()
 	-- Set bar for gameplay
 end
+]]--
 
 function Bar:Unlock()
 	-- Set bar for user config
+	self:Show()
+	self:EnableMouse(true)
+
+	self.Spark:Hide()
+	self.Time:Hide()
+	if ( self.bar2 ) then
+		self.bar2:Hide()
+	end
+	if ( self.icon ) then
+		self.icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+	end
+	if ( self.vct ) then
+		self.vct:SetWidth(self:GetWidth()/16)
+		self.vct:Show()
+	end
+
+	local settings = self.settings
+
+	local barColor = settings.BarColor
+	self.bar1:SetVertexColor(barColor.r, barColor.g, barColor.b)
+	self.bar1:SetAlpha(barColor.a)
+
+	local txt = ""
+	if ( settings.show_mypip ) then
+		txt = txt.."* "
+	end
+	if ( settings.show_text ) then
+		if ( "" ~= settings.show_text_user ) then
+			txt = settings.show_text_user
+		else
+			txt = txt .. NeedToKnow.PrettyName(settings)
+		end
+
+		if ( settings.append_cd
+			 and (settings.BuffOrDebuff == "CASTCD"
+			   or settings.BuffOrDebuff == "BUFFCD"
+			   or settings.BuffOrDebuff == "EQUIPSLOT" ) )
+		then
+			txt = txt .. " CD"
+		elseif ( settings.append_usable and settings.BuffOrDebuff == "USABLE" ) then
+			txt = txt .. " Usable"
+		end
+
+		if ( settings.bDetectExtends == true ) then
+			txt = txt .. " + 3s"
+		end
+	end
+	self.Text:SetText(txt)
+
+	if ( settings.Enabled ) then
+		self:SetAlpha(1)
+	else
+		self:SetAlpha(0.4)
+	end
 end
-]]--
 
 function Bar:StartBlink()
 	local settings = self.settings
@@ -133,15 +179,16 @@ function Bar:StartBlink()
 	if ( not self.blink ) then
 		self.blink = true
 		self.blink_phase = 1
-		self.bar1:SetVertexColor(settings.MissingBlink.r, settings.MissingBlink.g, settings.MissingBlink.b)
-		self.bar1:SetAlpha(settings.MissingBlink.a)
+		local blinkColor = settings.MissingBlink
+		self.bar1:SetVertexColor(blinkColor.r, blinkColor.g, blinkColor.b)
+		self.bar1:SetAlpha(blinkColor.a)
 	end
 	self.max_value = 1
 	self:SetValue(self.bar1, 1)
-	self.text:SetText(settings.blink_label)
+	self.Text:SetText(settings.blink_label)
 
-	self.time:Hide()
-	self.spark:Hide()
+	self.Time:Hide()
+	self.Spark:Hide()
 	if ( self.icon ) then
 		self.icon:Hide()
 		self:SetBackgroundSize(false)

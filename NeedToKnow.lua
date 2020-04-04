@@ -93,7 +93,7 @@ m_scratch.bar_entry = {
 	isSpellID = false,
 }
 
-local c_UPDATE_INTERVAL = 0.025  -- equivalent to 40 frames per second
+local c_UPDATE_INTERVAL = 0.03  -- equivalent to ~33 frames per second
 local c_MAXBARS = 20
 local c_AUTO_SHOT_NAME = g_GetSpellInfo(75) -- Localized name for Auto Shot
 
@@ -362,6 +362,9 @@ function NeedToKnow.Bar_Update(groupID, barID)
     else
         -- NeedToKnow.ClearScripts(bar)
         bar:ClearScripts()
+		bar:Unlock()
+
+		--[[
         -- Set up the bar to be configured
         bar:EnableMouse(true)
 
@@ -415,6 +418,7 @@ function NeedToKnow.Bar_Update(groupID, barID)
         else
             bar:SetAlpha(0.4)
         end
+        ]]--
     end
 end
 
