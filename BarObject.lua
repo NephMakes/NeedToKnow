@@ -11,18 +11,19 @@ function Bar:OnLoad()
 	self:SetScript("OnDragStart",   Bar.OnDragStart)
 	self:SetScript("OnDragStop",    Bar.OnDragStop)
 	self:SetScript("OnSizeChanged", Bar.OnSizeChanged)
-
-	self.SetValue = Bar.SetValue
-	--	self.SetAppearance = Bar.SetAppearance
+	self.SetValue                 = Bar.SetValue
+	-- self.Update = Bar.Update
+	-- self.SetAppearance = Bar.SetAppearance
 	self.SetBackgroundSize = Bar.SetBackgroundSize
-	--	self.Lock = Bar.Lock
-	--	self.Unlock = Bar.Unlock
+	-- self.Lock = Bar.Lock
+	-- self.Unlock = Bar.Unlock
+	self.StartBlink = Bar.StartBlink
 
 	-- Defined in BarEngine.lua: 
-	--	self:SetScript("OnEvent", Bar.OnEvent)
-	--	self.Update = Bar.Update
-	--	self.SetType = Bar.SetType
-	--	self.SetScripts = Bar.SetScripts
+	-- self:SetScript("OnEvent", Bar.OnEvent)
+	-- self.SetType = Bar.SetType
+	-- self.Initialize = Bar.Initialize
+	self.SetScripts = Bar.SetScripts
 	self.ClearScripts = Bar.ClearScripts
 	self.CheckCombatLogRegistration = Bar.CheckCombatLogRegistration
 end
@@ -97,7 +98,8 @@ function Bar:SetValue(texture, value, value0)
 end
 
 --[[
-function Bar:SetAppearance()
+-- function Bar:SetAppearance()
+function Bar:Update()
 end
 ]]--
 
@@ -124,5 +126,30 @@ function Bar:Unlock()
 	-- Set bar for user config
 end
 ]]--
+
+function Bar:StartBlink()
+	local settings = self.settings
+
+	if ( not self.blink ) then
+		self.blink = true
+		self.blink_phase = 1
+		self.bar1:SetVertexColor(settings.MissingBlink.r, settings.MissingBlink.g, settings.MissingBlink.b)
+		self.bar1:SetAlpha(settings.MissingBlink.a)
+	end
+	self.max_value = 1
+	self:SetValue(self.bar1, 1)
+	self.text:SetText(settings.blink_label)
+
+	self.time:Hide()
+	self.spark:Hide()
+	if ( self.icon ) then
+		self.icon:Hide()
+		self:SetBackgroundSize(false)
+	end
+	if ( self.bar2 ) then
+		self.bar2:Hide()
+	end
+end
+
 
 

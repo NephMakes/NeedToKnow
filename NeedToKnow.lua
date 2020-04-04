@@ -41,12 +41,6 @@ local mfn_GetSpellCooldown        = Cooldown.GetSpellCooldown
 local mfn_GetSpellChargesCooldown = Cooldown.GetSpellChargesCooldown
 local mfn_GetAutoShotCooldown     = Cooldown.GetAutoShotCooldown
 local mfn_GetUnresolvedCooldown   = Cooldown.GetUnresolvedCooldown
--- local mfn_GetSpellCooldown
--- local mfn_GetSpellChargesCooldown
--- local mfn_GetAutoShotCooldown
--- local mfn_GetUnresolvedCooldown
-
--- local mfn_SetStatusBarValue = Bar.SetValue
 
 -- local mfn_SetStatusBarValue
 local mfn_Bar_AuraCheck = addonTable.mfn_Bar_AuraCheck
@@ -356,7 +350,8 @@ function NeedToKnow.Bar_Update(groupID, barID)
                 end
             end
         
-            NeedToKnow.SetScripts(bar)
+            -- NeedToKnow.SetScripts(bar)
+            bar:SetScripts()
             -- Events were cleared while unlocked, so need to check the bar again now
             mfn_Bar_AuraCheck(bar)
         else
@@ -379,7 +374,7 @@ function NeedToKnow.Bar_Update(groupID, barID)
             bar.icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
         end
         if ( bar.vct ) then
-            bar.vct:SetWidth( bar:GetWidth() / 16)
+            bar.vct:SetWidth(bar:GetWidth()/16)
             bar.vct:Show()
         end
         if ( bar.bar2 ) then
@@ -434,7 +429,9 @@ function NeedToKnow.CheckCombatLogRegistration(bar, force)
 end
 ]]--
 
+--[[
 function NeedToKnow.SetScripts(bar)
+	-- Is now Bar:SetScripts()
     bar:SetScript("OnEvent", NeedToKnow.Bar_OnEvent)
  
     if ( bar.ticker ) then
@@ -451,15 +448,6 @@ function NeedToKnow.SetScripts(bar)
         bar:RegisterEvent("SPELL_UPDATE_COOLDOWN")
     elseif ( "EQUIPSLOT" == bar.settings.BuffOrDebuff ) then
         bar:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
-    --[[
-    elseif ( "POWER" == bar.settings.BuffOrDebuff ) then
-        if bar.settings.AuraName == tostring(NEEDTOKNOW.SPELL_POWER_STAGGER) then
-          bar:RegisterEvent("UNIT_HEALTH")
-        else
-          bar:RegisterEvent("UNIT_POWER")
-          bar:RegisterEvent("UNIT_DISPLAYPOWER")
-        end
-    ]]--
     elseif ( "USABLE" == bar.settings.BuffOrDebuff ) then
         bar:RegisterEvent("SPELL_UPDATE_USABLE")
     elseif ( bar.settings.Unit == "targettarget" ) then
@@ -514,6 +502,7 @@ function NeedToKnow.SetScripts(bar)
         NeedToKnow.BossStateBars[bar] = 1;
     end
 end
+]]--
 
 --[[
 -- Is now Bar:ClearScripts()
@@ -548,18 +537,6 @@ function NeedToKnow.ClearScripts(bar)
 end
 ]]--
 
---[[
--- Is now Bar:OnSizeChanged()
-function NeedToKnow.Bar_OnSizeChanged(self)
-    if (self.bar1.cur_value) then 
-    	mfn_SetStatusBarValue(self, self.bar1, self.bar1.cur_value)
-    end
-    if (self.bar2 and self.bar2.cur_value) then 
-    	mfn_SetStatusBarValue(self, self.bar2, self.bar2.cur_value, self.bar1.cur_value)
-    end
-end
-]]--
-
 function NeedToKnow.ComputeBarText(buffName, count, extended, buff_stacks, bar)
     -- AuraCheck calls on this to compute the "text" of the bar
     -- It is separated out like this in part to be hooked by other addons
@@ -587,7 +564,7 @@ end
 
 function NeedToKnow.ComputeVCTDuration(bar)
     -- Called by mfn_UpdateVCT, which is called from AuraCheck and possibly 
-    -- by Bar_Update depending on vct_refresh. In addition to refactoring out some 
+    -- by Bar_OnUpdate depending on vct_refresh. In addition to refactoring out some 
     -- code from the long AuraCheck, this also provides a convenient hook for other addons
 
     local vct_duration = 0
@@ -632,25 +609,6 @@ mfn_UpdateVCT = function (bar)
         bar.vct:Hide()
     end
 end
-
---[[
--- Is now Bar:SetBackgroundSize(showIcon)
-function NeedToKnow.SizeBackground(bar, i_show_icon)
-    local background = _G[bar:GetName() .. "Background"]
-    local bgWidth = bar:GetWidth() + 2*NeedToKnow.ProfileSettings["BarPadding"]
-    local y = NeedToKnow.ProfileSettings["BarPadding"]
-    local x = -y
-    background:ClearAllPoints()
-
-    if ( i_show_icon ) then
-        local iconExtra = bar:GetHeight() + NeedToKnow.ProfileSettings["BarPadding"]
-        bgWidth = bgWidth + iconExtra
-        x = x - iconExtra
-    end
-    background:SetWidth(bgWidth)
-    background:SetPoint("TOPLEFT", bar, "TOPLEFT", x, y)
-end
-]]--
 
 function NeedToKnow.CreateBar2(bar)
     if ( not bar.bar2 ) then
@@ -795,6 +753,7 @@ function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
     end
 end
 
+--[[
 function NeedToKnow.ConfigureBlinkingBar(bar)
     local settings = bar.settings
     if ( not bar.blink ) then
@@ -819,6 +778,7 @@ function NeedToKnow.ConfigureBlinkingBar(bar)
         bar.bar2:Hide()
     end
 end
+]]--
 
 -- NephMakes: I don't think temporary enchants aren't a thing anymore, 
 -- but keep this for potential use in WoW Classic
@@ -1385,10 +1345,11 @@ mfn_Bar_AuraCheck = function (bar)
             end
         end
         if ( bBlink ) then
-            NeedToKnow.ConfigureBlinkingBar(bar)
+            -- NeedToKnow.ConfigureBlinkingBar(bar)
+            bar:StartBlink()
             bar:Show()
         else    
-            bar.blink=false
+            bar.blink = false
             bar:Hide()
         end
     end

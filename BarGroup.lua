@@ -41,7 +41,6 @@ function BarGroup:Update()
 		NeedToKnow.Bar_Update(groupID, barID)
 
 		if ( not groupSettings.Enabled ) then
-			-- NeedToKnow.ClearScripts(bar)
 			bar:ClearScripts()
 		end
 	end
@@ -60,7 +59,6 @@ function BarGroup:Update()
 		bar = self.bar[barID]
 		if ( bar ) then
 			bar:Hide()
-			-- NeedToKnow.ClearScripts(bar)
 			bar:ClearScripts()
 			barID = barID + 1
 		else
