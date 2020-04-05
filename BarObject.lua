@@ -4,6 +4,8 @@
 local Bar = NeedToKnow.Bar
 
 function Bar:OnLoad()
+	-- Called by NeedToKnow_BarTemplate
+
 	self:RegisterForDrag("LeftButton")
 	self:SetScript("OnEnter",       Bar.OnEnter)
 	self:SetScript("OnLeave",       Bar.OnLeave)
@@ -12,21 +14,20 @@ function Bar:OnLoad()
 	self:SetScript("OnDragStop",    Bar.OnDragStop)
 	self:SetScript("OnSizeChanged", Bar.OnSizeChanged)
 
-	self.SetValue                 = Bar.SetValue
-	-- self.Update = Bar.Update
-	-- self.SetAppearance = Bar.SetAppearance
+	self.SetValue = Bar.SetValue
+
+	self.SetAppearance = Bar.SetAppearance
 	self.SetBackgroundSize = Bar.SetBackgroundSize
-	-- self.Lock = Bar.Lock
-	self.Unlock = Bar.Unlock
-	self.StartBlink = Bar.StartBlink
+	self.Unlock            = Bar.Unlock
+	self.StartBlink        = Bar.StartBlink
 
 	-- Defined in BarEngine.lua: 
-	-- self:SetScript("OnEvent", Bar.OnEvent)
-	-- self.SetType = Bar.SetType
+	-- self.Update = Bar.Update
 	-- self.Initialize = Bar.Initialize
-	self.SetScripts = Bar.SetScripts
-	self.ClearScripts = Bar.ClearScripts
+	self.SetScripts                 = Bar.SetScripts
+	self.ClearScripts               = Bar.ClearScripts
 	self.CheckCombatLogRegistration = Bar.CheckCombatLogRegistration
+	-- self:SetScript("OnEvent", Bar.OnEvent)
 end
 
 function Bar:OnEnter()
@@ -70,7 +71,8 @@ function Bar:OnMouseUp(button)
 end
 
 function Bar:SetValue(texture, value, value0)
-	-- Called by Bar:OnUpdate(), so we want to be efficient
+	-- Called by Bar:OnUpdate(), so we want to be more efficient than this
+
 	value = math.max(value, 0)
 	local pct = math.min(value/self.max_value, 1)
 	local pct0 = 0
@@ -89,11 +91,58 @@ function Bar:SetValue(texture, value, value0)
 	texture.cur_value = value  -- Do we really need to do this every OnUpdate()?
 end
 
---[[
--- function Bar:SetAppearance()
-function Bar:Update()
+function Bar:SetAppearance()
+	-- Called by Bar:Update()
+
+	local settings = NeedToKnow.ProfileSettings
+	local barSettings = self.settings
+
+	self.Texture:SetTexture(NeedToKnow.LSM:Fetch("statusbar", settings.BarTexture))
+	if ( self.bar2 ) then
+		self.bar2:SetTexture(NeedToKnow.LSM:Fetch("statusbar", settings.BarTexture))
+	end
+
+	local fontPath = NeedToKnow.LSM:Fetch("font", settings.BarFont)
+	if ( fontPath ) then
+		local outline = settings.FontOutline
+		if ( outline == 0 ) then
+			outline = nil
+		elseif ( outline == 1 ) then
+			outline = "OUTLINE"
+		else
+			outline = "THICKOUTLINE"
+		end
+		self.Text:SetFont(fontPath, settings.FontSize, outline)
+		self.Time:SetFont(fontPath, settings.FontSize, outline)
+	end
+	self.Text:SetWidth(self:GetWidth() - 60)
+
+	local icon = self.Icon
+    if ( barSettings.show_icon ) then
+        local size = self:GetHeight()
+        icon:SetSize(size, size)
+        icon:ClearAllPoints()
+        icon:SetPoint("RIGHT", self, "LEFT", -settings.BarPadding, 0)
+        icon:Show()
+    else
+        icon:Hide()
+    end
+
+	local castTime = self.CastTime
+	if ( barSettings.vct_enabled ) then
+		local castColor = barSettings.vct_color
+		castTime:SetColorTexture(castColor.r, castColor.g, castColor.b, castColor.a)
+		castTime:SetHeight(self:GetHeight())
+	else
+		castTime:Hide()
+	end
+	self.vct = self.CastTime  -- Want to not need this eventually
+
+	-- Background
+	self:SetBackgroundSize(barSettings.show_icon)
+	self.Background:SetHeight(self:GetHeight() + 2*settings.BarPadding)
+	self.Background:SetVertexColor(unpack(settings.BkgdColor))
 end
-]]--
 
 function Bar:SetBackgroundSize(showIcon)
 	local background = self.Background
@@ -109,14 +158,10 @@ function Bar:SetBackgroundSize(showIcon)
 	background:SetWidth(bgWidth)
 end
 
---[[
-function Bar:Lock()
-	-- Set bar for gameplay
-end
-]]--
-
 function Bar:Unlock()
 	-- Set bar for user config
+	-- Called by Bar:Update()
+
 	self:Show()
 	self:EnableMouse(true)
 
@@ -125,19 +170,15 @@ function Bar:Unlock()
 	if ( self.bar2 ) then
 		self.bar2:Hide()
 	end
-	if ( self.icon ) then
-		self.icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
-	end
-	if ( self.vct ) then
-		self.vct:SetWidth(self:GetWidth()/16)
-		self.vct:Show()
-	end
+	self.Icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+	self.CastTime:SetWidth(self:GetWidth()/16)
+	self.CastTime:Show()
 
 	local settings = self.settings
 
 	local barColor = settings.BarColor
-	self.bar1:SetVertexColor(barColor.r, barColor.g, barColor.b)
-	self.bar1:SetAlpha(barColor.a)
+	self.Texture:SetVertexColor(barColor.r, barColor.g, barColor.b)
+	self.Texture:SetAlpha(barColor.a)
 
 	local txt = ""
 	if ( settings.show_mypip ) then
@@ -189,10 +230,8 @@ function Bar:StartBlink()
 
 	self.Time:Hide()
 	self.Spark:Hide()
-	if ( self.icon ) then
-		self.icon:Hide()
-		self:SetBackgroundSize(false)
-	end
+	self.Icon:Hide()
+	self:SetBackgroundSize(false)
 	if ( self.bar2 ) then
 		self.bar2:Hide()
 	end

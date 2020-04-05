@@ -82,6 +82,20 @@
                     </Anchors>
                 </Texture>
             </Layer>
+            <Layer level="ARTWORK">
+                <Texture name="$parentIcon" parentKey="Icon">
+                    <Anchors>
+                        <Anchor point="RIGHT" relativeTo="$parent" relativePoint="LEFT">
+                        </Anchor>
+                    </Anchors>
+                </Texture>
+                <Texture name="$parentCastTime" parentKey="CastTime" alphaMode="ADD">
+                    <Anchors>
+                        <Anchor point="LEFT" relativeTo="$parent" relativePoint="LEFT">
+                        </Anchor>
+                    </Anchors>
+                </Texture>
+            </Layer>
             <Layer level="OVERLAY">
                 <FontString name="$parentText" parentKey="Text" inherits="GameFontHighlight" justifyH="LEFT">
                     <Size>

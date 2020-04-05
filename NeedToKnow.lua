@@ -115,45 +115,20 @@ local c_AURAEVENTS = {
 -- BARS
 -- ----
 
---[[
--- Is now Bar:SetValue(texture, value, value0)
-mfn_SetStatusBarValue = function (bar,texture,value,value0)
-  local pct0 = 0
-  if value0 then
-    pct0 = value0 / bar.max_value
-    if pct0 > 1 then pct0 = 1 end
-  end
-  
-  -- This happened to me when there was lag right around the time
-  -- a bar was ending
-  if value < 0 then
-    value = 0
-  end
-
-  local pct = value / bar.max_value
-  texture.cur_value = value
-  if pct > 1 then pct = 1 end
-  local w = (pct-pct0) * bar:GetWidth()
-  if w < 1 then 
-      texture:Hide()
-  else
-      texture:SetWidth(w)
-      texture:SetTexCoord(pct0,0, pct0,1, pct,0, pct,1)
-      texture:Show()
-  end
-end
-]]--
-
 function NeedToKnow.Bar_Update(groupID, barID)
     -- Called when the configuration of the bar has changed, when the addon
     -- is loaded, and when locked and unlocked
+
+	-- Called by BarGroup:Update() and various BarMenu:Methods()
 
     local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
 
     local barName = "NeedToKnow_Group"..groupID.."Bar"..barID
     local bar = _G[barName]
     if not bar then
-        -- New bar added in the UI; need to create it!
+        -- Kitjan: New bar added in the UI; need to create it!
+        -- NephMakes: Wouldn't this be covered by BarGroup:Update()? 
+
         local group = _G["NeedToKnow_Group"..groupID]
         bar = CreateFrame("Button", barName, group, "NeedToKnow_BarTemplate")
         if barID > 1 then
@@ -165,18 +140,21 @@ function NeedToKnow.Bar_Update(groupID, barID)
         --trace("Creating bar for", groupID, barID)
     end
 
-    local background = _G[barName.."Background"]
-    bar.spark = _G[barName.."Spark"]
-    bar.text = _G[barName.."Text"]
-    bar.time = _G[barName.."Time"]
-    bar.bar1 = _G[barName.."Texture"]
-
     local barSettings = groupSettings["Bars"][barID]
-    if not barSettings then
+    if ( not barSettings ) then
         --trace("Adding bar settings for", groupID, barID)
         barSettings = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
         groupSettings.Bars[barID] = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
     end
+    bar.settings = barSettings
+
+	bar.icon  = bar.Icon
+	bar.spark = bar.Spark
+    bar.text  = bar.Text
+    bar.time  = bar.Time
+    bar.bar1  = bar.Texture
+	-- want to not need these eventually
+
     bar.auraName = barSettings.AuraName
     
     if ( barSettings.BuffOrDebuff == "BUFFCD" or
@@ -188,7 +166,6 @@ function NeedToKnow.Bar_Update(groupID, barID)
         barSettings.Unit = "player"
     end
 
-    bar.settings = barSettings
     bar.unit = barSettings.Unit
     bar.nextUpdate = g_GetTime() + c_UPDATE_INTERVAL
 
@@ -198,65 +175,9 @@ function NeedToKnow.Bar_Update(groupID, barID)
     end
 
     bar.max_value = 1
-    -- mfn_SetStatusBarValue(bar,bar.bar1,1)
     bar:SetValue(bar.bar1, 1)
-    bar.bar1:SetTexture(NeedToKnow.LSM:Fetch("statusbar", NeedToKnow.ProfileSettings["BarTexture"]))
-    if ( bar.bar2 ) then
-        bar.bar2:SetTexture(NeedToKnow.LSM:Fetch("statusbar", NeedToKnow.ProfileSettings["BarTexture"]))
-    end
 
-    local fontPath = NeedToKnow.LSM:Fetch("font", NeedToKnow.ProfileSettings["BarFont"])
-    if ( fontPath ) then
-        local ol = NeedToKnow.ProfileSettings["FontOutline"]
-        if ( ol == 0 ) then
-          ol = nil
-        elseif (ol == 1) then
-          ol = "OUTLINE"
-        else
-          ol = "THICKOUTLINE"
-        end
-
-        bar.text:SetFont(fontPath, NeedToKnow.ProfileSettings["FontSize"],ol)
-        bar.time:SetFont(fontPath, NeedToKnow.ProfileSettings["FontSize"],ol)
-    end
-    
-    bar:SetWidth(groupSettings.Width)
-    bar.text:SetWidth(groupSettings.Width-60)
-    -- NeedToKnow.SizeBackground(bar, barSettings.show_icon)
-    bar:SetBackgroundSize(barSettings.show_icon)
-
-    background:SetHeight(bar:GetHeight() + 2*NeedToKnow.ProfileSettings["BarPadding"])
-    background:SetVertexColor(unpack(NeedToKnow.ProfileSettings["BkgdColor"]))
-
-    -- Set up the Visual Cast Time overlay.  It isn't a part of the template 
-    -- because most bars won't use it and thus don't need to pay the memory cost of
-    -- a hidden frame
-    if ( barSettings.vct_enabled ) then
-        if ( nil == bar.vct ) then
-            bar.vct = bar:CreateTexture(barName.."VisualCast", "ARTWORK")
-            bar.vct:SetPoint("TOPLEFT", bar, "TOPLEFT")
-        end
-        local argb = barSettings.vct_color
-        bar.vct:SetColorTexture(argb.r, argb.g, argb.b, argb.a )
-        bar.vct:SetBlendMode("ADD")
-        bar.vct:SetHeight(bar:GetHeight())
-    elseif (nil ~= bar.vct) then
-        bar.vct:Hide()
-    end
-    
-    if ( barSettings.show_icon ) then
-        if ( not bar.icon ) then
-            bar.icon = bar:CreateTexture(bar:GetName().."Icon", "ARTWORK")
-        end
-        local size = bar:GetHeight()
-        bar.icon:SetWidth(size)
-        bar.icon:SetHeight(size)
-        bar.icon:ClearAllPoints()
-        bar.icon:SetPoint("TOPRIGHT", bar, "TOPLEFT", -NeedToKnow.ProfileSettings["BarPadding"], 0)
-        bar.icon:Show()
-    elseif (bar.icon) then
-        bar.icon:Hide()
-    end
+	bar:SetAppearance()
 
     if ( NeedToKnow.CharSettings["Locked"] ) then
         local enabled = groupSettings.Enabled and barSettings.Enabled
@@ -350,196 +271,18 @@ function NeedToKnow.Bar_Update(groupID, barID)
                 end
             end
         
-            -- NeedToKnow.SetScripts(bar)
             bar:SetScripts()
             -- Events were cleared while unlocked, so need to check the bar again now
             mfn_Bar_AuraCheck(bar)
         else
-            -- NeedToKnow.ClearScripts(bar)
             bar:ClearScripts()
             bar:Hide()
         end
     else
-        -- NeedToKnow.ClearScripts(bar)
         bar:ClearScripts()
 		bar:Unlock()
-
-		--[[
-        -- Set up the bar to be configured
-        bar:EnableMouse(true)
-
-        bar.bar1:SetVertexColor(barSettings.BarColor.r, barSettings.BarColor.g, barSettings.BarColor.b)
-        bar.bar1:SetAlpha(barSettings.BarColor.a)
-        bar:Show()
-        bar.spark:Hide()
-        bar.time:Hide()
-        if ( bar.icon ) then
-            bar.icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
-        end
-        if ( bar.vct ) then
-            bar.vct:SetWidth(bar:GetWidth()/16)
-            bar.vct:Show()
-        end
-        if ( bar.bar2 ) then
-            bar.bar2:Hide()
-        end
-        
-        local txt=""
-        if ( barSettings.show_mypip ) then
-            txt = txt.."* "
-        end
-
-        if ( barSettings.show_text ) then
-            if "" ~= barSettings.show_text_user then
-                txt = barSettings.show_text_user
-            else
-                txt = txt .. NeedToKnow.PrettyName(barSettings)
-            end
-
-            if ( barSettings.append_cd
-                 and (barSettings.BuffOrDebuff == "CASTCD"
-                   or barSettings.BuffOrDebuff == "BUFFCD"
-                   or barSettings.BuffOrDebuff == "EQUIPSLOT" ) )
-            then
-                txt = txt .. " CD"
-            elseif ( barSettings.append_usable
-                 and barSettings.BuffOrDebuff == "USABLE" )
-            then
-                txt = txt .. " Usable"
-            end
-            if ( barSettings.bDetectExtends == true ) then
-                txt = txt .. " + 3s"
-            end
-        end
-        bar.text:SetText(txt)
-
-        if ( barSettings.Enabled ) then
-            bar:SetAlpha(1)
-        else
-            bar:SetAlpha(0.4)
-        end
-        ]]--
     end
 end
-
---[[
--- Is now Bar:CheckCombatLogRegistration(force)
-function NeedToKnow.CheckCombatLogRegistration(bar, force)
-    if UnitExists(bar.unit) then
-        bar:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-    else
-        bar:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-    end
-end
-]]--
-
---[[
-function NeedToKnow.SetScripts(bar)
-	-- Is now Bar:SetScripts()
-    bar:SetScript("OnEvent", NeedToKnow.Bar_OnEvent)
- 
-    if ( bar.ticker ) then
-        bar:SetScript("OnUpdate", bar.ticker)
-    end
-    if ( "TOTEM" == bar.settings.BuffOrDebuff ) then
-        bar:RegisterEvent("PLAYER_TOTEM_UPDATE")
-    elseif ( "CASTCD" == bar.settings.BuffOrDebuff ) then
-        if ( bar.settings.bAutoShot ) then
-            bar:RegisterEvent("START_AUTOREPEAT_SPELL")
-            bar:RegisterEvent("STOP_AUTOREPEAT_SPELL")
-        end
-        bar:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
-        bar:RegisterEvent("SPELL_UPDATE_COOLDOWN")
-    elseif ( "EQUIPSLOT" == bar.settings.BuffOrDebuff ) then
-        bar:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
-    elseif ( "USABLE" == bar.settings.BuffOrDebuff ) then
-        bar:RegisterEvent("SPELL_UPDATE_USABLE")
-    elseif ( bar.settings.Unit == "targettarget" ) then
-        -- WORKAROUND: PLAYER_TARGET_CHANGED happens immediately, UNIT_TARGET every couple seconds
-        bar:RegisterEvent("PLAYER_TARGET_CHANGED")
-        bar:RegisterEvent("UNIT_TARGET")
-        -- WORKAROUND: Don't get UNIT_AURA for targettarget
-        -- NeedToKnow.CheckCombatLogRegistration(bar)
-        bar:CheckCombatLogRegistration()
-    else
-        bar:RegisterEvent("UNIT_AURA")
-    end
-
-    if ( bar.unit == "focus" ) then
-        bar:RegisterEvent("PLAYER_FOCUS_CHANGED")
-    elseif ( bar.unit == "target" ) then
-        bar:RegisterEvent("PLAYER_TARGET_CHANGED")
-    elseif ( bar.unit == "pet" ) then
-        bar:RegisterEvent("UNIT_PET")
-    elseif ( "lastraid" == bar.settings.Unit ) then
-        if ( not NeedToKnow.BarsForPSS ) then
-            NeedToKnow.BarsForPSS = {}
-        end
-        NeedToKnow.BarsForPSS[bar] = true
-        NeedToKnow.RegisterSpellcastSent()
-    end
-    
-    if bar.settings.bDetectExtends then
-        local idx,entry
-        for idx, entry in ipairs(bar.spells) do
-            local spellName
-            if ( entry.id ) then
-                spellName = g_GetSpellInfo(entry.id)
-            else
-                spellName = entry.name
-            end
-            if spellName then
-                local r = m_last_guid[spellName]
-                if not r then
-                    m_last_guid[spellName] = { time=0, dur=0, expiry=0 }
-                end
-            else
-                print("Warning! NTK could not get name for ", entry.id)
-            end
-        end
-        NeedToKnow.RegisterSpellcastSent()
-    end
-    if bar.settings.blink_enabled and bar.settings.blink_boss then
-        if not NeedToKnow.BossStateBars then
-            NeedToKnow.BossStateBars = {}
-        end
-        NeedToKnow.BossStateBars[bar] = 1;
-    end
-end
-]]--
-
---[[
--- Is now Bar:ClearScripts()
-function NeedToKnow.ClearScripts(bar)
-    bar:SetScript("OnEvent", nil)
-    bar:SetScript("OnUpdate", nil)
-    bar:UnregisterEvent("PLAYER_TARGET_CHANGED")
-    bar:UnregisterEvent("PLAYER_FOCUS_CHANGED")
-    bar:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-    bar:UnregisterEvent("PLAYER_TOTEM_UPDATE")
-    bar:UnregisterEvent("UNIT_AURA")
-    -- bar:UnregisterEvent("UNIT_POWER")
-    -- bar:UnregisterEvent("UNIT_DISPLAYPOWER")
-    bar:UnregisterEvent("UNIT_TARGET")
-    bar:UnregisterEvent("START_AUTOREPEAT_SPELL")
-    bar:UnregisterEvent("STOP_AUTOREPEAT_SPELL")
-    bar:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
-    if NeedToKnow.BossStateBars then
-        NeedToKnow.BossStateBars[bar] = nil;
-    end
-
-    if bar.settings.bDetectExtends then
-        NeedToKnow.UnregisterSpellcastSent()
-    end
-    if NeedToKnow.BarsForPSS and NeedToKnow.BarsForPSS[bar] then
-        NeedToKnow.BarsForPSS[bar] = nil
-        if nil == next(NeedToKnow.BarsForPSS) then
-            NeedToKnow.BarsForPSS = nil
-            NeedToKnow.UnregisterSpellcastSent();
-        end
-    end
-end
-]]--
 
 function NeedToKnow.ComputeBarText(buffName, count, extended, buff_stacks, bar)
     -- AuraCheck calls on this to compute the "text" of the bar
@@ -629,8 +372,7 @@ function NeedToKnow.PrettyName(barSettings)
         local idx = tonumber(barSettings.AuraName)
         if idx then return NEEDTOKNOW.ITEM_NAMES[idx] end
         return ""
-    --[[
-	-- Player power no longer supported
+    --[[  -- Player power no longer supported
     elseif ( barSettings.BuffOrDebuff == "POWER" ) then
         local idx = tonumber(barSettings.AuraName)
         if idx then return NeedToKnow.GetPowerName(idx) end
@@ -642,6 +384,8 @@ function NeedToKnow.PrettyName(barSettings)
 end
 
 function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
+	-- Called by mfn_Bar_AuraCheck(bar)
+
     local text = ""
     if ( bar.settings.show_icon and bar.iconPath and bar.icon ) then
         bar.icon:SetTexture(bar.iconPath)
@@ -756,33 +500,6 @@ function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
         end
     end
 end
-
---[[
-function NeedToKnow.ConfigureBlinkingBar(bar)
-    local settings = bar.settings
-    if ( not bar.blink ) then
-        bar.blink=true
-        bar.blink_phase=1
-        bar.bar1:SetVertexColor(settings.MissingBlink.r, settings.MissingBlink.g, settings.MissingBlink.b)
-        bar.bar1:SetAlpha(settings.MissingBlink.a)
-    end
-    bar.text:SetText(settings.blink_label)
-    bar.time:Hide()
-    bar.spark:Hide()
-    bar.max_value = 1
-    -- mfn_SetStatusBarValue(bar,bar.bar1,1)
-    bar:SetValue(bar.bar1, 1)
-    
-    if ( bar.icon ) then
-        bar.icon:Hide()
-        -- NeedToKnow.SizeBackground(bar, false)
-        bar:SetBackgroundSize(false)
-    end
-    if ( bar.bar2 ) then
-        bar.bar2:Hide()
-    end
-end
-]]--
 
 -- NephMakes: I don't think temporary enchants aren't a thing anymore, 
 -- but keep this for potential use in WoW Classic

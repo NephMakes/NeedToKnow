@@ -1,14 +1,24 @@
 -- Bar tracking behavior
+-- Bar:Methods() set by Bar:OnLoad() in BarObject.lua
 
 -- local addonName, addonTable = ...
 
 local Bar = NeedToKnow.Bar
 
--- Bar:Methods() set by Bar:OnLoad() in BarObject.lua
+
+--[[
+function Bar:Update()
+end
+
+function Bar:Initialize()
+	-- called by Bar:Update()
+end
+]]--
 
 function Bar:SetScripts()
 	self:SetScript("OnEvent", NeedToKnow.Bar_OnEvent)
 	if ( self.ticker ) then
+		-- This check is a legacy of power tracking i think
 		self:SetScript("OnUpdate", self.ticker)
 	end
 
@@ -18,7 +28,6 @@ function Bar:SetScripts()
 	if ( barType == "TOTEM" ) then
 		self:RegisterEvent("PLAYER_TOTEM_UPDATE")
 	elseif ( barType == "CASTCD" ) then
-		-- elseif ( "CASTCD" == settings.BuffOrDebuff ) then
 		if ( settings.bAutoShot ) then
 			self:RegisterEvent("START_AUTOREPEAT_SPELL")
 			self:RegisterEvent("STOP_AUTOREPEAT_SPELL")
@@ -26,11 +35,9 @@ function Bar:SetScripts()
 		self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 		self:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 	elseif ( barType == "EQUIPSLOT" ) then
-		-- elseif ( "EQUIPSLOT" == settings.BuffOrDebuff ) then
 		self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 	--[[
 	elseif ( barType == "POWER" ) then
-		-- elseif ( "POWER" == settings.BuffOrDebuff ) then
 		if settings.AuraName == tostring(NEEDTOKNOW.SPELL_POWER_STAGGER) then
 			self:RegisterEvent("UNIT_HEALTH")
 		else
@@ -39,10 +46,8 @@ function Bar:SetScripts()
 		end
 	]]--
 	elseif ( barType == "USABLE" ) then
-		-- elseif ( "USABLE" == settings.BuffOrDebuff ) then
 		self:RegisterEvent("SPELL_UPDATE_USABLE")
 	elseif ( settings.Unit == "targettarget" ) then
-		-- elseif ( settings.Unit == "targettarget" ) then
 		-- WORKAROUND: PLAYER_TARGET_CHANGED happens immediately, UNIT_TARGET every couple seconds
 		self:RegisterEvent("PLAYER_TARGET_CHANGED")
 		self:RegisterEvent("UNIT_TARGET")
@@ -125,12 +130,6 @@ function Bar:ClearScripts()
 	end
 end
 
---[[
-function Bar:Initialize()
-	-- called by Bar:Update()
-end
-]]--
-
 function Bar:CheckCombatLogRegistration(force)
     if UnitExists(self.unit) then
         self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -140,10 +139,10 @@ function Bar:CheckCombatLogRegistration(force)
 end
 
 --[[
-function Bar:OnUpdate()
+function Bar:OnEvent()
 end
 
-function Bar:OnEvent()
+function Bar:OnUpdate()
 end
 ]]--
 

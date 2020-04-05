@@ -32,6 +32,7 @@ function BarGroup:Update()
 			self.bar[barID] = bar
 		end
 
+		bar:SetWidth(groupSettings.Width)
 		if ( barID > 1 ) then
 			bar:SetPoint("TOP", self.bar[barID-1], "BOTTOM", 0, -NeedToKnow.ProfileSettings.BarSpacing)
 		else
