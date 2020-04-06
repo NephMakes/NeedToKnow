@@ -16,8 +16,9 @@ function Bar:OnLoad()
 
 	self.SetValue = Bar.SetValue
 
-	self.SetAppearance = Bar.SetAppearance
+	self.SetAppearance     = Bar.SetAppearance
 	self.SetBackgroundSize = Bar.SetBackgroundSize
+	self.UpdateAppearance  = Bar.UpdateAppearance
 	self.Unlock            = Bar.Unlock
 	self.StartBlink        = Bar.StartBlink
 
@@ -53,12 +54,12 @@ function Bar:OnDragStop()
 end
 
 function Bar:OnSizeChanged()
-	local bar1 = self.bar1
-	local bar2 = self.bar2
+	local bar1 = self.Texture
+	local bar2 = self.Texture2
 	if ( bar1.cur_value ) then 
 		self:SetValue(bar1, bar1.cur_value)
 	end
-	if ( bar2 and bar2.cur_value ) then 
+	if ( bar2.cur_value ) then 
 		self:SetValue(bar2, bar2.cur_value, bar1.cur_value)
 	end
 end
@@ -92,15 +93,15 @@ function Bar:SetValue(texture, value, value0)
 end
 
 function Bar:SetAppearance()
+	-- Set bar elements that don't change in combat
 	-- Called by Bar:Update()
 
 	local settings = NeedToKnow.ProfileSettings
 	local barSettings = self.settings
+	local barHeight = self:GetHeight()
 
 	self.Texture:SetTexture(NeedToKnow.LSM:Fetch("statusbar", settings.BarTexture))
-	if ( self.bar2 ) then
-		self.bar2:SetTexture(NeedToKnow.LSM:Fetch("statusbar", settings.BarTexture))
-	end
+	self.Texture2:SetTexture(NeedToKnow.LSM:Fetch("statusbar", settings.BarTexture))
 
 	local fontPath = NeedToKnow.LSM:Fetch("font", settings.BarFont)
 	if ( fontPath ) then
@@ -118,29 +119,26 @@ function Bar:SetAppearance()
 	self.Text:SetWidth(self:GetWidth() - 60)
 
 	local icon = self.Icon
-    if ( barSettings.show_icon ) then
-        local size = self:GetHeight()
-        icon:SetSize(size, size)
-        icon:ClearAllPoints()
-        icon:SetPoint("RIGHT", self, "LEFT", -settings.BarPadding, 0)
-        icon:Show()
-    else
-        icon:Hide()
-    end
+	if ( barSettings.show_icon ) then
+		icon:SetSize(barHeight, barHeight)
+		icon:ClearAllPoints()
+		icon:SetPoint("RIGHT", self, "LEFT", -settings.BarPadding, 0)
+		icon:Show()
+	else
+		icon:Hide()
+	end
 
 	local castTime = self.CastTime
 	if ( barSettings.vct_enabled ) then
 		local castColor = barSettings.vct_color
 		castTime:SetColorTexture(castColor.r, castColor.g, castColor.b, castColor.a)
-		castTime:SetHeight(self:GetHeight())
+		castTime:SetHeight(barHeight)
 	else
 		castTime:Hide()
 	end
-	self.vct = self.CastTime  -- Want to not need this eventually
 
-	-- Background
 	self:SetBackgroundSize(barSettings.show_icon)
-	self.Background:SetHeight(self:GetHeight() + 2*settings.BarPadding)
+	self.Background:SetHeight(barHeight + 2*settings.BarPadding)
 	self.Background:SetVertexColor(unpack(settings.BkgdColor))
 end
 
@@ -158,6 +156,36 @@ function Bar:SetBackgroundSize(showIcon)
 	background:SetWidth(bgWidth)
 end
 
+function Bar:UpdateAppearance()
+	-- For bar elements that can change in combat
+	-- called by mfn_Bar_AuraCheck
+
+	local barSettings = self.settings
+
+	local icon = self.Icon
+	if ( barSettings.show_icon and self.iconPath ) then
+		icon:SetTexture(self.iconPath)
+		icon:Show()
+		self:SetBackgroundSize(true)
+	else
+		icon:Hide()
+		self:SetBackgroundSize(false)
+	end
+	-- Note: Blinking bars don't have an icon
+
+	local barColor = barSettings.BarColor
+	self.Texture:SetVertexColor(barColor.r,barColor.g, barColor.b)
+	self.Texture:SetAlpha(barColor.a)
+	if ( self.max_expirationTime and self.max_expirationTime ~= self.expirationTime ) then 
+		self.Texture2:SetVertexColor(barColor.r,barColor.g, barColor.b)
+		self.Texture2:SetAlpha(barColor.a)
+		self.Texture2:Show()
+	else
+		self.Texture2:Hide()
+	end
+	-- Note: Blinking changes bar color
+end
+
 function Bar:Unlock()
 	-- Set bar for user config
 	-- Called by Bar:Update()
@@ -167,9 +195,6 @@ function Bar:Unlock()
 
 	self.Spark:Hide()
 	self.Time:Hide()
-	if ( self.bar2 ) then
-		self.bar2:Hide()
-	end
 	self.Icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
 	self.CastTime:SetWidth(self:GetWidth()/16)
 	self.CastTime:Show()
@@ -179,6 +204,7 @@ function Bar:Unlock()
 	local barColor = settings.BarColor
 	self.Texture:SetVertexColor(barColor.r, barColor.g, barColor.b)
 	self.Texture:SetAlpha(barColor.a)
+	self.Texture2:Hide()
 
 	local txt = ""
 	if ( settings.show_mypip ) then
@@ -221,8 +247,8 @@ function Bar:StartBlink()
 		self.blink = true
 		self.blink_phase = 1
 		local blinkColor = settings.MissingBlink
-		self.bar1:SetVertexColor(blinkColor.r, blinkColor.g, blinkColor.b)
-		self.bar1:SetAlpha(blinkColor.a)
+		self.Texture:SetVertexColor(blinkColor.r, blinkColor.g, blinkColor.b)
+		self.Texture:SetAlpha(blinkColor.a)
 	end
 	self.max_value = 1
 	self:SetValue(self.bar1, 1)
@@ -230,11 +256,10 @@ function Bar:StartBlink()
 
 	self.Time:Hide()
 	self.Spark:Hide()
+	self.CastTime:Hide()
+	self.Texture2:Hide()
 	self.Icon:Hide()
 	self:SetBackgroundSize(false)
-	if ( self.bar2 ) then
-		self.bar2:Hide()
-	end
 end
 
 

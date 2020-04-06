@@ -67,7 +67,20 @@
             </Layer>
             <Layer level="BORDER">
                 <Texture name="$parentTexture" parentKey="Texture">
-                	<!-- Why aren't we using a StatusBar object? -->
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
+                            <Offset>
+                                <AbsDimension x="0" y="-0"/>
+                            </Offset>
+                        </Anchor>
+                        <Anchor point="BOTTOM" relativeTo="$parent" relativePoint="BOTTOM">
+                            <Offset>
+                                <AbsDimension x="-0" y="0"/>
+                            </Offset>
+                        </Anchor>
+                    </Anchors>
+                </Texture>
+                <Texture name="$parentTexture2" parentKey="Texture2">
                     <Anchors>
                         <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
                             <Offset>

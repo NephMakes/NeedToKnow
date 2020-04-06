@@ -153,6 +153,8 @@ function NeedToKnow.Bar_Update(groupID, barID)
     bar.text  = bar.Text
     bar.time  = bar.Time
     bar.bar1  = bar.Texture
+    bar.bar2  = bar.Texture2
+	bar.vct   = bar.CastTime
 	-- want to not need these eventually
 
     bar.auraName = barSettings.AuraName
@@ -161,7 +163,7 @@ function NeedToKnow.Bar_Update(groupID, barID)
          barSettings.BuffOrDebuff == "TOTEM" or
          barSettings.BuffOrDebuff == "USABLE" or
          barSettings.BuffOrDebuff == "EQUIPSLOT" or
-         barSettings.BuffOrDebuff == "CASTCD") 
+         barSettings.BuffOrDebuff == "CASTCD" ) 
     then
         barSettings.Unit = "player"
     end
@@ -357,22 +359,13 @@ mfn_UpdateVCT = function (bar)
     end
 end
 
-function NeedToKnow.CreateBar2(bar)
-    if ( not bar.bar2 ) then
-        local n = bar:GetName() .. "Bar2"
-        bar.bar2 = bar:CreateTexture(n, "BORDER")
-        bar.bar2:SetPoint("TOPLEFT", bar.bar1, "TOPRIGHT")
-        bar.bar2:SetPoint("BOTTOM", bar, "BOTTOM")
-        bar.bar2:SetWidth(bar:GetWidth())
-    end
-end
-
 function NeedToKnow.PrettyName(barSettings)
     if ( barSettings.BuffOrDebuff == "EQUIPSLOT" ) then
         local idx = tonumber(barSettings.AuraName)
         if idx then return NEEDTOKNOW.ITEM_NAMES[idx] end
         return ""
-    --[[  -- Player power no longer supported
+    --[[  
+    -- Player power no longer supported
     elseif ( barSettings.BuffOrDebuff == "POWER" ) then
         local idx = tonumber(barSettings.AuraName)
         if idx then return NeedToKnow.GetPowerName(idx) end
@@ -387,28 +380,6 @@ function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
 	-- Called by mfn_Bar_AuraCheck(bar)
 
     local text = ""
-    if ( bar.settings.show_icon and bar.iconPath and bar.icon ) then
-        bar.icon:SetTexture(bar.iconPath)
-        bar.icon:Show()
-        -- NeedToKnow.SizeBackground(bar, true)
-        bar:SetBackgroundSize(true)
-    elseif bar.icon then
-        bar.icon:Hide()
-        -- NeedToKnow.SizeBackground(bar, false)
-        bar:SetBackgroundSize(true)
-    end
-
-    bar.bar1:SetVertexColor(bar.settings.BarColor.r, bar.settings.BarColor.g, bar.settings.BarColor.b)
-    bar.bar1:SetAlpha(bar.settings.BarColor.a)
-    if ( bar.max_expirationTime and bar.max_expirationTime ~= bar.expirationTime ) then 
-        NeedToKnow.CreateBar2(bar)
-        bar.bar2:SetTexture(bar.bar1:GetTexture())
-        bar.bar2:SetVertexColor(bar.settings.BarColor.r, bar.settings.BarColor.g, bar.settings.BarColor.b)
-        bar.bar2:SetAlpha(bar.settings.BarColor.a * 0.5)
-        bar.bar2:Show()
-    elseif (bar.bar2) then
-        bar.bar2:Hide()
-    end
     
     local txt = ""
     if ( bar.settings.show_mypip ) then
@@ -446,7 +417,7 @@ function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
     bar.text:SetText(txt)
         
     -- Is this an aura with a finite duration?
-    local vct_width = 0
+    -- local vct_width = 0
     if ( not bar.is_counter and bar.duration > 0 ) then
         -- Configure the main status bar
         local duration = bar.fixedDuration or bar.duration
@@ -464,7 +435,7 @@ function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
             NeedToKnow.Bar_OnUpdate(bar, 0)
         end
 
-        bar.time:Show()
+        bar.Time:Show()
     --[[
     elseif bar.is_counter then
     	-- Bar is tracking player power?
@@ -482,22 +453,13 @@ function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
         end
     ]]--
     else
-        -- Hide the time text and spark for auras with "infinite" duration
+        -- Hide time, text, and spark for auras with infinite duration
         bar.max_value = 1
-
-        -- mfn_SetStatusBarValue(bar,bar.bar1,1)
-        bar:SetValue(bar.bar1, 1)
-        if bar.bar2 then 
-        	-- mfn_SetStatusBarValue(bar,bar.bar2,1) 
-        	bar:SetValue(bar.bar2, 1) 
-        end
-
-        bar.time:Hide()
-        bar.spark:Hide()
-
-        if ( bar.vct ) then
-            bar.vct:Hide()
-        end
+		bar:SetValue(bar.Texture, 1)
+		bar:SetValue(bar.Texture2, 1)
+        bar.Time:Hide()
+        bar.Spark:Hide()
+        bar.CastTime:Hide()
     end
 end
 
@@ -543,7 +505,6 @@ function NeedToKnow.DetermineTempEnchantFromTooltip(i_invID)
     end    
 end
 ]]--
-
 
 mfn_AddInstanceToStacks = function (all_stacks, bar_entry, duration, name, count, expirationTime, iconPath, caster, tt1, tt2, tt3)
     if duration then
@@ -1032,7 +993,8 @@ mfn_Bar_AuraCheck = function (bar)
 
         -- Mark the bar as not blinking before calling ConfigureVisibleBar, 
         -- since it calls OnUpdate which checks bar.blink
-        bar.blink=false
+        bar.blink = false
+        bar:UpdateAppearance()
         NeedToKnow.ConfigureVisibleBar(bar, count, extended, all_stacks)
         bar:Show()
     else
@@ -1066,7 +1028,6 @@ mfn_Bar_AuraCheck = function (bar)
             end
         end
         if ( bBlink ) then
-            -- NeedToKnow.ConfigureBlinkingBar(bar)
             bar:StartBlink()
             bar:Show()
         else    
