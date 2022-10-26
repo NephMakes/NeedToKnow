@@ -11,7 +11,8 @@ local MAX_BARGROUPS = 4
 -- ----------------------
 
 -- Local version of global functions
-local g_GetActiveTalentGroup = _G.GetSpecialization
+-- local g_GetActiveTalentGroup = _G.GetSpecialization
+local g_GetActiveTalentGroup = _G.GetSpecialization or _G.GetActiveTalentGroup
 local g_GetTime = GetTime
 
 -- Spellcast tracking
@@ -188,6 +189,7 @@ end
 
 function ExecutiveFrame:PLAYER_TALENT_UPDATE()
 	if ( NeedToKnow.CharSettings ) then
+		-- local spec = g_GetActiveTalentGroup()
 		local spec = g_GetActiveTalentGroup()
 		local profile_key = NeedToKnow.CharSettings.Specs[spec]
 		if ( not profile_key ) then

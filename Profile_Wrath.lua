@@ -2,9 +2,6 @@
 
 local addonName, addonTable = ...
 
--- local g_GetActiveTalentGroup = _G.GetSpecialization
-local g_GetActiveTalentGroup = _G.GetSpecialization or _G.GetActiveTalentGroup
-
 function NeedToKnow.RemoveDefaultValues(t, def, k)
   if not k then k = "" end
   if def == nil then
@@ -127,7 +124,8 @@ function NeedToKnow.ChangeProfile(profile_key)
 
         -- Switch to the new profile
         NeedToKnow.ProfileSettings = NeedToKnow_Profiles[profile_key]
-		local spec = g_GetActiveTalentGroup()
+		-- local spec = g_GetActiveTalentGroup()
+		local spec = GetActiveTalentGroup()
         NeedToKnow.CharSettings.Specs[spec] = profile_key
 
         -- fill in any missing defaults
@@ -418,7 +416,8 @@ function NeedToKnowLoader.SafeUpgrade()
         NeedToKnow_Globals.NextProfile = maxKey + 1
     end
 
-    local spec = g_GetActiveTalentGroup()
+    -- local spec = g_GetActiveTalentGroup()
+	local spec = GetActiveTalentGroup()
     local curKey = NeedToKnow.CharSettings.Specs[spec]
     if ( curKey and not NeedToKnow_Profiles[curKey] ) then
         print("Current profile (" .. curKey .. ") has been deleted!");

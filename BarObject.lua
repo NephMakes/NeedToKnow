@@ -14,8 +14,7 @@ function Bar:OnLoad()
 	self:SetScript("OnDragStop",    Bar.OnDragStop)
 	self:SetScript("OnSizeChanged", Bar.OnSizeChanged)
 
-	self.SetValue = Bar.SetValue
-
+	self.SetValue          = Bar.SetValue
 	self.SetAppearance     = Bar.SetAppearance
 	self.SetBackgroundSize = Bar.SetBackgroundSize
 	self.UpdateAppearance  = Bar.UpdateAppearance
@@ -184,6 +183,8 @@ function Bar:UpdateAppearance()
 		self.Texture2:Hide()
 	end
 	-- Note: Blinking changes bar color
+
+	-- local text = ""
 end
 
 function Bar:Unlock()

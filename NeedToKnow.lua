@@ -377,7 +377,7 @@ function NeedToKnow.PrettyName(barSettings)
 end
 
 function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
-	-- Called by mfn_Bar_AuraCheck(bar)
+	-- Called by mfn_Bar_AuraCheck(bar) if bar.duration found
 
     local text = ""
     
@@ -417,7 +417,7 @@ function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
     bar.text:SetText(txt)
         
     -- Is this an aura with a finite duration?
-    -- local vct_width = 0
+    local vct_width = 0
     if ( not bar.is_counter and bar.duration > 0 ) then
         -- Configure the main status bar
         local duration = bar.fixedDuration or bar.duration
