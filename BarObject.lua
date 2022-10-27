@@ -6,33 +6,40 @@ local Bar = NeedToKnow.Bar
 --[[
 function Bar:New(groupID, barID)
 	-- Instead of doing it in BarGroup:Update() and elsewhere
-	-- self:Initialize() -- Instead of Bar:OnLoad()
+	self.Initialize = Bar.Initialize
+	-- self:Initialize() -- Instead of Bar:OnLoad()?
 end
 ]]--
 
+function Bar:Initialize()
+	-- Instead of OnLoad() in XML
+	-- called by Bar:Update()?
+end
+
 function Bar:OnLoad()
 	-- Called by NeedToKnow_BarTemplate
+	-- TO DO: Merge with Bar:Initialize()
 
 	self:RegisterForDrag("LeftButton")
-	self:SetScript("OnEnter",       Bar.OnEnter)
-	self:SetScript("OnLeave",       Bar.OnLeave)
-	self:SetScript("OnMouseUp",     Bar.OnMouseUp)
-	self:SetScript("OnDragStart",   Bar.OnDragStart)
-	self:SetScript("OnDragStop",    Bar.OnDragStop)
+	self:SetScript("OnEnter", Bar.OnEnter)
+	self:SetScript("OnLeave", Bar.OnLeave)
+	self:SetScript("OnMouseUp", Bar.OnMouseUp)
+	self:SetScript("OnDragStart", Bar.OnDragStart)
+	self:SetScript("OnDragStop", Bar.OnDragStop)
 	self:SetScript("OnSizeChanged", Bar.OnSizeChanged)
 
-	self.SetValue          = Bar.SetValue
-	self.SetAppearance     = Bar.SetAppearance
+	-- self.Initialize = Bar.Initialize
+	self.SetValue = Bar.SetValue
+	self.SetAppearance = Bar.SetAppearance
 	self.SetBackgroundSize = Bar.SetBackgroundSize
-	self.UpdateAppearance  = Bar.UpdateAppearance
-	self.Unlock            = Bar.Unlock
-	self.StartBlink        = Bar.StartBlink
+	self.UpdateAppearance = Bar.UpdateAppearance
+	self.Unlock = Bar.Unlock
+	self.StartBlink = Bar.StartBlink
 
 	-- Defined in BarEngine.lua: 
-	-- self.Update = Bar.Update
-	-- self.Initialize = Bar.Initialize
-	self.SetScripts                 = Bar.SetScripts
-	self.ClearScripts               = Bar.ClearScripts
+	self.Update = Bar.Update
+	self.SetScripts = Bar.SetScripts
+	self.ClearScripts = Bar.ClearScripts
 	self.CheckCombatLogRegistration = Bar.CheckCombatLogRegistration
 	-- self:SetScript("OnEvent", Bar.OnEvent)
 end
@@ -78,6 +85,7 @@ function Bar:OnMouseUp(button)
 end
 
 function Bar:SetValue(texture, value, value0)
+	-- TO DO: Move to BarEngine.lua
 	-- Called by Bar:OnUpdate(), so we want to be more efficient than this
 
 	value = math.max(value, 0)
@@ -165,9 +173,11 @@ end
 function Bar:UpdateAppearance()
 	-- For bar elements that can change in combat
 	-- called by mfn_Bar_AuraCheck
+	-- TO DO: Move to BarEngine.lua
 
 	local barSettings = self.settings
 
+	-- Blinking bars don't have an icon
 	local icon = self.Icon
 	if ( barSettings.show_icon and self.iconPath ) then
 		icon:SetTexture(self.iconPath)
@@ -177,8 +187,8 @@ function Bar:UpdateAppearance()
 		icon:Hide()
 		self:SetBackgroundSize(false)
 	end
-	-- Note: Blinking bars don't have an icon
 
+	-- Blinking changes bar color
 	local barColor = barSettings.BarColor
 	self.Texture:SetVertexColor(barColor.r,barColor.g, barColor.b)
 	self.Texture:SetAlpha(barColor.a)
@@ -189,14 +199,11 @@ function Bar:UpdateAppearance()
 	else
 		self.Texture2:Hide()
 	end
-	-- Note: Blinking changes bar color
-
-	-- local text = ""
 end
 
 function Bar:Unlock()
 	-- Set bar for user config
-	-- Called by Bar:Update()
+	-- Called by Bar:Update() and NeedToKnow.Bar_Update
 
 	self:Show()
 	self:EnableMouse(true)

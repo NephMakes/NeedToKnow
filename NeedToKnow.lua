@@ -115,6 +115,9 @@ local c_AURAEVENTS = {
 -- BARS
 -- ----
 
+function NeedToKnow:GetBar(groupID, barID)
+end
+
 function NeedToKnow.Bar_Update(groupID, barID)
     -- Called when the configuration of the bar has changed, when the addon
     -- is loaded, and when locked and unlocked
@@ -156,6 +159,9 @@ function NeedToKnow.Bar_Update(groupID, barID)
 	bar.vct   = bar.CastTime
 	-- want to not need these eventually
 
+	bar:Update()
+	-- Moved to Bar:Update(): 
+	--[[ 
     bar.auraName = barSettings.AuraName
     
     if ( barSettings.BuffOrDebuff == "BUFFCD" or
@@ -166,8 +172,8 @@ function NeedToKnow.Bar_Update(groupID, barID)
     then
         barSettings.Unit = "player"
     end
-
     bar.unit = barSettings.Unit
+
     bar.nextUpdate = g_GetTime() + c_UPDATE_INTERVAL
 
     bar.fixedDuration = tonumber(groupSettings.FixedDuration)
@@ -179,6 +185,7 @@ function NeedToKnow.Bar_Update(groupID, barID)
     bar:SetValue(bar.bar1, 1)
 
 	bar:SetAppearance()
+	]]--
 
     if ( NeedToKnow.CharSettings["Locked"] ) then
         local enabled = groupSettings.Enabled and barSettings.Enabled

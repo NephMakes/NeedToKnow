@@ -5,21 +5,47 @@ local addonName, addonTable = ...
 
 local Bar = NeedToKnow.Bar
 
+local UPDATE_INTERVAL = 0.03  -- equivalent to ~33 frames per second
 -- Deprecated: 
 local m_last_guid = addonTable.m_last_guid
 
-
-
---[[
 function Bar:Update()
-	-- Instead of 
-end
+	-- Update bar behavior and appearance
+	-- Called by BarGroup:Update() and various BarMenu:Methods()
 
-function Bar:Initialize()
-	-- Instead of OnLoad() in XML
-	-- called by Bar:Update()
+	-- TO DO: Use instead of NeedToKnow.Bar_Update(groupID, barID)
+
+	-- TO DO: Get bar settings from NeedToKnow.ProfileSettings
+	local settings = self.settings
+
+	local groupID = self:GetParent():GetID()
+	local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
+
+	self.auraName = settings.AuraName
+
+	if (
+    	settings.BuffOrDebuff == "BUFFCD" or
+		settings.BuffOrDebuff == "TOTEM" or
+		settings.BuffOrDebuff == "USABLE" or
+		settings.BuffOrDebuff == "EQUIPSLOT" or
+		settings.BuffOrDebuff == "CASTCD"
+	) then
+        settings.Unit = "player"
+    end
+	self.unit = settings.Unit
+
+	self.fixedDuration = tonumber(groupSettings.FixedDuration)
+	if ( not self.fixedDuration or 0 >= self.fixedDuration ) then
+		self.fixedDuration = nil
+	end
+
+	self.max_value = 1
+	self:SetValue(self.bar1, 1)
+
+	self.nextUpdate = GetTime() + UPDATE_INTERVAL
+
+	self:SetAppearance()
 end
-]]--
 
 function Bar:SetScripts()
 	self:SetScript("OnEvent", NeedToKnow.Bar_OnEvent)
