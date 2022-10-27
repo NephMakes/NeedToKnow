@@ -470,14 +470,11 @@
                     <Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT" />
                     <Anchor point="BOTTOMRIGHT" x="-24"/>
                 </Anchors>
-                <Backdrop name="$parentBackdrop" edgeFile="Interface\Buttons\UI-SliderBar-Border" tile="true">
-                    <EdgeSize>
-                        <AbsValue val="8"/>
-                    </EdgeSize>
-                    <TileSize>
-                        <AbsValue val="8"/>
-                    </TileSize>
-                </Backdrop>
+				<Frame name="$parentBackdrop" inherits="BackdropTemplate">
+					<KeyValues>
+						<KeyValue key="backdropInfo" value="BACKDROP_SLIDER_8_8" type="global" />
+					</KeyValues>
+				</Frame>
             </Frame>
             <ScrollFrame name="$parentList" inherits="HybridScrollFrameTemplate" parentKey="List">
                 <Anchors>

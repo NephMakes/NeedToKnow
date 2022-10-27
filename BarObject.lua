@@ -3,6 +3,13 @@
 -- local addonName, addonTable = ...
 local Bar = NeedToKnow.Bar
 
+--[[
+function Bar:New(groupID, barID)
+	-- Instead of doing it in BarGroup:Update() and elsewhere
+	-- self:Initialize() -- Instead of Bar:OnLoad()
+end
+]]--
+
 function Bar:OnLoad()
 	-- Called by NeedToKnow_BarTemplate
 

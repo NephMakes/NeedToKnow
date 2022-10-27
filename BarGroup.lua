@@ -40,6 +40,7 @@ function BarGroup:Update()
 		end
 
 		NeedToKnow.Bar_Update(groupID, barID)
+		-- bar:Update()  -- What we want eventually
 
 		if ( not groupSettings.Enabled ) then
 			bar:ClearScripts()

@@ -1,16 +1,22 @@
 -- Bar tracking behavior
 -- Bar:Methods() set by Bar:OnLoad() in BarObject.lua
 
--- local addonName, addonTable = ...
+local addonName, addonTable = ...
 
 local Bar = NeedToKnow.Bar
+
+-- Deprecated: 
+local m_last_guid = addonTable.m_last_guid
+
 
 
 --[[
 function Bar:Update()
+	-- Instead of 
 end
 
 function Bar:Initialize()
+	-- Instead of OnLoad() in XML
 	-- called by Bar:Update()
 end
 ]]--
