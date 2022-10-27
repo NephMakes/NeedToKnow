@@ -9,9 +9,12 @@ local UPDATE_INTERVAL = 0.03  -- equivalent to ~33 frames per second
 -- Deprecated: 
 local m_last_guid = addonTable.m_last_guid
 
+--[[ Bar functions ]]--
+
 function Bar:Update()
 	-- Update bar behavior and appearance
 	-- Called by BarGroup:Update() and various BarMenu:Methods()
+    -- when addon loaded, bar configuration changed, or locked/unlocked
 
 	-- TO DO: Use instead of NeedToKnow.Bar_Update(groupID, barID)
 

@@ -31,7 +31,7 @@ function BarGroup:Update()
 			bar:SetID(barID)
 			self.bar[barID] = bar
 		end
-		-- TO DO: Bar:New()
+		-- TO DO: Use Bar:New()
 
 		bar:SetWidth(groupSettings.Width)
 		if ( barID > 1 ) then

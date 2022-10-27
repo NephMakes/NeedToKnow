@@ -446,7 +446,7 @@
         <HighlightTexture file="Interface\FriendsFrame\UI-FriendsFrame-HighlightBar-Blue" alphaMode="ADD"/>
     </Button>
 
-    <Frame name="NeedToKnowScrollFrameTemplate"  virtual="true">
+    <Frame name="NeedToKnowScrollFrameTemplate" virtual="true">
         <Layers>
             <Layer level="BACKGROUND">
                 <FontString name="$parentTitle" text="ScrollBar" inherits="GameFontNormalSmall" justifyH="LEFT" justifyV="TOP">
@@ -470,12 +470,15 @@
                     <Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT" />
                     <Anchor point="BOTTOMRIGHT" x="-24"/>
                 </Anchors>
-				<Frame name="$parentBackdrop" inherits="BackdropTemplate">
-					<KeyValues>
-						<KeyValue key="backdropInfo" value="BACKDROP_SLIDER_8_8" type="global" />
-					</KeyValues>
-				</Frame>
             </Frame>
+            <!-- 
+            Not sure this is working properly in retail, and can't test right now, so just removing
+			<Frame name="$parentBackdrop" inherits="BackdropTemplate">
+				<KeyValues>
+					<KeyValue key="backdropInfo" value="BACKDROP_SLIDER_8_8" type="global" />
+				</KeyValues>
+			</Frame>
+			-->
             <ScrollFrame name="$parentList" inherits="HybridScrollFrameTemplate" parentKey="List">
                 <Anchors>
                     <Anchor point="TOPLEFT" relativeTo="$parentFrame" x="3" y="-7" />
