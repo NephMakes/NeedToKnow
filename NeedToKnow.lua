@@ -118,7 +118,6 @@ local c_AURAEVENTS = {
 function NeedToKnow.Bar_Update(groupID, barID)
     -- Called when the configuration of the bar has changed, when the addon
     -- is loaded, and when locked and unlocked
-
 	-- Called by BarGroup:Update() and various BarMenu:Methods()
 
     local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
@@ -183,7 +182,7 @@ function NeedToKnow.Bar_Update(groupID, barID)
 
     if ( NeedToKnow.CharSettings["Locked"] ) then
         local enabled = groupSettings.Enabled and barSettings.Enabled
-        if enabled then
+        if ( enabled ) then
             -- Set up the bar to be functional
             -- click through
             bar:EnableMouse(false)
@@ -255,8 +254,7 @@ function NeedToKnow.Bar_Update(groupID, barID)
                 bar.fnCheck = mfn_AuraCheck_CASTCD
                 for idx, entry in ipairs(bar.spells) do
                     table.insert(bar.cd_functions, mfn_GetSpellCooldown)
-                    -- NeedToKnow.SetupSpellCooldown(bar, entry)
-                    Cooldown.SetupSpellCooldown(bar, entry)
+                    Cooldown.SetUpSpell(bar, entry)
                 end
             elseif barSettings.show_all_stacks then
                 bar.fnCheck = mfn_AuraCheck_AllStacks

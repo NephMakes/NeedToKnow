@@ -44,14 +44,14 @@ end
 local function RefreshRaidMemberNames()
 	NeedToKnow.raid_members = {}
 
-	if IsInRaid() then
+	if ( IsInRaid() ) then
 		for i = 1, 40 do
 			local unit = "raid"..i
 			-- local name = NeedToKnow.GetNameAndServer(unit)
 			local name = GetNameAndServer(unit)
 			if ( name ) then NeedToKnow.raid_members[name] = unit end
 		end
-	elseif IsInGroup() then
+	elseif ( IsInGroup() ) then
 		for i = 1, 5 do
 			local unit = "party"..i
 			-- local name = NeedToKnow.GetNameAndServer(unit)
@@ -121,9 +121,9 @@ function ExecutiveFrame:PLAYER_LOGIN()
 	NeedToKnow.guidPlayer = UnitGUID("player")
 
 	local _, player_CLASS = UnitClass("player")
-	if player_CLASS == "DEATHKNIGHT" then
+	if ( player_CLASS == "DEATHKNIGHT" ) then
 		NeedToKnow.is_DK = 1
-	elseif player_CLASS == "DRUID" then
+	elseif ( player_CLASS == "DRUID" ) then
 		NeedToKnow.is_Druid = 1
 		-- Is this actually used for anything? Maybe leftover from power tracking
 	end
@@ -210,7 +210,7 @@ function ExecutiveFrame:UNIT_TARGET(unitTargeting)
     if ( m_bInCombat and not m_bCombatWithBoss ) then
         if ( UnitLevel(unitTargeting .. 'target') == -1 ) then
             m_bCombatWithBoss = true
-            if NeedToKnow.BossStateBars then
+            if ( NeedToKnow.BossStateBars ) then
                 for bar, unused in pairs(NeedToKnow.BossStateBars) do
                     mfn_Bar_AuraCheck(bar)
                 end
@@ -223,14 +223,14 @@ function ExecutiveFrame:PLAYER_REGEN_DISABLED(unitTargeting)
 	-- Determine if in combat with boss, for bars that blink only for bosses
     m_bInCombat = true
     m_bCombatWithBoss = false
-    if IsInRaid() then
+    if ( IsInRaid() ) then
         for i = 1, 40 do
             if ( UnitLevel("raid"..i.."target") == -1 ) then
                 m_bCombatWithBoss = true;
                 break;
             end
         end
-    elseif IsInGroup() then
+    elseif ( IsInGroup() ) then
         for i = 1, 5 do
             if ( UnitLevel("party"..i.."target") == -1 ) then
                 m_bCombatWithBoss = true;
@@ -240,7 +240,7 @@ function ExecutiveFrame:PLAYER_REGEN_DISABLED(unitTargeting)
     elseif ( UnitLevel("target") == -1 ) then
         m_bCombatWithBoss = true
     end
-    if NeedToKnow.BossStateBars then
+    if ( NeedToKnow.BossStateBars ) then
         for bar, unused in pairs(NeedToKnow.BossStateBars) do
             mfn_Bar_AuraCheck(bar)
         end
@@ -251,7 +251,7 @@ function ExecutiveFrame:PLAYER_REGEN_ENABLED(unitTargeting)
 	-- For bars that blink only for bosses
     m_bInCombat = false
     m_bCombatWithBoss = false
-    if NeedToKnow.BossStateBars then
+    if ( NeedToKnow.BossStateBars ) then
         for bar, unused in pairs(NeedToKnow.BossStateBars) do
             mfn_Bar_AuraCheck(bar)
         end
