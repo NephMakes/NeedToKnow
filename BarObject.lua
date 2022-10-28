@@ -165,38 +165,6 @@ function Bar:SetBackgroundSize(showIcon)
 	background:SetWidth(bgWidth)
 end
 
---[[
-function Bar:UpdateAppearance()
-	-- For bar elements that can change in combat
-	-- called by mfn_Bar_AuraCheck
-
-	local barSettings = self.settings
-
-	-- Blinking bars don't have an icon
-	local icon = self.Icon
-	if ( barSettings.show_icon and self.iconPath ) then
-		icon:SetTexture(self.iconPath)
-		icon:Show()
-		self:SetBackgroundSize(true)
-	else
-		icon:Hide()
-		self:SetBackgroundSize(false)
-	end
-
-	-- Blinking changes bar color
-	local barColor = barSettings.BarColor
-	self.Texture:SetVertexColor(barColor.r,barColor.g, barColor.b)
-	self.Texture:SetAlpha(barColor.a)
-	if ( self.max_expirationTime and self.max_expirationTime ~= self.expirationTime ) then 
-		self.Texture2:SetVertexColor(barColor.r,barColor.g, barColor.b)
-		self.Texture2:SetAlpha(barColor.a)
-		self.Texture2:Show()
-	else
-		self.Texture2:Hide()
-	end
-end
-]]--
-
 function Bar:Unlock()
 	-- Set bar for user config
 	-- Called by Bar:Update() and NeedToKnow.Bar_Update
@@ -225,13 +193,15 @@ function Bar:Unlock()
 		if ( "" ~= settings.show_text_user ) then
 			txt = settings.show_text_user
 		else
-			txt = txt .. NeedToKnow.PrettyName(settings)
+			txt = txt .. self:GetPrettyName(settings)
 		end
 
-		if ( settings.append_cd
-			 and (settings.BuffOrDebuff == "CASTCD"
-			   or settings.BuffOrDebuff == "BUFFCD"
-			   or settings.BuffOrDebuff == "EQUIPSLOT" ) )
+		if ( settings.append_cd and (
+				settings.BuffOrDebuff == "CASTCD"
+				or settings.BuffOrDebuff == "BUFFCD"
+				or settings.BuffOrDebuff == "EQUIPSLOT" 
+				) 
+			)
 		then
 			txt = txt .. " CD"
 		elseif ( settings.append_usable and settings.BuffOrDebuff == "USABLE" ) then
@@ -273,8 +243,22 @@ function Bar:StartBlink()
 	self:SetBackgroundSize(false)
 end
 
-function NeedToKnow.ComputeBarText(buffName, count, extended, buff_stacks, bar)
-    -- Called by bar:ConfigureVisible()
+function Bar:GetPrettyName(barSettings)
+	-- Called by Bar:Unlock()
+	if barSettings.BuffOrDebuff == "EQUIPSLOT" then
+		local idx = tonumber(barSettings.AuraName)
+		if idx then 
+			return NEEDTOKNOW.ITEM_NAMES[idx] 
+		else 
+			return ""
+		end
+	else
+		return barSettings.AuraName
+	end
+end
+
+function Bar:ComputeText(buffName, count, extended, buff_stacks)
+    -- Called by Bar:ConfigureVisible()
     local text
     if ( count > 1 ) then
         text = buffName.."  ["..count.."]"
@@ -282,35 +266,18 @@ function NeedToKnow.ComputeBarText(buffName, count, extended, buff_stacks, bar)
         text = buffName
     end
 
-    if ( bar.settings.show_ttn1 and buff_stacks.total_ttn[1] > 0 ) then
+    if ( self.settings.show_ttn1 and buff_stacks.total_ttn[1] > 0 ) then
         text = text .. " ("..buff_stacks.total_ttn[1]..")"
     end
-    if ( bar.settings.show_ttn2 and buff_stacks.total_ttn[2] > 0 ) then
+    if ( self.settings.show_ttn2 and buff_stacks.total_ttn[2] > 0 ) then
         text = text .. " ("..buff_stacks.total_ttn[2]..")"
     end
-    if ( bar.settings.show_ttn3 and buff_stacks.total_ttn[3] > 0 ) then
+    if ( self.settings.show_ttn3 and buff_stacks.total_ttn[3] > 0 ) then
         text = text .. " ("..buff_stacks.total_ttn[3]..")"
     end
     if ( extended and extended > 1 ) then
         text = text .. string.format(" + %.0fs", extended)
     end
     return text
-end
-
-function NeedToKnow.PrettyName(barSettings)
-    if ( barSettings.BuffOrDebuff == "EQUIPSLOT" ) then
-        local idx = tonumber(barSettings.AuraName)
-        if idx then return NEEDTOKNOW.ITEM_NAMES[idx] end
-        return ""
-    --[[  
-    -- Player power no longer supported
-    elseif ( barSettings.BuffOrDebuff == "POWER" ) then
-        local idx = tonumber(barSettings.AuraName)
-        if idx then return NeedToKnow.GetPowerName(idx) end
-        return ""
-    ]]--
-    else
-        return barSettings.AuraName
-    end
 end
 

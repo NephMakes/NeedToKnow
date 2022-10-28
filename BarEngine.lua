@@ -201,8 +201,7 @@ function Bar:SetScripts()
 		-- WORKAROUND: PLAYER_TARGET_CHANGED happens immediately, UNIT_TARGET every couple seconds
 		self:RegisterEvent("PLAYER_TARGET_CHANGED")
 		self:RegisterEvent("UNIT_TARGET")
-		-- WORKAROUND: Don't get UNIT_AURA for targettarget
-		self:CheckCombatLogRegistration()
+		self:CheckCombatLogRegistration() -- WORKAROUND: Don't get UNIT_AURA for targettarget
 	else
 		self:RegisterEvent("UNIT_AURA")
 	end
@@ -258,8 +257,6 @@ function Bar:ClearScripts()
 	self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 	self:UnregisterEvent("PLAYER_TOTEM_UPDATE")
 	self:UnregisterEvent("UNIT_AURA")
-	-- self:UnregisterEvent("UNIT_POWER")
-	-- self:UnregisterEvent("UNIT_DISPLAYPOWER")
 	self:UnregisterEvent("UNIT_TARGET")
 	self:UnregisterEvent("START_AUTOREPEAT_SPELL")
 	self:UnregisterEvent("STOP_AUTOREPEAT_SPELL")
@@ -450,7 +447,7 @@ function Bar:ConfigureVisible(count, extended, buff_stacks)
 	if not self.settings.show_count then
 		c = 1
 	end
-	local to_append = NeedToKnow.ComputeBarText(n, c, extended, buff_stacks, self)
+	local to_append = self:ComputeText(n, c, extended, buff_stacks)
 	if to_append and to_append ~= "" then
 		txt = txt .. to_append
 	end
