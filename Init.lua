@@ -16,8 +16,12 @@ NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
 -- NeedToKnowRMB = {}    -- Used by NeedToKnow.lua, NeedToKnow_Options.lua, NeedToKnow_Options.xml
                          -- (Right-click bar config menu)
 
+-- ----------
 -- Namespaces
+-- ----------
+
 NeedToKnow.ExecutiveFrame = CreateFrame("Frame", "NeedToKnow_ExecutiveFrame")
+
 NeedToKnow.Bar = {}
 NeedToKnow.Cooldown = {}
 NeedToKnow.BarGroup = {}

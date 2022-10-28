@@ -36,6 +36,7 @@ local mfn_GetSpellChargesCooldown = Cooldown.GetSpellChargesCooldown
 local mfn_GetAutoShotCooldown     = Cooldown.GetAutoShotCooldown
 local mfn_GetUnresolvedCooldown   = Cooldown.GetUnresolvedCooldown
 
+-- Kitjan used m_scratch to track multiple instances of an aura with one bar
 local m_scratch = {}
 m_scratch.all_stacks = {
 	min = {
@@ -95,203 +96,6 @@ local c_AURAEVENTS = {
 -- Kitjan's functions
 -- ------------------
 
---[[
-function NeedToKnow:UpdateBar(groupID, barID)
-	-- Called by BarMenu functions
-	local bar = NeedToKnow:GetBar(groupID, barID)
-	bar:Update()
-end
-
-function NeedToKnow:GetBar(groupID, barID)
-	return _G["NeedToKnow_Group"..groupID.."Bar"..barID]
-end
-]]--
-
---[[
-function NeedToKnow.Bar_Update(groupID, barID)
-    -- Called when the configuration of the bar has changed, when the addon
-    -- is loaded, and when locked and unlocked
-	-- Called by BarGroup:Update() and various BarMenu:Methods()
-
-    local barName = "NeedToKnow_Group"..groupID.."Bar"..barID
-    local bar = _G[barName]
-    if not bar then
-        -- Kitjan: New bar added in the UI; need to create it!
-        -- NephMakes: Wouldn't this be covered by BarGroup:Update()? 
-
-        local group = _G["NeedToKnow_Group"..groupID]
-        bar = CreateFrame("Button", barName, group, "NeedToKnow_BarTemplate")
-        if barID > 1 then
-            bar:SetPoint("TOPLEFT", "NeedToKnow_Group"..groupID.."Bar"..(barID-1), "BOTTOMLEFT", 0, 0)
-        else
-            bar:SetPoint("TOPLEFT", "NeedToKnow_Group"..groupID, "TOPLEFT")
-        end
-        bar:SetPoint("RIGHT", group, "RIGHT", 0, 0)
-        --trace("Creating bar for", groupID, barID)
-    end
-
-	-- Moved to Bar:Update(): 
-    local barSettings = groupSettings["Bars"][barID]
-    if ( not barSettings ) then
-        --trace("Adding bar settings for", groupID, barID)
-        barSettings = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
-        groupSettings.Bars[barID] = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
-    end
-    bar.settings = barSettings
-
-	local bar = NeedToKnow:GetBar(groupID, barID)
-	-- bar:Update()
-
-    local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
-	local barSettings = bar.settings
-
-    bar.auraName = barSettings.AuraName
-    
-    if ( barSettings.BuffOrDebuff == "BUFFCD" or
-         barSettings.BuffOrDebuff == "TOTEM" or
-         barSettings.BuffOrDebuff == "USABLE" or
-         barSettings.BuffOrDebuff == "EQUIPSLOT" or
-         barSettings.BuffOrDebuff == "CASTCD" ) 
-    then
-        barSettings.Unit = "player"
-    end
-    bar.unit = barSettings.Unit
-
-    bar.nextUpdate = g_GetTime() + c_UPDATE_INTERVAL
-
-    bar.fixedDuration = tonumber(groupSettings.FixedDuration)
-    if ( not bar.fixedDuration or 0 >= bar.fixedDuration ) then
-        bar.fixedDuration = nil
-    end
-
-    bar.max_value = 1
-    bar:SetValue(bar.bar1, 1)
-
-	bar:SetAppearance()
-
-    if ( NeedToKnow.CharSettings["Locked"] ) then
-        local enabled = groupSettings.Enabled and barSettings.Enabled
-        if ( enabled ) then
-            -- Set up the bar to be functional
-
-            -- click through
-            bar:EnableMouse(false)
-
-            -- Split the spell names    
-            bar.spells = {}
-            bar.cd_functions = {}
-            local iSpell = 0
-            for barSpell in bar.auraName:gmatch("([^,]+)") do
-                iSpell = iSpell+1
-                barSpell = strtrim(barSpell)
-                local _, nDigits = barSpell:find("^-?%d+")
-                if ( nDigits == barSpell:len() ) then
-                    table.insert(bar.spells, { idxName=iSpell, id=tonumber(barSpell) } )
-                else
-                    table.insert(bar.spells, { idxName=iSpell, name=barSpell } )
-                end
-            end
-
-            -- split the user name overrides
-            bar.spell_names = {}
-            for un in barSettings.show_text_user:gmatch("([^,]+)") do
-                un = strtrim(un)
-                table.insert(bar.spell_names, un)
-            end
-
-            -- split the "reset" spells (for internal cooldowns which reset when the player gains an aura)
-            if barSettings.buffcd_reset_spells and barSettings.buffcd_reset_spells ~= "" then
-                bar.reset_spells = {}
-                bar.reset_start = {}
-                iSpell = 0
-                for resetSpell in barSettings.buffcd_reset_spells:gmatch("([^,]+)") do
-                    iSpell = iSpell+1
-                    resetSpell = strtrim(resetSpell)
-                    local _, nDigits = resetSpell:find("^%d+")
-                    if ( nDigits == resetSpell:len() ) then
-                        table.insert(bar.reset_spells, { idxName = iSpell, id=tonumber(resetSpell) } )
-                    else
-                        table.insert(bar.reset_spells, { idxName = iSpell, name=resetSpell} )
-                    end
-                    table.insert(bar.reset_start, 0)
-                end
-            else
-                bar.reset_spells = nil
-                bar.reset_start = nil
-            end
-
-            barSettings.bAutoShot = nil
-            bar.is_counter = nil
-            bar.ticker = NeedToKnow.Bar_OnUpdate
-
-            -- Determine which helper functions to use
-            if     "BUFFCD" == barSettings.BuffOrDebuff then
-                bar.fnCheck = mfn_AuraCheck_BUFFCD
-            elseif "TOTEM" == barSettings.BuffOrDebuff then
-                bar.fnCheck = NeedToKnow.mfn_AuraCheck_TOTEM
-            elseif "USABLE" == barSettings.BuffOrDebuff then
-                bar.fnCheck = NeedToKnow.mfn_AuraCheck_USABLE
-            elseif "EQUIPSLOT" == barSettings.BuffOrDebuff then
-                bar.fnCheck = NeedToKnow.mfn_AuraCheck_EQUIPSLOT
-            elseif "CASTCD" == barSettings.BuffOrDebuff then
-                bar.fnCheck = NeedToKnow.mfn_AuraCheck_CASTCD
-                for idx, entry in ipairs(bar.spells) do
-                    table.insert(bar.cd_functions, mfn_GetSpellCooldown)
-                    Cooldown.SetUpSpell(bar, entry)
-                end
-            elseif barSettings.show_all_stacks then
-                bar.fnCheck = NeedToKnow.mfn_AuraCheck_AllStacks
-            else
-                bar.fnCheck = NeedToKnow.mfn_AuraCheck_Single
-            end
-
-            if ( barSettings.BuffOrDebuff == "BUFFCD" ) then
-                local dur = tonumber(barSettings.buffcd_duration)
-                if (not dur or dur < 1) then
-                    -- print("NeedToKnow: Internal cooldown bar watching", barSettings.AuraName, "did not set a cooldown duration. Disabling the bar.")
-                    print("NeedToKnow: Please set internal cooldown duration for:", barSettings.AuraName)
-                    enabled = false
-                end
-            end
-
-            bar:SetScripts()
-            -- Events were cleared while unlocked, so need to check the bar again now
-            -- mfn_Bar_AuraCheck(bar)
-            NeedToKnow.mfn_Bar_AuraCheck(bar)
-        else
-            bar:ClearScripts()
-            bar:Hide()
-        end
-    else
-        bar:ClearScripts()
-		bar:Unlock()
-    end
-end
-]]--
-
---[[
-function NeedToKnow.mfn_UpdateVCT(bar)
-    local vct_duration = NeedToKnow.ComputeVCTDuration(bar)
-
-    local dur = bar.fixedDuration or bar.duration
-    if ( dur ) then
-        vct_width =  (vct_duration * bar:GetWidth()) / dur
-        if (vct_width > bar:GetWidth()) then
-            vct_width = bar:GetWidth() 
-        end
-    else
-        vct_width = 0
-    end
-
-    if ( vct_width > 1 ) then
-        bar.vct:SetWidth(vct_width)
-        bar.vct:Show()
-    else
-        bar.vct:Hide()
-    end
-end
-]]--
-
 function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
 	-- Called by mfn_Bar_AuraCheck(bar) if bar.duration found
 
@@ -333,20 +137,19 @@ function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
     bar.text:SetText(txt)
         
     -- Is this an aura with a finite duration?
-    local vct_width = 0
+    -- local vct_width = 0
     if ( not bar.is_counter and bar.duration > 0 ) then
         -- Configure the main status bar
         local duration = bar.fixedDuration or bar.duration
         bar.max_value = duration
 
-        -- Determine the size of the visual cast bar
+        -- Set CastTime size
         if ( bar.settings.vct_enabled ) then
-            -- NeedToKnow.mfn_UpdateVCT(bar)
             bar:UpdateCastTime()
         end
         
         -- Force an update to get all the bars to the current position (sharing code)
-        -- This will call UpdateVCT again, but that seems ok
+        -- This will call UpdateCastTime again, but that seems ok
         bar.nextUpdate = -c_UPDATE_INTERVAL
         if bar.expirationTime > g_GetTime() then
             NeedToKnow.Bar_OnUpdate(bar, 0)
@@ -952,27 +755,6 @@ function NeedToKnow.mfn_Bar_AuraCheck(bar)
     end
 end
 
---[[
-function NeedToKnow.Fmt_SingleUnit(i_fSeconds)
-    return string.format(SecondsToTimeAbbrev(i_fSeconds))
-end
-
-function NeedToKnow.Fmt_TwoUnits(i_fSeconds)
-  if ( i_fSeconds < 6040 ) then
-      local nMinutes, nSeconds
-      nMinutes = floor(i_fSeconds / 60)
-      nSeconds = floor(i_fSeconds - nMinutes*60)
-      return string.format("%02d:%02d", nMinutes, nSeconds)
-  else
-      string.format(SecondsToTimeAbbrev(i_fSeconds))
-  end
-end
-
-function NeedToKnow.Fmt_Float(i_fSeconds)
-  return string.format("%0.1f", i_fSeconds)
-end
-]]--
-
 function NeedToKnow.Bar_OnUpdate(self, elapsed)
     local now = g_GetTime()
     if ( now > self.nextUpdate ) then
@@ -1156,3 +938,11 @@ function NeedToKnow.Bar_OnEvent(self, event, unit, ...)
     end
 end
 
+--[[
+function Bar:OnEvent(event, unit, ...)
+	local fn = EDT[event]
+	if fn then 
+		fn(self, unit, ...)
+	end
+end
+]]--

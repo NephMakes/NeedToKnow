@@ -1,14 +1,12 @@
 -- Bar appearance and interaction
 
--- local addonName, addonTable = ...
+local addonName, addonTable = ...
+
 local Bar = NeedToKnow.Bar
 
 --[[
 function Bar:New()
 	-- Instead of doing it in BarGroup:Update() and elsewhere
-
-	self.Initialize = Bar.Initialize
-	-- self:Initialize() -- Instead of Bar:OnLoad()?
 end
 ]]--
 
@@ -22,9 +20,8 @@ end
 function Bar:OnLoad()
 	-- Called by NeedToKnow_BarTemplate
 
-	-- TO DO: Merge with Bar:New()? Or Bar:Initialize()?
-
 	self:RegisterForDrag("LeftButton")
+
 	self:SetScript("OnEnter", Bar.OnEnter)
 	self:SetScript("OnLeave", Bar.OnLeave)
 	self:SetScript("OnMouseUp", Bar.OnMouseUp)

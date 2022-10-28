@@ -12,6 +12,11 @@ local UPDATE_INTERVAL = 0.03  -- equivalent to ~33 frames per second
 local m_last_guid = addonTable.m_last_guid
 local mfn_GetSpellCooldown = Cooldown.GetSpellCooldown
 
+
+-- ----------------------
+-- Bar Setup and Updating
+-- ----------------------
+
 function Bar:Update()
 	-- Update bar behavior and appearance
 	-- Called by BarGroup:Update() and various BarMenu:Methods(). 
@@ -281,14 +286,6 @@ function Bar:CheckCombatLogRegistration(force)
     end
 end
 
---[[
-function Bar:OnEvent()
-end
-
-function Bar:OnUpdate()
-end
-]]--
-
 function Bar:UpdateAppearance()
 	-- For bar elements that can change in combat
 	-- called by mfn_Bar_AuraCheck
@@ -318,6 +315,15 @@ function Bar:UpdateAppearance()
 		self.Texture2:Hide()
 	end
 end
+
+--[[
+function Bar:OnEvent()
+end
+
+function Bar:OnUpdate()
+end
+]]--
+
 
 -- ---------
 -- Cast time

@@ -1,20 +1,16 @@
 -- local addonName, addonTable = ...
-
-local BarGroup = NeedToKnow.BarGroup
-local ResizeButton = NeedToKnow.ResizeButton
 local Bar = NeedToKnow.Bar
 
 -- ---------
 -- Bar Group
 -- ---------
 
+local BarGroup = NeedToKnow.BarGroup
+
 function BarGroup:OnLoad()
-	self.Update       = BarGroup.Update
-	self.SetPosition  = BarGroup.SetPosition
-	self.SetBarWidth  = BarGroup.SetBarWidth
-	self.SavePosition = BarGroup.SavePosition
-	self.SaveBarWidth = BarGroup.SaveBarWidth
-	self.bar = {}     -- Table for Bar frames
+	-- Called by NeedToKnow_GroupTemplate
+	Mixin(self, BarGroup) -- Inherit BarGroup methods
+	self.bar = {} -- Table of bar frames
 end
 
 function BarGroup:Update()
@@ -30,9 +26,7 @@ function BarGroup:Update()
 			bar = CreateFrame("Frame", groupName.."Bar"..barID, self, "NeedToKnow_BarTemplate")
 			bar:SetID(barID)
 			self.bar[barID] = bar
-			-- TO DO: Use Bar:Initialize()
 		end
-		-- TO DO: Use Bar:New()?
 
 		bar:SetWidth(groupSettings.Width)
 		if barID > 1 then
@@ -41,8 +35,7 @@ function BarGroup:Update()
 			bar:SetPoint("TOPLEFT")
 		end
 
-		bar:Update()  -- What we want eventually
-		-- NeedToKnow.Bar_Update(groupID, barID)
+		bar:Update()
 
 		if not groupSettings.Enabled then
 			bar:ClearScripts()
@@ -51,7 +44,7 @@ function BarGroup:Update()
 
 	local resizeButton = self.ResizeButton
 	resizeButton:SetPoint("BOTTOMRIGHT", bar, "BOTTOMRIGHT", 8, -8)
-	if ( NeedToKnow.CharSettings["Locked"] ) then
+	if NeedToKnow.CharSettings["Locked"] then
 		resizeButton:Hide()
 	else
 		resizeButton:Show()
@@ -61,7 +54,7 @@ function BarGroup:Update()
 	local barID = groupSettings.NumberBars + 1
 	while true do
 		bar = self.bar[barID]
-		if ( bar ) then
+		if bar then
 			bar:Hide()
 			bar:ClearScripts()
 			barID = barID + 1
@@ -70,12 +63,12 @@ function BarGroup:Update()
 		end
 	end
 
-	if ( groupSettings.Position ) then
+	if groupSettings.Position then
 		-- Early in loading process (before PLAYER_LOGIN) might not know position yet
 		self:SetPosition(groupSettings.Position, groupSettings.Scale)
 	end
 
-	if ( NeedToKnow.IsVisible and groupSettings.Enabled ) then
+	if NeedToKnow.IsVisible and groupSettings.Enabled then
 		self:Show()
 	else
 		self:Hide()
@@ -95,7 +88,6 @@ function BarGroup:SetBarWidth(width)
 		local bar = self.bar[barID]
 		bar:SetWidth(width)
 		bar.Text:SetWidth(width - 60)
-		-- NeedToKnow.SizeBackground(bar, bar.settings.show_icon)
 		bar:SetBackgroundSize(bar.settings.show_icon)
 	end
 end
@@ -115,6 +107,8 @@ end
 -- -------------
 -- Resize Button
 -- -------------
+
+local ResizeButton = NeedToKnow.ResizeButton
 
 function ResizeButton:OnLoad()
 	self.Texture:SetVertexColor(0.6, 0.6, 0.6)
