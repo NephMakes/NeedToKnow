@@ -8,6 +8,9 @@ local Cooldown = NeedToKnow.Cooldown
 
 local UPDATE_INTERVAL = 0.03  -- equivalent to ~33 frames per second
 
+-- Local versions of global functions
+local GetTime = GetTime
+
 -- Deprecated: 
 local m_last_guid = addonTable.m_last_guid
 local mfn_GetSpellCooldown = Cooldown.GetSpellCooldown
@@ -291,11 +294,10 @@ end
 
 function Bar:UpdateAppearance()
 	-- For bar elements that can change in combat
-	-- called by mfn_Bar_AuraCheck
+	-- Called by mfn_Bar_AuraCheck
 
 	local barSettings = self.settings
 
-	-- Blinking bars don't have an icon
 	local icon = self.Icon
 	if ( barSettings.show_icon and self.iconPath ) then
 		icon:SetTexture(self.iconPath)
@@ -305,8 +307,8 @@ function Bar:UpdateAppearance()
 		icon:Hide()
 		self:SetBackgroundSize(false)
 	end
+	-- Blinking bars don't have an icon
 
-	-- Blinking changes bar color
 	local barColor = barSettings.BarColor
 	self.Texture:SetVertexColor(barColor.r,barColor.g, barColor.b)
 	self.Texture:SetAlpha(barColor.a)
@@ -317,90 +319,74 @@ function Bar:UpdateAppearance()
 	else
 		self.Texture2:Hide()
 	end
+	-- Blinking changes bar color
 end
 
-function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
-	-- Called by mfn_Bar_AuraCheck(bar) if bar.duration found
+function Bar:ConfigureVisible(count, extended, buff_stacks)
+	-- Called by mfn_Bar_AuraCheck() if bar.duration found
+	-- How is this conceptually different than Bar:UpdateAppearance()?
 
-    local text = ""
-    
-    local txt = ""
-    if ( bar.settings.show_mypip ) then
-        txt = txt .. "* "
-    end
+	if self.duration > 0 then
+		local duration = self.fixedDuration or self.duration
+		self.max_value = duration
 
-    local n = ""
-    if ( bar.settings.show_text ) then
-        n = bar.buffName
-        if "" ~= bar.settings.show_text_user then
-            local idx = bar.idxName
-            if idx > #bar.spell_names then idx = #bar.spell_names end
-            n = bar.spell_names[idx]
-        end
-    end
-
-    local c = count
-    if not bar.settings.show_count then
-        c = 1
-    end
-    local to_append = NeedToKnow.ComputeBarText(n, c, extended, buff_stacks, bar)
-    if to_append and to_append ~= "" then
-        txt = txt .. to_append
-    end
-
-    if ( bar.settings.append_cd 
-         and (bar.settings.BuffOrDebuff == "CASTCD" 
-           or bar.settings.BuffOrDebuff == "BUFFCD"
-           or bar.settings.BuffOrDebuff == "EQUIPSLOT" ) ) 
-    then
-        txt = txt .. " CD"
-    elseif (bar.settings.append_usable and bar.settings.BuffOrDebuff == "USABLE" ) then
-        txt = txt .. " Usable"
-    end
-    bar.text:SetText(txt)
+		if self.settings.vct_enabled then
+			self:UpdateCastTime()
+		end
         
-    -- Is this an aura with a finite duration?
-    if ( not bar.is_counter and bar.duration > 0 ) then
-        -- Configure the main status bar
-        local duration = bar.fixedDuration or bar.duration
-        bar.max_value = duration
+		-- Force an update to get all the bars to the current position (sharing code)
+		-- This will call UpdateCastTime again, but that seems ok
+		self.nextUpdate = UPDATE_INTERVAL
+		if self.expirationTime > GetTime() then
+			NeedToKnow.Bar_OnUpdate(self, 0)
+		end
 
-        -- Set CastTime size
-        if ( bar.settings.vct_enabled ) then
-            bar:UpdateCastTime()
-        end
-        
-        -- Force an update to get all the bars to the current position (sharing code)
-        -- This will call UpdateCastTime again, but that seems ok
-        bar.nextUpdate = UPDATE_INTERVAL
-        if bar.expirationTime > GetTime() then
-            NeedToKnow.Bar_OnUpdate(bar, 0)
-        end
-
-        bar.Time:Show()
---    elseif bar.is_counter then
---    	-- Bar is tracking player power?
---
---        bar.max_value = 1
---        local pct = buff_stacks.total_ttn[1] / buff_stacks.total_ttn[2]
---        mfn_SetStatusBarValue(bar,bar.bar1,pct)
---        if bar.bar2 then mfn_SetStatusBarValue(bar,bar.bar2,pct) end
---
---        bar.time:Hide()
---        bar.spark:Hide()
---
---        if ( bar.vct ) then
---            bar.vct:Hide()
---        end
+		self.Time:Show()
     else
-        -- Hide time, text, and spark for auras with infinite duration
-        bar.max_value = 1
-		bar:SetValue(bar.Texture, 1)
-		bar:SetValue(bar.Texture2, 1)
-        bar.Time:Hide()
-        bar.Spark:Hide()
-        bar.CastTime:Hide()
-    end
+		-- Aura with indefinite duration
+		self.max_value = 1
+		self:SetValue(self.Texture, 1)
+		self:SetValue(self.Texture2, 1)
+		self.Time:Hide()
+		self.Spark:Hide()
+		self.CastTime:Hide()
+	end
+
+	-- Set bar text
+
+	local txt = ""
+	if self.settings.show_mypip then
+		txt = txt .. "* "
+	end
+
+	local n = ""
+	if self.settings.show_text then
+		n = self.buffName
+		if "" ~= self.settings.show_text_user then
+			local idx = self.idxName
+			if idx > #self.spell_names then idx = #self.spell_names end
+			n = self.spell_names[idx]
+		end
+	end
+	local c = count
+	if not self.settings.show_count then
+		c = 1
+	end
+	local to_append = NeedToKnow.ComputeBarText(n, c, extended, buff_stacks, self)
+	if to_append and to_append ~= "" then
+		txt = txt .. to_append
+	end
+
+	if ( self.settings.append_cd 
+		and (self.settings.BuffOrDebuff == "CASTCD" 
+		or self.settings.BuffOrDebuff == "BUFFCD"
+		or self.settings.BuffOrDebuff == "EQUIPSLOT" ) ) 
+	then
+		txt = txt .. " CD"
+	elseif self.settings.append_usable and self.settings.BuffOrDebuff == "USABLE" then
+		txt = txt .. " Usable"
+	end
+	self.text:SetText(txt)
 end
 
 --[[

@@ -274,8 +274,7 @@ function Bar:StartBlink()
 end
 
 function NeedToKnow.ComputeBarText(buffName, count, extended, buff_stacks, bar)
-    -- AuraCheck calls on this to compute the "text" of the bar
-    -- It is separated out like this in part to be hooked by other addons
+    -- Called by bar:ConfigureVisible()
     local text
     if ( count > 1 ) then
         text = buffName.."  ["..count.."]"

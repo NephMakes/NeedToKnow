@@ -627,7 +627,8 @@ function NeedToKnow.mfn_Bar_AuraCheck(bar)
         -- since it calls OnUpdate which checks bar.blink
         bar.blink = false
         bar:UpdateAppearance()
-        NeedToKnow.ConfigureVisibleBar(bar, count, extended, all_stacks)
+        -- NeedToKnow.ConfigureVisibleBar(bar, count, extended, all_stacks)
+        bar:ConfigureVisible(count, extended, all_stacks)
         bar:Show()
     else
         if (settings.bDetectExtends and bar.buffName) then
@@ -704,8 +705,9 @@ function NeedToKnow.Bar_OnUpdate(self, elapsed)
                 end
                 bar1_timeLeft = 0
             end
-            -- mfn_SetStatusBarValue(self, self.bar1, bar1_timeLeft);
+
             self:SetValue(self.bar1, bar1_timeLeft);
+
             if ( self.settings.show_time ) then
                 local fn = NeedToKnow[self.settings.TimeFormat]
                 local oldText = self.time:GetText()
