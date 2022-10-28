@@ -8,9 +8,7 @@ local Bar = NeedToKnow.Bar
 function Bar:New()
 	-- Instead of doing it in BarGroup:Update() and elsewhere
 end
-]]--
 
---[[
 function Bar:Initialize()
 	-- Instead of OnLoad() in XML
 	-- called by Bar:Update()?
@@ -20,40 +18,25 @@ end
 function Bar:OnLoad()
 	-- Called by NeedToKnow_BarTemplate
 
+	-- Bar interaction
 	self:RegisterForDrag("LeftButton")
-
 	self:SetScript("OnEnter", Bar.OnEnter)
 	self:SetScript("OnLeave", Bar.OnLeave)
 	self:SetScript("OnMouseUp", Bar.OnMouseUp)
 	self:SetScript("OnDragStart", Bar.OnDragStart)
 	self:SetScript("OnDragStop", Bar.OnDragStop)
 	self:SetScript("OnSizeChanged", Bar.OnSizeChanged)
+	
+	Mixin(self, Bar) -- Inherit Bar:Methods()
 
-	-- self.Initialize = Bar.Initialize
-	self.SetValue = Bar.SetValue
-	self.SetAppearance = Bar.SetAppearance
-	self.SetBackgroundSize = Bar.SetBackgroundSize
-	self.UpdateAppearance = Bar.UpdateAppearance
-	self.Unlock = Bar.Unlock
-	self.StartBlink = Bar.StartBlink
-
-	-- Defined in BarEngine.lua: 
-	self.Update = Bar.Update
-	self.SetScripts = Bar.SetScripts
-	self.ClearScripts = Bar.ClearScripts
-	self.CheckCombatLogRegistration = Bar.CheckCombatLogRegistration
-	-- self:SetScript("OnEvent", Bar.OnEvent)
-	self.UpdateCastTime = Bar.UpdateCastTime
-	self.GetCastTimeDuration = Bar.GetCastTimeDuration
-
-	self.icon  = self.Icon
+	-- Want to not need these eventually
+    self.bar1 = self.Texture
+    self.bar2 = self.Texture2
+	self.icon = self.Icon
 	self.spark = self.Spark
     self.text = self.Text
     self.time = self.Time
-    self.bar1 = self.Texture
-    self.bar2 = self.Texture2
 	self.vct = self.CastTime
-	-- want to not need these eventually
 end
 
 function Bar:OnEnter()

@@ -13,14 +13,14 @@ local m_last_guid = addonTable.m_last_guid
 local mfn_GetSpellCooldown = Cooldown.GetSpellCooldown
 
 
--- ----------------------
--- Bar Setup and Updating
--- ----------------------
+-- ---------
+-- Bar Setup
+-- ---------
 
 function Bar:Update()
 	-- Update bar behavior and appearance
-	-- Called by BarGroup:Update() and various BarMenu:Methods(). 
-	-- When addon loaded, locked/unlocked, or bar configuration changed
+	-- Called by BarGroup:Update() and various BarMenu:Methods()
+	-- when addon loaded, locked/unlocked, or bar configuration changed
 
 	-- Get bar settings from NeedToKnow.ProfileSettings
 	local groupID = self:GetParent():GetID()
@@ -28,7 +28,6 @@ function Bar:Update()
 	local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
     local barSettings = groupSettings["Bars"][barID]
     if ( not barSettings ) then
-    	-- TO DO: Handle this in Bar:New()?
         groupSettings.Bars[barID] = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
         barSettings = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
     end
@@ -286,6 +285,10 @@ function Bar:CheckCombatLogRegistration(force)
     end
 end
 
+-- ---------------------
+-- Bar tracking behavior
+-- ---------------------
+
 function Bar:UpdateAppearance()
 	-- For bar elements that can change in combat
 	-- called by mfn_Bar_AuraCheck
@@ -314,6 +317,90 @@ function Bar:UpdateAppearance()
 	else
 		self.Texture2:Hide()
 	end
+end
+
+function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
+	-- Called by mfn_Bar_AuraCheck(bar) if bar.duration found
+
+    local text = ""
+    
+    local txt = ""
+    if ( bar.settings.show_mypip ) then
+        txt = txt .. "* "
+    end
+
+    local n = ""
+    if ( bar.settings.show_text ) then
+        n = bar.buffName
+        if "" ~= bar.settings.show_text_user then
+            local idx = bar.idxName
+            if idx > #bar.spell_names then idx = #bar.spell_names end
+            n = bar.spell_names[idx]
+        end
+    end
+
+    local c = count
+    if not bar.settings.show_count then
+        c = 1
+    end
+    local to_append = NeedToKnow.ComputeBarText(n, c, extended, buff_stacks, bar)
+    if to_append and to_append ~= "" then
+        txt = txt .. to_append
+    end
+
+    if ( bar.settings.append_cd 
+         and (bar.settings.BuffOrDebuff == "CASTCD" 
+           or bar.settings.BuffOrDebuff == "BUFFCD"
+           or bar.settings.BuffOrDebuff == "EQUIPSLOT" ) ) 
+    then
+        txt = txt .. " CD"
+    elseif (bar.settings.append_usable and bar.settings.BuffOrDebuff == "USABLE" ) then
+        txt = txt .. " Usable"
+    end
+    bar.text:SetText(txt)
+        
+    -- Is this an aura with a finite duration?
+    if ( not bar.is_counter and bar.duration > 0 ) then
+        -- Configure the main status bar
+        local duration = bar.fixedDuration or bar.duration
+        bar.max_value = duration
+
+        -- Set CastTime size
+        if ( bar.settings.vct_enabled ) then
+            bar:UpdateCastTime()
+        end
+        
+        -- Force an update to get all the bars to the current position (sharing code)
+        -- This will call UpdateCastTime again, but that seems ok
+        bar.nextUpdate = UPDATE_INTERVAL
+        if bar.expirationTime > GetTime() then
+            NeedToKnow.Bar_OnUpdate(bar, 0)
+        end
+
+        bar.Time:Show()
+--    elseif bar.is_counter then
+--    	-- Bar is tracking player power?
+--
+--        bar.max_value = 1
+--        local pct = buff_stacks.total_ttn[1] / buff_stacks.total_ttn[2]
+--        mfn_SetStatusBarValue(bar,bar.bar1,pct)
+--        if bar.bar2 then mfn_SetStatusBarValue(bar,bar.bar2,pct) end
+--
+--        bar.time:Hide()
+--        bar.spark:Hide()
+--
+--        if ( bar.vct ) then
+--            bar.vct:Hide()
+--        end
+    else
+        -- Hide time, text, and spark for auras with infinite duration
+        bar.max_value = 1
+		bar:SetValue(bar.Texture, 1)
+		bar:SetValue(bar.Texture2, 1)
+        bar.Time:Hide()
+        bar.Spark:Hide()
+        bar.CastTime:Hide()
+    end
 end
 
 --[[

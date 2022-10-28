@@ -1,7 +1,7 @@
--- --------------------------------
+-- --------------------------------------
 -- NeedToKnow
--- by Kitjan, NephMakes/lieandswell
--- --------------------------------
+-- by NephMakes (aka lieandswell), Kitjan
+-- --------------------------------------
 
 local addonName, addonTable = ...
 
@@ -95,91 +95,6 @@ local c_AURAEVENTS = {
 -- ------------------
 -- Kitjan's functions
 -- ------------------
-
-function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
-	-- Called by mfn_Bar_AuraCheck(bar) if bar.duration found
-
-    local text = ""
-    
-    local txt = ""
-    if ( bar.settings.show_mypip ) then
-        txt = txt .. "* "
-    end
-
-    local n = ""
-    if ( bar.settings.show_text ) then
-        n = bar.buffName
-        if "" ~= bar.settings.show_text_user then
-            local idx = bar.idxName
-            if idx > #bar.spell_names then idx = #bar.spell_names end
-            n = bar.spell_names[idx]
-        end
-    end
-
-    local c = count
-    if not bar.settings.show_count then
-        c = 1
-    end
-    local to_append = NeedToKnow.ComputeBarText(n, c, extended, buff_stacks, bar)
-    if to_append and to_append ~= "" then
-        txt = txt .. to_append
-    end
-
-    if ( bar.settings.append_cd 
-         and (bar.settings.BuffOrDebuff == "CASTCD" 
-           or bar.settings.BuffOrDebuff == "BUFFCD"
-           or bar.settings.BuffOrDebuff == "EQUIPSLOT" ) ) 
-    then
-        txt = txt .. " CD"
-    elseif (bar.settings.append_usable and bar.settings.BuffOrDebuff == "USABLE" ) then
-        txt = txt .. " Usable"
-    end
-    bar.text:SetText(txt)
-        
-    -- Is this an aura with a finite duration?
-    -- local vct_width = 0
-    if ( not bar.is_counter and bar.duration > 0 ) then
-        -- Configure the main status bar
-        local duration = bar.fixedDuration or bar.duration
-        bar.max_value = duration
-
-        -- Set CastTime size
-        if ( bar.settings.vct_enabled ) then
-            bar:UpdateCastTime()
-        end
-        
-        -- Force an update to get all the bars to the current position (sharing code)
-        -- This will call UpdateCastTime again, but that seems ok
-        bar.nextUpdate = -c_UPDATE_INTERVAL
-        if bar.expirationTime > g_GetTime() then
-            NeedToKnow.Bar_OnUpdate(bar, 0)
-        end
-
-        bar.Time:Show()
---    elseif bar.is_counter then
---    	-- Bar is tracking player power?
---
---        bar.max_value = 1
---        local pct = buff_stacks.total_ttn[1] / buff_stacks.total_ttn[2]
---        mfn_SetStatusBarValue(bar,bar.bar1,pct)
---        if bar.bar2 then mfn_SetStatusBarValue(bar,bar.bar2,pct) end
---
---        bar.time:Hide()
---        bar.spark:Hide()
---
---        if ( bar.vct ) then
---            bar.vct:Hide()
---        end
-    else
-        -- Hide time, text, and spark for auras with infinite duration
-        bar.max_value = 1
-		bar:SetValue(bar.Texture, 1)
-		bar:SetValue(bar.Texture2, 1)
-        bar.Time:Hide()
-        bar.Spark:Hide()
-        bar.CastTime:Hide()
-    end
-end
 
 -- NephMakes: I don't think temporary enchants aren't a thing anymore, 
 -- but keep this for potential use in WoW Classic
@@ -293,7 +208,6 @@ function NeedToKnow.mfn_AuraCheck_EQUIPSLOT(bar, bar_entry, all_stacks)
         if id then
             local item_entry = m_scratch.bar_entry
             item_entry.id = id
-            -- local start, cd_len, enable, name, icon = NeedToKnow.GetItemCooldown(bar, item_entry)
             local start, cd_len, enable, name, icon = Cooldown.GetItemCooldown(bar, item_entry)
             if ( start and start > 0 ) then
                 NeedToKnow.mfn_AddInstanceToStacks(all_stacks, bar_entry, 
@@ -785,7 +699,6 @@ function NeedToKnow.Bar_OnUpdate(self, elapsed)
                      self.settings.BuffOrDebuff == "BUFFCD" or
                      self.settings.BuffOrDebuff == "EQUIPSLOT" )
                 then
-                    -- mfn_Bar_AuraCheck(self)
                     NeedToKnow.mfn_Bar_AuraCheck(self)
                     return
                 end
@@ -819,7 +732,6 @@ function NeedToKnow.Bar_OnUpdate(self, elapsed)
             
             if ( self.max_expirationTime ) then
                 local bar2_timeLeft = self.max_expirationTime - g_GetTime()
-                -- mfn_SetStatusBarValue(self, self.bar2, bar2_timeLeft, bar1_timeLeft)
                 self:SetValue(self.bar2, bar2_timeLeft, bar1_timeLeft)
             end
             
@@ -832,14 +744,12 @@ end
 
 function NeedToKnow.fnAuraCheckIfUnitMatches(bar, unit)
     if ( unit == bar.unit )  then
-        -- mfn_Bar_AuraCheck(bar)
         NeedToKnow.mfn_Bar_AuraCheck(bar)
     end
 end
 
 function NeedToKnow.fnAuraCheckIfUnitPlayer(bar, unit)
     if ( unit == "player" ) then
-        -- mfn_Bar_AuraCheck(self)
         NeedToKnow.mfn_Bar_AuraCheck(bar)
     end
 end
@@ -857,9 +767,8 @@ EDT["COMBAT_LOG_EVENT_UNFILTERED"] = function(self, unit, ...)
         if ( guidTarget == g_UnitGUID(self.unit) ) then
             -- local idSpell, nameSpell = select(11, ...)
             if (self.auraName:find(idSpell) or
-                    self.auraName:find(nameSpell)) 
+                self.auraName:find(nameSpell)) 
             then 
-                -- mfn_Bar_AuraCheck(self)
                 NeedToKnow.mfn_Bar_AuraCheck(self)
             end
         end
@@ -867,7 +776,6 @@ EDT["COMBAT_LOG_EVENT_UNFILTERED"] = function(self, unit, ...)
         -- local guidDeceased = select(7, ...) 
         -- if ( guidDeceased == UnitGUID(self.unit) ) then
         if ( guidTarget == UnitGUID(self.unit) ) then
-            -- mfn_Bar_AuraCheck(self)
             NeedToKnow.mfn_Bar_AuraCheck(self)
         end
     end 
@@ -886,7 +794,6 @@ EDT["PLAYER_TARGET_CHANGED"] = function(self, unit)
         -- NeedToKnow.CheckCombatLogRegistration(self)
         self:CheckCombatLogRegistration()
     end
-    -- mfn_Bar_AuraCheck(self)
     NeedToKnow.mfn_Bar_AuraCheck(self)
 end  
 EDT["PLAYER_FOCUS_CHANGED"] = EDT["PLAYER_TARGET_CHANGED"]
@@ -895,7 +802,6 @@ EDT["UNIT_TARGET"] = function(self, unit)
         -- NeedToKnow.CheckCombatLogRegistration(self)
         self:CheckCombatLogRegistration()
     end
-    -- mfn_Bar_AuraCheck(self)
     NeedToKnow.mfn_Bar_AuraCheck(self)
 end  
 EDT["UNIT_PET"] = NeedToKnow.fnAuraCheckIfUnitPlayer
@@ -906,7 +812,6 @@ EDT["PLAYER_SPELLCAST_SUCCEEDED"] = function(self, unit, ...)
         if entry.id == spellID or entry.name == spellName then
             self.unit = tgt or "unknown"
             --trace("Updating",self:GetName(),"since it was recast on",self.unit)
-            -- mfn_Bar_AuraCheck(self)
             NeedToKnow.mfn_Bar_AuraCheck(self)
             break;
         end
@@ -926,7 +831,6 @@ EDT["UNIT_SPELLCAST_SUCCEEDED"] = function(self, unit, ...)
         local interval = UnitRangedDamage("player")
         self.tAutoShotCD = interval
         self.tAutoShotStart = g_GetTime()
-        -- mfn_Bar_AuraCheck(self)
         NeedToKnow.mfn_Bar_AuraCheck(self)
     end
 end
