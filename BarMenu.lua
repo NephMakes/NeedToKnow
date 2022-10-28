@@ -381,7 +381,7 @@ function NeedToKnowRMB.BarMenu_ToggleSetting(self, a1, a2, checked)
             NeedToKnowRMB.BarMenu_CheckItem(level, "OnlyMine", false);
         end
     end
-    NeedToKnow.Bar_Update(groupID, barID);
+    NeedToKnow:UpdateBar(groupID, barID)
 end
 
 function NeedToKnowRMB.BarMenu_GetItemLevel(i_button)
@@ -515,8 +515,8 @@ function NeedToKnowRMB.BarMenu_ChooseSetting(self, a1, a2, checked)
     local v = NeedToKnowRMB.VariableRedirects[UIDROPDOWNMENU_MENU_VALUE] or UIDROPDOWNMENU_MENU_VALUE
 
     barSettings[v] = self.value;
-    NeedToKnow.Bar_Update(groupID, barID);
-        if ( v == "BuffOrDebuff" ) then
+    NeedToKnow:UpdateBar(groupID, barID)
+    if ( v == "BuffOrDebuff" ) then
         NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
     end
 end
@@ -575,47 +575,47 @@ function NeedToKnowRMB.BarMenu_ShowNameDialog(self, a1, a2, checked)
 end
 
 function NeedToKnowRMB.BarMenu_ChooseName(text, variable)
-    local groupID = NeedToKnowRMB.CurrentBar["groupID"];
-    local barID = NeedToKnowRMB.CurrentBar["barID"];
-    local barSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID];
-    if ( variable ~= "ImportExport" ) then
-        barSettings[variable] = text;
-    else
-        -- NeedToKnowIE.ImportBarSettingsFromString(text, NeedToKnow.ProfileSettings.Groups[groupID]["Bars"], barID);
-        NeedToKnow.ImportBarSettingsFromString(text, NeedToKnow.ProfileSettings.Groups[groupID]["Bars"], barID);
-    end
-    NeedToKnow.Bar_Update(groupID, barID);
+	local groupID = NeedToKnowRMB.CurrentBar["groupID"];
+	local barID = NeedToKnowRMB.CurrentBar["barID"];
+	local barSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID];
+	if ( variable ~= "ImportExport" ) then
+	barSettings[variable] = text;
+	else
+		-- NeedToKnowIE.ImportBarSettingsFromString(text, NeedToKnow.ProfileSettings.Groups[groupID]["Bars"], barID);
+		NeedToKnow.ImportBarSettingsFromString(text, NeedToKnow.ProfileSettings.Groups[groupID]["Bars"], barID);
+	end
+	NeedToKnow:UpdateBar(groupID, barID)
 end
 
 function NeedToKnowRMB.BarMenu_SetColor()
-    local groupID = NeedToKnowRMB.CurrentBar["groupID"];
-    local barID = NeedToKnowRMB.CurrentBar["barID"];
-    local varSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID][ColorPickerFrame.extraInfo];
+	local groupID = NeedToKnowRMB.CurrentBar["groupID"];
+	local barID = NeedToKnowRMB.CurrentBar["barID"];
+	local varSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID][ColorPickerFrame.extraInfo];
 
-    varSettings.r,varSettings.g,varSettings.b = ColorPickerFrame:GetColorRGB();
-    NeedToKnow.Bar_Update(groupID, barID);
+	varSettings.r,varSettings.g,varSettings.b = ColorPickerFrame:GetColorRGB();
+	NeedToKnow:UpdateBar(groupID, barID)
 end
 
 function NeedToKnowRMB.BarMenu_SetOpacity()
-    local groupID = NeedToKnowRMB.CurrentBar["groupID"];
-    local barID = NeedToKnowRMB.CurrentBar["barID"];
-    local varSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID][ColorPickerFrame.extraInfo];
+	local groupID = NeedToKnowRMB.CurrentBar["groupID"];
+	local barID = NeedToKnowRMB.CurrentBar["barID"];
+	local varSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID][ColorPickerFrame.extraInfo];
 
-    varSettings.a = 1 - OpacitySliderFrame:GetValue();
-    NeedToKnow.Bar_Update(groupID, barID);
+	varSettings.a = 1 - OpacitySliderFrame:GetValue();
+	NeedToKnow:UpdateBar(groupID, barID)
 end
 
 function NeedToKnowRMB.BarMenu_CancelColor(previousValues)
-    if ( previousValues.r ) then
-        local groupID = NeedToKnowRMB.CurrentBar["groupID"];
-        local barID = NeedToKnowRMB.CurrentBar["barID"];
-        local varSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID][ColorPickerFrame.extraInfo];
+	if ( previousValues.r ) then
+		local groupID = NeedToKnowRMB.CurrentBar["groupID"];
+		local barID = NeedToKnowRMB.CurrentBar["barID"];
+		local varSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID][ColorPickerFrame.extraInfo];
 
-        varSettings.r = previousValues.r;
-        varSettings.g = previousValues.g;
-        varSettings.b = previousValues.b;
-        varSettings.a = 1 - previousValues.opacity;
-        NeedToKnow.Bar_Update(groupID, barID);
-    end
+		varSettings.r = previousValues.r;
+		varSettings.g = previousValues.g;
+		varSettings.b = previousValues.b;
+	varSettings.a = 1 - previousValues.opacity;
+	NeedToKnow:UpdateBar(groupID, barID)
+	end
 end
 

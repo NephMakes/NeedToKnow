@@ -485,9 +485,11 @@
                     <Anchor point="BOTTOMRIGHT" relativeTo="$parentFrame" x="-3" y="7"/>
                 </Anchors>
                 <Scripts>
+                	<!--
                     <NotVerticalScroll>
                         NeedToKnowOptions.OnScrollFrameScrolled(self)
                     </NotVerticalScroll>
+                    -->
                     <OnSizeChanged>
                         NeedToKnowOptions.OnScrollFrameSized(self)
                     </OnSizeChanged>

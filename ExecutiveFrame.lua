@@ -26,8 +26,8 @@ local m_bInCombat       = addonTable.m_bInCombat
 local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
 
 -- Other functions defined elsewhere
-local mfn_Bar_AuraCheck = addonTable.mfn_Bar_AuraCheck  -- I don't think this works as is
-
+-- local mfn_Bar_AuraCheck = addonTable.mfn_Bar_AuraCheck  -- I don't think this works as is
+-- local mfn_Bar_AuraCheck = NeedToKnow.mfn_Bar_AuraCheck
 
 -- ---------------
 -- Local functions
@@ -140,7 +140,7 @@ function ExecutiveFrame:PLAYER_LOGIN()
 		NeedToKnow.RegisterSpellcastSent();
 		-- So we can filter rune cooldowns out of ability cooldowns
 	end
-	NeedToKnow.Update()
+	NeedToKnow:Update()
 
 	self:UnregisterEvent("PLAYER_LOGIN")
 	self:UnregisterEvent("ADDON_LOADED")
@@ -149,7 +149,7 @@ function ExecutiveFrame:PLAYER_LOGIN()
 	RefreshRaidMemberNames()
 end
 
-function NeedToKnow.Update()
+function NeedToKnow:Update()
 	if ( UnitExists("player") and NeedToKnow.ProfileSettings ) then
 		for groupID = 1, NeedToKnow.ProfileSettings.nGroups do
 			local group = _G["NeedToKnow_Group"..groupID]
@@ -212,7 +212,7 @@ function ExecutiveFrame:UNIT_TARGET(unitTargeting)
             m_bCombatWithBoss = true
             if ( NeedToKnow.BossStateBars ) then
                 for bar, unused in pairs(NeedToKnow.BossStateBars) do
-                    mfn_Bar_AuraCheck(bar)
+                    NeedToKnow.mfn_Bar_AuraCheck(bar)
                 end
             end
         end
@@ -242,7 +242,7 @@ function ExecutiveFrame:PLAYER_REGEN_DISABLED(unitTargeting)
     end
     if ( NeedToKnow.BossStateBars ) then
         for bar, unused in pairs(NeedToKnow.BossStateBars) do
-            mfn_Bar_AuraCheck(bar)
+            NeedToKnow.mfn_Bar_AuraCheck(bar)
         end
     end
 end
@@ -253,7 +253,7 @@ function ExecutiveFrame:PLAYER_REGEN_ENABLED(unitTargeting)
     m_bCombatWithBoss = false
     if ( NeedToKnow.BossStateBars ) then
         for bar, unused in pairs(NeedToKnow.BossStateBars) do
-            mfn_Bar_AuraCheck(bar)
+            NeedToKnow.mfn_Bar_AuraCheck(bar)
         end
     end
 end

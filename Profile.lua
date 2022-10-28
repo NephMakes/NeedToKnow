@@ -2,7 +2,6 @@
 
 local addonName, addonTable = ...
 
--- local g_GetActiveTalentGroup = _G.GetSpecialization
 local g_GetActiveTalentGroup = _G.GetSpecialization or _G.GetActiveTalentGroup
 
 function NeedToKnow.RemoveDefaultValues(t, def, k)

@@ -43,18 +43,19 @@ local mfn_GetAutoShotCooldown     = Cooldown.GetAutoShotCooldown
 local mfn_GetUnresolvedCooldown   = Cooldown.GetUnresolvedCooldown
 
 -- local mfn_SetStatusBarValue
-local mfn_Bar_AuraCheck = addonTable.mfn_Bar_AuraCheck
 -- local mfn_Bar_AuraCheck
-local mfn_AuraCheck_Single
-local mfn_AuraCheck_TOTEM
-local mfn_AuraCheck_BUFFCD
-local mfn_AuraCheck_USABLE
-local mfn_AuraCheck_EQUIPSLOT
-local mfn_AuraCheck_CASTCD
-local mfn_AuraCheck_AllStacks
-local mfn_AddInstanceToStacks
+-- local mfn_AuraCheck_Single = addonTable.mfn_AuraCheck_Single
+-- local mfn_AuraCheck_TOTEM = addonTable.mfn_AuraCheck_TOTEM
+local mfn_AuraCheck_BUFFCD = addonTable.mfn_AuraCheck_BUFFCD
+-- local mfn_AuraCheck_USABLE = addonTable.mfn_AuraCheck_USABLE
+-- local mfn_AuraCheck_EQUIPSLOT = addonTable.mfn_AuraCheck_EQUIPSLOT
+-- local mfn_AuraCheck_CASTCD = addonTable.mfn_AuraCheck_CASTCD
+-- local mfn_AuraCheck_AllStacks = addonTable.mfn_AuraCheck_AllStacks
+-- Don't think this makes these visible to other files
+
+-- local mfn_AddInstanceToStacks
 local mfn_ResetScratchStacks
-local mfn_UpdateVCT
+-- local mfn_UpdateVCT
 
 local m_scratch = {}
 m_scratch.all_stacks = {
@@ -115,15 +116,21 @@ local c_AURAEVENTS = {
 -- BARS
 -- ----
 
-function NeedToKnow:GetBar(groupID, barID)
+function NeedToKnow:UpdateBar(groupID, barID)
+	local bar = NeedToKnow:GetBar(groupID, barID)
+	bar:Update()
+	-- NeedToKnow.Bar_Update(groupID, barID)
 end
 
+function NeedToKnow:GetBar(groupID, barID)
+	return _G["NeedToKnow_Group"..groupID.."Bar"..barID]
+end
+
+--[[
 function NeedToKnow.Bar_Update(groupID, barID)
     -- Called when the configuration of the bar has changed, when the addon
     -- is loaded, and when locked and unlocked
 	-- Called by BarGroup:Update() and various BarMenu:Methods()
-
-    local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
 
     local barName = "NeedToKnow_Group"..groupID.."Bar"..barID
     local bar = _G[barName]
@@ -142,6 +149,7 @@ function NeedToKnow.Bar_Update(groupID, barID)
         --trace("Creating bar for", groupID, barID)
     end
 
+	-- Moved to Bar:Update(): 
     local barSettings = groupSettings["Bars"][barID]
     if ( not barSettings ) then
         --trace("Adding bar settings for", groupID, barID)
@@ -150,18 +158,12 @@ function NeedToKnow.Bar_Update(groupID, barID)
     end
     bar.settings = barSettings
 
-	bar.icon  = bar.Icon
-	bar.spark = bar.Spark
-    bar.text  = bar.Text
-    bar.time  = bar.Time
-    bar.bar1  = bar.Texture
-    bar.bar2  = bar.Texture2
-	bar.vct   = bar.CastTime
-	-- want to not need these eventually
+	local bar = NeedToKnow:GetBar(groupID, barID)
+	-- bar:Update()
 
-	bar:Update()
-	-- Moved to Bar:Update(): 
-	--[[ 
+    local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
+	local barSettings = bar.settings
+
     bar.auraName = barSettings.AuraName
     
     if ( barSettings.BuffOrDebuff == "BUFFCD" or
@@ -185,12 +187,12 @@ function NeedToKnow.Bar_Update(groupID, barID)
     bar:SetValue(bar.bar1, 1)
 
 	bar:SetAppearance()
-	]]--
 
     if ( NeedToKnow.CharSettings["Locked"] ) then
         local enabled = groupSettings.Enabled and barSettings.Enabled
         if ( enabled ) then
             -- Set up the bar to be functional
+
             -- click through
             bar:EnableMouse(false)
 
@@ -240,35 +242,28 @@ function NeedToKnow.Bar_Update(groupID, barID)
             barSettings.bAutoShot = nil
             bar.is_counter = nil
             bar.ticker = NeedToKnow.Bar_OnUpdate
-            
+
             -- Determine which helper functions to use
             if     "BUFFCD" == barSettings.BuffOrDebuff then
                 bar.fnCheck = mfn_AuraCheck_BUFFCD
             elseif "TOTEM" == barSettings.BuffOrDebuff then
-                bar.fnCheck = mfn_AuraCheck_TOTEM
+                bar.fnCheck = NeedToKnow.mfn_AuraCheck_TOTEM
             elseif "USABLE" == barSettings.BuffOrDebuff then
-                bar.fnCheck = mfn_AuraCheck_USABLE
+                bar.fnCheck = NeedToKnow.mfn_AuraCheck_USABLE
             elseif "EQUIPSLOT" == barSettings.BuffOrDebuff then
-                bar.fnCheck = mfn_AuraCheck_EQUIPSLOT
-            --[[
-            elseif "POWER" == barSettings.BuffOrDebuff then
-                bar.fnCheck = mfn_AuraCheck_POWER
-                bar.is_counter = true
-                bar.ticker = nil
-                bar.ticking = false
-            ]]--
+                bar.fnCheck = NeedToKnow.mfn_AuraCheck_EQUIPSLOT
             elseif "CASTCD" == barSettings.BuffOrDebuff then
-                bar.fnCheck = mfn_AuraCheck_CASTCD
+                bar.fnCheck = NeedToKnow.mfn_AuraCheck_CASTCD
                 for idx, entry in ipairs(bar.spells) do
                     table.insert(bar.cd_functions, mfn_GetSpellCooldown)
                     Cooldown.SetUpSpell(bar, entry)
                 end
             elseif barSettings.show_all_stacks then
-                bar.fnCheck = mfn_AuraCheck_AllStacks
+                bar.fnCheck = NeedToKnow.mfn_AuraCheck_AllStacks
             else
-                bar.fnCheck = mfn_AuraCheck_Single
+                bar.fnCheck = NeedToKnow.mfn_AuraCheck_Single
             end
-        
+
             if ( barSettings.BuffOrDebuff == "BUFFCD" ) then
                 local dur = tonumber(barSettings.buffcd_duration)
                 if (not dur or dur < 1) then
@@ -277,10 +272,11 @@ function NeedToKnow.Bar_Update(groupID, barID)
                     enabled = false
                 end
             end
-        
+
             bar:SetScripts()
             -- Events were cleared while unlocked, so need to check the bar again now
-            mfn_Bar_AuraCheck(bar)
+            -- mfn_Bar_AuraCheck(bar)
+            NeedToKnow.mfn_Bar_AuraCheck(bar)
         else
             bar:ClearScripts()
             bar:Hide()
@@ -290,60 +286,11 @@ function NeedToKnow.Bar_Update(groupID, barID)
 		bar:Unlock()
     end
 end
+]]--
 
-function NeedToKnow.ComputeBarText(buffName, count, extended, buff_stacks, bar)
-    -- AuraCheck calls on this to compute the "text" of the bar
-    -- It is separated out like this in part to be hooked by other addons
-    local text
-    if ( count > 1 ) then
-        text = buffName.."  ["..count.."]"
-    else
-        text = buffName
-    end
 
-    if ( bar.settings.show_ttn1 and buff_stacks.total_ttn[1] > 0 ) then
-        text = text .. " ("..buff_stacks.total_ttn[1]..")"
-    end
-    if ( bar.settings.show_ttn2 and buff_stacks.total_ttn[2] > 0 ) then
-        text = text .. " ("..buff_stacks.total_ttn[2]..")"
-    end
-    if ( bar.settings.show_ttn3 and buff_stacks.total_ttn[3] > 0 ) then
-        text = text .. " ("..buff_stacks.total_ttn[3]..")"
-    end
-    if ( extended and extended > 1 ) then
-        text = text .. string.format(" + %.0fs", extended)
-    end
-    return text
-end
-
-function NeedToKnow.ComputeVCTDuration(bar)
-    -- Called by mfn_UpdateVCT, which is called from AuraCheck and possibly 
-    -- by Bar_OnUpdate depending on vct_refresh. In addition to refactoring out some 
-    -- code from the long AuraCheck, this also provides a convenient hook for other addons
-
-    local vct_duration = 0
-    
-    local spellToTime = bar.settings.vct_spell
-    if ( nil == spellToTime or "" == spellToTime ) then
-        spellToTime = bar.buffName
-    end
-     
-    local _, _, _, castTime = g_GetSpellInfo(spellToTime)
-
-    if ( castTime ) then
-        vct_duration = castTime / 1000
-        bar.vct_refresh = true
-    else
-        bar.vct_refresh = false
-    end
-    
-    if ( bar.settings.vct_extra ) then
-        vct_duration =  vct_duration + bar.settings.vct_extra
-    end
-    return vct_duration
-end
-
-mfn_UpdateVCT = function (bar)
+-- mfn_UpdateVCT = function (bar)
+function NeedToKnow.mfn_UpdateVCT(bar)
     local vct_duration = NeedToKnow.ComputeVCTDuration(bar)
 
     local dur = bar.fixedDuration or bar.duration
@@ -361,23 +308,6 @@ mfn_UpdateVCT = function (bar)
         bar.vct:Show()
     else
         bar.vct:Hide()
-    end
-end
-
-function NeedToKnow.PrettyName(barSettings)
-    if ( barSettings.BuffOrDebuff == "EQUIPSLOT" ) then
-        local idx = tonumber(barSettings.AuraName)
-        if idx then return NEEDTOKNOW.ITEM_NAMES[idx] end
-        return ""
-    --[[  
-    -- Player power no longer supported
-    elseif ( barSettings.BuffOrDebuff == "POWER" ) then
-        local idx = tonumber(barSettings.AuraName)
-        if idx then return NeedToKnow.GetPowerName(idx) end
-        return ""
-    ]]--
-    else
-        return barSettings.AuraName
     end
 end
 
@@ -430,7 +360,7 @@ function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
 
         -- Determine the size of the visual cast bar
         if ( bar.settings.vct_enabled ) then
-            mfn_UpdateVCT(bar)
+            NeedToKnow.mfn_UpdateVCT(bar)
         end
         
         -- Force an update to get all the bars to the current position (sharing code)
@@ -511,7 +441,8 @@ function NeedToKnow.DetermineTempEnchantFromTooltip(i_invID)
 end
 ]]--
 
-mfn_AddInstanceToStacks = function (all_stacks, bar_entry, duration, name, count, expirationTime, iconPath, caster, tt1, tt2, tt3)
+-- mfn_AddInstanceToStacks = function (all_stacks, bar_entry, duration, name, count, expirationTime, iconPath, caster, tt1, tt2, tt3)
+function NeedToKnow.mfn_AddInstanceToStacks(all_stacks, bar_entry, duration, name, count, expirationTime, iconPath, caster, tt1, tt2, tt3)
     if duration then
         if (not count or count < 1) then count = 1 end
         if ( 0 == all_stacks.total or all_stacks.min.expirationTime > expirationTime ) then
@@ -539,7 +470,8 @@ mfn_AddInstanceToStacks = function (all_stacks, bar_entry, duration, name, count
     end
 end
 
-mfn_AuraCheck_TOTEM = function(bar, bar_entry, all_stacks)
+-- mfn_AuraCheck_TOTEM = function(bar, bar_entry, all_stacks)
+function NeedToKnow.mfn_AuraCheck_TOTEM(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper for Totem bars, this returns data if
     -- a totem matching bar_entry is currently out. 
     local idxName = bar_entry.idxName
@@ -560,7 +492,7 @@ mfn_AuraCheck_TOTEM = function(bar, bar_entry, all_stacks)
                 end
                 NeedToKnow.totem_drops[iSlot] = precise
             end
-            mfn_AddInstanceToStacks(all_stacks, bar_entry, 
+            NeedToKnow.mfn_AddInstanceToStacks(all_stacks, bar_entry, 
                    totemDuration,                              -- duration
                    totemName,                                  -- name
                    1,                                          -- count
@@ -571,7 +503,8 @@ mfn_AuraCheck_TOTEM = function(bar, bar_entry, all_stacks)
     end
 end
 
-mfn_AuraCheck_EQUIPSLOT = function (bar, bar_entry, all_stacks)
+-- mfn_AuraCheck_EQUIPSLOT = function (bar, bar_entry, all_stacks)
+function NeedToKnow.mfn_AuraCheck_EQUIPSLOT(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper for tracking usable gear based on the slot its in
     -- rather than the equipment name
     local spellName, _, spellIconPath
@@ -583,7 +516,7 @@ mfn_AuraCheck_EQUIPSLOT = function (bar, bar_entry, all_stacks)
             -- local start, cd_len, enable, name, icon = NeedToKnow.GetItemCooldown(bar, item_entry)
             local start, cd_len, enable, name, icon = Cooldown.GetItemCooldown(bar, item_entry)
             if ( start and start > 0 ) then
-                mfn_AddInstanceToStacks(all_stacks, bar_entry, 
+                NeedToKnow.mfn_AddInstanceToStacks(all_stacks, bar_entry, 
                        cd_len,                                     -- duration
                        name,                                       -- name
                        1,                                          -- count
@@ -595,7 +528,8 @@ mfn_AuraCheck_EQUIPSLOT = function (bar, bar_entry, all_stacks)
     end
 end
 
-mfn_AuraCheck_CASTCD = function(bar, bar_entry, all_stacks)
+-- mfn_AuraCheck_CASTCD = function(bar, bar_entry, all_stacks)
+function NeedToKnow.mfn_AuraCheck_CASTCD(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper that checks for spell/item use cooldowns
     -- Relies on mfn_GetAutoShotCooldown, mfn_GetSpellCooldown 
     -- and NeedToKnow.GetItemCooldown. Bar_Update will have already pre-processed 
@@ -624,7 +558,7 @@ mfn_AuraCheck_CASTCD = function(bar, bar_entry, all_stacks)
         local tEnd = start + cd_len
         if ( tEnd > tNow + 0.1 ) then
             if start_2 then
-                mfn_AddInstanceToStacks( all_stacks, bar_entry,
+                NeedToKnow.mfn_AddInstanceToStacks( all_stacks, bar_entry,
                     cd_len,                                   -- duration
                     buffName,                                   -- name
                     1,                                          -- count
@@ -635,7 +569,7 @@ mfn_AuraCheck_CASTCD = function(bar, bar_entry, all_stacks)
             else
                 if not stacks then stacks = 1 end
             end
-            mfn_AddInstanceToStacks( all_stacks, bar_entry,
+            NeedToKnow.mfn_AddInstanceToStacks( all_stacks, bar_entry,
                     cd_len,                                     -- duration
                     buffName,                                   -- name
                     stacks,                                     -- count
@@ -646,7 +580,8 @@ mfn_AuraCheck_CASTCD = function(bar, bar_entry, all_stacks)
     end
 end
 
-mfn_AuraCheck_USABLE = function (bar, bar_entry, all_stacks)
+-- mfn_AuraCheck_USABLE = function (bar, bar_entry, all_stacks)
+function NeedToKnow.mfn_AuraCheck_USABLE(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper for watching "Is Usable", which means that the action
     -- bar button for the spell lights up.  This is mostly useful for Victory Rush
     local key = bar_entry.id or bar_entry.name
@@ -669,7 +604,7 @@ mfn_AuraCheck_USABLE = function (bar, bar_entry, all_stacks)
                 expirationTime = bar.expirationTime
             end
 
-            mfn_AddInstanceToStacks( all_stacks, bar_entry,
+            NeedToKnow.mfn_AddInstanceToStacks( all_stacks, bar_entry,
                    duration,                                   -- duration
                    spellName,                                  -- name
                    1,                                          -- count
@@ -693,17 +628,17 @@ end
 mfn_AuraCheck_BUFFCD = function (bar, bar_entry, all_stacks)
     local buff_stacks = m_scratch.buff_stacks
     mfn_ResetScratchStacks(buff_stacks);
-    mfn_AuraCheck_Single(bar, bar_entry, buff_stacks)
+    NeedToKnow.mfn_AuraCheck_Single(bar, bar_entry, buff_stacks)
     local tNow = g_GetTime()
     if ( buff_stacks.total > 0 ) then
         if buff_stacks.max.expirationTime == 0 then
             -- TODO: This really doesn't work very well as a substitute for telling when the aura was applied
             if not bar.expirationTime then
                 local nDur = tonumber(bar.settings.buffcd_duration)
-                mfn_AddInstanceToStacks( all_stacks, bar_entry,
+                NeedToKnow.mfn_AddInstanceToStacks( all_stacks, bar_entry,
                     nDur, buff_stacks.min.buffName, 1, nDur+tNow, buff_stacks.min.iconPath, buff_stacks.min.caster )
             else
-                mfn_AddInstanceToStacks( all_stacks, bar_entry,
+                NeedToKnow.mfn_AddInstanceToStacks( all_stacks, bar_entry,
                        bar.duration,                               -- duration
                        bar.buffName,                               -- name
                        1,                                          -- count
@@ -717,7 +652,7 @@ mfn_AuraCheck_BUFFCD = function (bar, bar_entry, all_stacks)
         local duration = tonumber(bar.settings.buffcd_duration)
         local expiration = tStart + duration
         if ( expiration > tNow ) then
-            mfn_AddInstanceToStacks( all_stacks, bar_entry,
+            NeedToKnow.mfn_AddInstanceToStacks( all_stacks, bar_entry,
                    duration,                                   -- duration
                    buff_stacks.min.buffName,                                   -- name
                    -- Seeing the charges on the CD bar violated least surprise for me
@@ -727,7 +662,7 @@ mfn_AuraCheck_BUFFCD = function (bar, bar_entry, all_stacks)
                    buff_stacks.min.caster )                    -- caster
         end
     elseif ( bar.expirationTime and bar.expirationTime > tNow + 0.1 ) then
-        mfn_AddInstanceToStacks( all_stacks, bar_entry,
+        NeedToKnow.mfn_AddInstanceToStacks( all_stacks, bar_entry,
                bar.duration,                               -- duration
                bar.buffName,                               -- name
                1,                                          -- count
@@ -765,7 +700,8 @@ local function UnitAuraWrapper(a,b,c,d)
     end
 end
 
-mfn_AuraCheck_Single = function(bar, bar_entry, all_stacks)
+-- mfn_AuraCheck_Single = function(bar, bar_entry, all_stacks)
+function NeedToKnow.mfn_AuraCheck_Single(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper that looks for the first instance of a buff
     -- Uses the UnitAura filters exclusively if it can
 
@@ -788,7 +724,7 @@ mfn_AuraCheck_Single = function(bar, bar_entry, all_stacks)
             end
 
             if (spellID == barID) then 
-                mfn_AddInstanceToStacks( all_stacks, bar_entry,
+                NeedToKnow.mfn_AddInstanceToStacks( all_stacks, bar_entry,
                        duration,                               -- duration
                        buffName,                               -- name
                        count,                                  -- count
@@ -823,7 +759,7 @@ mfn_AuraCheck_Single = function(bar, bar_entry, all_stacks)
                 break
             end
             if (buffName == bar_entry.name) then 
-                mfn_AddInstanceToStacks( all_stacks, bar_entry,
+                NeedToKnow.mfn_AddInstanceToStacks( all_stacks, bar_entry,
                        duration,                               -- duration
                        buffName,                               -- name
                        count,                                  -- count
@@ -838,7 +774,8 @@ mfn_AuraCheck_Single = function(bar, bar_entry, all_stacks)
     end
 end
 
-mfn_AuraCheck_AllStacks = function (bar, bar_entry, all_stacks)
+-- mfn_AuraCheck_AllStacks = function (bar, bar_entry, all_stacks)
+function NeedToKnow.mfn_AuraCheck_AllStacks(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper that updates bar.all_stacks (but returns nil)
     -- by scanning all the auras on the unit
 
@@ -855,7 +792,7 @@ mfn_AuraCheck_AllStacks = function (bar, bar_entry, all_stacks)
         
         if (spellID == bar_entry.id) or (bar_entry.name == buffName) 
         then
-            mfn_AddInstanceToStacks(all_stacks, bar_entry, 
+            NeedToKnow.mfn_AddInstanceToStacks(all_stacks, bar_entry, 
                 duration,
                 buffName,
                 count,
@@ -869,7 +806,8 @@ mfn_AuraCheck_AllStacks = function (bar, bar_entry, all_stacks)
     end
 end
 
-mfn_Bar_AuraCheck = function (bar)
+-- mfn_Bar_AuraCheck = function (bar)
+function NeedToKnow.mfn_Bar_AuraCheck(bar)
     -- Called whenever the state of auras on the bar's unit may have changed
 
     local settings = bar.settings
@@ -922,7 +860,7 @@ mfn_Bar_AuraCheck = function (bar)
         for idx, resetSpell in ipairs(bar.reset_spells) do
             -- Note this relies on BUFFCD setting the target to player, and that the onlyMine will work either way
             local resetDuration, _, _, resetExpiration
-              = mfn_AuraCheck_Single(bar, resetSpell, buff_stacks)
+              = NeedToKnow.mfn_AuraCheck_Single(bar, resetSpell, buff_stacks)
             local tStart
             if buff_stacks.total > 0 then
                if 0 == buff_stacks.max.duration then 
@@ -1091,7 +1029,8 @@ function NeedToKnow.Bar_OnUpdate(self, elapsed)
                      self.settings.BuffOrDebuff == "BUFFCD" or
                      self.settings.BuffOrDebuff == "EQUIPSLOT" )
                 then
-                    mfn_Bar_AuraCheck(self)
+                    -- mfn_Bar_AuraCheck(self)
+                    NeedToKnow.mfn_Bar_AuraCheck(self)
                     return
                 end
                 bar1_timeLeft = 0
@@ -1129,7 +1068,7 @@ function NeedToKnow.Bar_OnUpdate(self, elapsed)
             end
             
             if ( self.vct_refresh ) then
-                mfn_UpdateVCT(self)
+                NeedToKnow.mfn_UpdateVCT(self)
             end
         end
     end
@@ -1137,13 +1076,15 @@ end
 
 local fnAuraCheckIfUnitMatches = function(self, unit)
     if ( unit == self.unit )  then
-        mfn_Bar_AuraCheck(self)
+        -- mfn_Bar_AuraCheck(self)
+        NeedToKnow.mfn_Bar_AuraCheck(self)
     end
 end
 
 local fnAuraCheckIfUnitPlayer = function(self, unit)
     if ( unit == "player" ) then
-        mfn_Bar_AuraCheck(self)
+        -- mfn_Bar_AuraCheck(self)
+        NeedToKnow.mfn_Bar_AuraCheck(self)
     end
 end
 
@@ -1162,31 +1103,41 @@ EDT["COMBAT_LOG_EVENT_UNFILTERED"] = function(self, unit, ...)
             if (self.auraName:find(idSpell) or
                     self.auraName:find(nameSpell)) 
             then 
-                mfn_Bar_AuraCheck(self)
+                -- mfn_Bar_AuraCheck(self)
+                NeedToKnow.mfn_Bar_AuraCheck(self)
             end
         end
     elseif ( combatEvent == "UNIT_DIED" ) then
         -- local guidDeceased = select(7, ...) 
         -- if ( guidDeceased == UnitGUID(self.unit) ) then
         if ( guidTarget == UnitGUID(self.unit) ) then
-            mfn_Bar_AuraCheck(self)
+            -- mfn_Bar_AuraCheck(self)
+            NeedToKnow.mfn_Bar_AuraCheck(self)
         end
     end 
 end
+--[[
 EDT["PLAYER_TOTEM_UPDATE"] = mfn_Bar_AuraCheck
 EDT["ACTIONBAR_UPDATE_COOLDOWN"] = mfn_Bar_AuraCheck
 EDT["SPELL_UPDATE_COOLDOWN"] = mfn_Bar_AuraCheck
 EDT["SPELL_UPDATE_USABLE"] = mfn_Bar_AuraCheck
+--]]
+EDT["PLAYER_TOTEM_UPDATE"] = NeedToKnow.mfn_Bar_AuraCheck
+EDT["ACTIONBAR_UPDATE_COOLDOWN"] = NeedToKnow.mfn_Bar_AuraCheck
+EDT["SPELL_UPDATE_COOLDOWN"] = NeedToKnow.mfn_Bar_AuraCheck
+EDT["SPELL_UPDATE_USABLE"] = NeedToKnow.mfn_Bar_AuraCheck
 EDT["UNIT_AURA"] = fnAuraCheckIfUnitMatches
 -- EDT["UNIT_POWER"] = fnAuraCheckIfUnitMatches
 -- EDT["UNIT_DISPLAYPOWER"] = fnAuraCheckIfUnitMatches
-EDT["UNIT_HEALTH"] = mfn_Bar_AuraCheck
+-- EDT["UNIT_HEALTH"] = mfn_Bar_AuraCheck
+EDT["UNIT_HEALTH"] = NeedToKnow.mfn_Bar_AuraCheck
 EDT["PLAYER_TARGET_CHANGED"] = function(self, unit)
     if self.unit == "targettarget" then
         -- NeedToKnow.CheckCombatLogRegistration(self)
         self:CheckCombatLogRegistration()
     end
-    mfn_Bar_AuraCheck(self)
+    -- mfn_Bar_AuraCheck(self)
+    NeedToKnow.mfn_Bar_AuraCheck(self)
 end  
 EDT["PLAYER_FOCUS_CHANGED"] = EDT["PLAYER_TARGET_CHANGED"]
 EDT["UNIT_TARGET"] = function(self, unit)
@@ -1194,7 +1145,8 @@ EDT["UNIT_TARGET"] = function(self, unit)
         -- NeedToKnow.CheckCombatLogRegistration(self)
         self:CheckCombatLogRegistration()
     end
-    mfn_Bar_AuraCheck(self)
+    -- mfn_Bar_AuraCheck(self)
+    NeedToKnow.mfn_Bar_AuraCheck(self)
 end  
 EDT["UNIT_PET"] = fnAuraCheckIfUnitPlayer
 EDT["PLAYER_SPELLCAST_SUCCEEDED"] = function(self, unit, ...)
@@ -1204,7 +1156,8 @@ EDT["PLAYER_SPELLCAST_SUCCEEDED"] = function(self, unit, ...)
         if entry.id == spellID or entry.name == spellName then
             self.unit = tgt or "unknown"
             --trace("Updating",self:GetName(),"since it was recast on",self.unit)
-            mfn_Bar_AuraCheck(self)
+            -- mfn_Bar_AuraCheck(self)
+            NeedToKnow.mfn_Bar_AuraCheck(self)
             break;
         end
     end
@@ -1223,7 +1176,8 @@ EDT["UNIT_SPELLCAST_SUCCEEDED"] = function(self, unit, ...)
         local interval = UnitRangedDamage("player")
         self.tAutoShotCD = interval
         self.tAutoShotStart = g_GetTime()
-        mfn_Bar_AuraCheck(self)
+        -- mfn_Bar_AuraCheck(self)
+        NeedToKnow.mfn_Bar_AuraCheck(self)
     end
 end
 

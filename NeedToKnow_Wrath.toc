@@ -2,7 +2,7 @@
 ## Title: NeedToKnow
 ## Author: NephMakes, lieandswell
 ## FormerAuthor: Kitjan
-## Version: 4.1.2
+## Version: 4.1.3
 ## Notes: Timer bars for buffs, debuffs, cooldowns, etc.
 ## X-Credits: Bilt, Fxfighter EU-Echsenkessel, metalchoir, sp00n, Vlakarados, wowui.cn
 ## X-Category: Buffs, Combat
@@ -16,13 +16,13 @@ libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
 libs\LibSharedMedia-3.0\lib.xml
 Init.lua
 Localization.lua
+NeedToKnow.lua
 ExecutiveFrame.lua
 Profile.lua
 BarGroup.lua
 BarObject.lua
 BarEngine.lua
 Cooldown.lua
-NeedToKnow.lua
 NeedToKnow_Options.lua
 BarMenu.lua
 ImportExport.lua

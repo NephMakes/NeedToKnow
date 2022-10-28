@@ -24,7 +24,7 @@ function BarGroup:Update()
 
 	local bar
 	for barID = 1, groupSettings.NumberBars do
-		if ( self.bar[barID] ) then
+		if self.bar[barID] then
 			bar = self.bar[barID]
 		else
 			bar = CreateFrame("Frame", groupName.."Bar"..barID, self, "NeedToKnow_BarTemplate")
@@ -34,16 +34,16 @@ function BarGroup:Update()
 		-- TO DO: Use Bar:New()
 
 		bar:SetWidth(groupSettings.Width)
-		if ( barID > 1 ) then
+		if barID > 1 then
 			bar:SetPoint("TOP", self.bar[barID-1], "BOTTOM", 0, -NeedToKnow.ProfileSettings.BarSpacing)
 		else
 			bar:SetPoint("TOPLEFT")
 		end
 
-		NeedToKnow.Bar_Update(groupID, barID)
-		-- bar:Update()  -- What we want eventually
+		bar:Update()  -- What we want eventually
+		-- NeedToKnow.Bar_Update(groupID, barID)
 
-		if ( not groupSettings.Enabled ) then
+		if not groupSettings.Enabled then
 			bar:ClearScripts()
 		end
 	end

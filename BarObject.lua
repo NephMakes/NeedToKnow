@@ -4,21 +4,25 @@
 local Bar = NeedToKnow.Bar
 
 --[[
-function Bar:New(groupID, barID)
+function Bar:New()
 	-- Instead of doing it in BarGroup:Update() and elsewhere
+
 	self.Initialize = Bar.Initialize
 	-- self:Initialize() -- Instead of Bar:OnLoad()?
 end
 ]]--
 
+--[[
 function Bar:Initialize()
 	-- Instead of OnLoad() in XML
 	-- called by Bar:Update()?
 end
+]]--
 
 function Bar:OnLoad()
 	-- Called by NeedToKnow_BarTemplate
-	-- TO DO: Merge with Bar:Initialize()
+
+	-- TO DO: Merge with Bar:New()? Or Bar:Initialize()?
 
 	self:RegisterForDrag("LeftButton")
 	self:SetScript("OnEnter", Bar.OnEnter)
@@ -42,6 +46,15 @@ function Bar:OnLoad()
 	self.ClearScripts = Bar.ClearScripts
 	self.CheckCombatLogRegistration = Bar.CheckCombatLogRegistration
 	-- self:SetScript("OnEvent", Bar.OnEvent)
+
+	self.icon  = self.Icon
+	self.spark = self.Spark
+    self.text = self.Text
+    self.time = self.Time
+    self.bar1 = self.Texture
+    self.bar2 = self.Texture2
+	self.vct = self.CastTime
+	-- want to not need these eventually
 end
 
 function Bar:OnEnter()
@@ -277,5 +290,45 @@ function Bar:StartBlink()
 	self:SetBackgroundSize(false)
 end
 
+function NeedToKnow.ComputeBarText(buffName, count, extended, buff_stacks, bar)
+    -- AuraCheck calls on this to compute the "text" of the bar
+    -- It is separated out like this in part to be hooked by other addons
+    local text
+    if ( count > 1 ) then
+        text = buffName.."  ["..count.."]"
+    else
+        text = buffName
+    end
 
+    if ( bar.settings.show_ttn1 and buff_stacks.total_ttn[1] > 0 ) then
+        text = text .. " ("..buff_stacks.total_ttn[1]..")"
+    end
+    if ( bar.settings.show_ttn2 and buff_stacks.total_ttn[2] > 0 ) then
+        text = text .. " ("..buff_stacks.total_ttn[2]..")"
+    end
+    if ( bar.settings.show_ttn3 and buff_stacks.total_ttn[3] > 0 ) then
+        text = text .. " ("..buff_stacks.total_ttn[3]..")"
+    end
+    if ( extended and extended > 1 ) then
+        text = text .. string.format(" + %.0fs", extended)
+    end
+    return text
+end
+
+function NeedToKnow.PrettyName(barSettings)
+    if ( barSettings.BuffOrDebuff == "EQUIPSLOT" ) then
+        local idx = tonumber(barSettings.AuraName)
+        if idx then return NEEDTOKNOW.ITEM_NAMES[idx] end
+        return ""
+    --[[  
+    -- Player power no longer supported
+    elseif ( barSettings.BuffOrDebuff == "POWER" ) then
+        local idx = tonumber(barSettings.AuraName)
+        if idx then return NeedToKnow.GetPowerName(idx) end
+        return ""
+    ]]--
+    else
+        return barSettings.AuraName
+    end
+end
 

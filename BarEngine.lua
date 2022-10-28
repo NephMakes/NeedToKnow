@@ -4,25 +4,44 @@
 local addonName, addonTable = ...
 
 local Bar = NeedToKnow.Bar
+local Cooldown = NeedToKnow.Cooldown
 
 local UPDATE_INTERVAL = 0.03  -- equivalent to ~33 frames per second
+
+-- Defined in NeedToKnow.lua: 
 -- Deprecated: 
 local m_last_guid = addonTable.m_last_guid
+local mfn_AuraCheck_BUFFCD = addonTable.mfn_AuraCheck_BUFFCD
+local mfn_AuraCheck_TOTEM = addonTable.mfn_AuraCheck_TOTEM
+local mfn_AuraCheck_USABLE = addonTable.mfn_AuraCheck_USABLE
+local mfn_AuraCheck_EQUIPSLOT = addonTable.mfn_AuraCheck_EQUIPSLOT
+local mfn_AuraCheck_CASTCD = addonTable.mfn_AuraCheck_CASTCD
+local mfn_AuraCheck_Single = addonTable.mfn_AuraCheck_Single
+local mfn_AuraCheck_AllStacks = addonTable.mfn_AuraCheck_AllStacks
+local mfn_Bar_AuraCheck = NeedToKnow.mfn_Bar_AuraCheck
+local mfn_GetSpellCooldown = Cooldown.GetSpellCooldown
 
 --[[ Bar functions ]]--
 
 function Bar:Update()
 	-- Update bar behavior and appearance
 	-- Called by BarGroup:Update() and various BarMenu:Methods()
-    -- when addon loaded, bar configuration changed, or locked/unlocked
+    -- Called when addon loaded, locked/unlocked, or bar configuration changed
 
 	-- TO DO: Use instead of NeedToKnow.Bar_Update(groupID, barID)
 
-	-- TO DO: Get bar settings from NeedToKnow.ProfileSettings
-	local settings = self.settings
-
+	-- Get bar settings from NeedToKnow.ProfileSettings
 	local groupID = self:GetParent():GetID()
+	local barID = self:GetID()
 	local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
+    local barSettings = groupSettings["Bars"][barID]
+    if ( not barSettings ) then
+    	-- TO DO: Handle this in Bar:New()
+        groupSettings.Bars[barID] = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
+        barSettings = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
+    end
+    self.settings = barSettings
+	local settings = self.settings
 
 	self.auraName = settings.AuraName
 
@@ -38,7 +57,7 @@ function Bar:Update()
 	self.unit = settings.Unit
 
 	self.fixedDuration = tonumber(groupSettings.FixedDuration)
-	if ( not self.fixedDuration or 0 >= self.fixedDuration ) then
+	if not self.fixedDuration or 0 >= self.fixedDuration then
 		self.fixedDuration = nil
 	end
 
@@ -48,6 +67,108 @@ function Bar:Update()
 	self.nextUpdate = GetTime() + UPDATE_INTERVAL
 
 	self:SetAppearance()
+
+	if ( NeedToKnow.CharSettings["Locked"] ) then
+		local enabled = groupSettings.Enabled and settings.Enabled
+		if enabled then
+			-- Set up the bar to be functional
+
+			-- click through
+			self:EnableMouse(false)
+
+			-- Split list of spell names    
+			self.spells = {}
+			self.cd_functions = {}
+			local iSpell = 0
+			for barSpell in self.auraName:gmatch("([^,]+)") do
+				iSpell = iSpell+1
+				barSpell = strtrim(barSpell)
+				local _, nDigits = barSpell:find("^-?%d+")
+				if ( nDigits == barSpell:len() ) then
+					table.insert(self.spells, { idxName=iSpell, id=tonumber(barSpell) } )
+				else
+					table.insert(self.spells, { idxName=iSpell, name=barSpell } )
+				end
+			end
+
+            -- Split the user name overrides
+			self.spell_names = {}
+			for un in settings.show_text_user:gmatch("([^,]+)") do
+				un = strtrim(un)
+				table.insert(self.spell_names, un)
+			end
+
+            -- Split the "reset" spells (for internal cooldowns which reset when the player gains an aura)
+			if settings.buffcd_reset_spells and settings.buffcd_reset_spells ~= "" then
+				self.reset_spells = {}
+				self.reset_start = {}
+				iSpell = 0
+				for resetSpell in settings.buffcd_reset_spells:gmatch("([^,]+)") do
+					iSpell = iSpell+1
+					resetSpell = strtrim(resetSpell)
+					local _, nDigits = resetSpell:find("^%d+")
+					if ( nDigits == resetSpell:len() ) then
+						table.insert(self.reset_spells, { idxName = iSpell, id=tonumber(resetSpell) } )
+					else
+						table.insert(self.reset_spells, { idxName = iSpell, name=resetSpell} )
+					end
+					table.insert(self.reset_start, 0)
+				end
+			else
+				self.reset_spells = nil
+				self.reset_start = nil
+			end
+
+			settings.bAutoShot = nil
+			self.is_counter = nil
+			self.ticker = NeedToKnow.Bar_OnUpdate
+
+            -- Determine which helper functions to use
+			if "BUFFCD" == settings.BuffOrDebuff then
+				self.fnCheck = NeedToKnow.mfn_AuraCheck_BUFFCD
+			elseif "TOTEM" == settings.BuffOrDebuff then
+				self.fnCheck = NeedToKnow.mfn_AuraCheck_TOTEM
+			elseif "USABLE" == settings.BuffOrDebuff then
+				self.fnCheck = NeedToKnow.mfn_AuraCheck_USABLE
+			elseif "EQUIPSLOT" == settings.BuffOrDebuff then
+				self.fnCheck = NeedToKnow.mfn_AuraCheck_EQUIPSLOT
+			-- elseif "POWER" == barSettings.BuffOrDebuff then
+				-- bar.fnCheck = NeedToKnow.mfn_AuraCheck_POWER
+				-- bar.is_counter = true
+				-- bar.ticker = nil
+				-- bar.ticking = false
+			elseif "CASTCD" == settings.BuffOrDebuff then
+				self.fnCheck = NeedToKnow.mfn_AuraCheck_CASTCD
+				for idx, entry in ipairs(self.spells) do
+					table.insert(self.cd_functions, mfn_GetSpellCooldown)
+					Cooldown.SetUpSpell(self, entry)
+				end
+			elseif settings.show_all_stacks then
+				self.fnCheck = NeedToKnow.mfn_AuraCheck_AllStacks
+			else
+				self.fnCheck = NeedToKnow.mfn_AuraCheck_Single
+			end
+
+			if ( settings.BuffOrDebuff == "BUFFCD" ) then
+				local duration = tonumber(settings.buffcd_duration)
+				if (not duration or duration < 1) then
+					print("NeedToKnow: Please set internal cooldown duration for:", settings.AuraName)
+					enabled = false
+				end
+			end
+
+			self:SetScripts()
+
+			-- Events were cleared while unlocked, so need to check the bar again now
+			NeedToKnow.mfn_Bar_AuraCheck(self)
+		else
+            self:ClearScripts()
+			self:Hide()
+		end
+	else
+		self:ClearScripts()
+		self:Unlock()
+	end
 end
 
 function Bar:SetScripts()
@@ -181,4 +302,30 @@ function Bar:OnUpdate()
 end
 ]]--
 
+function NeedToKnow.ComputeVCTDuration(bar)
+    -- Called by mfn_UpdateVCT, which is called from AuraCheck and possibly 
+    -- by Bar_OnUpdate depending on vct_refresh. In addition to refactoring out some 
+    -- code from the long AuraCheck, this also provides a convenient hook for other addons
+
+    local vct_duration = 0
+    
+    local spellToTime = bar.settings.vct_spell
+    if ( nil == spellToTime or "" == spellToTime ) then
+        spellToTime = bar.buffName
+    end
+     
+    local _, _, _, castTime = g_GetSpellInfo(spellToTime)
+
+    if ( castTime ) then
+        vct_duration = castTime / 1000
+        bar.vct_refresh = true
+    else
+        bar.vct_refresh = false
+    end
+    
+    if ( bar.settings.vct_extra ) then
+        vct_duration =  vct_duration + bar.settings.vct_extra
+    end
+    return vct_duration
+end
 

@@ -196,6 +196,16 @@ addonTable.m_last_guid = {}
 addonTable.m_bInCombat = {}
 addonTable.m_bCombatWithBoss = {}
 
-function addonTable.mfn_Bar_AuraCheck() end  -- I don't think this works as is
-
+--[[
+addonTable.mfn_Bar_AuraCheck = {}
+addonTable.mfn_AuraCheck_Single = {}
+addonTable.mfn_AuraCheck_TOTEM = {}
+addonTable.mfn_AuraCheck_BUFFCD = {}
+addonTable.mfn_AuraCheck_USABLE = {}
+addonTable.mfn_AuraCheck_EQUIPSLOT = {}
+addonTable.mfn_AuraCheck_CASTCD = {}
+addonTable.mfn_AuraCheck_AllStacks = {}
+]]--
+-- I don't think this makes these visible to other files
+-- when they're defined later
 
