@@ -115,7 +115,7 @@ function Bar:Update()
 
 			settings.bAutoShot = nil
 			self.is_counter = nil
-			self.ticker = NeedToKnow.Bar_OnUpdate
+			self.ticker = self.OnUpdate
 
             -- Determine which helper functions to use
 			if "BUFFCD" == settings.BuffOrDebuff then
@@ -292,6 +292,84 @@ end
 -- Bar tracking behavior
 -- ---------------------
 
+--[[
+function Bar:OnEvent()
+end
+]]--
+
+function Bar:OnUpdate(elapsed)
+	local now = GetTime()
+	if now > self.nextUpdate then
+		self.nextUpdate = now + UPDATE_INTERVAL
+
+		if self.blink then
+			self.blink_phase = self.blink_phase + UPDATE_INTERVAL
+			if self.blink_phase >= 2 then
+				self.blink_phase = 0
+			end
+			local a = self.blink_phase
+			if a > 1 then
+				a = 2 - a
+			end
+
+			self.bar1:SetVertexColor(self.settings.MissingBlink.r, self.settings.MissingBlink.g, self.settings.MissingBlink.b)
+			self.bar1:SetAlpha(self.settings.MissingBlink.a * a)
+			return
+		end
+        
+		-- WORKAROUND: Some of these (like item cooldowns) don't fire an event when the CD expires.
+		--   others fire the event too soon.  So we have to keep checking.
+		if self.duration and self.duration > 0 then
+			local duration = self.fixedDuration or self.duration
+			local bar1_timeLeft = self.expirationTime - now
+			if bar1_timeLeft < 0 then
+				if ( self.settings.BuffOrDebuff == "CASTCD" or
+					self.settings.BuffOrDebuff == "BUFFCD" or
+					self.settings.BuffOrDebuff == "EQUIPSLOT" )
+				then
+					NeedToKnow.mfn_Bar_AuraCheck(self)
+					return
+				end
+				bar1_timeLeft = 0
+			end
+
+			self:SetValue(self.bar1, bar1_timeLeft);
+
+			if self.settings.show_time then
+				local fn = NeedToKnow[self.settings.TimeFormat]
+				local oldText = self.time:GetText()
+				local newText
+				if fn then
+					newText = fn(bar1_timeLeft)
+				else 
+					newText = string.format(SecondsToTimeAbbrev(bar1_timeLeft))
+				end
+				if newText ~= oldText then
+					self.time:SetText(newText)
+				end
+			else
+				self.time:SetText("")
+			end
+            
+			if self.settings.show_spark and bar1_timeLeft <= duration then
+				self.spark:SetPoint("CENTER", self, "LEFT", self:GetWidth()*bar1_timeLeft/duration, 0)
+				self.spark:Show()
+			else
+				self.spark:Hide()
+			end
+            
+			if self.max_expirationTime then
+				local bar2_timeLeft = self.max_expirationTime - GetTime()
+				self:SetValue(self.bar2, bar2_timeLeft, bar1_timeLeft)
+            end
+            
+			if self.vct_refresh then
+				self:UpdateCastTime()
+			end
+		end
+	end
+end
+
 function Bar:UpdateAppearance()
 	-- For bar elements that can change in combat
 	-- Called by mfn_Bar_AuraCheck
@@ -338,7 +416,7 @@ function Bar:ConfigureVisible(count, extended, buff_stacks)
 		-- This will call UpdateCastTime again, but that seems ok
 		self.nextUpdate = UPDATE_INTERVAL
 		if self.expirationTime > GetTime() then
-			NeedToKnow.Bar_OnUpdate(self, 0)
+			self:OnUpdate(0)
 		end
 
 		self.Time:Show()
@@ -389,14 +467,6 @@ function Bar:ConfigureVisible(count, extended, buff_stacks)
 	self.text:SetText(txt)
 end
 
---[[
-function Bar:OnEvent()
-end
-
-function Bar:OnUpdate()
-end
-]]--
-
 
 -- ---------
 -- Cast time
@@ -426,7 +496,7 @@ end
 
 function Bar:GetCastTimeDuration()
 	-- Called by Bar:UpdateCastTime(), which is called by AuraCheck 
-	-- and possibly Bar_OnUpdate depending on vct_refresh
+	-- and possibly Bar:OnUpdate depending on vct_refresh
 
 	local spell = self.settings.vct_spell
 	if spell == nil or spell == "" then

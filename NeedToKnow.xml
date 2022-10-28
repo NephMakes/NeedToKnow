@@ -102,7 +102,7 @@
                         </Anchor>
                     </Anchors>
                 </Texture>
-                <Texture name="$parentCastTime" parentKey="CastTime" alphaMode="ADD">
+                <Texture name="$parentCastTime" parentKey="CastTime" alphaMode="BLEND">
                     <Anchors>
                         <Anchor point="LEFT" relativeTo="$parent" relativePoint="LEFT">
                         </Anchor>
