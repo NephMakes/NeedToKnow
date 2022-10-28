@@ -16,9 +16,6 @@ local g_GetNumSpellTabs   = GetNumSpellTabs
 
 local c_AUTO_SHOT_NAME = g_GetSpellInfo(75)  -- Localized name for Auto Shot
 
-local m_last_cast      = addonTable.m_last_cast
-local m_last_cast_head = addonTable.m_last_cast_head
-local m_last_cast_tail = addonTable.m_last_cast_tail
 local m_last_guid      = addonTable.m_last_guid
 
 

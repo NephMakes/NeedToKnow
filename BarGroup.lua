@@ -30,8 +30,9 @@ function BarGroup:Update()
 			bar = CreateFrame("Frame", groupName.."Bar"..barID, self, "NeedToKnow_BarTemplate")
 			bar:SetID(barID)
 			self.bar[barID] = bar
+			-- TO DO: Use Bar:Initialize()
 		end
-		-- TO DO: Use Bar:New()
+		-- TO DO: Use Bar:New()?
 
 		bar:SetWidth(groupSettings.Width)
 		if barID > 1 then

@@ -46,6 +46,8 @@ function Bar:OnLoad()
 	self.ClearScripts = Bar.ClearScripts
 	self.CheckCombatLogRegistration = Bar.CheckCombatLogRegistration
 	-- self:SetScript("OnEvent", Bar.OnEvent)
+	self.UpdateCastTime = Bar.UpdateCastTime
+	self.GetCastTimeDuration = Bar.GetCastTimeDuration
 
 	self.icon  = self.Icon
 	self.spark = self.Spark
@@ -183,10 +185,10 @@ function Bar:SetBackgroundSize(showIcon)
 	background:SetWidth(bgWidth)
 end
 
+--[[
 function Bar:UpdateAppearance()
 	-- For bar elements that can change in combat
 	-- called by mfn_Bar_AuraCheck
-	-- TO DO: Move to BarEngine.lua
 
 	local barSettings = self.settings
 
@@ -213,6 +215,7 @@ function Bar:UpdateAppearance()
 		self.Texture2:Hide()
 	end
 end
+]]--
 
 function Bar:Unlock()
 	-- Set bar for user config

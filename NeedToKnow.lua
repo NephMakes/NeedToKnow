@@ -14,7 +14,7 @@ local trace = print
 -- ADDON MEMBERS
 -- -------------
 
--- Define local versions of global functions
+-- Local versions of global functions
 local g_UnitExists = UnitExists
 local g_UnitAffectingCombat = UnitAffectingCombat
 local g_UnitIsFriend = UnitIsFriend
@@ -28,34 +28,13 @@ local g_GetSpecializationSpells = GetSpecializationSpells
 local g_GetSpellInfo = GetSpellInfo
 local g_GetSpellPowerCost = GetSpellPowerCost
 
-local m_last_cast       = addonTable.m_last_cast
-local m_last_cast_head  = addonTable.m_last_cast_head
-local m_last_cast_tail  = addonTable.m_last_cast_tail
 local m_last_guid       = addonTable.m_last_guid
-local m_bInCombat       = addonTable.m_bInCombat
 local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
--- local m_last_guid, m_last_cast, m_last_sent, m_last_cast_head, m_last_cast_tail
--- local m_bInCombat, m_bCombatWithBoss
 
 local mfn_GetSpellCooldown        = Cooldown.GetSpellCooldown
 local mfn_GetSpellChargesCooldown = Cooldown.GetSpellChargesCooldown
 local mfn_GetAutoShotCooldown     = Cooldown.GetAutoShotCooldown
 local mfn_GetUnresolvedCooldown   = Cooldown.GetUnresolvedCooldown
-
--- local mfn_SetStatusBarValue
--- local mfn_Bar_AuraCheck
--- local mfn_AuraCheck_Single = addonTable.mfn_AuraCheck_Single
--- local mfn_AuraCheck_TOTEM = addonTable.mfn_AuraCheck_TOTEM
-local mfn_AuraCheck_BUFFCD = addonTable.mfn_AuraCheck_BUFFCD
--- local mfn_AuraCheck_USABLE = addonTable.mfn_AuraCheck_USABLE
--- local mfn_AuraCheck_EQUIPSLOT = addonTable.mfn_AuraCheck_EQUIPSLOT
--- local mfn_AuraCheck_CASTCD = addonTable.mfn_AuraCheck_CASTCD
--- local mfn_AuraCheck_AllStacks = addonTable.mfn_AuraCheck_AllStacks
--- Don't think this makes these visible to other files
-
--- local mfn_AddInstanceToStacks
-local mfn_ResetScratchStacks
--- local mfn_UpdateVCT
 
 local m_scratch = {}
 m_scratch.all_stacks = {
@@ -112,19 +91,21 @@ local c_AURAEVENTS = {
 }
     
 
--- ----
--- BARS
--- ----
+-- ------------------
+-- Kitjan's functions
+-- ------------------
 
+--[[
 function NeedToKnow:UpdateBar(groupID, barID)
+	-- Called by BarMenu functions
 	local bar = NeedToKnow:GetBar(groupID, barID)
 	bar:Update()
-	-- NeedToKnow.Bar_Update(groupID, barID)
 end
 
 function NeedToKnow:GetBar(groupID, barID)
 	return _G["NeedToKnow_Group"..groupID.."Bar"..barID]
 end
+]]--
 
 --[[
 function NeedToKnow.Bar_Update(groupID, barID)
@@ -288,8 +269,7 @@ function NeedToKnow.Bar_Update(groupID, barID)
 end
 ]]--
 
-
--- mfn_UpdateVCT = function (bar)
+--[[
 function NeedToKnow.mfn_UpdateVCT(bar)
     local vct_duration = NeedToKnow.ComputeVCTDuration(bar)
 
@@ -310,6 +290,7 @@ function NeedToKnow.mfn_UpdateVCT(bar)
         bar.vct:Hide()
     end
 end
+]]--
 
 function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
 	-- Called by mfn_Bar_AuraCheck(bar) if bar.duration found
@@ -325,7 +306,7 @@ function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
     if ( bar.settings.show_text ) then
         n = bar.buffName
         if "" ~= bar.settings.show_text_user then
-            local idx=bar.idxName
+            local idx = bar.idxName
             if idx > #bar.spell_names then idx = #bar.spell_names end
             n = bar.spell_names[idx]
         end
@@ -360,7 +341,8 @@ function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
 
         -- Determine the size of the visual cast bar
         if ( bar.settings.vct_enabled ) then
-            NeedToKnow.mfn_UpdateVCT(bar)
+            -- NeedToKnow.mfn_UpdateVCT(bar)
+            bar:UpdateCastTime()
         end
         
         -- Force an update to get all the bars to the current position (sharing code)
@@ -371,22 +353,20 @@ function NeedToKnow.ConfigureVisibleBar(bar, count, extended, buff_stacks)
         end
 
         bar.Time:Show()
-    --[[
-    elseif bar.is_counter then
-    	-- Bar is tracking player power?
-
-        bar.max_value = 1
-        local pct = buff_stacks.total_ttn[1] / buff_stacks.total_ttn[2]
-        mfn_SetStatusBarValue(bar,bar.bar1,pct)
-        if bar.bar2 then mfn_SetStatusBarValue(bar,bar.bar2,pct) end
-
-        bar.time:Hide()
-        bar.spark:Hide()
-
-        if ( bar.vct ) then
-            bar.vct:Hide()
-        end
-    ]]--
+--    elseif bar.is_counter then
+--    	-- Bar is tracking player power?
+--
+--        bar.max_value = 1
+--        local pct = buff_stacks.total_ttn[1] / buff_stacks.total_ttn[2]
+--        mfn_SetStatusBarValue(bar,bar.bar1,pct)
+--        if bar.bar2 then mfn_SetStatusBarValue(bar,bar.bar2,pct) end
+--
+--        bar.time:Hide()
+--        bar.spark:Hide()
+--
+--        if ( bar.vct ) then
+--            bar.vct:Hide()
+--        end
     else
         -- Hide time, text, and spark for auras with infinite duration
         bar.max_value = 1
@@ -441,7 +421,6 @@ function NeedToKnow.DetermineTempEnchantFromTooltip(i_invID)
 end
 ]]--
 
--- mfn_AddInstanceToStacks = function (all_stacks, bar_entry, duration, name, count, expirationTime, iconPath, caster, tt1, tt2, tt3)
 function NeedToKnow.mfn_AddInstanceToStacks(all_stacks, bar_entry, duration, name, count, expirationTime, iconPath, caster, tt1, tt2, tt3)
     if duration then
         if (not count or count < 1) then count = 1 end
@@ -470,7 +449,6 @@ function NeedToKnow.mfn_AddInstanceToStacks(all_stacks, bar_entry, duration, nam
     end
 end
 
--- mfn_AuraCheck_TOTEM = function(bar, bar_entry, all_stacks)
 function NeedToKnow.mfn_AuraCheck_TOTEM(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper for Totem bars, this returns data if
     -- a totem matching bar_entry is currently out. 
@@ -503,7 +481,6 @@ function NeedToKnow.mfn_AuraCheck_TOTEM(bar, bar_entry, all_stacks)
     end
 end
 
--- mfn_AuraCheck_EQUIPSLOT = function (bar, bar_entry, all_stacks)
 function NeedToKnow.mfn_AuraCheck_EQUIPSLOT(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper for tracking usable gear based on the slot its in
     -- rather than the equipment name
@@ -528,7 +505,6 @@ function NeedToKnow.mfn_AuraCheck_EQUIPSLOT(bar, bar_entry, all_stacks)
     end
 end
 
--- mfn_AuraCheck_CASTCD = function(bar, bar_entry, all_stacks)
 function NeedToKnow.mfn_AuraCheck_CASTCD(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper that checks for spell/item use cooldowns
     -- Relies on mfn_GetAutoShotCooldown, mfn_GetSpellCooldown 
@@ -580,7 +556,6 @@ function NeedToKnow.mfn_AuraCheck_CASTCD(bar, bar_entry, all_stacks)
     end
 end
 
--- mfn_AuraCheck_USABLE = function (bar, bar_entry, all_stacks)
 function NeedToKnow.mfn_AuraCheck_USABLE(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper for watching "Is Usable", which means that the action
     -- bar button for the spell lights up.  This is mostly useful for Victory Rush
@@ -615,7 +590,7 @@ function NeedToKnow.mfn_AuraCheck_USABLE(bar, bar_entry, all_stacks)
     end
 end
 
-mfn_ResetScratchStacks = function (buff_stacks)
+function NeedToKnow.mfn_ResetScratchStacks(buff_stacks)
     buff_stacks.total = 0;
     buff_stacks.total_ttn[1] = 0;
     buff_stacks.total_ttn[2] = 0;
@@ -625,9 +600,9 @@ end
 -- Bar_AuraCheck helper for watching "internal cooldowns", which is like a spell
 -- cooldown for spells cast automatically (procs).  The "reset on buff" logic
 -- is still handled by 
-mfn_AuraCheck_BUFFCD = function (bar, bar_entry, all_stacks)
+function NeedToKnow.mfn_AuraCheck_BUFFCD(bar, bar_entry, all_stacks)
     local buff_stacks = m_scratch.buff_stacks
-    mfn_ResetScratchStacks(buff_stacks);
+    NeedToKnow.mfn_ResetScratchStacks(buff_stacks);
     NeedToKnow.mfn_AuraCheck_Single(bar, bar_entry, buff_stacks)
     local tNow = g_GetTime()
     if ( buff_stacks.total > 0 ) then
@@ -700,7 +675,6 @@ local function UnitAuraWrapper(a,b,c,d)
     end
 end
 
--- mfn_AuraCheck_Single = function(bar, bar_entry, all_stacks)
 function NeedToKnow.mfn_AuraCheck_Single(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper that looks for the first instance of a buff
     -- Uses the UnitAura filters exclusively if it can
@@ -774,7 +748,6 @@ function NeedToKnow.mfn_AuraCheck_Single(bar, bar_entry, all_stacks)
     end
 end
 
--- mfn_AuraCheck_AllStacks = function (bar, bar_entry, all_stacks)
 function NeedToKnow.mfn_AuraCheck_AllStacks(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper that updates bar.all_stacks (but returns nil)
     -- by scanning all the auras on the unit
@@ -806,7 +779,6 @@ function NeedToKnow.mfn_AuraCheck_AllStacks(bar, bar_entry, all_stacks)
     end
 end
 
--- mfn_Bar_AuraCheck = function (bar)
 function NeedToKnow.mfn_Bar_AuraCheck(bar)
     -- Called whenever the state of auras on the bar's unit may have changed
 
@@ -826,7 +798,7 @@ function NeedToKnow.mfn_Bar_AuraCheck(bar)
     local idxName, duration, buffName, count, expirationTime, iconPath, caster
     if ( bUnitExists ) then
         all_stacks = m_scratch.all_stacks
-        mfn_ResetScratchStacks(all_stacks);
+        NeedToKnow.mfn_ResetScratchStacks(all_stacks);
 
         -- Call the helper function for each of the spells in the list
         for idx, entry in ipairs(bar.spells) do
@@ -855,7 +827,7 @@ function NeedToKnow.mfn_Bar_AuraCheck(bar)
         local maxStart = 0
         local tNow = g_GetTime()
         local buff_stacks = m_scratch.buff_stacks
-        mfn_ResetScratchStacks(buff_stacks);
+        NeedToKnow.mfn_ResetScratchStacks(buff_stacks);
         -- Keep track of when the reset auras were last applied to the player
         for idx, resetSpell in ipairs(bar.reset_spells) do
             -- Note this relies on BUFFCD setting the target to player, and that the onlyMine will work either way
@@ -980,6 +952,7 @@ function NeedToKnow.mfn_Bar_AuraCheck(bar)
     end
 end
 
+--[[
 function NeedToKnow.Fmt_SingleUnit(i_fSeconds)
     return string.format(SecondsToTimeAbbrev(i_fSeconds))
 end
@@ -998,6 +971,7 @@ end
 function NeedToKnow.Fmt_Float(i_fSeconds)
   return string.format("%0.1f", i_fSeconds)
 end
+]]--
 
 function NeedToKnow.Bar_OnUpdate(self, elapsed)
     local now = g_GetTime()
@@ -1068,23 +1042,23 @@ function NeedToKnow.Bar_OnUpdate(self, elapsed)
             end
             
             if ( self.vct_refresh ) then
-                NeedToKnow.mfn_UpdateVCT(self)
+                self:UpdateCastTime()
             end
         end
     end
 end 
 
-local fnAuraCheckIfUnitMatches = function(self, unit)
-    if ( unit == self.unit )  then
-        -- mfn_Bar_AuraCheck(self)
-        NeedToKnow.mfn_Bar_AuraCheck(self)
+function NeedToKnow.fnAuraCheckIfUnitMatches(bar, unit)
+    if ( unit == bar.unit )  then
+        -- mfn_Bar_AuraCheck(bar)
+        NeedToKnow.mfn_Bar_AuraCheck(bar)
     end
 end
 
-local fnAuraCheckIfUnitPlayer = function(self, unit)
+function NeedToKnow.fnAuraCheckIfUnitPlayer(bar, unit)
     if ( unit == "player" ) then
         -- mfn_Bar_AuraCheck(self)
-        NeedToKnow.mfn_Bar_AuraCheck(self)
+        NeedToKnow.mfn_Bar_AuraCheck(bar)
     end
 end
 
@@ -1116,20 +1090,14 @@ EDT["COMBAT_LOG_EVENT_UNFILTERED"] = function(self, unit, ...)
         end
     end 
 end
---[[
-EDT["PLAYER_TOTEM_UPDATE"] = mfn_Bar_AuraCheck
-EDT["ACTIONBAR_UPDATE_COOLDOWN"] = mfn_Bar_AuraCheck
-EDT["SPELL_UPDATE_COOLDOWN"] = mfn_Bar_AuraCheck
-EDT["SPELL_UPDATE_USABLE"] = mfn_Bar_AuraCheck
---]]
+
 EDT["PLAYER_TOTEM_UPDATE"] = NeedToKnow.mfn_Bar_AuraCheck
 EDT["ACTIONBAR_UPDATE_COOLDOWN"] = NeedToKnow.mfn_Bar_AuraCheck
 EDT["SPELL_UPDATE_COOLDOWN"] = NeedToKnow.mfn_Bar_AuraCheck
 EDT["SPELL_UPDATE_USABLE"] = NeedToKnow.mfn_Bar_AuraCheck
-EDT["UNIT_AURA"] = fnAuraCheckIfUnitMatches
+EDT["UNIT_AURA"] = NeedToKnow.fnAuraCheckIfUnitMatches
 -- EDT["UNIT_POWER"] = fnAuraCheckIfUnitMatches
 -- EDT["UNIT_DISPLAYPOWER"] = fnAuraCheckIfUnitMatches
--- EDT["UNIT_HEALTH"] = mfn_Bar_AuraCheck
 EDT["UNIT_HEALTH"] = NeedToKnow.mfn_Bar_AuraCheck
 EDT["PLAYER_TARGET_CHANGED"] = function(self, unit)
     if self.unit == "targettarget" then
@@ -1148,7 +1116,7 @@ EDT["UNIT_TARGET"] = function(self, unit)
     -- mfn_Bar_AuraCheck(self)
     NeedToKnow.mfn_Bar_AuraCheck(self)
 end  
-EDT["UNIT_PET"] = fnAuraCheckIfUnitPlayer
+EDT["UNIT_PET"] = NeedToKnow.fnAuraCheckIfUnitPlayer
 EDT["PLAYER_SPELLCAST_SUCCEEDED"] = function(self, unit, ...)
     local spellName, spellID, tgt = select(1,...)
     local i,entry

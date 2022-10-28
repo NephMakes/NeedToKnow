@@ -8,27 +8,14 @@ local Cooldown = NeedToKnow.Cooldown
 
 local UPDATE_INTERVAL = 0.03  -- equivalent to ~33 frames per second
 
--- Defined in NeedToKnow.lua: 
 -- Deprecated: 
 local m_last_guid = addonTable.m_last_guid
-local mfn_AuraCheck_BUFFCD = addonTable.mfn_AuraCheck_BUFFCD
-local mfn_AuraCheck_TOTEM = addonTable.mfn_AuraCheck_TOTEM
-local mfn_AuraCheck_USABLE = addonTable.mfn_AuraCheck_USABLE
-local mfn_AuraCheck_EQUIPSLOT = addonTable.mfn_AuraCheck_EQUIPSLOT
-local mfn_AuraCheck_CASTCD = addonTable.mfn_AuraCheck_CASTCD
-local mfn_AuraCheck_Single = addonTable.mfn_AuraCheck_Single
-local mfn_AuraCheck_AllStacks = addonTable.mfn_AuraCheck_AllStacks
-local mfn_Bar_AuraCheck = NeedToKnow.mfn_Bar_AuraCheck
 local mfn_GetSpellCooldown = Cooldown.GetSpellCooldown
-
---[[ Bar functions ]]--
 
 function Bar:Update()
 	-- Update bar behavior and appearance
-	-- Called by BarGroup:Update() and various BarMenu:Methods()
-    -- Called when addon loaded, locked/unlocked, or bar configuration changed
-
-	-- TO DO: Use instead of NeedToKnow.Bar_Update(groupID, barID)
+	-- Called by BarGroup:Update() and various BarMenu:Methods(). 
+	-- When addon loaded, locked/unlocked, or bar configuration changed
 
 	-- Get bar settings from NeedToKnow.ProfileSettings
 	local groupID = self:GetParent():GetID()
@@ -36,7 +23,7 @@ function Bar:Update()
 	local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
     local barSettings = groupSettings["Bars"][barID]
     if ( not barSettings ) then
-    	-- TO DO: Handle this in Bar:New()
+    	-- TO DO: Handle this in Bar:New()?
         groupSettings.Bars[barID] = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
         barSettings = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
     end
@@ -302,30 +289,84 @@ function Bar:OnUpdate()
 end
 ]]--
 
-function NeedToKnow.ComputeVCTDuration(bar)
-    -- Called by mfn_UpdateVCT, which is called from AuraCheck and possibly 
-    -- by Bar_OnUpdate depending on vct_refresh. In addition to refactoring out some 
-    -- code from the long AuraCheck, this also provides a convenient hook for other addons
+function Bar:UpdateAppearance()
+	-- For bar elements that can change in combat
+	-- called by mfn_Bar_AuraCheck
 
-    local vct_duration = 0
-    
-    local spellToTime = bar.settings.vct_spell
-    if ( nil == spellToTime or "" == spellToTime ) then
-        spellToTime = bar.buffName
-    end
-     
-    local _, _, _, castTime = g_GetSpellInfo(spellToTime)
+	local barSettings = self.settings
 
-    if ( castTime ) then
-        vct_duration = castTime / 1000
-        bar.vct_refresh = true
-    else
-        bar.vct_refresh = false
-    end
-    
-    if ( bar.settings.vct_extra ) then
-        vct_duration =  vct_duration + bar.settings.vct_extra
-    end
-    return vct_duration
+	-- Blinking bars don't have an icon
+	local icon = self.Icon
+	if ( barSettings.show_icon and self.iconPath ) then
+		icon:SetTexture(self.iconPath)
+		icon:Show()
+		self:SetBackgroundSize(true)
+	else
+		icon:Hide()
+		self:SetBackgroundSize(false)
+	end
+
+	-- Blinking changes bar color
+	local barColor = barSettings.BarColor
+	self.Texture:SetVertexColor(barColor.r,barColor.g, barColor.b)
+	self.Texture:SetAlpha(barColor.a)
+	if ( self.max_expirationTime and self.max_expirationTime ~= self.expirationTime ) then 
+		self.Texture2:SetVertexColor(barColor.r,barColor.g, barColor.b)
+		self.Texture2:SetAlpha(barColor.a)
+		self.Texture2:Show()
+	else
+		self.Texture2:Hide()
+	end
 end
+
+-- ---------
+-- Cast time
+-- ---------
+
+-- Note: Kitjan's VCT = Visual Cast Time
+
+function Bar:UpdateCastTime()
+	local castWidth = 0
+	local barDuration = self.fixedDuration or self.duration
+	if ( barDuration ) then
+		local barWidth = self:GetWidth()
+		local castDuration = self:GetCastTimeDuration()
+		castWidth = barWidth * castDuration / barDuration
+		if castWidth > barWidth then
+			castWidth = barWidth
+		end
+	end
+
+	if ( castWidth > 1 ) then
+		self.CastTime:SetWidth(castWidth)
+		self.CastTime:Show()
+	else
+		self.CastTime:Hide()
+	end
+end
+
+function Bar:GetCastTimeDuration()
+	-- Called by Bar:UpdateCastTime(), which is called by AuraCheck 
+	-- and possibly Bar_OnUpdate depending on vct_refresh
+
+	local spell = self.settings.vct_spell
+	if spell == nil or spell == "" then
+		spell = self.buffName
+	end
+
+	local castDuration = 0
+	local _, _, _, castTime = GetSpellInfo(spell)
+	if castTime then
+		castDuration = castTime / 1000
+		self.vct_refresh = true
+	else
+		self.vct_refresh = false
+	end
+	if self.settings.vct_extra then
+		castDuration = castDuration + self.settings.vct_extra
+	end
+
+	return castDuration
+end
+
 

@@ -11,7 +11,6 @@ local MAX_BARGROUPS = 4
 -- ----------------------
 
 -- Local version of global functions
--- local g_GetActiveTalentGroup = _G.GetSpecialization
 local g_GetActiveTalentGroup = _G.GetSpecialization or _G.GetActiveTalentGroup
 local g_GetTime = GetTime
 
@@ -25,9 +24,6 @@ local m_last_guid      = addonTable.m_last_guid
 local m_bInCombat       = addonTable.m_bInCombat
 local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
 
--- Other functions defined elsewhere
--- local mfn_Bar_AuraCheck = addonTable.mfn_Bar_AuraCheck  -- I don't think this works as is
--- local mfn_Bar_AuraCheck = NeedToKnow.mfn_Bar_AuraCheck
 
 -- ---------------
 -- Local functions
@@ -171,6 +167,35 @@ function NeedToKnow.Show(bShow)
 			group:Hide()
 		end
 	end
+end
+
+function NeedToKnow:UpdateBar(groupID, barID)
+	-- Called by BarMenu functions
+	local bar = NeedToKnow:GetBar(groupID, barID)
+	bar:Update()
+end
+
+function NeedToKnow:GetBar(groupID, barID)
+	return _G["NeedToKnow_Group"..groupID.."Bar"..barID]
+end
+
+function NeedToKnow.Fmt_SingleUnit(i_fSeconds)
+    return string.format(SecondsToTimeAbbrev(i_fSeconds))
+end
+
+function NeedToKnow.Fmt_TwoUnits(i_fSeconds)
+  if ( i_fSeconds < 6040 ) then
+      local nMinutes, nSeconds
+      nMinutes = floor(i_fSeconds / 60)
+      nSeconds = floor(i_fSeconds - nMinutes*60)
+      return string.format("%02d:%02d", nMinutes, nSeconds)
+  else
+      string.format(SecondsToTimeAbbrev(i_fSeconds))
+  end
+end
+
+function NeedToKnow.Fmt_Float(i_fSeconds)
+  return string.format("%0.1f", i_fSeconds)
 end
 
 
