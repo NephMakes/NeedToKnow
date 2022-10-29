@@ -88,7 +88,6 @@ function Cooldown.GetItemIDString(id_or_name)
     end
 end
 
--- function Cooldown.TryToFindSpellWithCD(spellEntry)
 function Cooldown:GetSpell(spellEntry)
 	-- todo: cache this result?
 	if ( Cooldown.DetermineShortCooldownFromTooltip(spellEntry) > 0 ) then 

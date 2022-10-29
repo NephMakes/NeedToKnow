@@ -1,20 +1,24 @@
 -- Bar tracking behavior
--- Bar:Methods() set by Bar:OnLoad() in BarObject.lua
 
 local addonName, addonTable = ...
 
 local Bar = NeedToKnow.Bar
 local Cooldown = NeedToKnow.Cooldown
 
-local UPDATE_INTERVAL = 0.03  -- equivalent to ~33 frames per second
+local UPDATE_INTERVAL = 0.025  -- 40 fps
 
--- Local versions of global functions
+-- Local versions of frequently-used global functions
 local GetTime = GetTime
+local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
+local UnitGUID = UnitGUID
+local GetSpellInfo = GetSpellInfo
+local UnitRangedDamage = UnitRangedDamage
 
 -- Deprecated: 
 local m_last_guid = addonTable.m_last_guid
-local mfn_GetSpellCooldown = Cooldown.GetSpellCooldown
 
+
+ 
 
 -- ---------
 -- Bar Setup
@@ -114,7 +118,7 @@ function Bar:Update()
 			end
 
 			settings.bAutoShot = nil
-			self.is_counter = nil
+			-- self.is_counter = nil
 			self.ticker = self.OnUpdate
 
             -- Determine which helper functions to use
@@ -134,7 +138,7 @@ function Bar:Update()
 			elseif "CASTCD" == settings.BuffOrDebuff then
 				self.fnCheck = NeedToKnow.mfn_AuraCheck_CASTCD
 				for idx, entry in ipairs(self.spells) do
-					table.insert(self.cd_functions, mfn_GetSpellCooldown)
+					table.insert(self.cd_functions, Cooldown.GetSpellCooldown)
 					Cooldown.SetUpSpell(self, entry)
 				end
 			elseif settings.show_all_stacks then
@@ -151,22 +155,24 @@ function Bar:Update()
 				end
 			end
 
-			self:SetScripts()
+			self:Activate()
 
 			-- Events were cleared while unlocked, so need to check the bar again now
 			NeedToKnow.mfn_Bar_AuraCheck(self)
 		else
-            self:ClearScripts()
+            self:Inactivate()
 			self:Hide()
 		end
 	else
-		self:ClearScripts()
+		self:Inactivate()
 		self:Unlock()
 	end
 end
 
-function Bar:SetScripts()
-	self:SetScript("OnEvent", NeedToKnow.Bar_OnEvent)
+function Bar:Activate()
+	-- Called by Bar:Update() if NeedToKnow is locked
+
+	self:SetScript("OnEvent", self.OnEvent)
 	if ( self.ticker ) then
 		-- This check is a legacy of power tracking i think
 		self:SetScript("OnUpdate", self.ticker)
@@ -186,22 +192,20 @@ function Bar:SetScripts()
 		self:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 	elseif ( barType == "EQUIPSLOT" ) then
 		self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
-	--[[
-	elseif ( barType == "POWER" ) then
-		if settings.AuraName == tostring(NEEDTOKNOW.SPELL_POWER_STAGGER) then
-			self:RegisterEvent("UNIT_HEALTH")
-		else
-			self:RegisterEvent("UNIT_POWER")
-			self:RegisterEvent("UNIT_DISPLAYPOWER")
-		end
-	]]--
+--	elseif ( barType == "POWER" ) then
+--		if settings.AuraName == tostring(NEEDTOKNOW.SPELL_POWER_STAGGER) then
+--			self:RegisterEvent("UNIT_HEALTH")
+--		else
+--			self:RegisterEvent("UNIT_POWER")
+--			self:RegisterEvent("UNIT_DISPLAYPOWER")
+--		end
 	elseif ( barType == "USABLE" ) then
 		self:RegisterEvent("SPELL_UPDATE_USABLE")
 	elseif ( settings.Unit == "targettarget" ) then
-		-- WORKAROUND: PLAYER_TARGET_CHANGED happens immediately, UNIT_TARGET every couple seconds
+		-- PLAYER_TARGET_CHANGED happens immediately, UNIT_TARGET every couple seconds
 		self:RegisterEvent("PLAYER_TARGET_CHANGED")
 		self:RegisterEvent("UNIT_TARGET")
-		self:CheckCombatLogRegistration() -- WORKAROUND: Don't get UNIT_AURA for targettarget
+		self:CheckCombatLogRegistration() -- We don't get UNIT_AURA for targettarget
 	else
 		self:RegisterEvent("UNIT_AURA")
 	end
@@ -240,6 +244,7 @@ function Bar:SetScripts()
 		end
 		NeedToKnow.RegisterSpellcastSent()
 	end
+
 	if ( settings.blink_enabled and settings.blink_boss ) then
 		if ( not NeedToKnow.BossStateBars ) then
 			NeedToKnow.BossStateBars = {}
@@ -248,7 +253,16 @@ function Bar:SetScripts()
 	end
 end
 
-function Bar:ClearScripts()
+function Bar:CheckCombatLogRegistration()
+	-- Used to track auras on target of target
+    if UnitExists(self.unit) then
+        self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+    else
+        self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+    end
+end
+
+function Bar:Inactivate()
 	self:SetScript("OnEvent", nil)
 	self:SetScript("OnUpdate", nil)
 
@@ -277,24 +291,113 @@ function Bar:ClearScripts()
 	end
 end
 
-function Bar:CheckCombatLogRegistration(force)
-    if UnitExists(self.unit) then
-        self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-    else
-        self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+
+-- --------------
+-- Event handling
+-- --------------
+
+local c_AURAEVENTS = {
+	-- COMBAT_LOG_EVENT_UNFILTERED events where select(6,...) is caster, 
+	-- 9 is spellid, and 10 is spell name. Used for target of target. 
+    SPELL_AURA_APPLIED = true,
+    SPELL_AURA_REMOVED = true,
+    SPELL_AURA_APPLIED_DOSE = true,
+    SPELL_AURA_REMOVED_DOSE = true,
+    SPELL_AURA_REFRESH = true,
+    SPELL_AURA_BROKEN = true,
+    SPELL_AURA_BROKEN_SPELL = true
+}
+local AUTO_SHOT_NAME = GetSpellInfo(75)
+
+-- Define the event dispatching table.  Note, this comes last as the referenced 
+-- functions must already be declared.  Avoiding the re-evaluation of all that
+-- is one of the reasons this is an optimization!
+local EDT = {}
+EDT["COMBAT_LOG_EVENT_UNFILTERED"] = function(self, unit, ...)
+    -- local combatEvent = select(1, ...)
+    local tod, event, hideCaster, guidCaster, sourceName, sourceFlags, sourceRaidFlags, guidTarget, nameTarget, _, _, spellid, spell = CombatLogGetCurrentEventInfo()
+
+    if ( c_AURAEVENTS[combatEvent] ) then
+        -- local guidTarget = select(7, ...)
+        if ( guidTarget == UnitGUID(self.unit) ) then
+            -- local idSpell, nameSpell = select(11, ...)
+            if (self.auraName:find(idSpell) or
+                self.auraName:find(nameSpell)) 
+            then 
+                NeedToKnow.mfn_Bar_AuraCheck(self)
+            end
+        end
+    elseif ( combatEvent == "UNIT_DIED" ) then
+        -- local guidDeceased = select(7, ...) 
+        -- if ( guidDeceased == UnitGUID(self.unit) ) then
+        if ( guidTarget == UnitGUID(self.unit) ) then
+            NeedToKnow.mfn_Bar_AuraCheck(self)
+        end
+    end 
+end
+EDT["PLAYER_TOTEM_UPDATE"] = NeedToKnow.mfn_Bar_AuraCheck
+EDT["ACTIONBAR_UPDATE_COOLDOWN"] = NeedToKnow.mfn_Bar_AuraCheck
+EDT["SPELL_UPDATE_COOLDOWN"] = NeedToKnow.mfn_Bar_AuraCheck
+EDT["SPELL_UPDATE_USABLE"] = NeedToKnow.mfn_Bar_AuraCheck
+EDT["UNIT_AURA"] = NeedToKnow.fnAuraCheckIfUnitMatches
+EDT["UNIT_HEALTH"] = NeedToKnow.mfn_Bar_AuraCheck  -- Legacy of power tracking?
+EDT["PLAYER_TARGET_CHANGED"] = function(self, unit)
+    if self.unit == "targettarget" then
+        self:CheckCombatLogRegistration()
+    end
+    NeedToKnow.mfn_Bar_AuraCheck(self)
+end  
+EDT["PLAYER_FOCUS_CHANGED"] = EDT["PLAYER_TARGET_CHANGED"]
+EDT["UNIT_TARGET"] = function(self, unit)
+    if unit == "target" and self.unit == "targettarget" then
+        self:CheckCombatLogRegistration()
+    end
+    NeedToKnow.mfn_Bar_AuraCheck(self)
+end  
+EDT["UNIT_PET"] = NeedToKnow.fnAuraCheckIfUnitPlayer
+EDT["PLAYER_SPELLCAST_SUCCEEDED"] = function(self, unit, ...)
+    local spellName, spellID, tgt = select(1,...)
+    local i,entry
+    for i,entry in ipairs(self.spells) do
+        if entry.id == spellID or entry.name == spellName then
+            self.unit = tgt or "unknown"
+            --trace("Updating",self:GetName(),"since it was recast on",self.unit)
+            NeedToKnow.mfn_Bar_AuraCheck(self)
+            break;
+        end
+    end
+end
+EDT["START_AUTOREPEAT_SPELL"] = function(self, unit, ...)
+    self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+end
+EDT["STOP_AUTOREPEAT_SPELL"] = function(self, unit, ...)
+    self:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+end
+EDT["UNIT_SPELLCAST_SUCCEEDED"] = function(self, unit, ...)
+    local spellID  = select(2, ...)
+    local spellName = select(1, GetSpellInfo(spellId))
+    if ( self.settings.bAutoShot and unit == "player" and spellName == AUTO_SHOT_NAME ) then
+        local interval = UnitRangedDamage("player")
+        self.tAutoShotCD = interval
+        self.tAutoShotStart = GetTime()
+        NeedToKnow.mfn_Bar_AuraCheck(self)
     end
 end
 
--- ---------------------
--- Bar tracking behavior
--- ---------------------
-
---[[
-function Bar:OnEvent()
+-- function NeedToKnow.Bar_OnEvent(self, event, unit, ...)
+function Bar:OnEvent(event, unit, ...)
+	local fn = EDT[event]
+	if fn then 
+		fn(self, unit, ...)
+	end
 end
-]]--
+
+-- --------
+-- OnUpdate
+-- --------
 
 function Bar:OnUpdate(elapsed)
+	-- Fired very frequently. Make sure it's efficient. 
 	local now = GetTime()
 	if now > self.nextUpdate then
 		self.nextUpdate = now + UPDATE_INTERVAL
@@ -314,8 +417,6 @@ function Bar:OnUpdate(elapsed)
 			return
 		end
         
-		-- WORKAROUND: Some of these (like item cooldowns) don't fire an event when the CD expires.
-		--   others fire the event too soon.  So we have to keep checking.
 		if self.duration and self.duration > 0 then
 			local duration = self.fixedDuration or self.duration
 			local bar1_timeLeft = self.expirationTime - now
@@ -324,6 +425,8 @@ function Bar:OnUpdate(elapsed)
 					self.settings.BuffOrDebuff == "BUFFCD" or
 					self.settings.BuffOrDebuff == "EQUIPSLOT" )
 				then
+		-- WORKAROUND: Some of these (like item cooldowns) don't fire an event when the CD expires.
+		--   others fire the event too soon.  So we have to keep checking.
 					NeedToKnow.mfn_Bar_AuraCheck(self)
 					return
 				end
@@ -355,130 +458,16 @@ function Bar:OnUpdate(elapsed)
 				self.spark:Hide()
 			end
             
+			if self.settings.vct_enabled and self.vct_refresh then
+				self:UpdateCastTime()
+			end
+
 			if self.max_expirationTime then
 				local bar2_timeLeft = self.max_expirationTime - GetTime()
 				self:SetValue(self.bar2, bar2_timeLeft, bar1_timeLeft)
             end
-            
-			if self.vct_refresh then
-				self:UpdateCastTime()
-			end
 		end
 	end
-end
-
-function Bar:UpdateAppearance()
-	-- For bar elements that can change in combat
-	-- Called by mfn_Bar_AuraCheck
-
-	local barSettings = self.settings
-
-	local icon = self.Icon
-	if ( barSettings.show_icon and self.iconPath ) then
-		icon:SetTexture(self.iconPath)
-		icon:Show()
-		self:SetBackgroundSize(true)
-	else
-		icon:Hide()
-		self:SetBackgroundSize(false)
-	end
-	-- Blinking bars don't have an icon
-
-	local barColor = barSettings.BarColor
-	self.Texture:SetVertexColor(barColor.r,barColor.g, barColor.b)
-	self.Texture:SetAlpha(barColor.a)
-	if ( self.max_expirationTime and self.max_expirationTime ~= self.expirationTime ) then 
-		self.Texture2:SetVertexColor(barColor.r,barColor.g, barColor.b)
-		self.Texture2:SetAlpha(barColor.a)
-		self.Texture2:Show()
-	else
-		self.Texture2:Hide()
-	end
-	-- Blinking changes bar color
-end
-
-function Bar:ConfigureVisible(count, extended, buff_stacks)
-	-- Called by mfn_Bar_AuraCheck() if bar.duration found
-	-- How is this conceptually different than Bar:UpdateAppearance()?
-
-	if self.duration > 0 then
-		local duration = self.fixedDuration or self.duration
-		self.max_value = duration
-
-		if self.settings.vct_enabled then
-			self:UpdateCastTime()
-		end
-        
-		-- Force an update to get all the bars to the current position (sharing code)
-		-- This will call UpdateCastTime again, but that seems ok
-		self.nextUpdate = UPDATE_INTERVAL
-		if self.expirationTime > GetTime() then
-			self:OnUpdate(0)
-		end
-
-		self.Time:Show()
-    else
-		-- Aura with indefinite duration
-		self.max_value = 1
-		self:SetValue(self.Texture, 1)
-		self:SetValue(self.Texture2, 1)
-		self.Time:Hide()
-		self.Spark:Hide()
-		self.CastTime:Hide()
-	end
-
-	self:ConfigureVisibleText(self.settings, count, extended, buff_stacks)
-end
-
-
--- ---------
--- Cast time
--- ---------
-
--- Note: Kitjan's VCT = Visual Cast Time
-
-function Bar:UpdateCastTime()
-	local castWidth = 0
-	local barDuration = self.fixedDuration or self.duration
-	if ( barDuration ) then
-		local barWidth = self:GetWidth()
-		local castDuration = self:GetCastTimeDuration()
-		castWidth = barWidth * castDuration / barDuration
-		if castWidth > barWidth then
-			castWidth = barWidth
-		end
-	end
-
-	if ( castWidth > 1 ) then
-		self.CastTime:SetWidth(castWidth)
-		self.CastTime:Show()
-	else
-		self.CastTime:Hide()
-	end
-end
-
-function Bar:GetCastTimeDuration()
-	-- Called by Bar:UpdateCastTime(), which is called by AuraCheck 
-	-- and possibly Bar:OnUpdate depending on vct_refresh
-
-	local spell = self.settings.vct_spell
-	if spell == nil or spell == "" then
-		spell = self.buffName
-	end
-
-	local castDuration = 0
-	local _, _, _, castTime = GetSpellInfo(spell)
-	if castTime then
-		castDuration = castTime / 1000
-		self.vct_refresh = true
-	else
-		self.vct_refresh = false
-	end
-	if self.settings.vct_extra then
-		castDuration = castDuration + self.settings.vct_extra
-	end
-
-	return castDuration
 end
 
 

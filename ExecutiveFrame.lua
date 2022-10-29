@@ -346,10 +346,11 @@ function ExecutiveFrame:COMBAT_LOG_EVENT_UNFILTERED()
         end
         if found then
             if ( NeedToKnow.BarsForPSS ) then
-                local bar,one
-                for bar,one in pairs(NeedToKnow.BarsForPSS) do
+                local bar, one
+                for bar, one in pairs(NeedToKnow.BarsForPSS) do
                     local unitTarget = NeedToKnow.raid_members[t[found].target or ""]
-                    NeedToKnow.Bar_OnEvent(bar, "PLAYER_SPELLCAST_SUCCEEDED", "player", spell, spellid, unitTarget);
+                    -- NeedToKnow.Bar_OnEvent(bar, "PLAYER_SPELLCAST_SUCCEEDED", "player", spell, spellid, unitTarget);
+					bar:OnEvent("PLAYER_SPELLCAST_SUCCEEDED", "player", spell, spellid, unitTarget)
                 end
             end
 
@@ -429,7 +430,8 @@ function ExecutiveFrame:UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID, spellID)
                 local bar,one, spellName
                 for bar,one in pairs(NeedToKnow.BarsForPSS) do
                     local unitTarget = NeedToKnow.raid_members[t[found].target or ""]
-                    NeedToKnow.Bar_OnEvent(bar, "PLAYER_SPELLCAST_SUCCEEDED", "player", spellName, spellID, unitTarget);
+                    -- NeedToKnow.Bar_OnEvent(bar, "PLAYER_SPELLCAST_SUCCEEDED", "player", spellName, spellID, unitTarget);
+                    bar:OnEvent("PLAYER_SPELLCAST_SUCCEEDED", "player", spellName, spellID, unitTarget)
                 end
             end
             if ( found == last ) then

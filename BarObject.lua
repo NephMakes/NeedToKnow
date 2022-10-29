@@ -4,6 +4,19 @@ local addonName, addonTable = ...
 
 local Bar = NeedToKnow.Bar
 
+-- local versions of frequently-used functions
+local GetTime = GetTime
+local GetSpellInfo = GetSpellInfo
+
+-- Deprecated: 
+local m_last_guid = addonTable.m_last_guid
+local UPDATE_INTERVAL = 0.025  -- Make this an addon-wide variable
+
+
+-- ---------
+-- Bar setup
+-- ---------
+
 --[[
 function Bar:New()
 	-- Instead of doing it in BarGroup:Update() and elsewhere
@@ -13,7 +26,8 @@ end
 function Bar:OnLoad()
 	-- Called by NeedToKnow_BarTemplate
 
-	-- Bar interaction
+	Mixin(self, Bar) -- Inherit Bar:Methods()
+
 	self:RegisterForDrag("LeftButton")
 	self:SetScript("OnEnter", Bar.OnEnter)
 	self:SetScript("OnLeave", Bar.OnLeave)
@@ -22,8 +36,6 @@ function Bar:OnLoad()
 	self:SetScript("OnDragStop", Bar.OnDragStop)
 	self:SetScript("OnSizeChanged", Bar.OnSizeChanged)
 	
-	Mixin(self, Bar) -- Inherit Bar:Methods()
-
 	-- Want to not need these eventually
     self.bar1 = self.Texture
     self.bar2 = self.Texture2
@@ -32,67 +44,6 @@ function Bar:OnLoad()
     self.text = self.Text
     self.time = self.Time
 	self.vct = self.CastTime
-end
-
-function Bar:OnEnter()
-	local tooltip = _G["GameTooltip"]
-	tooltip:SetOwner(self:GetParent(), "ANCHOR_TOPLEFT")
-	tooltip:AddLine(NEEDTOKNOW.BAR_TOOLTIP1, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b, 1)
-	tooltip:AddLine(NEEDTOKNOW.BAR_TOOLTIP2, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
-	tooltip:Show()
-end
-
-function Bar:OnLeave()
-	_G["GameTooltip"]:Hide()
-end
-
-function Bar:OnDragStart()
-	self:GetParent():StartMoving()
-end
-
-function Bar:OnDragStop()
-	local group = self:GetParent()
-	group:StopMovingOrSizing()
-	group:SavePosition()
-end
-
-function Bar:OnSizeChanged()
-	local bar1 = self.Texture
-	local bar2 = self.Texture2
-	if ( bar1.cur_value ) then 
-		self:SetValue(bar1, bar1.cur_value)
-	end
-	if ( bar2.cur_value ) then 
-		self:SetValue(bar2, bar2.cur_value, bar1.cur_value)
-	end
-end
-
-function Bar:OnMouseUp(button)
-	if ( button == "RightButton" ) then
-		PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
-		NeedToKnow.BarMenu.ShowMenu(self)
-	end
-end
-
-function Bar:SetValue(barTexture, value, value0)
-	-- Called by Bar:OnUpdate(), Bar:OnSizeChanged(), etc.
-
-	value = math.max(value, 0)
-	local pct = math.min(value/self.max_value, 1)
-	local pct0 = 0
-	if value0 then
-		pct0 = math.min(value0/self.max_value, 1)
-	end
-
-	local width = (pct - pct0) * self:GetWidth()
-	if width < 1 then 
-		barTexture:Hide()
-	else
-		barTexture:SetWidth(width)
-		barTexture:SetTexCoord(pct0, 0, pct0, 1, pct, 0, pct, 1)
-		barTexture:Show()
-	end
-	barTexture.cur_value = value  -- So bars size properly with resized group
 end
 
 function Bar:SetAppearance()
@@ -159,33 +110,95 @@ function Bar:SetBackgroundSize(showIcon)
 	background:SetWidth(bgWidth)
 end
 
-function Bar:Unlock()
-	-- Make bar configurable by player
-	-- Called by Bar:Update()
 
-	self:Show()
-	self:EnableMouse(true)
+-- ------------
+-- Bar behavior
+-- ------------
 
-	self.Spark:Hide()
-	self.Time:Hide()
-	self.Icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
-	self.CastTime:SetWidth(self:GetWidth()/16)
-	self.CastTime:Show()
+function Bar:UpdateAppearance()
+	-- For bar elements that can change in combat
+	-- Called by mfn_Bar_AuraCheck
 
-	local settings = self.settings
+	local barSettings = self.settings
 
-	local barColor = settings.BarColor
-	self.Texture:SetVertexColor(barColor.r, barColor.g, barColor.b)
-	self.Texture:SetAlpha(barColor.a)
-	self.Texture2:Hide()
-
-	if ( settings.Enabled ) then
-		self:SetAlpha(1)
+	-- Blinking bars don't have an icon
+	local icon = self.Icon
+	if ( barSettings.show_icon and self.iconPath ) then
+		icon:SetTexture(self.iconPath)
+		icon:Show()
+		self:SetBackgroundSize(true)
 	else
-		self:SetAlpha(0.4)
+		icon:Hide()
+		self:SetBackgroundSize(false)
 	end
 
-	self:SetUnlockedText(settings)
+	-- Blinking changes bar color
+	local barColor = barSettings.BarColor
+	self.Texture:SetVertexColor(barColor.r,barColor.g, barColor.b)
+	self.Texture:SetAlpha(barColor.a)
+	if ( self.max_expirationTime and self.max_expirationTime ~= self.expirationTime ) then 
+		self.Texture2:SetVertexColor(barColor.r, barColor.g, barColor.b)
+		self.Texture2:SetAlpha(barColor.a)
+		self.Texture2:Show()
+	else
+		self.Texture2:Hide()
+	end
+end
+
+function Bar:ConfigureVisible(count, extended, buff_stacks)
+	-- Called by mfn_Bar_AuraCheck() if bar.duration found
+	-- How is this conceptually different than Bar:UpdateAppearance()?
+
+	if self.duration > 0 then
+		local duration = self.fixedDuration or self.duration
+		self.max_value = duration
+
+		if self.settings.vct_enabled then
+			self:UpdateCastTime()
+		end
+        
+		-- Force an update to get all the bars to the current position (sharing code)
+		-- This will call UpdateCastTime again, but that seems ok
+		self.nextUpdate = UPDATE_INTERVAL
+		if self.expirationTime > GetTime() then
+			self:OnUpdate(0)
+		end
+
+		self.Time:Show()
+    else
+		-- Aura with indefinite duration
+		self.max_value = 1
+		self:SetValue(self.Texture, 1)
+		self:SetValue(self.Texture2, 1)
+		self.Time:Hide()
+		self.Spark:Hide()
+		self.CastTime:Hide()
+	end
+
+	self:ConfigureVisibleText(self.settings, count, extended, buff_stacks)
+end
+
+function Bar:SetValue(barTexture, value, value0)
+	-- Called by Bar:OnUpdate(), Bar:OnSizeChanged(), others
+	-- Called very frequently. Make sure it's efficient. 
+
+	value = math.max(value, 0)
+	local pct = math.min(value/self.max_value, 1)
+	local pct0 = 0
+	if value0 then
+		pct0 = math.min(value0/self.max_value, 1)
+	end
+
+	local width = (pct - pct0) * self:GetWidth()
+	if width < 1 then 
+		barTexture:Hide()
+	else
+		barTexture:SetWidth(width)
+		barTexture:SetTexCoord(pct0, 0, pct0, 1, pct, 0, pct, 1)
+		barTexture:Show()
+	end
+
+	barTexture.cur_value = value  -- So bars size properly with resized group
 end
 
 function Bar:StartBlink()
@@ -210,6 +223,7 @@ function Bar:StartBlink()
 	self:SetBackgroundSize(false)
 end
 
+
 -- --------
 -- Bar text
 -- --------
@@ -227,43 +241,6 @@ function NeedToKnow.GetPrettyName(barSettings)
 	else
 		return barSettings.AuraName
 	end
-end
-
-function Bar:SetUnlockedText(barSettings)
-	-- Called by Bar:Unlock()
-
-	local settings = barSettings or self.settings
-	local text = ""
-
-	if settings.show_mypip then
-		text = text .. "* "
-	end
-
-	if settings.show_text then
-		if settings.show_text_user ~= "" then
-			text = settings.show_text_user
-		else
-			text = text .. NeedToKnow.GetPrettyName(settings)
-		end
-
-		if ( settings.append_cd and (
-			settings.BuffOrDebuff == "CASTCD"
-			or settings.BuffOrDebuff == "BUFFCD"
-			or settings.BuffOrDebuff == "EQUIPSLOT" 
-			) 
-		) 
-		then
-			text = text .. " CD"
-		elseif settings.append_usable and settings.BuffOrDebuff == "USABLE" then
-			text = text .. " Usable"
-		end
-
-		if settings.bDetectExtends == true then
-			text = text .. " + 3s"
-		end
-	end
-
-	self.Text:SetText(text)
 end
 
 function Bar:ConfigureVisibleText(barSettings, count, extended, buff_stacks)
@@ -333,3 +310,168 @@ function Bar:ComputeText(buffName, count, extended, buff_stacks)
     return text
 end
 
+function Bar:SetUnlockedText(barSettings)
+	-- Called by Bar:Unlock()
+
+	local settings = barSettings or self.settings
+	local text = ""
+
+	if settings.show_mypip then
+		text = text .. "* "
+	end
+	if settings.show_text then
+		if settings.show_text_user ~= "" then
+			text = settings.show_text_user
+		else
+			text = text .. NeedToKnow.GetPrettyName(settings)
+		end
+
+		if ( settings.append_cd and (
+			settings.BuffOrDebuff == "CASTCD"
+			or settings.BuffOrDebuff == "BUFFCD"
+			or settings.BuffOrDebuff == "EQUIPSLOT" 
+			) 
+		) 
+		then
+			text = text .. " CD"
+		elseif settings.append_usable and settings.BuffOrDebuff == "USABLE" then
+			text = text .. " Usable"
+		end
+
+		if settings.bDetectExtends == true then
+			text = text .. " + 3s"
+		end
+	end
+
+	self.Text:SetText(text)
+end
+
+
+-- ---------
+-- Cast time
+-- ---------
+
+-- Note: Kitjan's VCT = Visual Cast Time
+
+function Bar:UpdateCastTime()
+	-- Called by Bar:ConfigureVisible()
+	-- Called by Bar:OnUpdate() if CastTime used, so make sure it's efficent
+	-- Does GetSpellInfo() actually factor in haste etc?
+
+	local castWidth = 0
+	local barDuration = self.fixedDuration or self.duration
+	if ( barDuration ) then
+		local barWidth = self:GetWidth()
+		local castDuration = self:GetCastTimeDuration()
+		castWidth = barWidth * castDuration / barDuration
+		if castWidth > barWidth then
+			castWidth = barWidth
+		end
+	end
+
+	if ( castWidth > 1 ) then
+		self.CastTime:SetWidth(castWidth)
+		self.CastTime:Show()
+	else
+		self.CastTime:Hide()
+	end
+end
+
+function Bar:GetCastTimeDuration()
+	-- Called by Bar:UpdateCastTime()
+	-- Called by Bar:OnUpdate() if CastTime used, so make sure it's efficent
+
+	local castDuration = 0
+
+	local spell = self.settings.vct_spell
+	if not spell or spell == "" then
+		spell = self.buffName
+	end
+	local _, _, _, castTime = GetSpellInfo(spell)
+	if castTime then
+		castDuration = castTime / 1000
+		self.vct_refresh = true
+	else
+		self.vct_refresh = false
+	end
+
+	if self.settings.vct_extra then
+		castDuration = castDuration + self.settings.vct_extra
+	end
+
+	return castDuration
+end
+
+
+-- ----------
+-- Bar config
+-- ----------
+
+function Bar:Unlock()
+	-- Make bar configurable by player
+	-- Called by Bar:Update()
+
+	self:Show()
+	self:EnableMouse(true)
+
+	self.Spark:Hide()
+	self.Time:Hide()
+	self.Icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+	self.CastTime:SetWidth(self:GetWidth()/16)
+	self.CastTime:Show()
+
+	local settings = self.settings
+
+	local barColor = settings.BarColor
+	self.Texture:SetVertexColor(barColor.r, barColor.g, barColor.b)
+	self.Texture:SetAlpha(barColor.a)
+	self.Texture2:Hide()
+
+	if ( settings.Enabled ) then
+		self:SetAlpha(1)
+	else
+		self:SetAlpha(0.4)
+	end
+
+	self:SetUnlockedText(settings)
+end
+
+function Bar:OnEnter()
+	local tooltip = _G["GameTooltip"]
+	tooltip:SetOwner(self:GetParent(), "ANCHOR_TOPLEFT")
+	tooltip:AddLine(NEEDTOKNOW.BAR_TOOLTIP1, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b, 1)
+	tooltip:AddLine(NEEDTOKNOW.BAR_TOOLTIP2, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
+	tooltip:Show()
+end
+
+function Bar:OnLeave()
+	_G["GameTooltip"]:Hide()
+end
+
+function Bar:OnDragStart()
+	self:GetParent():StartMoving()
+end
+
+function Bar:OnDragStop()
+	local group = self:GetParent()
+	group:StopMovingOrSizing()
+	group:SavePosition()
+end
+
+function Bar:OnSizeChanged()
+	local bar1 = self.Texture
+	local bar2 = self.Texture2
+	if ( bar1.cur_value ) then 
+		self:SetValue(bar1, bar1.cur_value)
+	end
+	if ( bar2.cur_value ) then 
+		self:SetValue(bar2, bar2.cur_value, bar1.cur_value)
+	end
+end
+
+function Bar:OnMouseUp(button)
+	if ( button == "RightButton" ) then
+		PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
+		NeedToKnow.BarMenu.ShowMenu(self)
+	end
+end

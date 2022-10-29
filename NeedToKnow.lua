@@ -8,7 +8,7 @@ local addonName, addonTable = ...
 local Bar = NeedToKnow.Bar
 local Cooldown = NeedToKnow.Cooldown
 
-local trace = print
+-- local trace = print
 
 -- -------------
 -- ADDON MEMBERS
@@ -20,21 +20,12 @@ local g_UnitAffectingCombat = UnitAffectingCombat
 local g_UnitIsFriend = UnitIsFriend
 local g_UnitGUID = UnitGUID
 local g_GetTime = GetTime
-local g_GetSpellBookItemInfo = GetSpellBookItemInfo
-local g_GetSpellTabInfo = GetSpellTabInfo
-local g_GetNumSpellTabs = GetNumSpellTabs
-local g_GetNumSpecializations = GetNumSpecializations
-local g_GetSpecializationSpells = GetSpecializationSpells
 local g_GetSpellInfo = GetSpellInfo
-local g_GetSpellPowerCost = GetSpellPowerCost
 
 local m_last_guid       = addonTable.m_last_guid
 local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
 
 local mfn_GetAutoShotCooldown = Cooldown.GetAutoShotCooldown
--- local mfn_GetSpellCooldown = Cooldown.GetSpellCooldown
--- local mfn_GetSpellChargesCooldown = Cooldown.GetSpellChargesCooldown
--- local mfn_GetUnresolvedCooldown   = Cooldown.GetUnresolvedCooldown
 
 -- Kitjan used m_scratch to track multiple instances of an aura with one bar
 local m_scratch = {}
@@ -74,8 +65,7 @@ m_scratch.bar_entry = {
 	isSpellID = false,
 }
 
-local c_UPDATE_INTERVAL = 0.03  -- equivalent to ~33 frames per second
-local c_MAXBARS = 20
+-- local c_MAXBARS = 20
 local c_AUTO_SHOT_NAME = g_GetSpellInfo(75) -- Localized name for Auto Shot
 
 -- COMBAT_LOG_EVENT_UNFILTERED events where select(6,...) is the caster, 
@@ -627,7 +617,6 @@ function NeedToKnow.mfn_Bar_AuraCheck(bar)
         -- since it calls OnUpdate which checks bar.blink
         bar.blink = false
         bar:UpdateAppearance()
-        -- NeedToKnow.ConfigureVisibleBar(bar, count, extended, all_stacks)
         bar:ConfigureVisible(count, extended, all_stacks)
         bar:Show()
     else
@@ -682,6 +671,7 @@ function NeedToKnow.fnAuraCheckIfUnitPlayer(bar, unit)
     end
 end
 
+--[[
 -- Define the event dispatching table.  Note, this comes last as the referenced 
 -- functions must already be declared.  Avoiding the re-evaluation of all that
 -- is one of the reasons this is an optimization!
@@ -719,7 +709,6 @@ EDT["UNIT_AURA"] = NeedToKnow.fnAuraCheckIfUnitMatches
 EDT["UNIT_HEALTH"] = NeedToKnow.mfn_Bar_AuraCheck
 EDT["PLAYER_TARGET_CHANGED"] = function(self, unit)
     if self.unit == "targettarget" then
-        -- NeedToKnow.CheckCombatLogRegistration(self)
         self:CheckCombatLogRegistration()
     end
     NeedToKnow.mfn_Bar_AuraCheck(self)
@@ -727,7 +716,6 @@ end
 EDT["PLAYER_FOCUS_CHANGED"] = EDT["PLAYER_TARGET_CHANGED"]
 EDT["UNIT_TARGET"] = function(self, unit)
     if unit == "target" and self.unit == "targettarget" then
-        -- NeedToKnow.CheckCombatLogRegistration(self)
         self:CheckCombatLogRegistration()
     end
     NeedToKnow.mfn_Bar_AuraCheck(self)
@@ -768,13 +756,5 @@ function NeedToKnow.Bar_OnEvent(self, event, unit, ...)
     if fn then 
         fn(self, unit, ...)
     end
-end
-
---[[
-function Bar:OnEvent(event, unit, ...)
-	local fn = EDT[event]
-	if fn then 
-		fn(self, unit, ...)
-	end
 end
 ]]--

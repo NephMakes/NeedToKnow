@@ -38,7 +38,7 @@ function BarGroup:Update()
 		bar:Update()
 
 		if not groupSettings.Enabled then
-			bar:ClearScripts()
+			bar:Inactivate()
 		end
 	end
 
