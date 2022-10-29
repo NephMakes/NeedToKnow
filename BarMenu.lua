@@ -335,7 +335,7 @@ function NeedToKnowRMB.BarMenu_Initialize()
     -- show name
     if ( barSettings.AuraName ) and ( barSettings.AuraName ~= "" ) then
         local info = UIDropDownMenu_CreateInfo();
-        info.text = NeedToKnow.PrettyName(barSettings);
+        info.text = NeedToKnow.GetPrettyName(barSettings);
         info.isTitle = true;
         info.notCheckable = true; --unindent
         UIDropDownMenu_AddButton(info);

@@ -31,10 +31,10 @@ local g_GetSpellPowerCost = GetSpellPowerCost
 local m_last_guid       = addonTable.m_last_guid
 local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
 
-local mfn_GetSpellCooldown        = Cooldown.GetSpellCooldown
-local mfn_GetSpellChargesCooldown = Cooldown.GetSpellChargesCooldown
-local mfn_GetAutoShotCooldown     = Cooldown.GetAutoShotCooldown
-local mfn_GetUnresolvedCooldown   = Cooldown.GetUnresolvedCooldown
+local mfn_GetAutoShotCooldown = Cooldown.GetAutoShotCooldown
+-- local mfn_GetSpellCooldown = Cooldown.GetSpellCooldown
+-- local mfn_GetSpellChargesCooldown = Cooldown.GetSpellChargesCooldown
+-- local mfn_GetUnresolvedCooldown   = Cooldown.GetUnresolvedCooldown
 
 -- Kitjan used m_scratch to track multiple instances of an aura with one bar
 local m_scratch = {}

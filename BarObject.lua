@@ -8,11 +8,6 @@ local Bar = NeedToKnow.Bar
 function Bar:New()
 	-- Instead of doing it in BarGroup:Update() and elsewhere
 end
-
-function Bar:Initialize()
-	-- Instead of OnLoad() in XML
-	-- called by Bar:Update()?
-end
 ]]--
 
 function Bar:OnLoad()
@@ -79,26 +74,25 @@ function Bar:OnMouseUp(button)
 	end
 end
 
-function Bar:SetValue(texture, value, value0)
-	-- TO DO: Move to BarEngine.lua
-	-- Called by Bar:OnUpdate(), so we want to be more efficient than this
+function Bar:SetValue(barTexture, value, value0)
+	-- Called by Bar:OnUpdate(), Bar:OnSizeChanged(), etc.
 
 	value = math.max(value, 0)
 	local pct = math.min(value/self.max_value, 1)
 	local pct0 = 0
-	if ( value0 ) then
+	if value0 then
 		pct0 = math.min(value0/self.max_value, 1)
 	end
 
 	local width = (pct - pct0) * self:GetWidth()
-	if ( width < 1 ) then 
-		texture:Hide()
+	if width < 1 then 
+		barTexture:Hide()
 	else
-		texture:SetWidth(width)
-		texture:SetTexCoord(pct0,0, pct0,1, pct,0, pct,1)
-		texture:Show()
+		barTexture:SetWidth(width)
+		barTexture:SetTexCoord(pct0, 0, pct0, 1, pct, 0, pct, 1)
+		barTexture:Show()
 	end
-	texture.cur_value = value  -- Do we really need to do this every OnUpdate()?
+	barTexture.cur_value = value  -- So bars size properly with resized group
 end
 
 function Bar:SetAppearance()
@@ -166,8 +160,8 @@ function Bar:SetBackgroundSize(showIcon)
 end
 
 function Bar:Unlock()
-	-- Set bar for user config
-	-- Called by Bar:Update() and NeedToKnow.Bar_Update
+	-- Make bar configurable by player
+	-- Called by Bar:Update()
 
 	self:Show()
 	self:EnableMouse(true)
@@ -185,40 +179,13 @@ function Bar:Unlock()
 	self.Texture:SetAlpha(barColor.a)
 	self.Texture2:Hide()
 
-	local txt = ""
-	if ( settings.show_mypip ) then
-		txt = txt.."* "
-	end
-	if ( settings.show_text ) then
-		if ( "" ~= settings.show_text_user ) then
-			txt = settings.show_text_user
-		else
-			txt = txt .. self:GetPrettyName(settings)
-		end
-
-		if ( settings.append_cd and (
-				settings.BuffOrDebuff == "CASTCD"
-				or settings.BuffOrDebuff == "BUFFCD"
-				or settings.BuffOrDebuff == "EQUIPSLOT" 
-				) 
-			)
-		then
-			txt = txt .. " CD"
-		elseif ( settings.append_usable and settings.BuffOrDebuff == "USABLE" ) then
-			txt = txt .. " Usable"
-		end
-
-		if ( settings.bDetectExtends == true ) then
-			txt = txt .. " + 3s"
-		end
-	end
-	self.Text:SetText(txt)
-
 	if ( settings.Enabled ) then
 		self:SetAlpha(1)
 	else
 		self:SetAlpha(0.4)
 	end
+
+	self:SetUnlockedText(settings)
 end
 
 function Bar:StartBlink()
@@ -243,8 +210,13 @@ function Bar:StartBlink()
 	self:SetBackgroundSize(false)
 end
 
-function Bar:GetPrettyName(barSettings)
-	-- Called by Bar:Unlock()
+-- --------
+-- Bar text
+-- --------
+
+function NeedToKnow.GetPrettyName(barSettings)
+	-- Called by Bar:SetUnlockedText() and BarMenu_Initialize (indirectly)
+
 	if barSettings.BuffOrDebuff == "EQUIPSLOT" then
 		local idx = tonumber(barSettings.AuraName)
 		if idx then 
@@ -257,15 +229,94 @@ function Bar:GetPrettyName(barSettings)
 	end
 end
 
+function Bar:SetUnlockedText(barSettings)
+	-- Called by Bar:Unlock()
+
+	local settings = barSettings or self.settings
+	local text = ""
+
+	if settings.show_mypip then
+		text = text .. "* "
+	end
+
+	if settings.show_text then
+		if settings.show_text_user ~= "" then
+			text = settings.show_text_user
+		else
+			text = text .. NeedToKnow.GetPrettyName(settings)
+		end
+
+		if ( settings.append_cd and (
+			settings.BuffOrDebuff == "CASTCD"
+			or settings.BuffOrDebuff == "BUFFCD"
+			or settings.BuffOrDebuff == "EQUIPSLOT" 
+			) 
+		) 
+		then
+			text = text .. " CD"
+		elseif settings.append_usable and settings.BuffOrDebuff == "USABLE" then
+			text = text .. " Usable"
+		end
+
+		if settings.bDetectExtends == true then
+			text = text .. " + 3s"
+		end
+	end
+
+	self.Text:SetText(text)
+end
+
+function Bar:ConfigureVisibleText(barSettings, count, extended, buff_stacks)
+	-- Called by Bar:ConfigureVisible()
+	-- which is called by mfn_Bar_AuraCheck() if bar.duration found
+
+	local settings = barSettings or self.settings
+	local text = ""
+
+	if settings.show_mypip then
+		text = text .. "* "
+	end
+
+	local name = ""
+	if settings.show_text then
+		name = self.buffName
+		if settings.show_text_user ~= "" then
+			local idx = self.idxName
+			if idx > #self.spell_names then 
+				idx = #self.spell_names
+			end
+			name = self.spell_names[idx]
+		end
+	end
+	if not settings.show_count then
+		count = 1
+	end
+	local to_append = self:ComputeText(name, count, extended, buff_stacks)
+	if to_append and to_append ~= "" then
+		text = text .. to_append
+	end
+
+	if ( settings.append_cd 
+		and (settings.BuffOrDebuff == "CASTCD" 
+		or settings.BuffOrDebuff == "BUFFCD"
+		or settings.BuffOrDebuff == "EQUIPSLOT" ) ) 
+	then
+		text = text .. " CD"
+	elseif settings.append_usable and settings.BuffOrDebuff == "USABLE" then
+		text = text .. " Usable"
+	end
+
+	self.text:SetText(text)
+end
+
 function Bar:ComputeText(buffName, count, extended, buff_stacks)
-    -- Called by Bar:ConfigureVisible()
-    local text
+    -- Called by Bar:ConfigureVisibleText()
+
+    local text = buffName
+
     if ( count > 1 ) then
         text = buffName.."  ["..count.."]"
-    else
-        text = buffName
     end
-
     if ( self.settings.show_ttn1 and buff_stacks.total_ttn[1] > 0 ) then
         text = text .. " ("..buff_stacks.total_ttn[1]..")"
     end
@@ -278,6 +329,7 @@ function Bar:ComputeText(buffName, count, extended, buff_stacks)
     if ( extended and extended > 1 ) then
         text = text .. string.format(" + %.0fs", extended)
     end
+
     return text
 end
 

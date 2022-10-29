@@ -427,41 +427,7 @@ function Bar:ConfigureVisible(count, extended, buff_stacks)
 		self.CastTime:Hide()
 	end
 
-	-- Set bar text
-
-	local txt = ""
-	if self.settings.show_mypip then
-		txt = txt .. "* "
-	end
-
-	local n = ""
-	if self.settings.show_text then
-		n = self.buffName
-		if "" ~= self.settings.show_text_user then
-			local idx = self.idxName
-			if idx > #self.spell_names then idx = #self.spell_names end
-			n = self.spell_names[idx]
-		end
-	end
-	local c = count
-	if not self.settings.show_count then
-		c = 1
-	end
-	local to_append = self:ComputeText(n, c, extended, buff_stacks)
-	if to_append and to_append ~= "" then
-		txt = txt .. to_append
-	end
-
-	if ( self.settings.append_cd 
-		and (self.settings.BuffOrDebuff == "CASTCD" 
-		or self.settings.BuffOrDebuff == "BUFFCD"
-		or self.settings.BuffOrDebuff == "EQUIPSLOT" ) ) 
-	then
-		txt = txt .. " CD"
-	elseif self.settings.append_usable and self.settings.BuffOrDebuff == "USABLE" then
-		txt = txt .. " Usable"
-	end
-	self.text:SetText(txt)
+	self:ConfigureVisibleText(self.settings, count, extended, buff_stacks)
 end
 
 
