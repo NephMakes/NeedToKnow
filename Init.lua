@@ -22,12 +22,14 @@ NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
 
 NeedToKnow.ExecutiveFrame = CreateFrame("Frame", "NeedToKnow_ExecutiveFrame")
 
+-- Object methods
 NeedToKnow.Bar = {}
-NeedToKnow.Cooldown = {}
 NeedToKnow.BarGroup = {}
 NeedToKnow.BarMenu = {}
 NeedToKnow.ResizeButton = {}
 
+NeedToKnow.BarEvent = {}
+NeedToKnow.Cooldown = {}
 
 
 -- ---------------------

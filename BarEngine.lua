@@ -2,23 +2,23 @@
 
 local addonName, addonTable = ...
 
+-- Namespaces
 local Bar = NeedToKnow.Bar
+local BarEvent = NeedToKnow.BarEvent
 local Cooldown = NeedToKnow.Cooldown
 
 local UPDATE_INTERVAL = 0.025  -- 40 fps
 
 -- Local versions of frequently-used global functions
-local GetTime = GetTime
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
-local UnitGUID = UnitGUID
 local GetSpellInfo = GetSpellInfo
+local GetTime = GetTime
+local UnitGUID = UnitGUID
 local UnitRangedDamage = UnitRangedDamage
 
 -- Deprecated: 
 local m_last_guid = addonTable.m_last_guid
 
-
- 
 
 -- ---------
 -- Bar Setup
@@ -69,10 +69,9 @@ function Bar:Update()
 	if ( NeedToKnow.CharSettings["Locked"] ) then
 		local enabled = groupSettings.Enabled and settings.Enabled
 		if enabled then
-			-- Set up the bar to be functional
+			-- Set up bar to be functional
 
-			-- click through
-			self:EnableMouse(false)
+			self:EnableMouse(false)  -- Click through
 
 			-- Split list of spell names    
 			self.spells = {}
@@ -117,9 +116,9 @@ function Bar:Update()
 				self.reset_start = nil
 			end
 
-			settings.bAutoShot = nil
-			-- self.is_counter = nil
 			self.ticker = self.OnUpdate
+			-- self.is_counter = nil
+			settings.bAutoShot = nil
 
             -- Determine which helper functions to use
 			if "BUFFCD" == settings.BuffOrDebuff then
@@ -181,33 +180,32 @@ function Bar:Activate()
 	local settings = self.settings
 
 	local barType = settings.BuffOrDebuff
-	if ( barType == "TOTEM" ) then
+	if barType == "TOTEM" then
 		self:RegisterEvent("PLAYER_TOTEM_UPDATE")
-	elseif ( barType == "CASTCD" ) then
-		if ( settings.bAutoShot ) then
+		self.PLAYER_TOTEM_UPDATE = BarEvent.PLAYER_TOTEM_UPDATE
+	elseif barType == "CASTCD" then
+		self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
+		self:RegisterEvent("SPELL_UPDATE_COOLDOWN")
+		self.ACTIONBAR_UPDATE_COOLDOWN = BarEvent.ACTIONBAR_UPDATE_COOLDOWN
+		self.SPELL_UPDATE_COOLDOWN = BarEvent.SPELL_UPDATE_COOLDOWN
+		if settings.bAutoShot then
 			self:RegisterEvent("START_AUTOREPEAT_SPELL")
 			self:RegisterEvent("STOP_AUTOREPEAT_SPELL")
 		end
+	elseif barType == "EQUIPSLOT" then
 		self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
-		self:RegisterEvent("SPELL_UPDATE_COOLDOWN")
-	elseif ( barType == "EQUIPSLOT" ) then
-		self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
---	elseif ( barType == "POWER" ) then
---		if settings.AuraName == tostring(NEEDTOKNOW.SPELL_POWER_STAGGER) then
---			self:RegisterEvent("UNIT_HEALTH")
---		else
---			self:RegisterEvent("UNIT_POWER")
---			self:RegisterEvent("UNIT_DISPLAYPOWER")
---		end
-	elseif ( barType == "USABLE" ) then
+		self.ACTIONBAR_UPDATE_COOLDOWN = BarEvent.ACTIONBAR_UPDATE_COOLDOWN
+	elseif barType == "USABLE" then
 		self:RegisterEvent("SPELL_UPDATE_USABLE")
-	elseif ( settings.Unit == "targettarget" ) then
-		-- PLAYER_TARGET_CHANGED happens immediately, UNIT_TARGET every couple seconds
+		self.SPELL_UPDATE_USABLE = BarEvent.SPELL_UPDATE_USABLE
+	elseif self.unit == "targettarget" then
+		-- We don't get UNIT_AURA for target of target
 		self:RegisterEvent("PLAYER_TARGET_CHANGED")
 		self:RegisterEvent("UNIT_TARGET")
-		self:CheckCombatLogRegistration() -- We don't get UNIT_AURA for targettarget
+		self:CheckCombatLogRegistration() 
 	else
 		self:RegisterEvent("UNIT_AURA")
+		self.UNIT_AURA = BarEvent.UNIT_AURA
 	end
 
 	if ( self.unit == "focus" ) then
@@ -216,6 +214,7 @@ function Bar:Activate()
 		self:RegisterEvent("PLAYER_TARGET_CHANGED")
 	elseif ( self.unit == "pet" ) then
 		self:RegisterEvent("UNIT_PET")
+		self.UNIT_PET = BarEvent.UNIT_PET
 	elseif ( "lastraid" == settings.Unit ) then
 		if ( not NeedToKnow.BarsForPSS ) then
 			NeedToKnow.BarsForPSS = {}
@@ -266,37 +265,78 @@ function Bar:Inactivate()
 	self:SetScript("OnEvent", nil)
 	self:SetScript("OnUpdate", nil)
 
-	self:UnregisterEvent("PLAYER_TARGET_CHANGED")
-	self:UnregisterEvent("PLAYER_FOCUS_CHANGED")
+--[[
+	self:UnregisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 	self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	self:UnregisterEvent("PLAYER_FOCUS_CHANGED")
+	self:UnregisterEvent("PLAYER_TARGET_CHANGED")
 	self:UnregisterEvent("PLAYER_TOTEM_UPDATE")
-	self:UnregisterEvent("UNIT_AURA")
-	self:UnregisterEvent("UNIT_TARGET")
+	self:UnregisterEvent("SPELL_UPDATE_COOLDOWN")
+	self:UnregisterEvent("SPELL_UPDATE_USABLE")
 	self:UnregisterEvent("START_AUTOREPEAT_SPELL")
 	self:UnregisterEvent("STOP_AUTOREPEAT_SPELL")
+	self:UnregisterEvent("UNIT_AURA")
+	self:UnregisterEvent("UNIT_PET")
 	self:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+	self:UnregisterEvent("UNIT_TARGET")
 
-	if ( NeedToKnow.BossStateBars ) then
-		NeedToKnow.BossStateBars[self] = nil;
+	self.ACTIONBAR_UPDATE_COOLDOWN = nil
+	self.COMBAT_LOG_EVENT_UNFILTERED = nil
+	self.PLAYER_FOCUS_CHANGED = nil
+	self.PLAYER_TARGET_CHANGED = nil
+	self.PLAYER_TOTEM_UPDATE = nil
+	self.SPELL_UPDATE_COOLDOWN = nil
+	self.SPELL_UPDATE_USABLE = nil
+	self.START_AUTOREPEAT_SPELL = nil
+	self.STOP_AUTOREPEAT_SPELL = nil
+	self.UNIT_AURA = nil
+	self.UNIT_PET = nil
+	self.UNIT_SPELLCAST_SUCCEEDED = nil
+	self.UNIT_TARGET = nil
+]]--
+
+	local eventList = {
+		"ACTIONBAR_UPDATE_COOLDOWN", 
+		"COMBAT_LOG_EVENT_UNFILTERED", 
+		"PLAYER_FOCUS_CHANGED", 
+		"PLAYER_SPELLCAST_SUCCEEDED", 
+		"PLAYER_TARGET_CHANGED", 
+		"PLAYER_TOTEM_UPDATE", 
+		"SPELL_UPDATE_COOLDOWN", 
+		"SPELL_UPDATE_USABLE", 
+		"START_AUTOREPEAT_SPELL", 
+		"STOP_AUTOREPEAT_SPELL", 
+		"UNIT_AURA", 
+		"UNIT_PET", 
+		"UNIT_SPELLCAST_SUCCEEDED", 
+		"UNIT_TARGET"
+	}
+	for k, event in pairs(eventList) do
+		self:UnregisterEvent(event)
+		self[event] = nil
 	end
-	if ( self.settings.bDetectExtends ) then
+
+	if NeedToKnow.BossStateBars then
+		NeedToKnow.BossStateBars[self] = nil
+	end
+	if self.settings.bDetectExtends then
 		NeedToKnow.UnregisterSpellcastSent()
 	end
-	if ( NeedToKnow.BarsForPSS and NeedToKnow.BarsForPSS[self] ) then
+	if NeedToKnow.BarsForPSS and NeedToKnow.BarsForPSS[self] then
 		NeedToKnow.BarsForPSS[self] = nil
-		if ( nil == next(NeedToKnow.BarsForPSS) ) then
+		if not next(NeedToKnow.BarsForPSS) then
 			NeedToKnow.BarsForPSS = nil
-			NeedToKnow.UnregisterSpellcastSent();
+			NeedToKnow.UnregisterSpellcastSent()
 		end
 	end
 end
 
 
--- --------------
--- Event handling
--- --------------
+-- -------------
+-- Event handler
+-- -------------
 
-local c_AURAEVENTS = {
+local AURA_EVENTS = {
 	-- COMBAT_LOG_EVENT_UNFILTERED events where select(6,...) is caster, 
 	-- 9 is spellid, and 10 is spell name. Used for target of target. 
     SPELL_AURA_APPLIED = true,
@@ -309,18 +349,24 @@ local c_AURAEVENTS = {
 }
 local AUTO_SHOT_NAME = GetSpellInfo(75)
 
--- Define the event dispatching table.  Note, this comes last as the referenced 
--- functions must already be declared.  Avoiding the re-evaluation of all that
--- is one of the reasons this is an optimization!
-local EDT = {}
-EDT["COMBAT_LOG_EVENT_UNFILTERED"] = function(self, unit, ...)
+local eventTable = {}
+
+-- Event dispatching table. Referenced functions must already be declared.  
+-- Avoiding the re-evaluation of all that is one of the reasons this is an optimization!
+
+-- eventTable["UNIT_AURA"] = NeedToKnow.fnAuraCheckIfUnitMatches
+-- eventTable["ACTIONBAR_UPDATE_COOLDOWN"] = NeedToKnow.mfn_Bar_AuraCheck
+-- eventTable["SPELL_UPDATE_COOLDOWN"] = NeedToKnow.mfn_Bar_AuraCheck
+-- eventTable["SPELL_UPDATE_USABLE"] = NeedToKnow.mfn_Bar_AuraCheck
+-- eventTable["PLAYER_TOTEM_UPDATE"] = NeedToKnow.mfn_Bar_AuraCheck
+-- eventTable["UNIT_PET"] = NeedToKnow.fnAuraCheckIfUnitPlayer
+
+eventTable["COMBAT_LOG_EVENT_UNFILTERED"] = function(self, unit, ...)
     -- local combatEvent = select(1, ...)
     local tod, event, hideCaster, guidCaster, sourceName, sourceFlags, sourceRaidFlags, guidTarget, nameTarget, _, _, spellid, spell = CombatLogGetCurrentEventInfo()
 
-    if ( c_AURAEVENTS[combatEvent] ) then
-        -- local guidTarget = select(7, ...)
+    if ( AURA_EVENTS[combatEvent] ) then
         if ( guidTarget == UnitGUID(self.unit) ) then
-            -- local idSpell, nameSpell = select(11, ...)
             if (self.auraName:find(idSpell) or
                 self.auraName:find(nameSpell)) 
             then 
@@ -328,34 +374,26 @@ EDT["COMBAT_LOG_EVENT_UNFILTERED"] = function(self, unit, ...)
             end
         end
     elseif ( combatEvent == "UNIT_DIED" ) then
-        -- local guidDeceased = select(7, ...) 
-        -- if ( guidDeceased == UnitGUID(self.unit) ) then
         if ( guidTarget == UnitGUID(self.unit) ) then
             NeedToKnow.mfn_Bar_AuraCheck(self)
         end
     end 
 end
-EDT["PLAYER_TOTEM_UPDATE"] = NeedToKnow.mfn_Bar_AuraCheck
-EDT["ACTIONBAR_UPDATE_COOLDOWN"] = NeedToKnow.mfn_Bar_AuraCheck
-EDT["SPELL_UPDATE_COOLDOWN"] = NeedToKnow.mfn_Bar_AuraCheck
-EDT["SPELL_UPDATE_USABLE"] = NeedToKnow.mfn_Bar_AuraCheck
-EDT["UNIT_AURA"] = NeedToKnow.fnAuraCheckIfUnitMatches
-EDT["UNIT_HEALTH"] = NeedToKnow.mfn_Bar_AuraCheck  -- Legacy of power tracking?
-EDT["PLAYER_TARGET_CHANGED"] = function(self, unit)
+eventTable["PLAYER_TARGET_CHANGED"] = function(self, unit)
     if self.unit == "targettarget" then
         self:CheckCombatLogRegistration()
     end
     NeedToKnow.mfn_Bar_AuraCheck(self)
 end  
-EDT["PLAYER_FOCUS_CHANGED"] = EDT["PLAYER_TARGET_CHANGED"]
-EDT["UNIT_TARGET"] = function(self, unit)
+eventTable["PLAYER_FOCUS_CHANGED"] = eventTable["PLAYER_TARGET_CHANGED"]
+eventTable["UNIT_TARGET"] = function(self, unit)
     if unit == "target" and self.unit == "targettarget" then
         self:CheckCombatLogRegistration()
     end
     NeedToKnow.mfn_Bar_AuraCheck(self)
 end  
-EDT["UNIT_PET"] = NeedToKnow.fnAuraCheckIfUnitPlayer
-EDT["PLAYER_SPELLCAST_SUCCEEDED"] = function(self, unit, ...)
+
+eventTable["PLAYER_SPELLCAST_SUCCEEDED"] = function(self, unit, ...)
     local spellName, spellID, tgt = select(1,...)
     local i,entry
     for i,entry in ipairs(self.spells) do
@@ -367,13 +405,14 @@ EDT["PLAYER_SPELLCAST_SUCCEEDED"] = function(self, unit, ...)
         end
     end
 end
-EDT["START_AUTOREPEAT_SPELL"] = function(self, unit, ...)
+
+eventTable["START_AUTOREPEAT_SPELL"] = function(self, unit, ...)
     self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
 end
-EDT["STOP_AUTOREPEAT_SPELL"] = function(self, unit, ...)
+eventTable["STOP_AUTOREPEAT_SPELL"] = function(self, unit, ...)
     self:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
 end
-EDT["UNIT_SPELLCAST_SUCCEEDED"] = function(self, unit, ...)
+eventTable["UNIT_SPELLCAST_SUCCEEDED"] = function(self, unit, ...)
     local spellID  = select(2, ...)
     local spellName = select(1, GetSpellInfo(spellId))
     if ( self.settings.bAutoShot and unit == "player" and spellName == AUTO_SHOT_NAME ) then
@@ -384,13 +423,92 @@ EDT["UNIT_SPELLCAST_SUCCEEDED"] = function(self, unit, ...)
     end
 end
 
--- function NeedToKnow.Bar_OnEvent(self, event, unit, ...)
 function Bar:OnEvent(event, unit, ...)
-	local fn = EDT[event]
+	local fn = self[event]  -- Assigned by Bar:Activate()
+	if fn then
+		fn(self, unit, ...)
+		return
+	end
+	fn = eventTable[event]
 	if fn then 
 		fn(self, unit, ...)
 	end
 end
+
+function BarEvent:ACTIONBAR_UPDATE_COOLDOWN()
+	NeedToKnow.mfn_Bar_AuraCheck(self)
+end
+
+function BarEvent:PLAYER_TOTEM_UPDATE()
+	NeedToKnow.mfn_Bar_AuraCheck(self)
+end
+
+function BarEvent:SPELL_UPDATE_COOLDOWN()
+	NeedToKnow.mfn_Bar_AuraCheck(self)
+end
+
+function BarEvent:SPELL_UPDATE_USABLE()
+	NeedToKnow.mfn_Bar_AuraCheck(self)
+end
+
+function BarEvent:UNIT_AURA(unit, ...)
+    if unit == self.unit then
+        NeedToKnow.mfn_Bar_AuraCheck(self)
+    end
+end
+
+function BarEvent:UNIT_PET()
+    if unit == "player" then
+        NeedToKnow.mfn_Bar_AuraCheck(self)
+    end
+end
+
+--[[
+function BarEvent:COMBAT_LOG_EVENT_UNFILTERED(unit, ...)
+end
+
+function BarEvent:PLAYER_FOCUS_CHANGED(unit, ...)
+--    if self.unit == "targettarget" then
+--		-- This is what Kitjan had (effectively), but it doesn't make sense
+--		-- because PLAYER_FOCUS_CHANGED only registered if self.unit == "focus". 
+--		-- Maybe he was going to do focustarget?
+--        self:CheckCombatLogRegistration()
+--    end
+    NeedToKnow.mfn_Bar_AuraCheck(self)
+end
+
+function BarEvent:PLAYER_TARGET_CHANGED(unit, ...)
+    if self.unit == "targettarget" then
+        self:CheckCombatLogRegistration()
+    end
+    NeedToKnow.mfn_Bar_AuraCheck(self)
+end
+
+function BarEvent:PLAYER_SPELLCAST_SUCCEEDED(unit, ...)
+end
+
+function BarEvent:START_AUTOREPEAT_SPELL()
+	-- For tracking Auto Shot
+	self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+end
+
+function BarEvent:STOP_AUTOREPEAT_SPELL()
+	-- For tracking Auto Shot
+	self:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+end
+
+function BarEvent:UNIT_SPELLCAST_SUCCEEDED(unit, ...)
+	-- For tracking Auto Shot
+,end
+
+function BarEvent:UNIT_TARGET(unit, ...)
+    if unit == "target" and self.unit == "targettarget" then
+        self:CheckCombatLogRegistration()
+    end
+    NeedToKnow.mfn_Bar_AuraCheck(self)
+end
+]]--
+
 
 -- --------
 -- OnUpdate

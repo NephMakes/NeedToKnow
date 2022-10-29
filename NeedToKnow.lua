@@ -194,7 +194,7 @@ function NeedToKnow.mfn_AuraCheck_EQUIPSLOT(bar, bar_entry, all_stacks)
     -- rather than the equipment name
     local spellName, _, spellIconPath
     if ( bar_entry.id ) then
-        local id = GetInventoryItemID("player",bar_entry.id)
+        local id = GetInventoryItemID("player", bar_entry.id)
         if id then
             local item_entry = m_scratch.bar_entry
             item_entry.id = id
@@ -671,90 +671,3 @@ function NeedToKnow.fnAuraCheckIfUnitPlayer(bar, unit)
     end
 end
 
---[[
--- Define the event dispatching table.  Note, this comes last as the referenced 
--- functions must already be declared.  Avoiding the re-evaluation of all that
--- is one of the reasons this is an optimization!
-local EDT = {}
-EDT["COMBAT_LOG_EVENT_UNFILTERED"] = function(self, unit, ...)
-    -- local combatEvent = select(1, ...)
-    local tod, event, hideCaster, guidCaster, sourceName, sourceFlags, sourceRaidFlags, guidTarget, nameTarget, _, _, spellid, spell = CombatLogGetCurrentEventInfo()
-
-    if ( c_AURAEVENTS[combatEvent] ) then
-        -- local guidTarget = select(7, ...)
-        if ( guidTarget == g_UnitGUID(self.unit) ) then
-            -- local idSpell, nameSpell = select(11, ...)
-            if (self.auraName:find(idSpell) or
-                self.auraName:find(nameSpell)) 
-            then 
-                NeedToKnow.mfn_Bar_AuraCheck(self)
-            end
-        end
-    elseif ( combatEvent == "UNIT_DIED" ) then
-        -- local guidDeceased = select(7, ...) 
-        -- if ( guidDeceased == UnitGUID(self.unit) ) then
-        if ( guidTarget == UnitGUID(self.unit) ) then
-            NeedToKnow.mfn_Bar_AuraCheck(self)
-        end
-    end 
-end
-
-EDT["PLAYER_TOTEM_UPDATE"] = NeedToKnow.mfn_Bar_AuraCheck
-EDT["ACTIONBAR_UPDATE_COOLDOWN"] = NeedToKnow.mfn_Bar_AuraCheck
-EDT["SPELL_UPDATE_COOLDOWN"] = NeedToKnow.mfn_Bar_AuraCheck
-EDT["SPELL_UPDATE_USABLE"] = NeedToKnow.mfn_Bar_AuraCheck
-EDT["UNIT_AURA"] = NeedToKnow.fnAuraCheckIfUnitMatches
--- EDT["UNIT_POWER"] = fnAuraCheckIfUnitMatches
--- EDT["UNIT_DISPLAYPOWER"] = fnAuraCheckIfUnitMatches
-EDT["UNIT_HEALTH"] = NeedToKnow.mfn_Bar_AuraCheck
-EDT["PLAYER_TARGET_CHANGED"] = function(self, unit)
-    if self.unit == "targettarget" then
-        self:CheckCombatLogRegistration()
-    end
-    NeedToKnow.mfn_Bar_AuraCheck(self)
-end  
-EDT["PLAYER_FOCUS_CHANGED"] = EDT["PLAYER_TARGET_CHANGED"]
-EDT["UNIT_TARGET"] = function(self, unit)
-    if unit == "target" and self.unit == "targettarget" then
-        self:CheckCombatLogRegistration()
-    end
-    NeedToKnow.mfn_Bar_AuraCheck(self)
-end  
-EDT["UNIT_PET"] = NeedToKnow.fnAuraCheckIfUnitPlayer
-EDT["PLAYER_SPELLCAST_SUCCEEDED"] = function(self, unit, ...)
-    local spellName, spellID, tgt = select(1,...)
-    local i,entry
-    for i,entry in ipairs(self.spells) do
-        if entry.id == spellID or entry.name == spellName then
-            self.unit = tgt or "unknown"
-            --trace("Updating",self:GetName(),"since it was recast on",self.unit)
-            NeedToKnow.mfn_Bar_AuraCheck(self)
-            break;
-        end
-    end
-end
-EDT["START_AUTOREPEAT_SPELL"] = function(self, unit, ...)
-    self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
-end
-EDT["STOP_AUTOREPEAT_SPELL"] = function(self, unit, ...)
-    self:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
-end
-EDT["UNIT_SPELLCAST_SUCCEEDED"] = function(self, unit, ...)
-    -- local spell = select(1,...)
-    local spellID  = select(2, ...)
-    local spellName = select(1, GetSpellInfo(spellId))
-    if ( self.settings.bAutoShot and unit == "player" and spellName == c_AUTO_SHOT_NAME ) then
-        local interval = UnitRangedDamage("player")
-        self.tAutoShotCD = interval
-        self.tAutoShotStart = g_GetTime()
-        NeedToKnow.mfn_Bar_AuraCheck(self)
-    end
-end
-
-function NeedToKnow.Bar_OnEvent(self, event, unit, ...)
-    local fn = EDT[event]
-    if fn then 
-        fn(self, unit, ...)
-    end
-end
-]]--
