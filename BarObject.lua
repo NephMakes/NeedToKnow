@@ -121,7 +121,7 @@ function Bar:UpdateAppearance()
 
 	local barSettings = self.settings
 
-	-- Blinking bars don't have an icon
+	-- Note: Blinking bars don't have an icon
 	local icon = self.Icon
 	if ( barSettings.show_icon and self.iconPath ) then
 		icon:SetTexture(self.iconPath)
@@ -132,13 +132,16 @@ function Bar:UpdateAppearance()
 		self:SetBackgroundSize(false)
 	end
 
-	-- Blinking changes bar color
+	-- Note: Blinking changes bar color
 	local barColor = barSettings.BarColor
-	self.Texture:SetVertexColor(barColor.r,barColor.g, barColor.b)
+	self.Texture:SetVertexColor(barColor.r, barColor.g, barColor.b)
 	self.Texture:SetAlpha(barColor.a)
+	self.Texture2:SetVertexColor(barColor.r, barColor.g, barColor.b)
+	self.Texture2:SetAlpha(barColor.a)
+		-- Texture2 getting shown for indefinite auras
 	if ( self.max_expirationTime and self.max_expirationTime ~= self.expirationTime ) then 
-		self.Texture2:SetVertexColor(barColor.r, barColor.g, barColor.b)
-		self.Texture2:SetAlpha(barColor.a)
+--		self.Texture2:SetVertexColor(barColor.r, barColor.g, barColor.b)
+--		self.Texture2:SetAlpha(barColor.a)
 		self.Texture2:Show()
 	else
 		self.Texture2:Hide()

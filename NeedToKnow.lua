@@ -66,7 +66,7 @@ m_scratch.bar_entry = {
 }
 
 -- local c_MAXBARS = 20
-local c_AUTO_SHOT_NAME = g_GetSpellInfo(75) -- Localized name for Auto Shot
+-- local c_AUTO_SHOT_NAME = g_GetSpellInfo(75) -- Localized name for Auto Shot
 
 -- COMBAT_LOG_EVENT_UNFILTERED events where select(6,...) is the caster, 
 -- 9 is the spellid, and 10 is the spell name. 
@@ -503,6 +503,7 @@ function NeedToKnow.mfn_Bar_AuraCheck(bar)
     -- Determine if the bar should be showing anything
     local all_stacks       
     local idxName, duration, buffName, count, expirationTime, iconPath, caster
+
     if ( bUnitExists ) then
         all_stacks = m_scratch.all_stacks
         NeedToKnow.mfn_ResetScratchStacks(all_stacks);
