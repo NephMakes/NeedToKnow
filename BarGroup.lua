@@ -14,20 +14,23 @@ function BarGroup:OnLoad()
 end
 
 function BarGroup:Update()
-	local groupID = self:GetID()
-	local groupName = self:GetName()
-	local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
+	-- Called by NeedToKnow:Update()
 
+	local groupID = self:GetID()
+	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
 	local bar
+
 	for barID = 1, groupSettings.NumberBars do
+		if not groupSettings.Bars[barID] then
+			groupSettings.Bars[barID] = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
+		end
+
 		if self.bar[barID] then
 			bar = self.bar[barID]
 		else
-			bar = CreateFrame("Frame", groupName.."Bar"..barID, self, "NeedToKnow_BarTemplate")
-			bar:SetID(barID)
+			bar = Bar:New(self, barID)
 			self.bar[barID] = bar
 		end
-
 		bar:SetWidth(groupSettings.Width)
 		if barID > 1 then
 			bar:SetPoint("TOP", self.bar[barID-1], "BOTTOM", 0, -NeedToKnow.ProfileSettings.BarSpacing)
@@ -36,7 +39,6 @@ function BarGroup:Update()
 		end
 
 		bar:Update()
-
 		if not groupSettings.Enabled then
 			bar:Inactivate()
 		end

@@ -17,11 +17,12 @@ local UPDATE_INTERVAL = 0.025  -- Make this an addon-wide variable
 -- Bar setup
 -- ---------
 
---[[
-function Bar:New()
-	-- Instead of doing it in BarGroup:Update() and elsewhere
+function Bar:New(group, barID)
+	-- Called by BarGroup:Update()
+	bar = CreateFrame("Frame", group:GetName().."Bar"..barID, group, "NeedToKnow_BarTemplate")
+	bar:SetID(barID)
+	return bar
 end
-]]--
 
 function Bar:OnLoad()
 	-- Called by NeedToKnow_BarTemplate

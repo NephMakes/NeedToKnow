@@ -29,16 +29,10 @@ function Bar:Update()
 	-- Called by BarGroup:Update() and various BarMenu:Methods()
 	-- when addon loaded, locked/unlocked, or bar configuration changed
 
-	-- Get bar settings from NeedToKnow.ProfileSettings
 	local groupID = self:GetParent():GetID()
 	local barID = self:GetID()
-	local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
-    local barSettings = groupSettings["Bars"][barID]
-    if ( not barSettings ) then
-        groupSettings.Bars[barID] = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
-        barSettings = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
-    end
-    self.settings = barSettings
+	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
+	self.settings = groupSettings.Bars[barID]
 	local settings = self.settings
 
 	self.auraName = settings.AuraName

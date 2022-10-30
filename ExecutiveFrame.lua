@@ -145,6 +145,11 @@ function ExecutiveFrame:PLAYER_LOGIN()
 	RefreshRaidMemberNames()
 end
 
+
+--
+--
+--
+
 function NeedToKnow:Update()
 	if ( UnitExists("player") and NeedToKnow.ProfileSettings ) then
 		for groupID = 1, NeedToKnow.ProfileSettings.nGroups do
@@ -169,14 +174,22 @@ function NeedToKnow.Show(bShow)
 	end
 end
 
-function NeedToKnow:UpdateBar(groupID, barID)
-	-- Called by BarMenu functions
-	local bar = NeedToKnow:GetBar(groupID, barID)
-	bar:Update()
+function NeedToKnow:GetProfileSettings()
+	return NeedToKnow.ProfileSettings
+end
+
+function NeedToKnow:GetGroupSettings(groupID)
+	return NeedToKnow.ProfileSettings.Groups[groupID]
 end
 
 function NeedToKnow:GetBar(groupID, barID)
 	return _G["NeedToKnow_Group"..groupID.."Bar"..barID]
+end
+
+function NeedToKnow:UpdateBar(groupID, barID)
+	-- Called by BarMenu functions
+	local bar = NeedToKnow:GetBar(groupID, barID)
+	bar:Update()
 end
 
 function NeedToKnow.Fmt_SingleUnit(i_fSeconds)

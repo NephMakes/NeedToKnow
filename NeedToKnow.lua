@@ -64,22 +64,6 @@ m_scratch.bar_entry = {
 	barSpell = "",
 	isSpellID = false,
 }
-
--- local c_MAXBARS = 20
--- local c_AUTO_SHOT_NAME = g_GetSpellInfo(75) -- Localized name for Auto Shot
-
--- COMBAT_LOG_EVENT_UNFILTERED events where select(6,...) is the caster, 
--- 9 is the spellid, and 10 is the spell name. 
--- Used for Target-of-target monitoring. 
-local c_AURAEVENTS = {
-    SPELL_AURA_APPLIED = true,
-    SPELL_AURA_REMOVED = true,
-    SPELL_AURA_APPLIED_DOSE = true,
-    SPELL_AURA_REMOVED_DOSE = true,
-    SPELL_AURA_REFRESH = true,
-    SPELL_AURA_BROKEN = true,
-    SPELL_AURA_BROKEN_SPELL = true
-}
     
 
 -- ------------------
@@ -486,6 +470,7 @@ function NeedToKnow.mfn_AuraCheck_AllStacks(bar, bar_entry, all_stacks)
     end
 end
 
+-- function Bar:CheckAura()
 function NeedToKnow.mfn_Bar_AuraCheck(bar)
     -- Called whenever the state of auras on the bar's unit may have changed
 
@@ -617,6 +602,7 @@ function NeedToKnow.mfn_Bar_AuraCheck(bar)
         -- Mark the bar as not blinking before calling ConfigureVisibleBar, 
         -- since it calls OnUpdate which checks bar.blink
         bar.blink = false
+
         bar:UpdateAppearance()
         bar:ConfigureVisible(count, extended, all_stacks)
         bar:Show()
@@ -660,6 +646,7 @@ function NeedToKnow.mfn_Bar_AuraCheck(bar)
     end
 end
 
+--[[
 function NeedToKnow.fnAuraCheckIfUnitMatches(bar, unit)
     if ( unit == bar.unit )  then
         NeedToKnow.mfn_Bar_AuraCheck(bar)
@@ -671,4 +658,5 @@ function NeedToKnow.fnAuraCheckIfUnitPlayer(bar, unit)
         NeedToKnow.mfn_Bar_AuraCheck(bar)
     end
 end
+]]--
 
