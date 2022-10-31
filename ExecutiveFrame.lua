@@ -178,9 +178,14 @@ function NeedToKnow:GetProfileSettings()
 	return NeedToKnow.ProfileSettings
 end
 
+function NeedToKnow:GetBarGroup(groupID)
+	return _G["NeedToKnow_Group"..groupID]
+end
+
 function NeedToKnow:GetGroupSettings(groupID)
 	return NeedToKnow.ProfileSettings.Groups[groupID]
 end
+
 
 function NeedToKnow:GetBar(groupID, barID)
 	return _G["NeedToKnow_Group"..groupID.."Bar"..barID]

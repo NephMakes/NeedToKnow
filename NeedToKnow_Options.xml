@@ -237,7 +237,8 @@
         <NormalTexture name="$parentNormalTexture" file="Interface\ChatFrame\ChatFrameColorSwatch"/>
     </Button>
 
-    <Frame name="InterfaceOptionsNeedToKnowPanel" hidden="true" parent="InterfaceOptionsFramePanelContainer">
+    <!-- <Frame name="InterfaceOptionsNeedToKnowPanel" hidden="true" parent="InterfaceOptionsFramePanelContainer"> -->
+    <Frame name="InterfaceOptionsNeedToKnowPanel" hidden="true">
         <Layers>
             <Layer level="ARTWORK">
                 <FontString name="$parentTitle" text="NeedToKnow" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="TOP">
@@ -517,7 +518,8 @@
         </Layers>
     </Frame>
 
-    <Frame name="InterfaceOptionsNeedToKnowAppearancePanel" hidden="true" parent="InterfaceOptionsFramePanelContainer">
+    <!-- <Frame name="InterfaceOptionsNeedToKnowAppearancePanel" hidden="true" parent="InterfaceOptionsFramePanelContainer"> -->
+    <Frame name="InterfaceOptionsNeedToKnowAppearancePanel" hidden="true">
         <Layers>
             <Layer level="ARTWORK">
                 <FontString name="$parentTitle" text="NeedToKnow" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="TOP">
@@ -740,7 +742,8 @@
         </Frames>
     </Frame>
 
-    <Frame name="InterfaceOptionsNeedToKnowProfilePanel" hidden="true" parent="InterfaceOptionsFramePanelContainer">
+    <!-- <Frame name="InterfaceOptionsNeedToKnowProfilePanel" hidden="true" parent="InterfaceOptionsFramePanelContainer"> -->
+    <Frame name="InterfaceOptionsNeedToKnowProfilePanel" hidden="true">
         <Layers>
             <Layer level="ARTWORK">
                 <FontString name="$parentTitle" text="NeedToKnow" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="TOP">
