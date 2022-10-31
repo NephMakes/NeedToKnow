@@ -255,7 +255,7 @@ function ExecutiveFrame:UNIT_TARGET(unitTargeting)
             m_bCombatWithBoss = true
             if ( NeedToKnow.BossStateBars ) then
                 for bar, unused in pairs(NeedToKnow.BossStateBars) do
-                    NeedToKnow.mfn_Bar_AuraCheck(bar)
+                    bar:CheckAura()
                 end
             end
         end
@@ -285,7 +285,7 @@ function ExecutiveFrame:PLAYER_REGEN_DISABLED(unitTargeting)
     end
     if ( NeedToKnow.BossStateBars ) then
         for bar, unused in pairs(NeedToKnow.BossStateBars) do
-            NeedToKnow.mfn_Bar_AuraCheck(bar)
+            bar:CheckAura()
         end
     end
 end
@@ -296,7 +296,7 @@ function ExecutiveFrame:PLAYER_REGEN_ENABLED(unitTargeting)
     m_bCombatWithBoss = false
     if ( NeedToKnow.BossStateBars ) then
         for bar, unused in pairs(NeedToKnow.BossStateBars) do
-            NeedToKnow.mfn_Bar_AuraCheck(bar)
+            bar:CheckAura()
         end
     end
 end

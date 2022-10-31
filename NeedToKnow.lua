@@ -470,9 +470,11 @@ function NeedToKnow.mfn_AuraCheck_AllStacks(bar, bar_entry, all_stacks)
     end
 end
 
--- function Bar:CheckAura()
+-- Replaced by Bar:CheckAura()
+--[[
 function NeedToKnow.mfn_Bar_AuraCheck(bar)
     -- Called whenever the state of auras on the bar's unit may have changed
+    -- Called very frequently for cooldowns (OnUpdate). Make sure it's efficient. 
 
     local settings = bar.settings
     local bUnitExists
@@ -645,18 +647,4 @@ function NeedToKnow.mfn_Bar_AuraCheck(bar)
         end
     end
 end
-
---[[
-function NeedToKnow.fnAuraCheckIfUnitMatches(bar, unit)
-    if ( unit == bar.unit )  then
-        NeedToKnow.mfn_Bar_AuraCheck(bar)
-    end
-end
-
-function NeedToKnow.fnAuraCheckIfUnitPlayer(bar, unit)
-    if ( unit == "player" ) then
-        NeedToKnow.mfn_Bar_AuraCheck(bar)
-    end
-end
-]]--
-
+]]

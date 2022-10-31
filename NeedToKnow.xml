@@ -81,6 +81,7 @@
                     </Anchors>
                 </Texture>
                 <Texture name="$parentTexture2" parentKey="Texture2">
+                	<!-- Used for user-determined max duration -->
                     <Anchors>
                         <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
                             <Offset>

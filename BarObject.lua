@@ -118,7 +118,7 @@ end
 
 function Bar:UpdateAppearance()
 	-- For bar elements that can change in combat
-	-- Called by mfn_Bar_AuraCheck
+	-- Called by Bar:CheckAura()
 
 	local barSettings = self.settings
 
@@ -150,7 +150,7 @@ function Bar:UpdateAppearance()
 end
 
 function Bar:ConfigureVisible(count, extended, buff_stacks)
-	-- Called by mfn_Bar_AuraCheck() if bar.duration found
+	-- Called by Bar:CheckAura() if bar.duration found
 	-- How is this conceptually different than Bar:UpdateAppearance()?
 
 	if self.duration > 0 then
@@ -185,6 +185,8 @@ end
 function Bar:SetValue(barTexture, value, value0)
 	-- Called by Bar:OnUpdate(), Bar:OnSizeChanged(), others
 	-- Called very frequently. Make sure it's efficient. 
+
+	-- bar.Texture2 used for user-determined max bar duration
 
 	value = math.max(value, 0)
 	local pct = math.min(value/self.max_value, 1)
@@ -249,7 +251,7 @@ end
 
 function Bar:ConfigureVisibleText(barSettings, count, extended, buff_stacks)
 	-- Called by Bar:ConfigureVisible()
-	-- which is called by mfn_Bar_AuraCheck() if bar.duration found
+	-- which is called by Bar:CheckAura() if bar.duration found
 
 	local settings = barSettings or self.settings
 	local text = ""

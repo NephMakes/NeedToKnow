@@ -13,11 +13,22 @@ local UPDATE_INTERVAL = 0.025  -- 40 fps
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
 local GetSpellInfo = GetSpellInfo
 local GetTime = GetTime
+local UnitExists = UnitExists
 local UnitGUID = UnitGUID
 local UnitRangedDamage = UnitRangedDamage
+-- local SecondsToTimeAbbrev = SecondsToTimeAbbrev
+
 
 -- Deprecated: 
-local m_last_guid = addonTable.m_last_guid
+local g_UnitIsFriend = UnitIsFriend
+local g_UnitAffectingCombat = UnitAffectingCombat
+local g_GetSpellInfo = GetSpellInfo
+
+local m_last_guid       = addonTable.m_last_guid
+local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
+
+local mfn_GetAutoShotCooldown = Cooldown.GetAutoShotCooldown
+
 
 
 -- ---------
@@ -153,7 +164,7 @@ function Bar:Update()
 			self:Activate()
 
 			-- Events were cleared while unlocked, so need to check the bar again now
-			NeedToKnow.mfn_Bar_AuraCheck(self)
+			self:CheckAura()
 		else
             self:Inactivate()
 			self:Hide()
@@ -318,7 +329,7 @@ function Bar:OnEvent(event, unit, ...)
 end
 
 function BarEvent:ACTIONBAR_UPDATE_COOLDOWN()
-	NeedToKnow.mfn_Bar_AuraCheck(self)
+	self:CheckAura()
 end
 
 local auraEvents = {
@@ -336,18 +347,18 @@ function BarEvent:COMBAT_LOG_EVENT_UNFILTERED(unit, ...)
 	if auraEvents[event] then
 		if targetGUID == UnitGUID(self.unit) then
 			if self.auraName:find(spellID) or self.auraName:find(spellName) then 
-				NeedToKnow.mfn_Bar_AuraCheck(self)
+				self:CheckAura()
 			end
 		end
 	elseif event == "UNIT_DIED" then
 		if targetGUID == UnitGUID(self.unit) then
-			NeedToKnow.mfn_Bar_AuraCheck(self)
+			self:CheckAura()
 		end
 	end 
 end
 
 function BarEvent:PLAYER_FOCUS_CHANGED(unit, ...)
-    NeedToKnow.mfn_Bar_AuraCheck(self)
+	self:CheckAura()
 end
 
 function BarEvent:PLAYER_SPELLCAST_SUCCEEDED(unit, ...)
@@ -359,7 +370,7 @@ function BarEvent:PLAYER_SPELLCAST_SUCCEEDED(unit, ...)
 		if entry.id == spellID or entry.name == spellName then
 			self.unit = target or "unknown"
 			-- print("Updating", self:GetName(), "since it was recast on", self.unit)
-			NeedToKnow.mfn_Bar_AuraCheck(self)
+			self:CheckAura()
 			break
 		end
 	end
@@ -369,19 +380,19 @@ function BarEvent:PLAYER_TARGET_CHANGED(unit, ...)
 	if self.unit == "targettarget" then
 		self:CheckCombatLogRegistration()
 	end
-	NeedToKnow.mfn_Bar_AuraCheck(self)
+	self:CheckAura()
 end
 
 function BarEvent:PLAYER_TOTEM_UPDATE()
-	NeedToKnow.mfn_Bar_AuraCheck(self)
+	self:CheckAura()
 end
 
 function BarEvent:SPELL_UPDATE_COOLDOWN()
-	NeedToKnow.mfn_Bar_AuraCheck(self)
+	self:CheckAura()
 end
 
 function BarEvent:SPELL_UPDATE_USABLE()
-	NeedToKnow.mfn_Bar_AuraCheck(self)
+	self:CheckAura()
 end
 
 function BarEvent:START_AUTOREPEAT_SPELL()
@@ -396,13 +407,13 @@ end
 
 function BarEvent:UNIT_AURA(unit, ...)
 	if unit == self.unit then
-		NeedToKnow.mfn_Bar_AuraCheck(self)
+		self:CheckAura()
 	end
 end
 
 function BarEvent:UNIT_PET()
 	if unit == "player" then
-		NeedToKnow.mfn_Bar_AuraCheck(self)
+		self:CheckAura()
 	end
 end
 
@@ -415,7 +426,7 @@ function BarEvent:UNIT_SPELLCAST_SUCCEEDED(unit, ...)
 		local interval = UnitRangedDamage("player")
 		self.tAutoShotCD = interval
 		self.tAutoShotStart = GetTime()
-		NeedToKnow.mfn_Bar_AuraCheck(self)
+		self:CheckAura()
 	end
 end
 
@@ -423,7 +434,226 @@ function BarEvent:UNIT_TARGET(unit, ...)
 	if self.unit == "targettarget" and unit == "target" then
 		self:CheckCombatLogRegistration()
 	end
-	NeedToKnow.mfn_Bar_AuraCheck(self)
+	self:CheckAura()
+end
+
+
+-- ---------
+-- AuraCheck
+-- ---------
+
+-- Kitjan used m_scratch to track multiple instances of an aura with one bar
+local m_scratch = {}
+m_scratch.all_stacks = {
+	min = {
+		buffName = "", 
+		duration = 0, 
+		expirationTime = 0, 
+		iconPath = "",
+		caster = ""
+	},
+	max = {
+		duration = 0, 
+		expirationTime = 0, 
+	},
+	total = 0,
+	total_ttn = { 0, 0, 0 }
+}
+m_scratch.buff_stacks = {
+	min = {
+		buffName = "", 
+		duration = 0, 
+		expirationTime = 0, 
+		iconPath = "",
+		caster = ""
+	},
+	max = {
+		duration = 0, 
+		expirationTime = 0, 
+	},
+	total = 0,
+	total_ttn = { 0, 0, 0 }
+}
+m_scratch.bar_entry = {
+	idxName = 0,
+	barSpell = "",
+	isSpellID = false,
+}
+
+function Bar:CheckAura()
+	-- Called by many different functions
+    -- Called very frequently for cooldowns (OnUpdate). Make sure it's efficient. 
+
+    local settings = self.settings
+    local unitExists
+
+    if settings.Unit == "player" then
+        unitExists = true
+    elseif settings.Unit == "lastraid" then
+        unitExists = self.unit and UnitExists(self.unit)
+    else
+        unitExists = UnitExists(settings.Unit)
+    end
+    
+    -- Determine if the bar should be showing anything
+    local all_stacks       
+    local idxName, duration, buffName, count, expirationTime, iconPath, caster
+
+    if unitExists then
+        all_stacks = m_scratch.all_stacks
+        NeedToKnow.mfn_ResetScratchStacks(all_stacks);
+
+        -- Call helper function for each spell in list
+        for idx, entry in ipairs(self.spells) do
+            self.fnCheck(self, entry, all_stacks);
+            if all_stacks.total > 0 and not settings.show_all_stacks then
+                idxName = idx
+                break 
+            end
+        end
+    end
+    
+    if all_stacks and all_stacks.total > 0 then
+        idxName = all_stacks.min.idxName
+        buffName = all_stacks.min.buffName
+        caster = all_stacks.min.caster
+        duration = all_stacks.max.duration
+        expirationTime = all_stacks.min.expirationTime
+        iconPath = all_stacks.min.iconPath
+        count = all_stacks.total
+    end
+
+    -- Cancel work done above if reset spell is encountered
+    -- reset_spells will only be set for BUFFCD
+    if self.reset_spells then
+        local maxStart = 0
+        local tNow = GetTime()
+        local buff_stacks = m_scratch.buff_stacks
+        NeedToKnow.mfn_ResetScratchStacks(buff_stacks);
+        -- Keep track of when the reset auras were last applied to the player
+        for idx, resetSpell in ipairs(self.reset_spells) do
+            -- Note this relies on BUFFCD setting the target to player, and that the onlyMine will work either way
+            local resetDuration, _, _, resetExpiration
+              = NeedToKnow.mfn_AuraCheck_Single(self, resetSpell, buff_stacks)
+            local tStart
+            if buff_stacks.total > 0 then
+               if 0 == buff_stacks.max.duration then 
+                   tStart = self.reset_start[idx]
+                   if 0 == tStart then
+                       tStart = tNow
+                   end
+               else
+                   tStart = buff_stacks.max.expirationTime - buff_stacks.max.duration
+               end
+               self.reset_start[idx] = tStart
+               
+               if tStart > maxStart then maxStart = tStart end
+            else
+               self.reset_start[idx] = 0
+            end
+        end
+        if duration and maxStart > expirationTime-duration then
+            duration = nil
+        end
+    end
+    
+    -- There is an aura this bar is watching. Set it up
+    if duration then
+        duration = tonumber(duration)
+
+        -- Handle duration increases
+        local extended
+        if (settings.bDetectExtends) then
+            local curStart = expirationTime - duration
+            local guidTarget = UnitGUID(self.unit)
+            local r = m_last_guid[buffName] 
+            
+            if ( not r[guidTarget] ) then 
+            	-- Should only happen from /reload or /ntk while the aura is active
+                -- This went off for me, but I don't know a repro yet.  I suspect it has to do with bear/cat switching
+                --trace("WARNING! allocating guid slot for ", buffName, "on", guidTarget, "due to UNIT_AURA");
+                r[guidTarget] = { time=curStart, dur=duration, expiry=expirationTime }
+            else
+                r = r[guidTarget]
+                local oldExpiry = r.expiry
+                -- This went off for me, but I don't know a repro yet.  I suspect it has to do with bear/cat switching
+                --if ( oldExpiry > 0 and oldExpiry < curStart ) then
+                    --trace("WARNING! stale entry for ",buffName,"on",guidTarget,curStart-r.time,curStart-oldExpiry)
+                --end
+
+                if ( oldExpiry < curStart ) then
+                    r.time = curStart
+                    r.dur = duration 
+                    r.expiry= expirationTime
+                else
+                    r.expiry= expirationTime
+                    extended = expirationTime - (r.time + r.dur)
+                    if extended > 1 then
+                        duration = r.dur 
+                    else
+                        extended = nil
+                    end
+                end
+            end
+        end
+
+        --bar.duration = tonumber(bar.fixedDuration) or duration
+        self.duration = duration
+
+        self.expirationTime = expirationTime
+        self.idxName = idxName
+        self.buffName = buffName
+        self.iconPath = iconPath
+        if ( all_stacks and all_stacks.max.expirationTime ~= expirationTime ) then
+            self.max_expirationTime = all_stacks.max.expirationTime
+        else
+            self.max_expirationTime = nil
+        end
+
+        -- Mark the bar as not blinking before calling ConfigureVisibleBar, 
+        -- since it calls OnUpdate which checks bar.blink
+        self.blink = false
+        self:UpdateAppearance()
+        self:ConfigureVisible(count, extended, all_stacks)
+        self:Show()
+    else
+        if (settings.bDetectExtends and self.buffName) then
+            local r = m_last_guid[self.buffName]
+            if ( r ) then
+                local guidTarget = UnitGUID(self.unit)
+                if guidTarget then
+                    r[guidTarget] = nil
+                end
+            end
+        end
+        self.buffName = nil
+        self.duration = nil
+        self.expirationTime = nil
+        
+        local bBlink = false
+        if settings.blink_enabled and settings.MissingBlink.a > 0 then
+            bBlink = unitExists and not UnitIsDead(self.unit)
+        end
+        if ( bBlink and not settings.blink_ooc ) then
+            if not g_UnitAffectingCombat("player") then
+                bBlink = false
+            end
+        end
+        if ( bBlink and settings.blink_boss ) then
+            if g_UnitIsFriend(self.unit, "player") then
+                bBlink = m_bCombatWithBoss
+            else
+                bBlink = (UnitLevel(self.unit) == -1)
+            end
+        end
+        if ( bBlink ) then
+            self:StartBlink()
+            self:Show()
+        else    
+            self.blink = false
+            self:Hide()
+        end
+    end
 end
 
 
@@ -460,19 +690,19 @@ function Bar:OnUpdate(elapsed)
 					self.settings.BuffOrDebuff == "BUFFCD" or
 					self.settings.BuffOrDebuff == "EQUIPSLOT" )
 				then
-		-- WORKAROUND: Some of these (like item cooldowns) don't fire an event when the CD expires.
-		--   others fire the event too soon.  So we have to keep checking.
-					NeedToKnow.mfn_Bar_AuraCheck(self)
+					-- Item cooldowns don't fire an event when they expire.
+					-- Other cooldowns fire the event too soon. So we have to keep checking.
+					self:CheckAura()
 					return
 				end
 				bar1_timeLeft = 0
 			end
-
 			self:SetValue(self.bar1, bar1_timeLeft);
 
 			if self.settings.show_time then
 				local fn = NeedToKnow[self.settings.TimeFormat]
 				local oldText = self.time:GetText()
+				-- Is this really an optimization?
 				local newText
 				if fn then
 					newText = fn(bar1_timeLeft)
