@@ -17,9 +17,10 @@ Thanks a bunch!
     NEEDTOKNOW.RESIZE_TOOLTIP = "Click and drag to change size";
 
     NEEDTOKNOW.BARMENU_ENABLE = "Enable bar";
-    NEEDTOKNOW.BARMENU_CHOOSENAME = "Choose buff/debuff to time...";
-    NEEDTOKNOW.BARMENU_CHOOSESLOT = "Choose Equipment Slot...";
-    NEEDTOKNOW.BARMENU_CHOOSEPOWER = "Choose Power Type...";
+    -- NEEDTOKNOW.BARMENU_CHOOSENAME = "Choose buff/debuff to time...";
+    NEEDTOKNOW.BARMENU_CHOOSENAME = "Choose spell or ability...";
+    NEEDTOKNOW.BARMENU_CHOOSESLOT = "Choose equipment Slot...";
+    -- NEEDTOKNOW.BARMENU_CHOOSEPOWER = "Choose Power Type...";
     NEEDTOKNOW.CHOOSENAME_DIALOG = "Enter the name of the buff or debuff to time with this bar"
     NEEDTOKNOW.IMPORTEXPORT_DIALOG = "The current settings for the bar appear below.  To copy these settings to the clipboard, press Ctrl+C. To paste the last settings you copied (such as from another bar), press Ctrl+V. Clear this text to reset the bar to the defaults.";
     NEEDTOKNOW.CHOOSE_OVERRIDE_TEXT = "Normally, the name of the aura/item/spell that activated the bar is displayed.  By entering text here, you can override that text with something else.  Leave this blank to use the default behavior."
@@ -98,11 +99,11 @@ Thanks a bunch!
     NEEDTOKNOW.UIPANEL_PROFILE_MAKEPRIVATE = "Only This Char";
 
     NEEDTOKNOW.BARMENU_TOTEM = "Totem";
-    NEEDTOKNOW.BARMENU_CASTCD = "Spell Cooldown";
-    NEEDTOKNOW.BARMENU_BUFFCD = "Internal Cooldown";
-    NEEDTOKNOW.BARMENU_USABLE = "Conditional Spell";
-    NEEDTOKNOW.BARMENU_EQUIPSLOT = "Equipment Slot";
-    NEEDTOKNOW.BARMENU_POWER = "Power (experimental)";
+    NEEDTOKNOW.BARMENU_CASTCD = "Spell cooldown";
+    NEEDTOKNOW.BARMENU_BUFFCD = "Internal cooldown";
+    NEEDTOKNOW.BARMENU_EQUIPSLOT = "Item cooldown";
+    NEEDTOKNOW.BARMENU_USABLE = "Reactive spell/ability";
+    -- NEEDTOKNOW.BARMENU_POWER = "Power (experimental)";
     NEEDTOKNOW.CMD_HIDE = "hide";
     NEEDTOKNOW.CMD_PROFILE = "profile";
     NEEDTOKNOW.CMD_SHOW = "show";
@@ -120,7 +121,7 @@ Thanks a bunch!
     NEEDTOKNOW.CHOOSE_BLINK_TITLE_DIALOG = "Enter the text to display on the bar when it is blinking.";
     NEEDTOKNOW.BUFFCD_DURATION_DIALOG = "Enter the cooldown duration triggered by the buffs watched by this bar.";
     NEEDTOKNOW.BUFFCD_RESET_DIALOG = "Enter the buff (or buffs) to watch for which reset the cooldown to 0.";
-    NEEDTOKNOW.USABLE_DURATION_DIALOG = "Enter the cooldown duration triggered by the abilities watched by this bar.";
+    NEEDTOKNOW.USABLE_DURATION_DIALOG = "Enter the useable duration for abilities watched by this bar.";
 
 
 -- replace with translations, if available

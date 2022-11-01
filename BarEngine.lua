@@ -12,6 +12,7 @@ local UPDATE_INTERVAL = 0.025  -- 40 fps
 
 -- Local versions of frequently-used global functions
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
+local IsUsableSpell = IsUsableSpell
 local GetSpellInfo = GetSpellInfo
 local GetTime = GetTime
 local UnitExists = UnitExists
@@ -133,7 +134,7 @@ function Bar:Update()
 			elseif "TOTEM" == settings.BuffOrDebuff then
 				self.fnCheck = NeedToKnow.mfn_AuraCheck_TOTEM
 			elseif "USABLE" == settings.BuffOrDebuff then
-				self.fnCheck = NeedToKnow.mfn_AuraCheck_USABLE
+				self.fnCheck = FindAura.FindSpellUsable
 			elseif "EQUIPSLOT" == settings.BuffOrDebuff then
 				self.fnCheck = NeedToKnow.mfn_AuraCheck_EQUIPSLOT
 			-- elseif "POWER" == barSettings.BuffOrDebuff then
@@ -148,11 +149,9 @@ function Bar:Update()
 					Cooldown.SetUpSpell(self, entry)
 				end
 			elseif settings.show_all_stacks then
-				-- self.fnCheck = NeedToKnow.mfn_AuraCheck_AllStacks
 				self.fnCheck = FindAura.FindAllStacks
 			else
 				self.fnCheck = FindAura.FindSingle
-				-- self.FindAura = FindAura.FindSingle
 			end
 
 			if ( settings.BuffOrDebuff == "BUFFCD" ) then
@@ -572,7 +571,7 @@ function Bar:CheckAura()
                self.reset_start[idx] = 0
             end
         end
-        if duration and maxStart > expirationTime-duration then
+        if duration and maxStart > expirationTime - duration then
             duration = nil
         end
     end
@@ -630,7 +629,7 @@ function Bar:CheckAura()
             self.max_expirationTime = nil
         end
 
-        -- Mark the bar as not blinking before calling ConfigureVisibleBar, 
+        -- Mark the bar as not blinking before calling ConfigureVisible, 
         -- since it calls OnUpdate which checks bar.blink
         self.blink = false
         self:UpdateAppearance()
@@ -686,11 +685,11 @@ end
 -- FindAura:Methods() 
 --   assigned by Bar:Update(), called by Bar:CheckAura()
 --   self = bar
---   spellEntry is element of bar.spells: {idxName = , id = } or {idxName = , name = }
+--   spellEntry is element of bar.spells assigned by Bar:Update()
+--     {idxName = , id = } or {idxName = , name = }
 
 function FindAura:FindSingle(spellEntry, allStacks)
 	-- Find first aura instance then update allStacks
-	-- local settings = self.settings
 	local filter = self.settings.BuffOrDebuff
 	if self.settings.OnlyMine then
 		filter = filter .. "|PLAYER"
@@ -735,9 +734,35 @@ function FindAura:FindAllStacks(spellEntry, allStacks)
 	end
 end
 
---[[
 function FindAura:FindSpellUsable(spellEntry, allStacks)
+	-- For watching reactive spells and abilities
+	local spell = spellEntry.name or spellEntry.id
+	if not spell then 
+		return 
+	end
+	local spellName, _, icon = GetSpellInfo(spell)
+	if spellName then
+		local isUsable, notEnoughMana = IsUsableSpell(spellName)
+		if isUsable or notEnoughMana then
+			local duration, expirationTime
+			local now = GetTime()
+			if 
+				not self.expirationTime or 
+				(self.expirationTime > 0 and self.expirationTime < now - 0.01) 
+			then
+				duration = self.settings.usable_duration  -- Has to be set by user
+				expirationTime = now + duration
+			else
+				duration = self.duration
+				expirationTime = self.expirationTime
+			end
+
+			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, spellName, 1, expirationTime, icon, "player")
+		end
+	end
 end
+
+--[[
 
 function FindAura:FindTotem(spellEntry, allStacks)
 end
