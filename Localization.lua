@@ -99,9 +99,9 @@ Thanks a bunch!
     NEEDTOKNOW.UIPANEL_PROFILE_MAKEPRIVATE = "Only This Char";
 
     NEEDTOKNOW.BARMENU_TOTEM = "Totem";
-    NEEDTOKNOW.BARMENU_CASTCD = "Spell cooldown";
+    NEEDTOKNOW.BARMENU_CASTCD = "Spell or item cooldown";
     NEEDTOKNOW.BARMENU_BUFFCD = "Internal cooldown";
-    NEEDTOKNOW.BARMENU_EQUIPSLOT = "Item cooldown";
+    NEEDTOKNOW.BARMENU_EQUIPSLOT = "Equipment slot cooldown";
     NEEDTOKNOW.BARMENU_USABLE = "Reactive spell/ability";
     -- NEEDTOKNOW.BARMENU_POWER = "Power (experimental)";
     NEEDTOKNOW.CMD_HIDE = "hide";

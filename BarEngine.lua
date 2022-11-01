@@ -47,15 +47,17 @@ function Bar:Update()
 	self.settings = groupSettings.Bars[barID]
 	local settings = self.settings
 
+	local barType = settings.BuffOrDebuff
+
 	self.auraName = settings.AuraName
 
-	if (
-    	settings.BuffOrDebuff == "BUFFCD" or
-		settings.BuffOrDebuff == "TOTEM" or
-		settings.BuffOrDebuff == "USABLE" or
-		settings.BuffOrDebuff == "EQUIPSLOT" or
-		settings.BuffOrDebuff == "CASTCD"
-	) then
+	if
+    	barType == "BUFFCD" or
+		barType == "TOTEM" or
+		barType == "USABLE" or
+		barType == "EQUIPSLOT" or
+		barType == "CASTCD"
+	then
         settings.Unit = "player"
     end
 	self.unit = settings.Unit
@@ -72,7 +74,7 @@ function Bar:Update()
 
 	self:SetAppearance()
 
-	if ( NeedToKnow.CharSettings["Locked"] ) then
+	if NeedToKnow.CharSettings["Locked"] then
 		local enabled = groupSettings.Enabled and settings.Enabled
 		if enabled then
 			-- Set up bar to be functional
@@ -127,13 +129,12 @@ function Bar:Update()
 			settings.bAutoShot = nil
 
 			-- Bar:SetType(barType)
-
             -- Determine which helper functions to use
 			if "BUFFCD" == settings.BuffOrDebuff then
 				self.fnCheck = NeedToKnow.mfn_AuraCheck_BUFFCD
 			elseif "TOTEM" == settings.BuffOrDebuff then
 				self.fnCheck = NeedToKnow.mfn_AuraCheck_TOTEM
-			elseif "USABLE" == settings.BuffOrDebuff then
+			elseif barType == "USABLE" then
 				self.fnCheck = FindAura.FindSpellUsable
 			elseif "EQUIPSLOT" == settings.BuffOrDebuff then
 				self.fnCheck = NeedToKnow.mfn_AuraCheck_EQUIPSLOT
@@ -142,8 +143,8 @@ function Bar:Update()
 				-- bar.is_counter = true
 				-- bar.ticker = nil
 				-- bar.ticking = false
-			elseif "CASTCD" == settings.BuffOrDebuff then
-				self.fnCheck = NeedToKnow.mfn_AuraCheck_CASTCD
+			elseif barType == "CASTCD" then
+				self.fnCheck = FindAura.FindCooldown
 				for idx, entry in ipairs(self.spells) do
 					table.insert(self.cd_functions, Cooldown.GetSpellCooldown)
 					Cooldown.SetUpSpell(self, entry)
@@ -154,7 +155,7 @@ function Bar:Update()
 				self.fnCheck = FindAura.FindSingle
 			end
 
-			if ( settings.BuffOrDebuff == "BUFFCD" ) then
+			if barType == "BUFFCD" then
 				local duration = tonumber(settings.buffcd_duration)
 				if (not duration or duration < 1) then
 					print("NeedToKnow: Please set internal cooldown duration for:", settings.AuraName)
@@ -683,9 +684,9 @@ local function UnitAuraWrapper(unit, index, filter)
 end
 
 -- FindAura:Methods() 
---   assigned by Bar:Update(), called by Bar:CheckAura()
---   self = bar
---   spellEntry is element of bar.spells assigned by Bar:Update()
+--   * assigned by Bar:Update(), called by Bar:CheckAura()
+--   * self = bar
+--   * spellEntry is element of bar.spells assigned by Bar:Update()
 --     {idxName = , id = } or {idxName = , name = }
 
 function FindAura:FindSingle(spellEntry, allStacks)
@@ -762,15 +763,48 @@ function FindAura:FindSpellUsable(spellEntry, allStacks)
 	end
 end
 
+function FindAura:FindCooldown(spellEntry, allStacks)
+	-- Find spell or item cooldown then update allStacks
+	-- Bar:Update() sets up bar.cd_functions
+
+	local GetCooldown = self.cd_functions[spellEntry.idxName]
+	if not GetCooldown then
+		print("NeedToKnow FindAura:FindCooldown ERROR setting up index", spellEntry.idxName, "on bar", self:GetName(), self.settings.AuraName)
+		return
+	end
+	local start, duration, _, name, icon, count, start2 = GetCooldown(self, spellEntry)
+
+	-- Filter out global cooldown
+	if start and duration <= 1.5 and GetCooldown ~= Cooldown.GetAutoShotCooldown then
+		if self.expirationTime and self.expirationTime <= start + duration then
+			start = self.expirationTime - self.duration
+			duration = self.duration
+		else
+			start = nil
+		end
+	end
+
+	if start and duration then
+		local now = GetTime()
+		local expirationTime = start + duration
+		if expirationTime > now + 0.1 then
+			if start2 then
+				-- start2 returned by Cooldown.GetSpellChargesCooldown
+				NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, start2 + duration, icon, "player")
+				count = count - 1
+			else
+				if not count then count = 1 end
+			end
+			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, "player")
+		end
+	end
+end
+
 --[[
+function FindAura:FindEquipSlotCooldown(spellEntry, allStacks)
+end
 
 function FindAura:FindTotem(spellEntry, allStacks)
-end
-
-function FindAura:FindCastCooldown(spellEntry, allStacks)
-end
-
-function FindAura:FindItemCooldown(spellEntry, allStacks)
 end
 
 function FindAura:FindBuffCooldown(spellEntry, allStacks)

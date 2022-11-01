@@ -202,6 +202,7 @@ function NeedToKnow.mfn_AuraCheck_EQUIPSLOT(bar, bar_entry, all_stacks)
     end
 end
 
+--[[
 function NeedToKnow.mfn_AuraCheck_CASTCD(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper that checks for spell/item use cooldowns
     -- Relies on mfn_GetAutoShotCooldown, mfn_GetSpellCooldown 
@@ -252,7 +253,9 @@ function NeedToKnow.mfn_AuraCheck_CASTCD(bar, bar_entry, all_stacks)
         end
     end
 end
+]]--
 
+--[[
 function NeedToKnow.mfn_AuraCheck_USABLE(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper for watching "Is Usable", which means that the action
     -- bar button for the spell lights up
@@ -286,7 +289,7 @@ function NeedToKnow.mfn_AuraCheck_USABLE(bar, bar_entry, all_stacks)
         end
     end
 end
-
+]]--
 
 function NeedToKnow.mfn_ResetScratchStacks(buff_stacks)
     buff_stacks.total = 0;
@@ -302,6 +305,7 @@ function NeedToKnow.mfn_AuraCheck_BUFFCD(bar, bar_entry, all_stacks)
     local buff_stacks = m_scratch.buff_stacks
     NeedToKnow.mfn_ResetScratchStacks(buff_stacks);
     NeedToKnow.mfn_AuraCheck_Single(bar, bar_entry, buff_stacks)
+    -- FindAura:FindSingle(bar, bar_entry, buff_stacks)
     local tNow = g_GetTime()
     if ( buff_stacks.total > 0 ) then
         if buff_stacks.max.expirationTime == 0 then
@@ -450,6 +454,7 @@ function NeedToKnow.mfn_AuraCheck_Single(bar, bar_entry, all_stacks)
     end
 end
 
+--[[
 -- Replaced by FindAura:FindAllStacks(bar_entry, all_stacks)
 function NeedToKnow.mfn_AuraCheck_AllStacks(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper that updates bar.all_stacks (but returns nil)
@@ -481,6 +486,7 @@ function NeedToKnow.mfn_AuraCheck_AllStacks(bar, bar_entry, all_stacks)
         j = j+1
     end
 end
+]]--
 
 -- Replaced by Bar:CheckAura()
 --[[
