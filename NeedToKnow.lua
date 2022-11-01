@@ -27,6 +27,16 @@ local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
 
 local mfn_GetAutoShotCooldown = Cooldown.GetAutoShotCooldown
 
+-- ----------------------
+-- NeedToKnow:Functions()
+-- ----------------------
+
+
+
+-- ------------------
+-- Kitjan's functions
+-- ------------------
+
 -- Kitjan used m_scratch to track multiple instances of an aura with one bar
 local m_scratch = {}
 m_scratch.all_stacks = {
@@ -65,10 +75,6 @@ m_scratch.bar_entry = {
 	isSpellID = false,
 }
     
-
--- ------------------
--- Kitjan's functions
--- ------------------
 
 -- NephMakes: I don't think temporary enchants aren't a thing anymore, 
 -- but keep this for potential use in WoW Classic
@@ -249,7 +255,7 @@ end
 
 function NeedToKnow.mfn_AuraCheck_USABLE(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper for watching "Is Usable", which means that the action
-    -- bar button for the spell lights up.  This is mostly useful for Victory Rush
+    -- bar button for the spell lights up
     local key = bar_entry.id or bar_entry.name
     local settings = bar.settings
     if ( not key ) then key = "" end
@@ -280,6 +286,7 @@ function NeedToKnow.mfn_AuraCheck_USABLE(bar, bar_entry, all_stacks)
         end
     end
 end
+
 
 function NeedToKnow.mfn_ResetScratchStacks(buff_stacks)
     buff_stacks.total = 0;
@@ -356,9 +363,9 @@ local function UnitAuraWrapper(a,b,c,d)
         _, -- cast by any player
 		_, -- nameplate show all
 		_, -- time mod
-        v1,
-        v2,
-        v3
+        v1, -- additional value 1
+        v2, -- additional value 2
+        v3  -- additional value 3
     = UnitAura(a,b,c,d)
 
     if name then
@@ -366,9 +373,14 @@ local function UnitAuraWrapper(a,b,c,d)
     end
 end
 
+-- Replaced by FindAura:FindSingle(bar_entry, all_stacks)
 function NeedToKnow.mfn_AuraCheck_Single(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper that looks for the first instance of a buff
     -- Uses the UnitAura filters exclusively if it can
+
+	-- TODO: 
+	-- Use AuraUtil.FindAuraByName() in FrameXML/AuraUtil.lua 
+	-- added in WoW v8.0, available in Classic
 
     local settings = bar.settings
     local filter = settings.BuffOrDebuff
@@ -403,7 +415,6 @@ function NeedToKnow.mfn_AuraCheck_Single(bar, bar_entry, all_stacks)
         end
     else
         --[[
-        -- UnitAura() no longer supports querying by spell name 
         local buffName, iconPath, count, duration, expirationTime, caster, _, tt1, tt2, tt3 
           = UnitAuraWrapper(bar.unit, bar_entry.name, nil, filter)
           mfn_AddInstanceToStacks( all_stacks, bar_entry,
@@ -415,7 +426,7 @@ function NeedToKnow.mfn_AuraCheck_Single(bar, bar_entry, all_stacks)
                caster,                                 -- caster
                tt1, tt2, tt3 )                         -- extra status values, like vengeance armor or healing bo
         ]]--
-        -- TODO: Use AuraUtil.FindAuraByName in FrameXML/AuraUtil.lua (added in 8.0)
+        -- UnitAura() no longer supports querying by spell name (patch 8.0)
         local j = 1
         while true do
             local buffName, iconPath, count, duration, expirationTime, caster, spellID, tt1, tt2, tt3
@@ -439,6 +450,7 @@ function NeedToKnow.mfn_AuraCheck_Single(bar, bar_entry, all_stacks)
     end
 end
 
+-- Replaced by FindAura:FindAllStacks(bar_entry, all_stacks)
 function NeedToKnow.mfn_AuraCheck_AllStacks(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper that updates bar.all_stacks (but returns nil)
     -- by scanning all the auras on the unit

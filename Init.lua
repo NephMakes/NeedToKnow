@@ -29,6 +29,7 @@ NeedToKnow.BarMenu = {}
 NeedToKnow.ResizeButton = {}
 
 NeedToKnow.BarEvent = {}
+NeedToKnow.FindAura = {}
 NeedToKnow.Cooldown = {}
 
 

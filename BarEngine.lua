@@ -6,6 +6,7 @@ local addonName, addonTable = ...
 local Bar = NeedToKnow.Bar
 local BarEvent = NeedToKnow.BarEvent
 local Cooldown = NeedToKnow.Cooldown
+local FindAura = NeedToKnow.FindAura
 
 local UPDATE_INTERVAL = 0.025  -- 40 fps
 
@@ -22,7 +23,6 @@ local UnitRangedDamage = UnitRangedDamage
 -- Deprecated: 
 local g_UnitIsFriend = UnitIsFriend
 local g_UnitAffectingCombat = UnitAffectingCombat
-local g_GetSpellInfo = GetSpellInfo
 
 local m_last_guid       = addonTable.m_last_guid
 local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
@@ -148,9 +148,11 @@ function Bar:Update()
 					Cooldown.SetUpSpell(self, entry)
 				end
 			elseif settings.show_all_stacks then
-				self.fnCheck = NeedToKnow.mfn_AuraCheck_AllStacks
+				-- self.fnCheck = NeedToKnow.mfn_AuraCheck_AllStacks
+				self.fnCheck = FindAura.FindAllStacks
 			else
-				self.fnCheck = NeedToKnow.mfn_AuraCheck_Single
+				self.fnCheck = FindAura.FindSingle
+				-- self.FindAura = FindAura.FindSingle
 			end
 
 			if ( settings.BuffOrDebuff == "BUFFCD" ) then
@@ -211,7 +213,7 @@ function Bar:Activate()
 		-- We don't get UNIT_AURA for target of target
 		self:RegisterEvent("PLAYER_TARGET_CHANGED")
 		self:RegisterEvent("UNIT_TARGET")
-		self:CheckCombatLogRegistration() 
+		self:RegisterCombatLog() 
 		self.PLAYER_TARGET_CHANGED = BarEvent.PLAYER_TARGET_CHANGED
 		self.UNIT_TARGET = BarEvent.UNIT_TARGET
 		self.COMBAT_LOG_EVENT_UNFILTERED = BarEvent.COMBAT_LOG_EVENT_UNFILTERED
@@ -267,7 +269,7 @@ function Bar:Activate()
 	end
 end
 
-function Bar:CheckCombatLogRegistration()
+function Bar:RegisterCombatLog()
 	-- Used to track auras on target of target
     if UnitExists(self.unit) then
         self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -328,6 +330,10 @@ function Bar:OnEvent(event, unit, ...)
 	end
 end
 
+-- BarEvent:EVENT(unit, ...) 
+--   assigned by Bar:Activate()
+--   self = bar
+
 function BarEvent:ACTIONBAR_UPDATE_COOLDOWN()
 	self:CheckAura()
 end
@@ -378,7 +384,7 @@ end
 
 function BarEvent:PLAYER_TARGET_CHANGED(unit, ...)
 	if self.unit == "targettarget" then
-		self:CheckCombatLogRegistration()
+		self:RegisterCombatLog()
 	end
 	self:CheckAura()
 end
@@ -420,6 +426,7 @@ end
 local autoShotName = GetSpellInfo(75)  -- Localized name
 function BarEvent:UNIT_SPELLCAST_SUCCEEDED(unit, ...)
 	-- To track Auto Shot
+	--[[
 	local spellID  = select(2, ...)
 	local spellName = select(1, GetSpellInfo(spellId))
 	if self.settings.bAutoShot and unit == "player" and spellName == autoShotName then
@@ -428,21 +435,33 @@ function BarEvent:UNIT_SPELLCAST_SUCCEEDED(unit, ...)
 		self.tAutoShotStart = GetTime()
 		self:CheckAura()
 	end
+	]]--
+	if unit == "player" then 
+		-- UNIT_SPELLCAST_SUCCEEDED only registered if self.settings.bAutoShot
+		local spellID  = select(2, ...)
+		local spellName = select(1, GetSpellInfo(spellId))
+		if spellName == autoShotName then
+			local interval = UnitRangedDamage("player")
+			self.tAutoShotCD = interval
+			self.tAutoShotStart = GetTime()
+			self:CheckAura()
+		end
+	end
 end
 
 function BarEvent:UNIT_TARGET(unit, ...)
 	if self.unit == "targettarget" and unit == "target" then
-		self:CheckCombatLogRegistration()
+		self:RegisterCombatLog()
 	end
 	self:CheckAura()
 end
 
 
--- ---------
--- AuraCheck
--- ---------
+-- ----------
+-- Check aura
+-- ----------
 
--- Kitjan used m_scratch to track multiple instances of an aura with one bar
+-- Kitjan made m_scratch as a reusable table to track multiple instances of an aura with one bar
 local m_scratch = {}
 m_scratch.all_stacks = {
 	min = {
@@ -481,7 +500,7 @@ m_scratch.bar_entry = {
 }
 
 function Bar:CheckAura()
-	-- Called by many different functions
+	-- Called by many functions
     -- Called very frequently for cooldowns (OnUpdate). Make sure it's efficient. 
 
     local settings = self.settings
@@ -505,10 +524,11 @@ function Bar:CheckAura()
 
         -- Call helper function for each spell in list
         for idx, entry in ipairs(self.spells) do
-            self.fnCheck(self, entry, all_stacks);
+            self.fnCheck(self, entry, all_stacks)  -- fnCheck assigned by Bar:Update()
+            -- self:FindAura(entry, all_stacks)
             if all_stacks.total > 0 and not settings.show_all_stacks then
                 idxName = idx
-                break 
+                break
             end
         end
     end
@@ -570,13 +590,13 @@ function Bar:CheckAura()
             
             if ( not r[guidTarget] ) then 
             	-- Should only happen from /reload or /ntk while the aura is active
-                -- This went off for me, but I don't know a repro yet.  I suspect it has to do with bear/cat switching
+                -- Kitjan: This went off for me, but I don't know a repro yet.  I suspect it has to do with bear/cat switching
                 --trace("WARNING! allocating guid slot for ", buffName, "on", guidTarget, "due to UNIT_AURA");
                 r[guidTarget] = { time=curStart, dur=duration, expiry=expirationTime }
             else
                 r = r[guidTarget]
                 local oldExpiry = r.expiry
-                -- This went off for me, but I don't know a repro yet.  I suspect it has to do with bear/cat switching
+                -- Kitjan: This went off for me, but I don't know a repro yet.  I suspect it has to do with bear/cat switching
                 --if ( oldExpiry > 0 and oldExpiry < curStart ) then
                     --trace("WARNING! stale entry for ",buffName,"on",guidTarget,curStart-r.time,curStart-oldExpiry)
                 --end
@@ -656,13 +676,89 @@ function Bar:CheckAura()
     end
 end
 
+local function UnitAuraWrapper(unit, index, filter)
+	local name, icon, count, _, duration, expirationTime, sourceUnit, _, _, spellID, _, _, _, _, _, value1, value2, value3 = UnitAura(unit, index, filter)
+	if name then
+		return name, icon, count, duration, expirationTime, sourceUnit, spellID, value1, value2, value3
+	end
+end
+
+-- FindAura:Methods() 
+--   assigned by Bar:Update(), called by Bar:CheckAura()
+--   self = bar
+--   spellEntry is element of bar.spells: {idxName = , id = } or {idxName = , name = }
+
+function FindAura:FindSingle(spellEntry, allStacks)
+	-- Find first aura instance then update allStacks
+	-- local settings = self.settings
+	local filter = self.settings.BuffOrDebuff
+	if self.settings.OnlyMine then
+		filter = filter .. "|PLAYER"
+	end
+	if spellEntry.id then
+		-- Can't search by spellID, so walk through them
+		local j = 1
+		while true do
+			local name, icon, count, _, duration, expirationTime, sourceUnit, _, _, spellID, _, _, _, _, _, value1, value2, value3 = UnitAura(self.unit, j, filter)
+			if not name then
+				break
+			end
+			if spellID == spellEntry.id then 
+				NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
+				return
+			end
+			j = j + 1
+		end
+	else
+		-- AuraUtil.FindAuraByName() added in patch 8.0, available in Classic
+		local name, icon, count, _, duration, expirationTime, sourceUnit, _, _, spellID, _, _, _, _, _, value1, value2, value3 = AuraUtil.FindAuraByName(spellEntry.name, self.unit, filter)
+		if name and name == spellEntry.name then 
+			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
+			return
+		end
+	end
+end
+
+function FindAura:FindAllStacks(spellEntry, allStacks)
+	-- Find all aura instances then update allStacks
+	local j = 1
+	local filter = self.settings.BuffOrDebuff
+	while true do
+		local name, icon, count, _, duration, expirationTime, sourceUnit, _, _, spellID, _, _, _, _, _, value1, value2, value3 = UnitAura(self.unit, j, filter)
+		if not name then
+			break
+		end
+		if name == spellEntry.name or spellID == spellEntry.id then
+			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
+		end
+		j = j + 1
+	end
+end
+
+--[[
+function FindAura:FindSpellUsable(spellEntry, allStacks)
+end
+
+function FindAura:FindTotem(spellEntry, allStacks)
+end
+
+function FindAura:FindCastCooldown(spellEntry, allStacks)
+end
+
+function FindAura:FindItemCooldown(spellEntry, allStacks)
+end
+
+function FindAura:FindBuffCooldown(spellEntry, allStacks)
+end
+]]--
+
 
 -- --------
 -- OnUpdate
 -- --------
 
 function Bar:OnUpdate(elapsed)
-	-- Fired very frequently. Make sure it's efficient. 
+	-- Called very frequently. Make sure it's efficient. 
 	local now = GetTime()
 	if now > self.nextUpdate then
 		self.nextUpdate = now + UPDATE_INTERVAL
