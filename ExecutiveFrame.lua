@@ -89,8 +89,8 @@ do
 end
 
 function ExecutiveFrame:ADDON_LOADED(addon)
-	if ( addon == "NeedToKnow") then
-		if ( not NeedToKnow.IsVisible ) then
+	if addon == "NeedToKnow" then
+		if not NeedToKnow.IsVisible then
 			NeedToKnow.IsVisible = true
 		end
 
@@ -107,7 +107,7 @@ function ExecutiveFrame:ADDON_LOADED(addon)
 		m_last_cast_head = 1
 		m_last_cast_tail = 1
 		m_last_guid = {} -- [spell][guidTarget] = { time, dur, expiry }
-		NeedToKnow.totem_drops = {} -- array 1-4 of precise times the totems appeared
+		NeedToKnow.totem_drops = {} -- array 1-4 of precise times totems appeared
 	end
 end
 

@@ -10,11 +10,30 @@ local FindAura = NeedToKnow.FindAura
 
 local UPDATE_INTERVAL = 0.025  -- 40 fps
 
+local BarEventList = {
+	-- Used by Bar:SetType(), Bar:Activate(), Bar:Inactivate()
+	"ACTIONBAR_UPDATE_COOLDOWN", 
+	"COMBAT_LOG_EVENT_UNFILTERED", 
+	"PLAYER_FOCUS_CHANGED", 
+	"PLAYER_TARGET_CHANGED", 
+	"PLAYER_TOTEM_UPDATE", 
+	"SPELL_UPDATE_COOLDOWN", 
+	"SPELL_UPDATE_USABLE", 
+	"START_AUTOREPEAT_SPELL", 
+	"STOP_AUTOREPEAT_SPELL", 
+	"UNIT_AURA", 
+	"UNIT_PET", 
+	"UNIT_SPELLCAST_SUCCEEDED", 
+	"UNIT_TARGET"
+}
+
+
 -- Local versions of frequently-used global functions
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
 local IsUsableSpell = IsUsableSpell
 local GetSpellInfo = GetSpellInfo
 local GetTime = GetTime
+local GetTotemInfo = GetTotemInfo
 local UnitExists = UnitExists
 local UnitGUID = UnitGUID
 local UnitRangedDamage = UnitRangedDamage
@@ -28,7 +47,6 @@ local g_UnitAffectingCombat = UnitAffectingCombat
 local m_last_guid       = addonTable.m_last_guid
 local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
 
-local mfn_GetAutoShotCooldown = Cooldown.GetAutoShotCooldown
 
 
 
@@ -75,11 +93,13 @@ function Bar:Update()
 	self:SetAppearance()
 
 	if NeedToKnow.CharSettings["Locked"] then
-		local enabled = groupSettings.Enabled and settings.Enabled
+		local enabled = settings.Enabled and groupSettings.Enabled
 		if enabled then
 			-- Set up bar to be functional
 
 			self:EnableMouse(false)  -- Click through
+
+			-- self:SetSpells()
 
 			-- Split list of spell names    
 			self.spells = {}
@@ -124,18 +144,17 @@ function Bar:Update()
 				self.reset_start = nil
 			end
 
-			self.ticker = self.OnUpdate
-			-- self.is_counter = nil
 			settings.bAutoShot = nil
 
 			-- Bar:SetType(barType)
             -- Determine which helper functions to use
 			if "BUFFCD" == settings.BuffOrDebuff then
-				-- self.fnCheck = NeedToKnow.mfn_AuraCheck_BUFFCD
 				self.fnCheck = FindAura.FindBuffCooldown
 				self.FindSingle = FindAura.FindSingle
 			elseif "TOTEM" == settings.BuffOrDebuff then
-				self.fnCheck = NeedToKnow.mfn_AuraCheck_TOTEM
+				-- self.fnCheck = NeedToKnow.mfn_AuraCheck_TOTEM
+				self.fnCheck = FindAura.FindTotem
+				-- self.dropTime = {}  -- array 1-4 of precise times totems appeared
 			elseif barType == "USABLE" then
 				self.fnCheck = FindAura.FindSpellUsable
 			elseif "EQUIPSLOT" == settings.BuffOrDebuff then
@@ -146,11 +165,6 @@ function Bar:Update()
 					table.insert(self.cd_functions, Cooldown.GetSpellCooldown)
 					Cooldown.SetUpSpell(self, entry)
 				end
-			-- elseif "POWER" == barSettings.BuffOrDebuff then
-				-- bar.fnCheck = NeedToKnow.mfn_AuraCheck_POWER
-				-- bar.is_counter = true
-				-- bar.ticker = nil
-				-- bar.ticking = false
 			elseif settings.show_all_stacks then
 				self.fnCheck = FindAura.FindAllStacks
 			else
@@ -160,8 +174,8 @@ function Bar:Update()
 			if barType == "BUFFCD" then
 				local duration = tonumber(settings.buffcd_duration)
 				if (not duration or duration < 1) then
-					print("NeedToKnow: Please set internal cooldown duration for:", settings.AuraName)
-					enabled = false
+					print("NeedToKnow: Please set internal cooldown time for:", settings.AuraName)
+					enabled = false  -- Does this do anything?
 				end
 			end
 
@@ -181,16 +195,15 @@ end
 
 function Bar:SetType(barType)
 	-- Called by Bar:Update()
+	-- Clear previous barType functions
+	-- Set barType functions
 end
 
 function Bar:Activate()
 	-- Called by Bar:Update() if NeedToKnow is locked
 
 	self:SetScript("OnEvent", self.OnEvent)
-	if ( self.ticker ) then
-		-- This check is a legacy of power tracking i think
-		self:SetScript("OnUpdate", self.ticker)
-	end
+	self:SetScript("OnUpdate", self.OnUpdate)
 
 	local settings = self.settings
 
@@ -467,7 +480,7 @@ end
 -- Check aura
 -- ----------
 
--- Kitjan made m_scratch as a reusable table to track multiple instances of an aura with one bar
+-- Kitjan made m_scratch a reusable table to track multiple instances of an aura with one bar
 local m_scratch = {}
 m_scratch.all_stacks = {
 	min = {
@@ -520,14 +533,12 @@ function Bar:CheckAura()
         unitExists = UnitExists(settings.Unit)
     end
     
-    -- Determine if the bar should be showing anything
+    -- Determine if bar should show anything
     local all_stacks       
     local idxName, duration, buffName, count, expirationTime, iconPath, caster
-
     if unitExists then
         all_stacks = m_scratch.all_stacks
         NeedToKnow.mfn_ResetScratchStacks(all_stacks);
-
         -- Call helper function for each spell in list
         for idx, entry in ipairs(self.spells) do
             self.fnCheck(self, entry, all_stacks)  -- fnCheck assigned by Bar:Update()
@@ -537,7 +548,6 @@ function Bar:CheckAura()
             end
         end
     end
-    
     if all_stacks and all_stacks.total > 0 then
         idxName = all_stacks.min.idxName
         buffName = all_stacks.min.buffName
@@ -548,8 +558,8 @@ function Bar:CheckAura()
         count = all_stacks.total
     end
 
-    -- Cancel work done above if reset spell is encountered
-    -- reset_spells will only be set for BUFFCD
+    -- Cancel work done above if reset spell encountered
+    -- reset_spells only set for BUFFCD
     if self.reset_spells then
         local maxStart = 0
         local tNow = GetTime()
@@ -557,9 +567,10 @@ function Bar:CheckAura()
         NeedToKnow.mfn_ResetScratchStacks(buff_stacks);
         -- Keep track of when the reset auras were last applied to the player
         for idx, resetSpell in ipairs(self.reset_spells) do
-            -- Note this relies on BUFFCD setting the target to player, and that the onlyMine will work either way
+            -- Relies on BUFFCD setting target to player. onlyMine will work either way. 
             local resetDuration, _, _, resetExpiration
-              = NeedToKnow.mfn_AuraCheck_Single(self, resetSpell, buff_stacks)
+            --  = NeedToKnow.mfn_AuraCheck_Single(self, resetSpell, buff_stacks)
+				= FindAura.FindSingle(self, resetSpell, buff_stacks)
             local tStart
             if buff_stacks.total > 0 then
                if 0 == buff_stacks.max.duration then 
@@ -582,8 +593,8 @@ function Bar:CheckAura()
         end
     end
     
-    -- There is an aura this bar is watching. Set it up
     if duration then
+	    -- There's an aura or cooldown this bar is watching. Set it up
         duration = tonumber(duration)
 
         -- Handle duration increases
@@ -681,12 +692,14 @@ function Bar:CheckAura()
     end
 end
 
+--[[
 local function UnitAuraWrapper(unit, index, filter)
 	local name, icon, count, _, duration, expirationTime, sourceUnit, _, _, spellID, _, _, _, _, _, value1, value2, value3 = UnitAura(unit, index, filter)
 	if name then
 		return name, icon, count, duration, expirationTime, sourceUnit, spellID, value1, value2, value3
 	end
 end
+]]--
 
 -- FindAura:Methods() 
 --   * assigned by Bar:Update(), called by Bar:CheckAura()
@@ -717,7 +730,8 @@ function FindAura:FindSingle(spellEntry, allStacks)
 	else
 		-- AuraUtil.FindAuraByName() added in patch 8.0, available in Classic
 		local name, icon, count, _, duration, expirationTime, sourceUnit, _, _, spellID, _, _, _, _, _, value1, value2, value3 = AuraUtil.FindAuraByName(spellEntry.name, self.unit, filter)
-		if name and name == spellEntry.name then 
+		-- if name and name == spellEntry.name then 
+		if name then 
 			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
 			return
 		end
@@ -762,7 +776,6 @@ function FindAura:FindSpellUsable(spellEntry, allStacks)
 				duration = self.duration
 				expirationTime = self.expirationTime
 			end
-
 			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, spellName, 1, expirationTime, icon, "player")
 		end
 	end
@@ -808,11 +821,34 @@ end
 --[[
 function FindAura:FindEquipSlotCooldown(spellEntry, allStacks)
 end
-
-function FindAura:FindTotem(spellEntry, allStacks)
-end
 ]]--
 
+-- Needs testing: 
+function FindAura:FindTotem(spellEntry, allStacks)
+	local spellName = spellEntry.name or GetSpellInfo(spellEntry.id)
+	for index = 1, 4 do
+		local _, name, startTime, duration, icon = GetTotemInfo(index)  
+			-- Kitjan: startTime cast to integer and off by latency, so can be low
+			-- NephMakes: True for GetTotemTimeLeft() but not GetTotemInfo()
+		if name and name:find(spellName) then
+		--[[
+			-- Cache time totem actually appeared if GetTime() close to startTime
+			local dropTime = self.dropTime
+			if not dropTime[index] or dropTime[index] < startTime then
+				local preciseTime = GetTime()
+				if preciseTime - startTime > 1 then
+					preciseTime = startTime + 1
+				end
+				dropTime[index] = preciseTime
+			end
+			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, dropTime[index] + duration, icon, "player")
+		]]--
+			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, startTime + duration, icon, "player")
+		end
+	end
+end
+
+-- Needs testing
 function FindAura:FindBuffCooldown(spellEntry, allStacks)
 	-- For internal cooldowns on procs
 
@@ -824,7 +860,7 @@ function FindAura:FindBuffCooldown(spellEntry, allStacks)
 	if buffStacks.total > 0 then
 		local duration = tonumber(self.settings.buffcd_duration)
 		if buffStacks.max.expirationTime == 0 then
-			-- TODO: This really doesn't work very well as a substitute for telling when the aura was applied
+			-- TODO: This doesn't work well as a substitute for telling when the aura was applied
 			if not self.expirationTime then
 				NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration,  buffStacks.min.buffName, 1, duration + now, buffStacks.min.iconPath,  buffStacks.min.caster)
 			else
@@ -877,8 +913,8 @@ function Bar:OnUpdate(elapsed)
 					self.settings.BuffOrDebuff == "BUFFCD" or
 					self.settings.BuffOrDebuff == "EQUIPSLOT" )
 				then
-					-- Item cooldowns don't fire an event when they expire.
-					-- Other cooldowns fire the event too soon. So we have to keep checking.
+					-- Item cooldowns don't fire event when they expire.
+					-- Other cooldowns fire event too soon. So we have to keep checking.
 					self:CheckAura()
 					return
 				end

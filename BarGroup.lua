@@ -58,7 +58,7 @@ function BarGroup:Update()
 		bar = self.bar[barID]
 		if bar then
 			bar:Hide()
-			bar:ClearScripts()
+			bar:Inactivate()
 			barID = barID + 1
 		else
 			break

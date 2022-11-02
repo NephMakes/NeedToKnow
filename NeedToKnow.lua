@@ -5,6 +5,10 @@
 
 local addonName, addonTable = ...
 
+-- ----------
+-- Namespaces
+-- ----------
+
 local Bar = NeedToKnow.Bar
 local Cooldown = NeedToKnow.Cooldown
 
@@ -147,6 +151,8 @@ function NeedToKnow.mfn_AddInstanceToStacks(all_stacks, bar_entry, duration, nam
     end
 end
 
+-- Replaced by FindAura:FindTotem(barEntry, allStacks)
+--[[
 function NeedToKnow.mfn_AuraCheck_TOTEM(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper for Totem bars, this returns data if
     -- a totem matching bar_entry is currently out. 
@@ -178,6 +184,7 @@ function NeedToKnow.mfn_AuraCheck_TOTEM(bar, bar_entry, all_stacks)
         end
     end
 end
+]]--
 
 function NeedToKnow.mfn_AuraCheck_EQUIPSLOT(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper for tracking usable gear based on the slot its in
@@ -353,6 +360,7 @@ function NeedToKnow.mfn_AuraCheck_BUFFCD(bar, bar_entry, all_stacks)
 end
 ]]--
 
+--[[
 local function UnitAuraWrapper(a,b,c,d)
      local
         name,  
@@ -380,8 +388,10 @@ local function UnitAuraWrapper(a,b,c,d)
         return name, icon, count, dur, expiry, caster, id, v1, v2, v3
     end
 end
+]]--
 
 -- Replaced by FindAura:FindSingle(bar_entry, all_stacks)
+--[[
 function NeedToKnow.mfn_AuraCheck_Single(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper that looks for the first instance of a buff
     -- Uses the UnitAura filters exclusively if it can
@@ -444,6 +454,7 @@ function NeedToKnow.mfn_AuraCheck_Single(bar, bar_entry, all_stacks)
         end
     end
 end
+]]--
 
 -- Replaced by FindAura:FindAllStacks(bar_entry, all_stacks)
 --[[
