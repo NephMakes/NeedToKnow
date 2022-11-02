@@ -202,6 +202,7 @@ function NeedToKnow.mfn_AuraCheck_EQUIPSLOT(bar, bar_entry, all_stacks)
     end
 end
 
+-- Replaced by FindAura:FindCooldown()
 --[[
 function NeedToKnow.mfn_AuraCheck_CASTCD(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper that checks for spell/item use cooldowns
@@ -255,6 +256,7 @@ function NeedToKnow.mfn_AuraCheck_CASTCD(bar, bar_entry, all_stacks)
 end
 ]]--
 
+-- Replaced by FindAura:FindSpellUseable()
 --[[
 function NeedToKnow.mfn_AuraCheck_USABLE(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper for watching "Is Usable", which means that the action
@@ -301,6 +303,7 @@ end
 -- Bar_AuraCheck helper for watching "internal cooldowns", which is like a spell
 -- cooldown for spells cast automatically (procs).  The "reset on buff" logic
 -- is still handled by 
+--[[
 function NeedToKnow.mfn_AuraCheck_BUFFCD(bar, bar_entry, all_stacks)
     local buff_stacks = m_scratch.buff_stacks
     NeedToKnow.mfn_ResetScratchStacks(buff_stacks);
@@ -348,6 +351,7 @@ function NeedToKnow.mfn_AuraCheck_BUFFCD(bar, bar_entry, all_stacks)
                "player" )                                  -- caster
     end
 end
+]]--
 
 local function UnitAuraWrapper(a,b,c,d)
      local
@@ -418,19 +422,6 @@ function NeedToKnow.mfn_AuraCheck_Single(bar, bar_entry, all_stacks)
             j=j+1
         end
     else
-        --[[
-        local buffName, iconPath, count, duration, expirationTime, caster, _, tt1, tt2, tt3 
-          = UnitAuraWrapper(bar.unit, bar_entry.name, nil, filter)
-          mfn_AddInstanceToStacks( all_stacks, bar_entry,
-               duration,                               -- duration
-               buffName,                               -- name
-               count,                                  -- count
-               expirationTime,                         -- expiration time
-               iconPath,                               -- icon path
-               caster,                                 -- caster
-               tt1, tt2, tt3 )                         -- extra status values, like vengeance armor or healing bo
-        ]]--
-        -- UnitAura() no longer supports querying by spell name (patch 8.0)
         local j = 1
         while true do
             local buffName, iconPath, count, duration, expirationTime, caster, spellID, tt1, tt2, tt3
@@ -454,8 +445,8 @@ function NeedToKnow.mfn_AuraCheck_Single(bar, bar_entry, all_stacks)
     end
 end
 
---[[
 -- Replaced by FindAura:FindAllStacks(bar_entry, all_stacks)
+--[[
 function NeedToKnow.mfn_AuraCheck_AllStacks(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper that updates bar.all_stacks (but returns nil)
     -- by scanning all the auras on the unit

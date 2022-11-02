@@ -111,12 +111,12 @@ Thanks a bunch!
     NEEDTOKNOW.FMT_SINGLEUNIT = "Single unit (2 m)";
     NEEDTOKNOW.FMT_TWOUNITS = "Minutes and seconds (01:10)";
     NEEDTOKNOW.FMT_FLOAT = "Fractional Seconds (70.1)";
-    NEEDTOKNOW.BARMENU_VISUALCASTTIME = "Visual Cast Time";
+    NEEDTOKNOW.BARMENU_VISUALCASTTIME = "Cast time indicator";
     NEEDTOKNOW.BARMENU_VCT_ENABLE = "Enable for this bar";
     NEEDTOKNOW.BARMENU_VCT_COLOR = "Overlay color";
     NEEDTOKNOW.BARMENU_VCT_SPELL = "Choose cast time by spell...";
     NEEDTOKNOW.BARMENU_VCT_EXTRA = "Set additional time...";
-    NEEDTOKNOW.CHOOSE_VCT_SPELL_DIALOG = "Enter the name of a spell (in your spellbook) whose cast time will determine the base length of the visual cast time.  If left blank, the aura name will be used as the spell name.  To force this to be 0, type 0.";
+    NEEDTOKNOW.CHOOSE_VCT_SPELL_DIALOG = "Enter the name of a spell (in your spellbook) whose cast time will determine the base length of the cast time indicator.  If left blank, the aura name will be used as the spell name.  To force this to be 0, type 0.";
     NEEDTOKNOW.CHOOSE_VCT_EXTRA_DIALOG = "Enter an amount of seconds that will be added to the cast time of the spell.  Ex: 1.5";
     NEEDTOKNOW.CHOOSE_BLINK_TITLE_DIALOG = "Enter the text to display on the bar when it is blinking.";
     NEEDTOKNOW.BUFFCD_DURATION_DIALOG = "Enter the cooldown duration triggered by the buffs watched by this bar.";

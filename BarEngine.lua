@@ -131,24 +131,26 @@ function Bar:Update()
 			-- Bar:SetType(barType)
             -- Determine which helper functions to use
 			if "BUFFCD" == settings.BuffOrDebuff then
-				self.fnCheck = NeedToKnow.mfn_AuraCheck_BUFFCD
+				-- self.fnCheck = NeedToKnow.mfn_AuraCheck_BUFFCD
+				self.fnCheck = FindAura.FindBuffCooldown
+				self.FindSingle = FindAura.FindSingle
 			elseif "TOTEM" == settings.BuffOrDebuff then
 				self.fnCheck = NeedToKnow.mfn_AuraCheck_TOTEM
 			elseif barType == "USABLE" then
 				self.fnCheck = FindAura.FindSpellUsable
 			elseif "EQUIPSLOT" == settings.BuffOrDebuff then
 				self.fnCheck = NeedToKnow.mfn_AuraCheck_EQUIPSLOT
-			-- elseif "POWER" == barSettings.BuffOrDebuff then
-				-- bar.fnCheck = NeedToKnow.mfn_AuraCheck_POWER
-				-- bar.is_counter = true
-				-- bar.ticker = nil
-				-- bar.ticking = false
 			elseif barType == "CASTCD" then
 				self.fnCheck = FindAura.FindCooldown
 				for idx, entry in ipairs(self.spells) do
 					table.insert(self.cd_functions, Cooldown.GetSpellCooldown)
 					Cooldown.SetUpSpell(self, entry)
 				end
+			-- elseif "POWER" == barSettings.BuffOrDebuff then
+				-- bar.fnCheck = NeedToKnow.mfn_AuraCheck_POWER
+				-- bar.is_counter = true
+				-- bar.ticker = nil
+				-- bar.ticking = false
 			elseif settings.show_all_stacks then
 				self.fnCheck = FindAura.FindAllStacks
 			else
@@ -175,6 +177,10 @@ function Bar:Update()
 		self:Inactivate()
 		self:Unlock()
 	end
+end
+
+function Bar:SetType(barType)
+	-- Called by Bar:Update()
 end
 
 function Bar:Activate()
@@ -525,7 +531,6 @@ function Bar:CheckAura()
         -- Call helper function for each spell in list
         for idx, entry in ipairs(self.spells) do
             self.fnCheck(self, entry, all_stacks)  -- fnCheck assigned by Bar:Update()
-            -- self:FindAura(entry, all_stacks)
             if all_stacks.total > 0 and not settings.show_all_stacks then
                 idxName = idx
                 break
@@ -806,10 +811,37 @@ end
 
 function FindAura:FindTotem(spellEntry, allStacks)
 end
+]]--
 
 function FindAura:FindBuffCooldown(spellEntry, allStacks)
+	-- For internal cooldowns on procs
+
+	local buffStacks = m_scratch.buff_stacks
+	NeedToKnow.mfn_ResetScratchStacks(buffStacks);
+	self:FindSingle(spellEntry, buffStacks)
+
+	local now = GetTime()
+	if buffStacks.total > 0 then
+		local duration = tonumber(self.settings.buffcd_duration)
+		if buffStacks.max.expirationTime == 0 then
+			-- TODO: This really doesn't work very well as a substitute for telling when the aura was applied
+			if not self.expirationTime then
+				NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration,  buffStacks.min.buffName, 1, duration + now, buffStacks.min.iconPath,  buffStacks.min.caster)
+			else
+				NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, self.duration,  self.buffName, 1, self.expirationTime, self.iconPath, "player")
+			end
+			return
+		end
+
+		local start = buffStacks.max.expirationTime - buffStacks.max.duration
+		local expirationTime = start + duration
+		if expirationTime > now then
+			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, buffStacks.min.buffName, 1, expirationTime, buffStacks.min.iconPath, buffStacks.min.caster)                   
+		end
+	elseif self.expirationTime and self.expirationTime > now + 0.1 then
+		NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, "player")
+	end
 end
-]]--
 
 
 -- --------
