@@ -27,10 +27,10 @@ local BarEventList = {
 	"UNIT_TARGET"
 }
 
-
 -- Local versions of frequently-used global functions
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
 local IsUsableSpell = IsUsableSpell
+local GetInventoryItemID = GetInventoryItemID
 local GetSpellInfo = GetSpellInfo
 local GetTime = GetTime
 local GetTotemInfo = GetTotemInfo
@@ -39,15 +39,11 @@ local UnitGUID = UnitGUID
 local UnitRangedDamage = UnitRangedDamage
 -- local SecondsToTimeAbbrev = SecondsToTimeAbbrev
 
-
 -- Deprecated: 
 local g_UnitIsFriend = UnitIsFriend
 local g_UnitAffectingCombat = UnitAffectingCombat
-
 local m_last_guid       = addonTable.m_last_guid
 local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
-
-
 
 
 -- ---------
@@ -158,7 +154,8 @@ function Bar:Update()
 			elseif barType == "USABLE" then
 				self.fnCheck = FindAura.FindSpellUsable
 			elseif "EQUIPSLOT" == settings.BuffOrDebuff then
-				self.fnCheck = NeedToKnow.mfn_AuraCheck_EQUIPSLOT
+				-- self.fnCheck = NeedToKnow.mfn_AuraCheck_EQUIPSLOT
+				self.fnCheck = FindAura.FindEquipSlotCooldown
 			elseif barType == "CASTCD" then
 				self.fnCheck = FindAura.FindCooldown
 				for idx, entry in ipairs(self.spells) do
@@ -538,7 +535,7 @@ function Bar:CheckAura()
     local idxName, duration, buffName, count, expirationTime, iconPath, caster
     if unitExists then
         all_stacks = m_scratch.all_stacks
-        NeedToKnow.mfn_ResetScratchStacks(all_stacks);
+        self:ResetScratchStacks(all_stacks)
         -- Call helper function for each spell in list
         for idx, entry in ipairs(self.spells) do
             self.fnCheck(self, entry, all_stacks)  -- fnCheck assigned by Bar:Update()
@@ -564,7 +561,7 @@ function Bar:CheckAura()
         local maxStart = 0
         local tNow = GetTime()
         local buff_stacks = m_scratch.buff_stacks
-        NeedToKnow.mfn_ResetScratchStacks(buff_stacks);
+        self:ResetScratchStacks(buff_stacks)
         -- Keep track of when the reset auras were last applied to the player
         for idx, resetSpell in ipairs(self.reset_spells) do
             -- Relies on BUFFCD setting target to player. onlyMine will work either way. 
@@ -692,15 +689,6 @@ function Bar:CheckAura()
     end
 end
 
---[[
-local function UnitAuraWrapper(unit, index, filter)
-	local name, icon, count, _, duration, expirationTime, sourceUnit, _, _, spellID, _, _, _, _, _, value1, value2, value3 = UnitAura(unit, index, filter)
-	if name then
-		return name, icon, count, duration, expirationTime, sourceUnit, spellID, value1, value2, value3
-	end
-end
-]]--
-
 -- FindAura:Methods() 
 --   * assigned by Bar:Update(), called by Bar:CheckAura()
 --   * self = bar
@@ -722,7 +710,8 @@ function FindAura:FindSingle(spellEntry, allStacks)
 				break
 			end
 			if spellID == spellEntry.id then 
-				NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
+				-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
+				self:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
 				return
 			end
 			j = j + 1
@@ -732,7 +721,8 @@ function FindAura:FindSingle(spellEntry, allStacks)
 		local name, icon, count, _, duration, expirationTime, sourceUnit, _, _, spellID, _, _, _, _, _, value1, value2, value3 = AuraUtil.FindAuraByName(spellEntry.name, self.unit, filter)
 		-- if name and name == spellEntry.name then 
 		if name then 
-			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
+			-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
+			self:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
 			return
 		end
 	end
@@ -748,7 +738,8 @@ function FindAura:FindAllStacks(spellEntry, allStacks)
 			break
 		end
 		if name == spellEntry.name or spellID == spellEntry.id then
-			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
+			-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
+			self:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
 		end
 		j = j + 1
 	end
@@ -776,7 +767,8 @@ function FindAura:FindSpellUsable(spellEntry, allStacks)
 				duration = self.duration
 				expirationTime = self.expirationTime
 			end
-			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, spellName, 1, expirationTime, icon, "player")
+			-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, spellName, 1, expirationTime, icon, "player")
+			self:AddInstanceToStacks(allStacks, spellEntry, duration, spellName, 1, expirationTime, icon, "player")
 		end
 	end
 end
@@ -808,22 +800,62 @@ function FindAura:FindCooldown(spellEntry, allStacks)
 		if expirationTime > now + 0.1 then
 			if start2 then
 				-- start2 returned by Cooldown.GetSpellChargesCooldown
-				NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, start2 + duration, icon, "player")
+				-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, start2 + duration, icon, "player")
+				self:AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, start2 + duration, icon, "player")
 				count = count - 1
 			else
 				if not count then count = 1 end
 			end
-			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, "player")
+			-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, "player")
+			self:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, "player")
 		end
 	end
 end
 
---[[
+-- Needs testing
 function FindAura:FindEquipSlotCooldown(spellEntry, allStacks)
+	-- Find item cooldown then update allStacks
+	if spellEntry.id then
+		local itemID = GetInventoryItemID("player", spellEntry.id)
+		if itemID then
+			local itemEntry = m_scratch.bar_entry
+			itemEntry.id = itemID
+			local start, duration, _, name, icon = Cooldown.GetItemCooldown(bar, itemEntry)
+			if start and start > 0 then
+				-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, start + duration, icon, "player")
+				self:AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, start + duration, icon, "player")
+			end
+		end
+	end
+end
+
+-- Replaced by FindAura:FindEquipSlotCooldown()
+--[[
+function NeedToKnow.mfn_AuraCheck_EQUIPSLOT(bar, bar_entry, all_stacks)
+    -- Bar_AuraCheck helper for tracking usable gear based on the slot its in
+    -- rather than the equipment name
+    local spellName, _, spellIconPath
+    if ( bar_entry.id ) then
+        local id = GetInventoryItemID("player", bar_entry.id)
+        if id then
+            local item_entry = m_scratch.bar_entry
+            item_entry.id = id
+            local start, cd_len, enable, name, icon = Cooldown.GetItemCooldown(bar, item_entry)
+            if ( start and start > 0 ) then
+                NeedToKnow.mfn_AddInstanceToStacks(all_stacks, bar_entry, 
+                       cd_len,                                     -- duration
+                       name,                                       -- name
+                       1,                                          -- count
+                       start + cd_len,                             -- expiration time
+                       icon,                                       -- icon path
+                       "player" )                                  -- caster
+            end
+        end
+    end
 end
 ]]--
 
--- Needs testing: 
+-- Needs testing
 function FindAura:FindTotem(spellEntry, allStacks)
 	local spellName = spellEntry.name or GetSpellInfo(spellEntry.id)
 	for index = 1, 4 do
@@ -843,17 +875,53 @@ function FindAura:FindTotem(spellEntry, allStacks)
 			end
 			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, dropTime[index] + duration, icon, "player")
 		]]--
-			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, startTime + duration, icon, "player")
+			-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, startTime + duration, icon, "player")
+			self:AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, startTime + duration, icon, "player")
 		end
 	end
 end
+
+-- Replaced by FindAura:FindTotem(barEntry, allStacks)
+--[[
+function NeedToKnow.mfn_AuraCheck_TOTEM(bar, bar_entry, all_stacks)
+    -- Bar_AuraCheck helper for Totem bars, this returns data if
+    -- a totem matching bar_entry is currently out. 
+    local idxName = bar_entry.idxName
+    local sComp = bar_entry.name or g_GetSpellInfo(bar_entry.id)
+    for iSlot=1, 4 do
+        local haveTotem, totemName, startTime, totemDuration, totemIcon = GetTotemInfo(iSlot)
+        if ( totemName and totemName:find(sComp) ) then
+            -- WORKAROUND: The startTime reported here is both cast to an int and off by 
+            -- a latency meaning it can be significantly low.  So we cache the g_GetTime 
+            -- that the totem actually appeared, so long as g_GetTime is reasonably close to 
+            -- startTime (since the totems may have been out for awhile before this runs.)
+            if ( not NeedToKnow.totem_drops[iSlot] or 
+                 NeedToKnow.totem_drops[iSlot] < startTime ) 
+            then
+                local precise = g_GetTime()
+                if ( precise - startTime > 1 ) then
+                    precise = startTime + 1
+                end
+                NeedToKnow.totem_drops[iSlot] = precise
+            end
+            NeedToKnow.mfn_AddInstanceToStacks(all_stacks, bar_entry, 
+                   totemDuration,                              -- duration
+                   totemName,                                  -- name
+                   1,                                          -- count
+                   NeedToKnow.totem_drops[iSlot] + totemDuration, -- expiration time
+                   totemIcon,                                  -- icon path
+                   "player" )                                  -- caster
+        end
+    end
+end
+]]--
 
 -- Needs testing
 function FindAura:FindBuffCooldown(spellEntry, allStacks)
 	-- For internal cooldowns on procs
 
 	local buffStacks = m_scratch.buff_stacks
-	NeedToKnow.mfn_ResetScratchStacks(buffStacks);
+	self:ResetScratchStacks(buffStacks)
 	self:FindSingle(spellEntry, buffStacks)
 
 	local now = GetTime()
@@ -862,9 +930,11 @@ function FindAura:FindBuffCooldown(spellEntry, allStacks)
 		if buffStacks.max.expirationTime == 0 then
 			-- TODO: This doesn't work well as a substitute for telling when the aura was applied
 			if not self.expirationTime then
-				NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration,  buffStacks.min.buffName, 1, duration + now, buffStacks.min.iconPath,  buffStacks.min.caster)
+				-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration,  buffStacks.min.buffName, 1, duration + now, buffStacks.min.iconPath,  buffStacks.min.caster)
+				self:AddInstanceToStacks(allStacks, spellEntry, duration,  buffStacks.min.buffName, 1, duration + now, buffStacks.min.iconPath,  buffStacks.min.caster)
 			else
-				NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, self.duration,  self.buffName, 1, self.expirationTime, self.iconPath, "player")
+				-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, self.duration,  self.buffName, 1, self.expirationTime, self.iconPath, "player")
+				self:AddInstanceToStacks(allStacks, spellEntry, self.duration,  self.buffName, 1, self.expirationTime, self.iconPath, "player")
 			end
 			return
 		end
@@ -872,11 +942,176 @@ function FindAura:FindBuffCooldown(spellEntry, allStacks)
 		local start = buffStacks.max.expirationTime - buffStacks.max.duration
 		local expirationTime = start + duration
 		if expirationTime > now then
-			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, buffStacks.min.buffName, 1, expirationTime, buffStacks.min.iconPath, buffStacks.min.caster)                   
+			-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, buffStacks.min.buffName, 1, expirationTime, buffStacks.min.iconPath, buffStacks.min.caster)                   
+			self:AddInstanceToStacks(allStacks, spellEntry, duration, buffStacks.min.buffName, 1, expirationTime, buffStacks.min.iconPath, buffStacks.min.caster)                   
 		end
 	elseif self.expirationTime and self.expirationTime > now + 0.1 then
-		NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, "player")
+		-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, "player")
+		self:AddInstanceToStacks(allStacks, spellEntry, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, "player")
 	end
+end
+
+-- Bar_AuraCheck helper for watching "internal cooldowns", which is like a spell
+-- cooldown for spells cast automatically (procs).  The "reset on buff" logic
+-- is still handled by 
+--[[
+function NeedToKnow.mfn_AuraCheck_BUFFCD(bar, bar_entry, all_stacks)
+    local buff_stacks = m_scratch.buff_stacks
+    NeedToKnow.mfn_ResetScratchStacks(buff_stacks);
+    NeedToKnow.mfn_AuraCheck_Single(bar, bar_entry, buff_stacks)
+    -- FindAura:FindSingle(bar, bar_entry, buff_stacks)
+    local tNow = g_GetTime()
+    if ( buff_stacks.total > 0 ) then
+        if buff_stacks.max.expirationTime == 0 then
+            -- TODO: This really doesn't work very well as a substitute for telling when the aura was applied
+            if not bar.expirationTime then
+                local nDur = tonumber(bar.settings.buffcd_duration)
+                NeedToKnow.mfn_AddInstanceToStacks( all_stacks, bar_entry,
+                    nDur, buff_stacks.min.buffName, 1, nDur+tNow, buff_stacks.min.iconPath, buff_stacks.min.caster )
+            else
+                NeedToKnow.mfn_AddInstanceToStacks( all_stacks, bar_entry,
+                       bar.duration,                               -- duration
+                       bar.buffName,                               -- name
+                       1,                                          -- count
+                       bar.expirationTime,                         -- expiration time
+                       bar.iconPath,                               -- icon path
+                       "player" )                                  -- caster
+            end
+            return
+        end
+        local tStart = buff_stacks.max.expirationTime - buff_stacks.max.duration
+        local duration = tonumber(bar.settings.buffcd_duration)
+        local expiration = tStart + duration
+        if ( expiration > tNow ) then
+            NeedToKnow.mfn_AddInstanceToStacks( all_stacks, bar_entry,
+                   duration,                                   -- duration
+                   buff_stacks.min.buffName,                                   -- name
+                   -- Seeing the charges on the CD bar violated least surprise for me
+                   1,                                          -- count
+                   expiration,                                 -- expiration time
+                   buff_stacks.min.iconPath,                   -- icon path
+                   buff_stacks.min.caster )                    -- caster
+        end
+    elseif ( bar.expirationTime and bar.expirationTime > tNow + 0.1 ) then
+        NeedToKnow.mfn_AddInstanceToStacks( all_stacks, bar_entry,
+               bar.duration,                               -- duration
+               bar.buffName,                               -- name
+               1,                                          -- count
+               bar.expirationTime,                         -- expiration time
+               bar.iconPath,                               -- icon path
+               "player" )                                  -- caster
+    end
+end
+]]--
+
+-- NephMakes: I don't think temporary enchants aren't a thing anymore, 
+-- but keep this for potential use in WoW Classic
+--[[
+function NeedToKnow.DetermineTempEnchantFromTooltip(i_invID)
+    local tt1,tt2 = NeedToKnow.GetUtilityTooltips()
+    
+    tt1:SetInventoryItem("player", i_invID)
+    local n,h = tt1:GetItem()
+
+    tt2:SetHyperlink(h)
+    
+    -- Look for green lines present in tt1 that are missing from tt2
+    local nLines1, nLines2 = tt1:NumLines(), tt2:NumLines()
+    local i1, i2 = 1,1
+    while ( i1 <= nLines1 ) do
+        local txt1 = tt1.left[i1]
+        if ( txt1:GetTextColor() ~= 0 ) then
+            i1 = i1 + 1
+        elseif ( i2 <= nLines2 ) then
+            local txt2 = tt2.left[i2]
+            if ( txt2:GetTextColor() ~= 0 ) then
+                i2 = i2 + 1
+            elseif (txt1:GetText() == txt2:GetText()) then
+                i1 = i1 + 1
+                i2 = i2 + 1
+            else
+                break
+            end
+        else
+            break
+        end
+    end
+    if ( i1 <= nLines1 ) then
+        local line = tt1.left[i1]:GetText()
+        local paren = line:find("[(]")
+        if ( paren ) then
+            line = line:sub(1,paren-2)
+        end
+        return line
+    end    
+end
+]]--
+
+function Bar:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
+	if duration then
+		if not count or count < 1 then 
+			count = 1 
+		end
+		if allStacks.total == 0 or allStacks.min.expirationTime > expirationTime then
+			allStacks.min.idxName = spellEntry.idxName
+			allStacks.min.buffName = name
+			allStacks.min.caster = caster
+			allStacks.min.duration = duration
+			allStacks.min.expirationTime = expirationTime
+			allStacks.min.iconPath = icon
+		end
+		if allStacks.total == 0 or allStacks.max.expirationTime < expirationTime then
+			allStacks.max.duration = duration
+			allStacks.max.expirationTime = expirationTime
+		end 
+		allStacks.total = allStacks.total + count
+		if value1 then
+			allStacks.total_ttn[1] = allStacks.total_ttn[1] + value1
+			if value2 then
+				allStacks.total_ttn[2] = allStacks.total_ttn[2] + value2
+			end
+			if value3 then
+				allStacks.total_ttn[3] = allStacks.total_ttn[3] + value3
+			end
+		end
+	end
+end
+
+--[[
+function NeedToKnow.mfn_AddInstanceToStacks(all_stacks, bar_entry, duration, name, count, expirationTime, iconPath, caster, tt1, tt2, tt3)
+    if duration then
+        if (not count or count < 1) then count = 1 end
+        if ( 0 == all_stacks.total or all_stacks.min.expirationTime > expirationTime ) then
+            all_stacks.min.idxName = bar_entry.idxName
+            all_stacks.min.buffName = name
+            all_stacks.min.caster = caster
+            all_stacks.min.duration = duration
+            all_stacks.min.expirationTime = expirationTime
+            all_stacks.min.iconPath = iconPath
+        end
+        if ( 0 == all_stacks.total or all_stacks.max.expirationTime < expirationTime ) then
+            all_stacks.max.duration = duration
+            all_stacks.max.expirationTime = expirationTime
+        end 
+        all_stacks.total = all_stacks.total + count
+        if ( tt1 ) then
+            all_stacks.total_ttn[1] = all_stacks.total_ttn[1] + tt1
+            if ( tt2 ) then
+                all_stacks.total_ttn[2] = all_stacks.total_ttn[2] + tt2
+            end
+            if ( tt3 ) then
+                all_stacks.total_ttn[3] = all_stacks.total_ttn[3] + tt3
+            end
+        end
+    end
+end
+]]--
+
+function Bar:ResetScratchStacks(auraStacks)
+    auraStacks.total = 0;
+    auraStacks.total_ttn[1] = 0;
+    auraStacks.total_ttn[2] = 0;
+    auraStacks.total_ttn[3] = 0;
 end
 
 
