@@ -59,75 +59,22 @@ function Bar:Update()
 	local barID = self:GetID()
 	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
 	self.settings = groupSettings.Bars[barID]
-	local settings = self.settings
-
-	local barType = settings.BuffOrDebuff
 
 	self:UpdateSpells()
+	self:UpdateBarType()
 
-	if
-    	barType == "BUFFCD" or
-		barType == "TOTEM" or
-		barType == "USABLE" or
-		barType == "EQUIPSLOT" or
-		barType == "CASTCD"
-	then
-        settings.Unit = "player"
-    end
-	self.unit = settings.Unit
-
+	self:SetAppearance()
+	self.max_value = 1
+	self:SetValue(self.bar1, 1)
 	self.fixedDuration = tonumber(groupSettings.FixedDuration)
 	if not self.fixedDuration or 0 >= self.fixedDuration then
 		self.fixedDuration = nil
 	end
 
-	self:SetAppearance()
-	self.max_value = 1
-	self:SetValue(self.bar1, 1)
-
-	self.nextUpdate = GetTime() + UPDATE_INTERVAL
-
 	if NeedToKnow.CharSettings["Locked"] then
-		local enabled = settings.Enabled and groupSettings.Enabled
+		local enabled = self.settings.Enabled and groupSettings.Enabled
 		if enabled then
-			-- Set up bar to be functional
-
 			self:EnableMouse(false)  -- Click through
-
-			settings.bAutoShot = nil
-
-            -- Determine which helper functions to use
-			if "BUFFCD" == settings.BuffOrDebuff then
-				self.fnCheck = FindAura.FindBuffCooldown
-				self.FindSingle = FindAura.FindSingle
-			elseif "TOTEM" == settings.BuffOrDebuff then
-				self.fnCheck = FindAura.FindTotem
-				-- self.dropTime = {}  -- array 1-4 of precise times totems appeared
-			elseif barType == "USABLE" then
-				self.fnCheck = FindAura.FindSpellUsable
-			elseif "EQUIPSLOT" == settings.BuffOrDebuff then
-				self.fnCheck = FindAura.FindEquipSlotCooldown
-			elseif barType == "CASTCD" then
-				self.fnCheck = FindAura.FindCooldown
-				-- self.cd_functions = {}
-				for idx, entry in ipairs(self.spells) do
-					table.insert(self.cd_functions, Cooldown.GetSpellCooldown)
-					Cooldown.SetUpSpell(self, entry)
-				end
-			elseif settings.show_all_stacks then
-				self.fnCheck = FindAura.FindAllStacks
-			else
-				self.fnCheck = FindAura.FindSingle
-			end
-
-			if barType == "BUFFCD" then
-				local duration = tonumber(settings.buffcd_duration)
-				if (not duration or duration < 1) then
-					print("NeedToKnow: Please set internal cooldown time for:", settings.AuraName)
-					enabled = false  -- Does this do anything?
-				end
-			end
-
 			self:Activate()
 			self:CheckAura()
 		else
@@ -141,15 +88,14 @@ function Bar:Update()
 end
 
 function Bar:UpdateSpells()
-	-- Update tracked spells/abilities in self.spells
+	-- Update tracked spells/abilities
 	-- Called by Bar:Update()
 
 	local settings = self.settings
 	self.auraName = settings.AuraName  -- User entry
 
-	-- Split list of spell names    
+	-- Process list of spell names or IDs
 	self.spells = {}
-	self.cd_functions = {}
 	local spellIndex = 0
 	for spell in self.auraName:gmatch("([^,]+)") do
 		spellIndex = spellIndex + 1
@@ -162,14 +108,14 @@ function Bar:UpdateSpells()
 		end
 	end
 
-	-- Split list of user-set name overrides
+	-- Process list of user-set name overrides
 	self.spell_names = {}
 	for shownName in settings.show_text_user:gmatch("([^,]+)") do
 		shownName = strtrim(shownName)
 		table.insert(self.spell_names, shownName)
 	end
 
-	-- Split list of reset spells for internal cooldowns
+	-- Process list of reset spells for internal cooldowns
 	if settings.buffcd_reset_spells and settings.buffcd_reset_spells ~= "" then
 		self.reset_spells = {}
 		self.reset_start = {}
@@ -191,9 +137,51 @@ function Bar:UpdateSpells()
 	end
 end
 
-function Bar:UpdateBarType(barType)
+function Bar:UpdateBarType()
 	-- Set up tracking functions
 	-- Called by Bar:Update()
+
+	local settings = self.settings
+	local barType = settings.BuffOrDebuff
+
+	if
+    	barType == "BUFFCD" or
+		barType == "TOTEM" or
+		barType == "USABLE" or
+		barType == "EQUIPSLOT" or
+		barType == "CASTCD"
+	then
+        settings.Unit = "player"
+    end
+	self.unit = settings.Unit
+
+	if barType == "BUFFCD" then
+		local duration = tonumber(settings.buffcd_duration)
+		if not duration or duration < 1 then
+			print("NeedToKnow: Please set internal cooldown time for:", settings.AuraName)
+		end
+		self.fnCheck = FindAura.FindBuffCooldown
+		self.FindSingle = FindAura.FindSingle
+	elseif barType == "TOTEM" then
+		-- self.dropTime = {}  -- array 1-4 of precise times totems appeared
+		self.fnCheck = FindAura.FindTotem
+	elseif barType == "USABLE" then
+		self.fnCheck = FindAura.FindSpellUsable
+	elseif barType == "EQUIPSLOT" then
+		self.fnCheck = FindAura.FindEquipSlotCooldown
+	elseif barType == "CASTCD" then
+		self.cd_functions = {}
+		settings.bAutoShot = nil
+		for idx, entry in ipairs(self.spells) do
+			table.insert(self.cd_functions, Cooldown.GetSpellCooldown)
+			Cooldown.SetUpSpell(self, entry)
+		end
+		self.fnCheck = FindAura.FindCooldown
+	elseif settings.show_all_stacks then
+		self.fnCheck = FindAura.FindAllStacks
+	else
+		self.fnCheck = FindAura.FindSingle
+	end
 end
 
 function Bar:Activate()
@@ -201,6 +189,7 @@ function Bar:Activate()
 
 	self:SetScript("OnEvent", self.OnEvent)
 	self:SetScript("OnUpdate", self.OnUpdate)
+	self.nextUpdate = GetTime() + UPDATE_INTERVAL
 
 	local settings = self.settings
 
@@ -233,22 +222,25 @@ function Bar:Activate()
 		self.PLAYER_TARGET_CHANGED = BarEvent.PLAYER_TARGET_CHANGED
 		self.UNIT_TARGET = BarEvent.UNIT_TARGET
 		self.COMBAT_LOG_EVENT_UNFILTERED = BarEvent.COMBAT_LOG_EVENT_UNFILTERED
+	-- elseif self.unit ~== "lastraid" then
+		-- self:RegisterUnitEvent("UNIT_AURA", self.unit)
+		-- self.UNIT_AURA = BarEvent.UNIT_AURA
 	else
 		self:RegisterEvent("UNIT_AURA")
 		self.UNIT_AURA = BarEvent.UNIT_AURA
 	end
 
-	if ( self.unit == "focus" ) then
+	if self.unit == "focus" then
 		self:RegisterEvent("PLAYER_FOCUS_CHANGED")
 		self.PLAYER_FOCUS_CHANGED = BarEvent.PLAYER_FOCUS_CHANGED
-	elseif ( self.unit == "target" ) then
+	elseif self.unit == "target" then
 		self:RegisterEvent("PLAYER_TARGET_CHANGED")
 		self.PLAYER_TARGET_CHANGED = BarEvent.PLAYER_TARGET_CHANGED
-	elseif ( self.unit == "pet" ) then
+	elseif self.unit == "pet" then
 		self:RegisterEvent("UNIT_PET")
 		self.UNIT_PET = BarEvent.UNIT_PET
-	elseif ( "lastraid" == settings.Unit ) then
-		if ( not NeedToKnow.BarsForPSS ) then
+	elseif settings.Unit == "lastraid" then
+		if not NeedToKnow.BarsForPSS then
 			NeedToKnow.BarsForPSS = {}
 		end
 		NeedToKnow.BarsForPSS[self] = true
@@ -256,18 +248,18 @@ function Bar:Activate()
 		self.PLAYER_SPELLCAST_SUCCEEDED = BarEvent.PLAYER_SPELLCAST_SUCCEEDED
 	end
 
-	if ( settings.bDetectExtends ) then
+	if settings.bDetectExtends then
 		local idx, entry
 		for idx, entry in ipairs(self.spells) do
 			local spellName
-			if ( entry.id ) then
+			if entry.id then
 				spellName = GetSpellInfo(entry.id)
 			else
 				spellName = entry.name
 			end
-			if ( spellName ) then
+			if spellName then
 				local r = m_last_guid[spellName]
-				if ( not r ) then
+				if not r then
 					m_last_guid[spellName] = { time=0, dur=0, expiry=0 }
 				end
 			else
@@ -277,11 +269,11 @@ function Bar:Activate()
 		NeedToKnow.RegisterSpellcastSent()
 	end
 
-	if ( settings.blink_enabled and settings.blink_boss ) then
-		if ( not NeedToKnow.BossStateBars ) then
+	if settings.blink_enabled and settings.blink_boss then
+		if not NeedToKnow.BossStateBars then
 			NeedToKnow.BossStateBars = {}
 		end
-		NeedToKnow.BossStateBars[self] = 1;
+		NeedToKnow.BossStateBars[self] = 1
 	end
 end
 
@@ -322,9 +314,11 @@ function Bar:Inactivate()
 	if NeedToKnow.BossStateBars then
 		NeedToKnow.BossStateBars[self] = nil
 	end
+
 	if self.settings.bDetectExtends then
 		NeedToKnow.UnregisterSpellcastSent()
 	end
+
 	if NeedToKnow.BarsForPSS and NeedToKnow.BarsForPSS[self] then
 		NeedToKnow.BarsForPSS[self] = nil
 		if not next(NeedToKnow.BarsForPSS) then
