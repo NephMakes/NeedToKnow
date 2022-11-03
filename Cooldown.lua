@@ -69,12 +69,11 @@ function Cooldown.SetUpSpell(bar, entry)
 end
 
 function Cooldown.GetItemCooldown(bar, entry)
-	-- Wrapper around GetItemCooldown
-	-- Expected to return start, duration, enabled, name, iconpath
-	local start, duration, enabled = GetItemCooldown(entry.id);
-	if ( start ) then
-		local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(entry.id);
-		return start, duration, enabled, name, icon;
+	-- Wrapper for GetItemCooldown
+	local start, duration, enabled = GetItemCooldown(entry.id)
+	if start then
+		local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(entry.id)
+		return start, duration, enabled, name, icon
 	end
 end
 

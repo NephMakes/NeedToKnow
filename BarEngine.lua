@@ -5,8 +5,8 @@ local addonName, addonTable = ...
 -- Namespaces
 local Bar = NeedToKnow.Bar
 local BarEvent = NeedToKnow.BarEvent
-local Cooldown = NeedToKnow.Cooldown
 local FindAura = NeedToKnow.FindAura
+local Cooldown = NeedToKnow.Cooldown
 
 local UPDATE_INTERVAL = 0.025  -- 40 fps
 
@@ -64,6 +64,7 @@ function Bar:Update()
 	local barType = settings.BuffOrDebuff
 
 	self.auraName = settings.AuraName
+	-- self:SetSpells()
 
 	if
     	barType == "BUFFCD" or
@@ -81,12 +82,11 @@ function Bar:Update()
 		self.fixedDuration = nil
 	end
 
+	self:SetAppearance()
 	self.max_value = 1
 	self:SetValue(self.bar1, 1)
 
 	self.nextUpdate = GetTime() + UPDATE_INTERVAL
-
-	self:SetAppearance()
 
 	if NeedToKnow.CharSettings["Locked"] then
 		local enabled = settings.Enabled and groupSettings.Enabled
@@ -142,22 +142,20 @@ function Bar:Update()
 
 			settings.bAutoShot = nil
 
-			-- Bar:SetType(barType)
             -- Determine which helper functions to use
 			if "BUFFCD" == settings.BuffOrDebuff then
 				self.fnCheck = FindAura.FindBuffCooldown
 				self.FindSingle = FindAura.FindSingle
 			elseif "TOTEM" == settings.BuffOrDebuff then
-				-- self.fnCheck = NeedToKnow.mfn_AuraCheck_TOTEM
 				self.fnCheck = FindAura.FindTotem
 				-- self.dropTime = {}  -- array 1-4 of precise times totems appeared
 			elseif barType == "USABLE" then
 				self.fnCheck = FindAura.FindSpellUsable
 			elseif "EQUIPSLOT" == settings.BuffOrDebuff then
-				-- self.fnCheck = NeedToKnow.mfn_AuraCheck_EQUIPSLOT
 				self.fnCheck = FindAura.FindEquipSlotCooldown
 			elseif barType == "CASTCD" then
 				self.fnCheck = FindAura.FindCooldown
+				-- self.cd_functions = {}
 				for idx, entry in ipairs(self.spells) do
 					table.insert(self.cd_functions, Cooldown.GetSpellCooldown)
 					Cooldown.SetUpSpell(self, entry)
@@ -177,8 +175,6 @@ function Bar:Update()
 			end
 
 			self:Activate()
-
-			-- Events were cleared while unlocked, so need to check the bar again now
 			self:CheckAura()
 		else
             self:Inactivate()
@@ -190,10 +186,58 @@ function Bar:Update()
 	end
 end
 
-function Bar:SetType(barType)
+-- In progress, needs testing: 
+function Bar:SetSpells()
 	-- Called by Bar:Update()
-	-- Clear previous barType functions
-	-- Set barType functions
+	local settings = self.settings
+
+	-- Split list of spell names    
+	self.spells = {}
+	self.cd_functions = {}
+	local iSpell = 0
+	for barSpell in self.auraName:gmatch("([^,]+)") do
+		iSpell = iSpell+1
+		barSpell = strtrim(barSpell)
+		local _, nDigits = barSpell:find("^-?%d+")
+		if nDigits == barSpell:len() then
+			table.insert(self.spells, { idxName=iSpell, id=tonumber(barSpell) } )
+		else
+			table.insert(self.spells, { idxName=iSpell, name=barSpell } )
+		end
+	end
+
+	-- Split list of user-set name overrides
+	self.spell_names = {}
+	for un in settings.show_text_user:gmatch("([^,]+)") do
+		un = strtrim(un)
+		table.insert(self.spell_names, un)
+	end
+
+	-- Split the "reset" spells (for internal cooldowns which reset when the player gains an aura)
+	if settings.buffcd_reset_spells and settings.buffcd_reset_spells ~= "" then
+		self.reset_spells = {}
+		self.reset_start = {}
+		iSpell = 0
+		for resetSpell in settings.buffcd_reset_spells:gmatch("([^,]+)") do
+			iSpell = iSpell+1
+			resetSpell = strtrim(resetSpell)
+			local _, nDigits = resetSpell:find("^%d+")
+			if nDigits == resetSpell:len() then
+				table.insert(self.reset_spells, { idxName = iSpell, id=tonumber(resetSpell) } )
+			else
+				table.insert(self.reset_spells, { idxName = iSpell, name=resetSpell} )
+			end
+			table.insert(self.reset_start, 0)
+		end
+	else
+		self.reset_spells = nil
+		self.reset_start = nil
+	end
+end
+
+function Bar:SetBarType(barType)
+	-- Set up tracking functions
+	-- Called by Bar:Update()
 end
 
 function Bar:Activate()
@@ -685,10 +729,9 @@ function Bar:CheckAura()
 end
 
 -- FindAura:Methods() 
---   * assigned by Bar:Update(), called by Bar:CheckAura()
---   * self = bar
---   * spellEntry is element of bar.spells assigned by Bar:Update()
---     {idxName = , id = } or {idxName = , name = }
+--   assigned by Bar:Update(), called by Bar:CheckAura()
+--   self = bar
+--   spellEntry is element of bar.spells, {idxName, id} or {idxName, name}
 
 function FindAura:FindSingle(spellEntry, allStacks)
 	-- Find first aura instance then update allStacks
