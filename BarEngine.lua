@@ -346,10 +346,6 @@ function Bar:OnEvent(event, unit, ...)
 	end
 end
 
--- BarEvent:EVENT(unit, ...) 
---   assigned by Bar:Activate()
---   self = bar
-
 function BarEvent:ACTIONBAR_UPDATE_COOLDOWN()
 	self:CheckAura()
 end
@@ -453,7 +449,7 @@ function BarEvent:UNIT_SPELLCAST_SUCCEEDED(unit, ...)
 	end
 	]]--
 	if unit == "player" then 
-		-- UNIT_SPELLCAST_SUCCEEDED only registered if self.settings.bAutoShot
+		-- UNIT_SPELLCAST_SUCCEEDED only registered by bar if self.settings.bAutoShot
 		local spellID  = select(2, ...)
 		local spellName = select(1, GetSpellInfo(spellId))
 		if spellName == autoShotName then
@@ -643,11 +639,10 @@ function Bar:CheckAura()
             self.max_expirationTime = nil
         end
 
-        -- Mark the bar as not blinking before calling ConfigureVisible, 
-        -- since it calls OnUpdate which checks bar.blink
+        -- Mark bar as not blinking first, since UpdateAppearance() calls OnUpdate which checks bar.blink
         self.blink = false
         self:UpdateAppearance()
-        self:ConfigureVisible(count, extended, all_stacks)
+		self:UpdateBarText(self.settings, count, extended, all_stacks)
         self:Show()
     else
         if (settings.bDetectExtends and self.buffName) then
@@ -828,8 +823,6 @@ function FindAura:FindEquipSlotCooldown(spellEntry, allStacks)
 		end
 	end
 end
-
--- Replaced by FindAura:FindEquipSlotCooldown()
 --[[
 function NeedToKnow.mfn_AuraCheck_EQUIPSLOT(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper for tracking usable gear based on the slot its in
@@ -880,8 +873,6 @@ function FindAura:FindTotem(spellEntry, allStacks)
 		end
 	end
 end
-
--- Replaced by FindAura:FindTotem(barEntry, allStacks)
 --[[
 function NeedToKnow.mfn_AuraCheck_TOTEM(bar, bar_entry, all_stacks)
     -- Bar_AuraCheck helper for Totem bars, this returns data if
@@ -950,7 +941,6 @@ function FindAura:FindBuffCooldown(spellEntry, allStacks)
 		self:AddInstanceToStacks(allStacks, spellEntry, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, "player")
 	end
 end
-
 -- Bar_AuraCheck helper for watching "internal cooldowns", which is like a spell
 -- cooldown for spells cast automatically (procs).  The "reset on buff" logic
 -- is still handled by 
@@ -1076,36 +1066,6 @@ function Bar:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, e
 		end
 	end
 end
-
---[[
-function NeedToKnow.mfn_AddInstanceToStacks(all_stacks, bar_entry, duration, name, count, expirationTime, iconPath, caster, tt1, tt2, tt3)
-    if duration then
-        if (not count or count < 1) then count = 1 end
-        if ( 0 == all_stacks.total or all_stacks.min.expirationTime > expirationTime ) then
-            all_stacks.min.idxName = bar_entry.idxName
-            all_stacks.min.buffName = name
-            all_stacks.min.caster = caster
-            all_stacks.min.duration = duration
-            all_stacks.min.expirationTime = expirationTime
-            all_stacks.min.iconPath = iconPath
-        end
-        if ( 0 == all_stacks.total or all_stacks.max.expirationTime < expirationTime ) then
-            all_stacks.max.duration = duration
-            all_stacks.max.expirationTime = expirationTime
-        end 
-        all_stacks.total = all_stacks.total + count
-        if ( tt1 ) then
-            all_stacks.total_ttn[1] = all_stacks.total_ttn[1] + tt1
-            if ( tt2 ) then
-                all_stacks.total_ttn[2] = all_stacks.total_ttn[2] + tt2
-            end
-            if ( tt3 ) then
-                all_stacks.total_ttn[3] = all_stacks.total_ttn[3] + tt3
-            end
-        end
-    end
-end
-]]--
 
 function Bar:ResetScratchStacks(auraStacks)
     auraStacks.total = 0;

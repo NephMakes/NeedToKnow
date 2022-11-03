@@ -122,36 +122,29 @@ function Bar:UpdateAppearance()
 
 	local barSettings = self.settings
 
-	-- Note: Blinking bars don't have an icon
 	local icon = self.Icon
-	if ( barSettings.show_icon and self.iconPath ) then
-		icon:SetTexture(self.iconPath)
+	if barSettings.show_icon and self.iconPath then
+		icon:SetTexture(self.iconPath)  -- Icon can change if bar tracks multiple spells
 		icon:Show()
 		self:SetBackgroundSize(true)
 	else
-		icon:Hide()
+		icon:Hide()  -- Blinking bars don't have an icon
 		self:SetBackgroundSize(false)
 	end
 
-	-- Note: Blinking changes bar color
-	local barColor = barSettings.BarColor
+	local barColor = barSettings.BarColor  	-- Blinking changes bar color
 	self.Texture:SetVertexColor(barColor.r, barColor.g, barColor.b)
 	self.Texture:SetAlpha(barColor.a)
 	self.Texture2:SetVertexColor(barColor.r, barColor.g, barColor.b)
 	self.Texture2:SetAlpha(barColor.a)
 		-- Texture2 getting shown for indefinite auras
-	if ( self.max_expirationTime and self.max_expirationTime ~= self.expirationTime ) then 
---		self.Texture2:SetVertexColor(barColor.r, barColor.g, barColor.b)
---		self.Texture2:SetAlpha(barColor.a)
+	if self.max_expirationTime and self.max_expirationTime ~= self.expirationTime then 
+		-- self.Texture2:SetVertexColor(barColor.r, barColor.g, barColor.b)
+		-- self.Texture2:SetAlpha(barColor.a)
 		self.Texture2:Show()
 	else
 		self.Texture2:Hide()
 	end
-end
-
-function Bar:ConfigureVisible(count, extended, buff_stacks)
-	-- Called by Bar:CheckAura() if bar.duration found
-	-- How is this conceptually different than Bar:UpdateAppearance()?
 
 	if self.duration > 0 then
 		local duration = self.fixedDuration or self.duration
@@ -178,8 +171,6 @@ function Bar:ConfigureVisible(count, extended, buff_stacks)
 		self.Spark:Hide()
 		self.CastTime:Hide()
 	end
-
-	self:ConfigureVisibleText(self.settings, count, extended, buff_stacks)
 end
 
 function Bar:SetValue(barTexture, value, value0)
@@ -249,9 +240,8 @@ function NeedToKnow.GetPrettyName(barSettings)
 	end
 end
 
-function Bar:ConfigureVisibleText(barSettings, count, extended, buff_stacks)
-	-- Called by Bar:ConfigureVisible()
-	-- which is called by Bar:CheckAura() if bar.duration found
+function Bar:UpdateBarText(barSettings, count, extended, buff_stacks)
+	-- Called by Bar:CheckAura() if duration found
 
 	local settings = barSettings or self.settings
 	local text = ""
