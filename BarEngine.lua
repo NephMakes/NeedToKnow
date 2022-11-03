@@ -63,8 +63,7 @@ function Bar:Update()
 
 	local barType = settings.BuffOrDebuff
 
-	self.auraName = settings.AuraName
-	-- self:SetSpells()
+	self:UpdateSpells()
 
 	if
     	barType == "BUFFCD" or
@@ -94,51 +93,6 @@ function Bar:Update()
 			-- Set up bar to be functional
 
 			self:EnableMouse(false)  -- Click through
-
-			-- self:SetSpells()
-
-			-- Split list of spell names    
-			self.spells = {}
-			self.cd_functions = {}
-			local iSpell = 0
-			for barSpell in self.auraName:gmatch("([^,]+)") do
-				iSpell = iSpell+1
-				barSpell = strtrim(barSpell)
-				local _, nDigits = barSpell:find("^-?%d+")
-				if ( nDigits == barSpell:len() ) then
-					table.insert(self.spells, { idxName=iSpell, id=tonumber(barSpell) } )
-				else
-					table.insert(self.spells, { idxName=iSpell, name=barSpell } )
-				end
-			end
-
-            -- Split the user name overrides
-			self.spell_names = {}
-			for un in settings.show_text_user:gmatch("([^,]+)") do
-				un = strtrim(un)
-				table.insert(self.spell_names, un)
-			end
-
-            -- Split the "reset" spells (for internal cooldowns which reset when the player gains an aura)
-			if settings.buffcd_reset_spells and settings.buffcd_reset_spells ~= "" then
-				self.reset_spells = {}
-				self.reset_start = {}
-				iSpell = 0
-				for resetSpell in settings.buffcd_reset_spells:gmatch("([^,]+)") do
-					iSpell = iSpell+1
-					resetSpell = strtrim(resetSpell)
-					local _, nDigits = resetSpell:find("^%d+")
-					if ( nDigits == resetSpell:len() ) then
-						table.insert(self.reset_spells, { idxName = iSpell, id=tonumber(resetSpell) } )
-					else
-						table.insert(self.reset_spells, { idxName = iSpell, name=resetSpell} )
-					end
-					table.insert(self.reset_start, 0)
-				end
-			else
-				self.reset_spells = nil
-				self.reset_start = nil
-			end
 
 			settings.bAutoShot = nil
 
@@ -186,46 +140,48 @@ function Bar:Update()
 	end
 end
 
--- In progress, needs testing: 
-function Bar:SetSpells()
+function Bar:UpdateSpells()
+	-- Update tracked spells/abilities in self.spells
 	-- Called by Bar:Update()
+
 	local settings = self.settings
+	self.auraName = settings.AuraName  -- User entry
 
 	-- Split list of spell names    
 	self.spells = {}
 	self.cd_functions = {}
-	local iSpell = 0
-	for barSpell in self.auraName:gmatch("([^,]+)") do
-		iSpell = iSpell+1
-		barSpell = strtrim(barSpell)
-		local _, nDigits = barSpell:find("^-?%d+")
-		if nDigits == barSpell:len() then
-			table.insert(self.spells, { idxName=iSpell, id=tonumber(barSpell) } )
+	local spellIndex = 0
+	for spell in self.auraName:gmatch("([^,]+)") do
+		spellIndex = spellIndex + 1
+		spell = strtrim(spell)
+		local _, numDigits = spell:find("^-?%d+")
+		if numDigits == spell:len() then
+			table.insert(self.spells, {idxName = spellIndex, id = tonumber(spell)})
 		else
-			table.insert(self.spells, { idxName=iSpell, name=barSpell } )
+			table.insert(self.spells, {idxName = spellIndex, name = spell})
 		end
 	end
 
 	-- Split list of user-set name overrides
 	self.spell_names = {}
-	for un in settings.show_text_user:gmatch("([^,]+)") do
-		un = strtrim(un)
-		table.insert(self.spell_names, un)
+	for shownName in settings.show_text_user:gmatch("([^,]+)") do
+		shownName = strtrim(shownName)
+		table.insert(self.spell_names, shownName)
 	end
 
-	-- Split the "reset" spells (for internal cooldowns which reset when the player gains an aura)
+	-- Split list of reset spells for internal cooldowns
 	if settings.buffcd_reset_spells and settings.buffcd_reset_spells ~= "" then
 		self.reset_spells = {}
 		self.reset_start = {}
-		iSpell = 0
+		spellIndex = 0
 		for resetSpell in settings.buffcd_reset_spells:gmatch("([^,]+)") do
-			iSpell = iSpell+1
+			spellIndex = spellIndex + 1
 			resetSpell = strtrim(resetSpell)
-			local _, nDigits = resetSpell:find("^%d+")
-			if nDigits == resetSpell:len() then
-				table.insert(self.reset_spells, { idxName = iSpell, id=tonumber(resetSpell) } )
+			local _, numDigits = resetSpell:find("^%d+")
+			if numDigits == resetSpell:len() then
+				table.insert(self.reset_spells, {idxName = spellIndex, id = tonumber(resetSpell)})
 			else
-				table.insert(self.reset_spells, { idxName = iSpell, name=resetSpell} )
+				table.insert(self.reset_spells, {idxName = spellIndex, name = resetSpell})
 			end
 			table.insert(self.reset_start, 0)
 		end
@@ -235,7 +191,7 @@ function Bar:SetSpells()
 	end
 end
 
-function Bar:SetBarType(barType)
+function Bar:UpdateBarType(barType)
 	-- Set up tracking functions
 	-- Called by Bar:Update()
 end
