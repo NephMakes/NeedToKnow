@@ -117,8 +117,7 @@ function Cooldown.DetermineShortCooldownFromTooltip(spell)
 	-- is listed with a duration in seconds.  Longer cooldowns don't
 	-- need this logic, so we don't need to do unit conversion
 
-	-- Stores cooldown info as NeedToKnow.short_cds
-	-- But why? 
+	-- Stores cooldown info as NeedToKnow.short_cds ...But why? 
 
 	if ( not NeedToKnow.short_cds ) then
 		NeedToKnow.short_cds = {}
@@ -166,7 +165,8 @@ function Cooldown.GetUtilityTooltips()
 	if ( not NeedToKnow_Tooltip1 ) then
 		for idxTip = 1, 2 do
 			local ttname = "NeedToKnow_Tooltip"..idxTip
-			local tt = CreateFrame("GameTooltip", ttname)
+			-- local tt = CreateFrame("GameTooltip", ttname)
+			local tt = CreateFrame("GameTooltip", ttname, nil, GameTooltipTemplate)
 			tt:SetOwner(UIParent, "ANCHOR_NONE")
 			tt.left = {}
 			tt.right = {}

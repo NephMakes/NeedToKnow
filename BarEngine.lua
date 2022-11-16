@@ -72,8 +72,9 @@ function Bar:Update()
 	end
 
 	if NeedToKnow.CharSettings["Locked"] then
-		local enabled = self.settings.Enabled and groupSettings.Enabled
-		if enabled then
+		-- local enabled = self.settings.Enabled and groupSettings.Enabled
+		-- if enabled then
+		if self.settings.Enabled and groupSettings.Enabled then
 			self:EnableMouse(false)  -- Click through
 			self:Activate()
 			self:CheckAura()

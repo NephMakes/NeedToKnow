@@ -2,8 +2,8 @@
 ## Title: NeedToKnow
 ## Author: NephMakes, lieandswell
 ## FormerAuthor: Kitjan
-## Version: 4.3.0
-## Notes: Timer bars for buffs, debuffs, cooldowns, etc.
+## Version: 4.3.1
+## Notes: Simple, effective timer bars
 ## X-Credits: Bilt, Fxfighter EU-Echsenkessel, metalchoir, sp00n, Vlakarados, wowui.cn
 ## X-Category: Buffs, Combat
 ## OptionalDeps: LibStub,LibSharedMedia-3.0
