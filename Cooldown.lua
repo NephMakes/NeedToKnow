@@ -193,42 +193,42 @@ function Cooldown.GetUtilityTooltips()
 end
 
 function Cooldown.GetSpellCooldown(bar, entry)
-    -- Wrapper around GetSpellCooldown with extra sauce
-    -- Expected to return start, cd_len, enable, buffName, iconpath
-    local barSpell = entry.id or entry.name
-    local start, duration, enabled = GetSpellCooldown(barSpell)
-    if ( start and start > 0 ) then
-        local spellName, _, spellIconPath, _, _, _, spellId = g_GetSpellInfo(barSpell)
-        if ( not spellName ) then 
-            if ( not NeedToKnow.GSIBroken ) then 
-                NeedToKnow.GSIBroken = {} 
-            end
-            if ( not NeedToKnow.GSIBroken[barSpell] ) then
-                print("NeedToKnow: Warning! Unable to get spell info for",barSpell,".  Try using Spell ID instead.")
-                NeedToKnow.GSIBroken[barSpell] = true;
-            end
-            spellName = tostring(barSpell)
-        end
+	-- Wrapper around GetSpellCooldown with extra sauce
+	-- Expected to return start, cd_len, enable, buffName, iconpath
+	local barSpell = entry.id or entry.name
+	local start, duration, enabled = GetSpellCooldown(barSpell)
+	if start and start > 0 then
+		local spellName, _, spellIconPath, _, _, _, spellId = g_GetSpellInfo(barSpell)
 
-        if ( enabled == 0 ) then 
-            -- Filter out conditions like Stealth while stealthed
-            start = nil
-        elseif ( NeedToKnow.is_DK == 1 ) then
-		    local usesRunes = nil
-		    local costInfo = g_GetSpellPowerCost(spellId)
+		if not spellName then 
+			if not NeedToKnow.GSIBroken then 
+				NeedToKnow.GSIBroken = {} 
+			end
+			if not NeedToKnow.GSIBroken[barSpell] then
+				print("NeedToKnow: Warning! Unable to get spell info for",barSpell,".  Try using Spell ID instead.")
+				NeedToKnow.GSIBroken[barSpell] = true;
+			end
+			spellName = tostring(barSpell)
+		end
+
+		if enabled == 0 then 
+			-- Filter out conditions like Stealth while stealthed
+			start = nil
+		elseif NeedToKnow.is_DK == 1 then
+			local usesRunes = false
+			local costInfo = g_GetSpellPowerCost(spellId)
 			local nCosts = table.getn(costInfo)
 			for iCost = 1, nCosts do
-			    if ( costInfo[iCost].type == SPELL_POWER_RUNES ) then  
-				    usesRunes = true
+				if costInfo[iCost].type == SPELL_POWER_RUNES then  
+					usesRunes = true
 				end
 			end
-
-			if ( usesRunes ) then
+			if usesRunes then
 				-- Filter out rune cooldown artificially extending the cd
-				if ( duration <= 10 ) then
+				if duration <= 10 then
 					local tNow = g_GetTime()
-					if ( bar.expirationTime and (tNow < bar.expirationTime) ) then
-						-- We've already seen the correct CD for this; keep using it
+					if bar.expirationTime and tNow < bar.expirationTime then
+						-- We've already seen the correct CD for this, so keep using it
 						start = bar.expirationTime - bar.duration
 						duration = bar.duration
 					elseif m_last_sent and m_last_sent[spellName] and m_last_sent[spellName] > (tNow - 1.5) then
@@ -236,7 +236,7 @@ function Cooldown.GetSpellCooldown(bar, entry)
 						-- Look at the tooltip to tell what the correct CD should be. If it's supposed
 						-- to be short (Ghoul Frenzy, Howling Blast), then start a CD bar
 						duration = Cooldown.DetermineShortCooldownFromTooltip(barSpell)
-						if ( (duration == 0) or (duration > 10) ) then
+						if duration == 0 or duration > 10 then
 							start = nil
 						end
 					else
@@ -244,12 +244,12 @@ function Cooldown.GetSpellCooldown(bar, entry)
 					end
 				end
 			end
-        end
-        
-        if ( start ) then
-            return start, duration, enabled, spellName, spellIconPath
-        end
-    end
+		end
+
+		if start then
+			return start, duration, enabled, spellName, spellIconPath
+		end
+	end
 end
 
 function Cooldown.GetSpellChargesCooldown(bar, entry)
