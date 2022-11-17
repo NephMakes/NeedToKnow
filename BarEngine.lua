@@ -42,7 +42,7 @@ local UnitRangedDamage = UnitRangedDamage
 -- Deprecated: 
 local g_UnitIsFriend = UnitIsFriend
 local g_UnitAffectingCombat = UnitAffectingCombat
-local m_last_guid       = addonTable.m_last_guid
+local m_last_guid = addonTable.m_last_guid
 local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
 
 
@@ -174,7 +174,6 @@ function Bar:UpdateBarType()
 		self.cd_functions = {}
 		settings.bAutoShot = nil
 		for idx, entry in ipairs(self.spells) do
-			table.insert(self.cd_functions, Cooldown.GetSpellCooldown)
 			Cooldown.SetUpSpell(self, entry)
 		end
 		self.fnCheck = FindAura.FindCooldown
@@ -700,7 +699,6 @@ function FindAura:FindSingle(spellEntry, allStacks)
 				break
 			end
 			if spellID == spellEntry.id then 
-				-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
 				self:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
 				return
 			end
@@ -711,7 +709,6 @@ function FindAura:FindSingle(spellEntry, allStacks)
 		local name, icon, count, _, duration, expirationTime, sourceUnit, _, _, spellID, _, _, _, _, _, value1, value2, value3 = AuraUtil.FindAuraByName(spellEntry.name, self.unit, filter)
 		-- if name and name == spellEntry.name then 
 		if name then 
-			-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
 			self:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
 			return
 		end
@@ -728,7 +725,6 @@ function FindAura:FindAllStacks(spellEntry, allStacks)
 			break
 		end
 		if name == spellEntry.name or spellID == spellEntry.id then
-			-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
 			self:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
 		end
 		j = j + 1
@@ -757,7 +753,6 @@ function FindAura:FindSpellUsable(spellEntry, allStacks)
 				duration = self.duration
 				expirationTime = self.expirationTime
 			end
-			-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, spellName, 1, expirationTime, icon, "player")
 			self:AddInstanceToStacks(allStacks, spellEntry, duration, spellName, 1, expirationTime, icon, "player")
 		end
 	end
@@ -790,13 +785,11 @@ function FindAura:FindCooldown(spellEntry, allStacks)
 		if expirationTime > now + 0.1 then
 			if start2 then
 				-- start2 returned by Cooldown.GetSpellChargesCooldown
-				-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, start2 + duration, icon, "player")
 				self:AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, start2 + duration, icon, "player")
 				count = count - 1
 			else
 				if not count then count = 1 end
 			end
-			-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, "player")
 			self:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, "player")
 		end
 	end
@@ -812,7 +805,6 @@ function FindAura:FindEquipSlotCooldown(spellEntry, allStacks)
 			itemEntry.id = itemID
 			local start, duration, _, name, icon = Cooldown.GetItemCooldown(bar, itemEntry)
 			if start and start > 0 then
-				-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, start + duration, icon, "player")
 				self:AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, start + duration, icon, "player")
 			end
 		end
@@ -863,7 +855,6 @@ function FindAura:FindTotem(spellEntry, allStacks)
 			end
 			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, dropTime[index] + duration, icon, "player")
 		]]--
-			-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, startTime + duration, icon, "player")
 			self:AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, startTime + duration, icon, "player")
 		end
 	end
@@ -919,7 +910,6 @@ function FindAura:FindBuffCooldown(spellEntry, allStacks)
 				-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration,  buffStacks.min.buffName, 1, duration + now, buffStacks.min.iconPath,  buffStacks.min.caster)
 				self:AddInstanceToStacks(allStacks, spellEntry, duration,  buffStacks.min.buffName, 1, duration + now, buffStacks.min.iconPath,  buffStacks.min.caster)
 			else
-				-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, self.duration,  self.buffName, 1, self.expirationTime, self.iconPath, "player")
 				self:AddInstanceToStacks(allStacks, spellEntry, self.duration,  self.buffName, 1, self.expirationTime, self.iconPath, "player")
 			end
 			return
@@ -932,7 +922,6 @@ function FindAura:FindBuffCooldown(spellEntry, allStacks)
 			self:AddInstanceToStacks(allStacks, spellEntry, duration, buffStacks.min.buffName, 1, expirationTime, buffStacks.min.iconPath, buffStacks.min.caster)                   
 		end
 	elseif self.expirationTime and self.expirationTime > now + 0.1 then
-		-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, "player")
 		self:AddInstanceToStacks(allStacks, spellEntry, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, "player")
 	end
 end

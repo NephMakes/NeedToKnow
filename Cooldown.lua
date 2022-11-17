@@ -3,20 +3,18 @@
 local addonName, addonTable = ...
 local Cooldown = NeedToKnow.Cooldown
 
+-- Local versions of frequently-used functions
+local GetTime = GetTime
+local GetSpellCooldown = GetSpellCooldown
+local GetItemCooldown = GetItemCooldown
+local GetSpellCharges = GetSpellCharges
 
--- ---------------
--- Kitjan's locals
--- ---------------
-
+-- Kitjan's locals (deprecated)
 local g_GetTime           = GetTime
 local g_GetSpellInfo      = GetSpellInfo
 local g_GetSpellPowerCost = GetSpellPowerCost
 local g_GetSpellTabInfo   = GetSpellTabInfo
 local g_GetNumSpellTabs   = GetNumSpellTabs
-
-local c_AUTO_SHOT_NAME = g_GetSpellInfo(75)  -- Localized name for Auto Shot
-
-local m_last_guid      = addonTable.m_last_guid
 
 
 -- ------------------
@@ -30,59 +28,52 @@ function Cooldown.SetUpSpell(bar, entry)
 	-- that spell yet (just logged in or changed talent specs), in which case 
 	-- we mark that spell to try again later
 
-	local name = entry.name
-	local idx = entry.idxName
-	if not entry.id then
-		if name == "Auto Shot" or name == c_AUTO_SHOT_NAME then
-			bar.settings.bAutoShot = true
-			bar.cd_functions[idx] = Cooldown.GetAutoShotCooldown
-		else
-			local itemID = Cooldown.GetItemID(name)
-			if itemID then
-				entry.id = itemID
-				entry.name = nil
-				bar.cd_functions[idx] = Cooldown.GetItemCooldown
-			else
-				-- betterSpellID = Cooldown.TryToFindSpellWithCD(name)
-				-- local spellID = Cooldown:GetSpell(name)
-				local _, _, _, _, _, _, spellID = GetSpellInfo(name)
-				if spellID then
-					entry.id = spellID
-					entry.name = nil
-					bar.cd_functions[idx] = Cooldown.GetSpellCooldown
-				elseif not GetSpellCooldown(name) then
-					bar.cd_functions[idx] = Cooldown.GetUnresolvedCooldown
-				else
-					bar.cd_functions[idx] = Cooldown.GetSpellCooldown
-				end
+	local spellIndex = entry.idxName
+	local name, icon, spellID
 
-				if bar.cd_functions[idx] == Cooldown.GetSpellCooldown then
-					local key = entry.id or entry.name
-					if bar.settings.show_charges and GetSpellCharges(key) then
-						bar.cd_functions[idx] = Cooldown.GetSpellChargesCooldown
-					end
-				end
-			end
+	-- Check if item cooldown
+	if entry.name then
+		-- Config by itemID not supported: itemID and spellID use overlapping values
+		local link
+		name, link, _, _, _, _, _, _, _, icon = GetItemInfo(entry.name)
+		if link then
+			local itemID = link:match("item:(%d+):")
+			entry.id = itemID
+			entry.icon = icon
+			bar.cd_functions[spellIndex] = Cooldown.GetItemCooldown
+			return
 		end
+	end
+
+	-- Spell cooldown
+	local spell = entry.id or entry.name
+	name, _, icon, _, _, _, spellID = GetSpellInfo(spell)
+	local start, duration, enabled = GetSpellCooldown(spell)
+	if start then
+		entry.name = name
+		entry.id = spellID
+		entry.icon = icon
+
+		if spellID == 75 then  -- Auto Shot
+			bar.settings.bAutoShot = true
+			bar.cd_functions[spellIndex] = Cooldown.GetAutoShotCooldown
+		elseif bar.settings.show_charges and GetSpellCharges(spell) then
+			bar.cd_functions[spellIndex] = Cooldown.GetSpellChargesCooldown
+		else
+			bar.cd_functions[spellIndex] = Cooldown.GetSpellCooldown
+		end
+	else
+		bar.cd_functions[spellIndex] = Cooldown.GetUnresolvedCooldown
 	end
 end
 
 function Cooldown.GetItemCooldown(bar, entry)
-	-- Wrapper for GetItemCooldown
+	-- Called by bar:FindCooldown()
+	-- Wrapper for GetItemCooldown expected to return start, duration, enabled, name, icon
+	-- Called OnUpdate. Make sure it's efficient. 
 	local start, duration, enabled = GetItemCooldown(entry.id)
 	if start then
-		local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(entry.id)
-		return start, duration, enabled, name, icon
-	end
-end
-
-function Cooldown.GetItemID(itemName)
-	local _, link = GetItemInfo(itemName)
-	if link then
-		local itemID = link:match("item:(%d+):")
-		if itemID then
-			return itemID
-		end
+		return start, duration, enabled, entry.name, entry.icon
 	end
 end
 
@@ -196,30 +187,35 @@ function Cooldown.GetUtilityTooltips()
 end
 
 function Cooldown.GetSpellCooldown(bar, entry)
-	-- Wrapper around GetSpellCooldown with extra sauce
-	-- Expected to return start, cd_len, enable, buffName, iconpath
-	local barSpell = entry.id or entry.name
-	local start, duration, enabled = GetSpellCooldown(barSpell)
-	if start and start > 0 then
-		local spellName, _, spellIconPath, _, _, _, spellId = g_GetSpellInfo(barSpell)
+	-- Called by bar:FindCooldown()
+	-- Wrapper for GetSpellCooldown() expected to return start, duration, enabled, name, icon
+	-- Called OnUpdate. Make sure it's efficient.
 
+	local spell = entry.id or entry.name
+	local start, duration, enabled = GetSpellCooldown(spell)
+	if start and start > 0 then
+		--[[
+		-- local spellName, _, icon, _, _, _, spellId = g_GetSpellInfo(spell)
 		if not spellName then 
 			if not NeedToKnow.GSIBroken then 
 				NeedToKnow.GSIBroken = {} 
 			end
-			if not NeedToKnow.GSIBroken[barSpell] then
+			if not NeedToKnow.GSIBroken[spell] then
 				print("NeedToKnow: Warning! Unable to get spell info for",barSpell,".  Try using Spell ID instead.")
-				NeedToKnow.GSIBroken[barSpell] = true;
+				NeedToKnow.GSIBroken[spell] = true;
 			end
-			spellName = tostring(barSpell)
+			spellName = tostring(spell)
 		end
+		]]--
 
 		if enabled == 0 then 
 			-- Filter out conditions like Stealth while stealthed
 			start = nil
 		elseif NeedToKnow.is_DK == 1 then
+			-- Don't show rune cooldowns for death knight abilities in Classic
 			local usesRunes = false
-			local costInfo = g_GetSpellPowerCost(spellId)
+			-- local costInfo = g_GetSpellPowerCost(spellId)
+			local costInfo = g_GetSpellPowerCost(entry.id)
 			local nCosts = table.getn(costInfo)
 			for iCost = 1, nCosts do
 				if costInfo[iCost].type == SPELL_POWER_RUNES then  
@@ -238,7 +234,7 @@ function Cooldown.GetSpellCooldown(bar, entry)
 						-- We think the spell was just cast, and a CD just started but it's short.
 						-- Look at the tooltip to tell what the correct CD should be. If it's supposed
 						-- to be short (Ghoul Frenzy, Howling Blast), then start a CD bar
-						duration = Cooldown.DetermineShortCooldownFromTooltip(barSpell)
+						duration = Cooldown.DetermineShortCooldownFromTooltip(spell)
 						if duration == 0 or duration > 10 then
 							start = nil
 						end
@@ -250,45 +246,42 @@ function Cooldown.GetSpellCooldown(bar, entry)
 		end
 
 		if start then
-			return start, duration, enabled, spellName, spellIconPath
+			return start, duration, enabled, entry.name, entry.icon
 		end
 	end
 end
 
 function Cooldown.GetSpellChargesCooldown(bar, entry)
-	local barSpell = entry.id or entry.name
-	local cur, max, charge_start, recharge = GetSpellCharges(barSpell)
-	if ( cur ~= max ) then
-		local start, cd_len, enable, spellName, spellIconPath 
-		if ( cur == 0 ) then
-			start, cd_len, enable, spellName, spellIconPath = Cooldown.GetSpellCooldown(bar, entry)
-			return start, cd_len, enable, spellName, spellIconPath, max, charge_start
+	-- Called by bar:FindCooldown()
+	-- Called OnUpdate. Make sure it's efficient. 
+	local spell = entry.id or entry.name
+	local currentCharges, maxCharges, chargeStart, chargeDuration = GetSpellCharges(spell)
+	if currentCharges ~= maxCharges then
+		if cur == 0 then
+			local start, duration, enabled, name, icon = Cooldown.GetSpellCooldown(bar, entry)
+			return start, duration, enabled, name, icon, maxCharges, chargeStart
 		else
-			local spellName, _, spellIconPath = g_GetSpellInfo(barSpell)
-			if ( not spellName ) then 
-				spellName = barSpell 
-			end
-			return charge_start, recharge, 1, spellName, spellIconPath, max-cur
+			return chargeStart, chargeDuration, 1, entry.name, entry.icon, maxCharges - currentCharges
 		end
 	end
 end
 
-function Cooldown.GetAutoShotCooldown(bar)
-    -- Helper for mfn_AuraCheck_CASTCD which gets the autoshot cooldown
-    local tNow = g_GetTime()
-    if ( bar.tAutoShotStart and bar.tAutoShotStart + bar.tAutoShotCD > tNow ) then
-        local n, _, icon = g_GetSpellInfo(75)
-        return bar.tAutoShotStart, bar.tAutoShotCD, 1, c_AUTO_SHOT_NAME, icon
-    else
-        bar.tAutoShotStart = nil
-    end
+function Cooldown.GetAutoShotCooldown(bar, entry)
+	-- Called by bar:FindCooldown()
+	-- Called OnUpdate. Make sure it's efficient. 
+	local now = GetTime()
+	if bar.tAutoShotStart and bar.tAutoShotStart + bar.tAutoShotCD > now then
+		return bar.tAutoShotStart, bar.tAutoShotCD, 1, entry.name, entry.icon
+	else
+		bar.tAutoShotStart = nil
+	end
 end
 
 function Cooldown.GetUnresolvedCooldown(bar, entry)
-	-- Helper for mfn_AuraCheck_CASTCD for names we haven't figured out yet
+	-- Set up cooldowns we haven't figured out yet
 	Cooldown.SetUpSpell(bar, entry)
 	local fn = bar.cd_functions[entry.idxName]
-	if ( Cooldown.GetUnresolvedCooldown ~= fn ) then
+	if fn ~= Cooldown.GetUnresolvedCooldown then
 		return fn(bar, entry)
 	end
 end
