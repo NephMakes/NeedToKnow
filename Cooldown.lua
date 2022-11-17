@@ -30,36 +30,35 @@ function Cooldown.SetUpSpell(bar, entry)
 	-- that spell yet (just logged in or changed talent specs), in which case 
 	-- we mark that spell to try again later
 
-	local id = entry.id
 	local name = entry.name
 	local idx = entry.idxName
-	if ( not id ) then
-		if ( (name == "Auto Shot") or (name == c_AUTO_SHOT_NAME) ) then
+	if not entry.id then
+		if name == "Auto Shot" or name == c_AUTO_SHOT_NAME then
 			bar.settings.bAutoShot = true
 			bar.cd_functions[idx] = Cooldown.GetAutoShotCooldown
 		else
-			local item_id = Cooldown.GetItemIDString(name)
-			if ( item_id ) then
-				entry.id = item_id
+			local itemID = Cooldown.GetItemID(name)
+			if itemID then
+				entry.id = itemID
 				entry.name = nil
 				bar.cd_functions[idx] = Cooldown.GetItemCooldown
 			else
-				local betterSpellID
 				-- betterSpellID = Cooldown.TryToFindSpellWithCD(name)
-				betterSpellID = Cooldown:GetSpell(name)
-				if ( nil ~= betterSpell ) then
-					entry.id = betterSpell
+				-- local spellID = Cooldown:GetSpell(name)
+				local _, _, _, _, _, _, spellID = GetSpellInfo(spellEntry)
+				if spellID then
+					entry.id = spellID
 					entry.name = nil
 					bar.cd_functions[idx] = Cooldown.GetSpellCooldown
-				elseif ( not GetSpellCooldown(name) ) then
+				elseif not GetSpellCooldown(name) then
 					bar.cd_functions[idx] = Cooldown.GetUnresolvedCooldown
 				else
 					bar.cd_functions[idx] = Cooldown.GetSpellCooldown
 				end
 
-				if ( bar.cd_functions[idx] == Cooldown.GetSpellCooldown ) then
+				if bar.cd_functions[idx] == Cooldown.GetSpellCooldown then
 					local key = entry.id or entry.name
-					if ( bar.settings.show_charges and GetSpellCharges(key) ) then
+					if bar.settings.show_charges and GetSpellCharges(key) then
 						bar.cd_functions[idx] = Cooldown.GetSpellChargesCooldown
 					end
 				end
@@ -77,20 +76,22 @@ function Cooldown.GetItemCooldown(bar, entry)
 	end
 end
 
-function Cooldown.GetItemIDString(id_or_name)
-    local _, link = GetItemInfo(id_or_name)
-    if ( link ) then
-        local idstring = link:match("item:(%d+):")
-        if ( idstring ) then
-            return idstring
-        end
-    end
+function Cooldown.GetItemID(itemName)
+	local _, link = GetItemInfo(itemName)
+	if link then
+		local itemID = link:match("item:(%d+):")
+		if itemID then
+			return itemID
+		end
+	end
 end
 
 function Cooldown:GetSpell(spellEntry)
+	-- Why did Kitjan do all this tooltip stuff here?
+
 	-- todo: cache this result?
-	if ( Cooldown.DetermineShortCooldownFromTooltip(spellEntry) > 0 ) then 
-		return spellEntry;
+	if Cooldown.DetermineShortCooldownFromTooltip(spellEntry) > 0 then 
+		return spellEntry
 	end
 	-- Search player's spellbook
 	for iBook = 1, g_GetNumSpellTabs() do
@@ -119,10 +120,10 @@ function Cooldown.DetermineShortCooldownFromTooltip(spell)
 
 	-- Stores cooldown info as NeedToKnow.short_cds ...But why? 
 
-	if ( not NeedToKnow.short_cds ) then
+	if not NeedToKnow.short_cds then
 		NeedToKnow.short_cds = {}
 	end
-	if ( not NeedToKnow.short_cds[spell] ) then
+	if not NeedToKnow.short_cds[spell] then
 		-- Figure out what a cooldown in seconds should look like
 		local ref = SecondsToTime(10):lower()
 		local unit_ref = ref:match("10 (.+)")
