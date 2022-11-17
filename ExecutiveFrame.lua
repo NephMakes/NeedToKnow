@@ -135,7 +135,7 @@ function ExecutiveFrame:PLAYER_LOGIN()
 
 	if ( NeedToKnow.is_DK ) then
 		NeedToKnow.RegisterSpellcastSent();
-		-- So we can filter rune cooldowns out of ability cooldowns
+		-- So we can filter rune cooldowns out of ability cooldowns (only affects classic)
 	end
 	NeedToKnow:Update()
 

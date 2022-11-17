@@ -86,6 +86,7 @@ function Cooldown.GetItemID(itemName)
 	end
 end
 
+--[[
 function Cooldown:GetSpell(spellEntry)
 	-- Why did Kitjan do all this tooltip stuff here?
 	-- Did GetSpellInfo() not return spellIDs at the time?
@@ -113,6 +114,7 @@ function Cooldown:GetSpell(spellEntry)
 		end
 	end
 end
+]]--
 
 function Cooldown.DetermineShortCooldownFromTooltip(spell)
 	-- Looks at the tooltip for the given spell to see if a cooldown 

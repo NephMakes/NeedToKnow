@@ -354,6 +354,7 @@ local auraEvents = {
     SPELL_AURA_BROKEN = true,
     SPELL_AURA_BROKEN_SPELL = true
 }
+
 function BarEvent:COMBAT_LOG_EVENT_UNFILTERED(unit, ...)
 	-- To monitor target of target
 	local _, event, _, _, _, _, _, targetGUID, _, _, _, spellID, spellName = CombatLogGetCurrentEventInfo()
