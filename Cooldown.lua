@@ -45,7 +45,7 @@ function Cooldown.SetUpSpell(bar, entry)
 			else
 				-- betterSpellID = Cooldown.TryToFindSpellWithCD(name)
 				-- local spellID = Cooldown:GetSpell(name)
-				local _, _, _, _, _, _, spellID = GetSpellInfo(spellEntry)
+				local _, _, _, _, _, _, spellID = GetSpellInfo(name)
 				if spellID then
 					entry.id = spellID
 					entry.name = nil
@@ -88,6 +88,7 @@ end
 
 function Cooldown:GetSpell(spellEntry)
 	-- Why did Kitjan do all this tooltip stuff here?
+	-- Did GetSpellInfo() not return spellIDs at the time?
 
 	-- todo: cache this result?
 	if Cooldown.DetermineShortCooldownFromTooltip(spellEntry) > 0 then 
