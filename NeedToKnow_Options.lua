@@ -220,6 +220,7 @@ function NeedToKnowOptions.UIPanel_Appearance_OnLoad(self)
 
     _G[panelName.."TexturesTitle"]:SetText("Texture:") -- LOCME
     _G[panelName.."FontsTitle"]:SetText("Font:") -- LOCME
+
 end
 
 function NeedToKnowOptions.UIPanel_Appearance_OnShow(self)
@@ -272,15 +273,19 @@ function NeedToKnowOptions.UIPanel_Appearance_Update()
     barSpacingSlider:SetMinMaxValues(0, NEEDTOKNOW.MAXBARSPACING);
     barSpacingSlider:SetValue(settings.BarSpacing);
     barSpacingSlider:SetValueStep(0.25);
+    barSpacingSlider:SetObeyStepOnDrag(true)
     barPaddingSlider:SetMinMaxValues(0, NEEDTOKNOW.MAXBARPADDING);
     barPaddingSlider:SetValue(settings.BarPadding);
     barPaddingSlider:SetValueStep(0.25);
+    barPaddingSlider:SetObeyStepOnDrag(true)
     fontSizeSlider:SetMinMaxValues(5,20);
     fontSizeSlider:SetValue(settings.FontSize);
     fontSizeSlider:SetValueStep(0.5);
+    fontSizeSlider:SetObeyStepOnDrag(true)
     fontOutlineSlider:SetMinMaxValues(0,2);
     fontOutlineSlider:SetValue(settings.FontOutline);
     fontOutlineSlider:SetValueStep(1);
+    fontOutlineSlider:SetObeyStepOnDrag(true)
 
     NeedToKnowOptions.UpdateBarTextureDropDown(_G[panelName.."Textures"]);
     NeedToKnowOptions.UpdateBarFontDropDown(_G[panelName.."Fonts"]);
