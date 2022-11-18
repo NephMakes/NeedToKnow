@@ -7,6 +7,7 @@ local Bar = NeedToKnow.Bar
 -- local versions of frequently-used functions
 local GetTime = GetTime
 local GetSpellInfo = GetSpellInfo
+local SecondsToTimeAbbrev = SecondsToTimeAbbrev
 
 -- Deprecated: 
 local m_last_guid = addonTable.m_last_guid
@@ -59,11 +60,11 @@ function Bar:SetAppearance()
 	self.Texture2:SetTexture(NeedToKnow.LSM:Fetch("statusbar", settings.BarTexture))
 
 	local fontPath = NeedToKnow.LSM:Fetch("font", settings.BarFont)
-	if ( fontPath ) then
+	if fontPath then
 		local outline = settings.FontOutline
-		if ( outline == 0 ) then
+		if outline == 0 then
 			outline = nil
-		elseif ( outline == 1 ) then
+		elseif outline == 1 then
 			outline = "OUTLINE"
 		else
 			outline = "THICKOUTLINE"
@@ -73,8 +74,22 @@ function Bar:SetAppearance()
 	end
 	self.Text:SetWidth(self:GetWidth() - 60)
 
+	local time = self.Time
+	if barSettings.show_time then
+		time:Show()
+	else
+		time:Hide()
+	end
+	if barSettings.TimeFormat == "Fmt_TwoUnits" then
+		self.FormatTime = self.FormatTimeTwoUnits
+	elseif barSettings.TimeFormat == "Fmt_Float" then
+		self.FormatTime = self.FormatTimeDecimal
+	else
+		self.FormatTime = self.FormatTimeSingle
+	end
+
 	local icon = self.Icon
-	if ( barSettings.show_icon ) then
+	if barSettings.show_icon then
 		icon:SetSize(barHeight, barHeight)
 		icon:ClearAllPoints()
 		icon:SetPoint("RIGHT", self, "LEFT", -settings.BarPadding, 0)
@@ -93,7 +108,7 @@ function Bar:SetAppearance()
 	end
 
 	self:SetBackgroundSize(barSettings.show_icon)
-	self.Background:SetHeight(barHeight + 2*settings.BarPadding)
+	self.Background:SetHeight(barHeight + 2 * settings.BarPadding)
 	self.Background:SetVertexColor(unpack(settings.BkgdColor))
 end
 
@@ -102,7 +117,7 @@ function Bar:SetBackgroundSize(showIcon)
 	local barPadding = NeedToKnow.ProfileSettings["BarPadding"]
 
 	local bgWidth = self:GetWidth() + 2*barPadding
-	if ( showIcon ) then
+	if showIcon then
 		bgWidth = bgWidth + self:GetHeight() + barPadding
 	end
 
@@ -340,6 +355,24 @@ function Bar:SetUnlockedText(barSettings)
 	end
 
 	self.Text:SetText(text)
+end
+
+function Bar:FormatTimeSingle(duration)
+    return string.format(SecondsToTimeAbbrev(duration))
+end
+
+function Bar:FormatTimeTwoUnits(duration)
+	if duration < 6040 then
+		local minutes = floor(duration / 60)
+		local seconds = floor(duration - minutes * 60)
+		return string.format("%02d:%02d", minutes, seconds)
+	else
+		return self:FormatTimeSingle(duration)
+	end
+end
+
+function Bar:FormatTimeDecimal(duration)
+	return string.format("%0.1f", duration)
 end
 
 

@@ -1092,20 +1092,7 @@ function Bar:OnUpdate(elapsed)
 			self:SetValue(self.bar1, bar1_timeLeft);
 
 			if self.settings.show_time then
-				local fn = NeedToKnow[self.settings.TimeFormat]
-				local oldText = self.time:GetText()
-				-- Is this really an optimization?
-				local newText
-				if fn then
-					newText = fn(bar1_timeLeft)
-				else 
-					newText = string.format(SecondsToTimeAbbrev(bar1_timeLeft))
-				end
-				if newText ~= oldText then
-					self.time:SetText(newText)
-				end
-			else
-				self.time:SetText("")
+				self.time:SetText(self:FormatTime(bar1_timeLeft))
 			end
             
 			if self.settings.show_spark and bar1_timeLeft <= duration then

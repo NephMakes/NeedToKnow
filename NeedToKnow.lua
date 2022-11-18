@@ -58,6 +58,7 @@ function NeedToKnow:UpdateBar(groupID, barID)
 	bar:Update()
 end
 
+--[[
 function NeedToKnow.Fmt_SingleUnit(i_fSeconds)
     return string.format(SecondsToTimeAbbrev(i_fSeconds))
 end
@@ -76,7 +77,7 @@ end
 function NeedToKnow.Fmt_Float(i_fSeconds)
 	return string.format("%0.1f", i_fSeconds)
 end
-
+]]--
 
 
 
