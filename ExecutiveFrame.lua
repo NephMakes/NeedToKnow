@@ -117,11 +117,12 @@ function ExecutiveFrame:PLAYER_LOGIN()
 	self:PLAYER_TALENT_UPDATE()
 	NeedToKnow.guidPlayer = UnitGUID("player")
 
-	local _, class = UnitClass("player")
-	if class == "DEATHKNIGHT" and WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
-		NeedToKnow.is_DK = 1
-		NeedToKnow.RegisterSpellcastSent()
-		-- So we can filter rune cooldowns out of ability cooldowns (only affects classic)
+	local _, className = UnitClass("player")
+	if className == "DEATHKNIGHT" and WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
+		NeedToKnow.isClassicDeathKnight = true
+		-- So we can filter rune cooldowns out of ability cooldowns
+		-- NeedToKnow.is_DK = 1
+		-- NeedToKnow.RegisterSpellcastSent()
 	end
 
 	self:RegisterEvent("PLAYER_TALENT_UPDATE")

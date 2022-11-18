@@ -1078,12 +1078,12 @@ function Bar:OnUpdate(elapsed)
 			local duration = self.fixedDuration or self.duration
 			local bar1_timeLeft = self.expirationTime - now
 			if bar1_timeLeft < 0 then
-				if ( self.settings.BuffOrDebuff == "CASTCD" or
+				if self.settings.BuffOrDebuff == "CASTCD" or
 					self.settings.BuffOrDebuff == "BUFFCD" or
-					self.settings.BuffOrDebuff == "EQUIPSLOT" )
+					self.settings.BuffOrDebuff == "EQUIPSLOT"
 				then
 					-- Item cooldowns don't fire event when they expire.
-					-- Other cooldowns fire event too soon. So we have to keep checking.
+					-- Other cooldowns fire event too soon. So keep checking.
 					self:CheckAura()
 					return
 				end
