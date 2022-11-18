@@ -117,14 +117,12 @@ function ExecutiveFrame:PLAYER_LOGIN()
 	self:PLAYER_TALENT_UPDATE()
 	NeedToKnow.guidPlayer = UnitGUID("player")
 
-	local _, player_CLASS = UnitClass("player")
-	if ( player_CLASS == "DEATHKNIGHT" ) then
+	local _, class = UnitClass("player")
+	if class == "DEATHKNIGHT" and WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
 		NeedToKnow.is_DK = 1
-	elseif ( player_CLASS == "DRUID" ) then
-		NeedToKnow.is_Druid = 1
-		-- Is this actually used for anything? Maybe leftover from power tracking
+		NeedToKnow.RegisterSpellcastSent()
+		-- So we can filter rune cooldowns out of ability cooldowns (only affects classic)
 	end
-	-- NeedToKnowLoader.SetPowerTypeList(player_CLASS)
 
 	self:RegisterEvent("PLAYER_TALENT_UPDATE")
 	self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
@@ -133,10 +131,6 @@ function ExecutiveFrame:PLAYER_LOGIN()
 	self:RegisterEvent("PLAYER_REGEN_ENABLED")
 	self:RegisterEvent("GROUP_ROSTER_UPDATE")
 
-	if ( NeedToKnow.is_DK ) then
-		NeedToKnow.RegisterSpellcastSent();
-		-- So we can filter rune cooldowns out of ability cooldowns (only affects classic)
-	end
 	NeedToKnow:Update()
 
 	self:UnregisterEvent("PLAYER_LOGIN")

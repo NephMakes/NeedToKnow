@@ -171,10 +171,9 @@ function Bar:UpdateBarType()
 	elseif barType == "EQUIPSLOT" then
 		self.fnCheck = FindAura.FindEquipSlotCooldown
 	elseif barType == "CASTCD" then
-		self.cd_functions = {}
 		settings.bAutoShot = nil
-		for idx, entry in ipairs(self.spells) do
-			Cooldown.SetUpSpell(self, entry)
+		for index, spellInfo in ipairs(self.spells) do
+			Cooldown.SetUpSpell(self, spellInfo)
 		end
 		self.fnCheck = FindAura.FindCooldown
 	elseif settings.show_all_stacks then
@@ -557,7 +556,6 @@ function Bar:CheckAura()
         for idx, resetSpell in ipairs(self.reset_spells) do
             -- Relies on BUFFCD setting target to player. onlyMine will work either way. 
             local resetDuration, _, _, resetExpiration
-            --  = NeedToKnow.mfn_AuraCheck_Single(self, resetSpell, buff_stacks)
 				= FindAura.FindSingle(self, resetSpell, buff_stacks)
             local tStart
             if buff_stacks.total > 0 then
@@ -734,9 +732,7 @@ end
 function FindAura:FindSpellUsable(spellEntry, allStacks)
 	-- For watching reactive spells and abilities
 	local spell = spellEntry.name or spellEntry.id
-	if not spell then 
-		return 
-	end
+	if not spell then return end
 	local spellName, _, icon = GetSpellInfo(spell)
 	if spellName then
 		local isUsable, notEnoughMana = IsUsableSpell(spellName)
@@ -758,16 +754,11 @@ function FindAura:FindSpellUsable(spellEntry, allStacks)
 	end
 end
 
-function FindAura:FindCooldown(spellEntry, allStacks)
+function FindAura:FindCooldown(spellInfo, allStacks)
 	-- Find spell or item cooldown then update allStacks
-	-- Bar:Update() sets up bar.cd_functions
 
-	local GetCooldown = self.cd_functions[spellEntry.idxName]
-	if not GetCooldown then
-		print("NeedToKnow FindAura:FindCooldown ERROR setting up index", spellEntry.idxName, "on bar", self:GetName(), self.settings.AuraName)
-		return
-	end
-	local start, duration, _, name, icon, count, start2 = GetCooldown(self, spellEntry)
+	local GetCooldown = spellInfo.cooldownFunction
+	local start, duration, _, name, icon, count, start2 = GetCooldown(self, spellInfo)
 
 	-- Filter out global cooldown
 	if start and duration <= 1.5 and GetCooldown ~= Cooldown.GetAutoShotCooldown then
@@ -783,14 +774,13 @@ function FindAura:FindCooldown(spellEntry, allStacks)
 		local now = GetTime()
 		local expirationTime = start + duration
 		if expirationTime > now + 0.1 then
-			if start2 then
-				-- start2 returned by Cooldown.GetSpellChargesCooldown
-				self:AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, start2 + duration, icon, "player")
+			if start2 then  -- returned by Cooldown.GetSpellChargesCooldown
+				self:AddInstanceToStacks(allStacks, spellInfo, duration, name, 1, start2 + duration, icon, "player")
 				count = count - 1
 			else
 				if not count then count = 1 end
 			end
-			self:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, "player")
+			self:AddInstanceToStacks(allStacks, spellInfo, duration, name, count, expirationTime, icon, "player")
 		end
 	end
 end
@@ -1029,7 +1019,7 @@ function Bar:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, e
 		if allStacks.total == 0 or allStacks.min.expirationTime > expirationTime then
 			allStacks.min.idxName = spellEntry.idxName
 			allStacks.min.buffName = name
-			allStacks.min.caster = caster
+			allStacks.min.caster = sourceUnit
 			allStacks.min.duration = duration
 			allStacks.min.expirationTime = expirationTime
 			allStacks.min.iconPath = icon

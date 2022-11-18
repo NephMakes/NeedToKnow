@@ -21,91 +21,143 @@ local g_GetNumSpellTabs   = GetNumSpellTabs
 -- Cooldown functions
 -- ------------------
 
-function Cooldown.SetUpSpell(bar, entry)
-	-- Attempt to figure out if a name is an item or a spell, and if a spell
-	-- try to choose a spell with that name that has a cooldown
+function Cooldown.SetUpSpell(bar, info)
+	-- Kitjan: 
 	-- This may fail for valid names if the client doesn't have the data for
 	-- that spell yet (just logged in or changed talent specs), in which case 
 	-- we mark that spell to try again later
 
-	local spellIndex = entry.idxName
 	local name, icon, spellID
 
 	-- Check if item cooldown
-	if entry.name then
+	if info.name then
 		-- Config by itemID not supported: itemID and spellID use overlapping values
 		local link
-		name, link, _, _, _, _, _, _, _, icon = GetItemInfo(entry.name)
+		name, link, _, _, _, _, _, _, _, icon = GetItemInfo(info.name)
 		if link then
 			local itemID = link:match("item:(%d+):")
-			entry.id = itemID
-			entry.icon = icon
-			bar.cd_functions[spellIndex] = Cooldown.GetItemCooldown
+			info.id = itemID
+			info.icon = icon
+			info.cooldownFunction = Cooldown.GetItemCooldown
 			return
 		end
 	end
 
 	-- Spell cooldown
-	local spell = entry.id or entry.name
+	local spell = info.id or info.name
 	name, _, icon, _, _, _, spellID = GetSpellInfo(spell)
 	local start, duration, enabled = GetSpellCooldown(spell)
 	if start then
-		entry.name = name
-		entry.id = spellID
-		entry.icon = icon
+		info.name = name
+		info.id = spellID
+		info.icon = icon
 
 		if spellID == 75 then  -- Auto Shot
 			bar.settings.bAutoShot = true
-			bar.cd_functions[spellIndex] = Cooldown.GetAutoShotCooldown
+			info.cooldownFunction = Cooldown.GetAutoShotCooldown
 		elseif bar.settings.show_charges and GetSpellCharges(spell) then
-			bar.cd_functions[spellIndex] = Cooldown.GetSpellChargesCooldown
+			info.cooldownFunction = Cooldown.GetSpellChargesCooldown
 		else
-			bar.cd_functions[spellIndex] = Cooldown.GetSpellCooldown
+			info.cooldownFunction = Cooldown.GetSpellCooldown
 		end
 	else
-		bar.cd_functions[spellIndex] = Cooldown.GetUnresolvedCooldown
+		info.cooldownFunction = Cooldown.GetUnresolvedCooldown
 	end
 end
 
-function Cooldown.GetItemCooldown(bar, entry)
+function Cooldown.GetItemCooldown(bar, spellInfo)
 	-- Called by bar:FindCooldown()
 	-- Wrapper for GetItemCooldown expected to return start, duration, enabled, name, icon
 	-- Called OnUpdate. Make sure it's efficient. 
-	local start, duration, enabled = GetItemCooldown(entry.id)
+	local start, duration, enabled = GetItemCooldown(spellInfo.id)
 	if start then
-		return start, duration, enabled, entry.name, entry.icon
+		return start, duration, enabled, spellInfo.name, spellInfo.icon
 	end
 end
 
---[[
-function Cooldown:GetSpell(spellEntry)
-	-- Why did Kitjan do all this tooltip stuff here?
-	-- Did GetSpellInfo() not return spellIDs at the time?
 
-	-- todo: cache this result?
-	if Cooldown.DetermineShortCooldownFromTooltip(spellEntry) > 0 then 
-		return spellEntry
-	end
-	-- Search player's spellbook
-	for iBook = 1, g_GetNumSpellTabs() do
-		local sBook, _, iFirst, nSpells = GetSpellTabInfo(iBook);
-		for iSpell = iFirst+1, iFirst+nSpells do
-			local spellName = GetSpellInfo(iSpell, sBook);
-			if ( spellName == spellEntry ) then
-				local sLink = GetSpellLink(iSpell, sBook);
-				local spellID = sLink:match("spell:(%d+)");
-				local start = GetSpellCooldown(spellID);
-				if ( start ) then
-					local ttcd = Cooldown.DetermineShortCooldownFromTooltip(spellID);
-					if ( ttcd and (ttcd > 0) ) then
-						return spellID;
+function Cooldown.GetSpellCooldown(bar, spellInfo)
+	-- Called by bar:FindCooldown()
+	-- Wrapper for GetSpellCooldown() expected to return start, duration, enabled, name, icon
+	-- Called OnUpdate. Make sure it's efficient.
+	local spell = spellInfo.id or spellInfo.name
+	local start, duration, enabled = GetSpellCooldown(spell)
+	if start and start > 0 then
+		if enabled == 0 then  -- Cooldown hasn't started yet
+			start = nil
+		elseif NeedToKnow.is_DK == 1 then
+			-- Don't show rune cooldowns for death knight abilities in Classic
+			local usesRunes = false
+			local costInfo = g_GetSpellPowerCost(spellInfo.id)
+			local nCosts = table.getn(costInfo)
+			for iCost = 1, nCosts do
+				if costInfo[iCost].type == SPELL_POWER_RUNES then  
+					usesRunes = true
+				end
+			end
+			if usesRunes then
+				-- Filter out rune cooldown artificially extending the cd
+				if duration <= 10 then
+					local tNow = g_GetTime()
+					if bar.expirationTime and tNow < bar.expirationTime then
+						-- We've already seen the correct CD for this, so keep using it
+						start = bar.expirationTime - bar.duration
+						duration = bar.duration
+					elseif m_last_sent and m_last_sent[spellName] and m_last_sent[spellName] > (tNow - 1.5) then
+						-- We think the spell was just cast, and a CD just started but it's short.
+						-- Look at the tooltip to tell what the correct CD should be. If it's supposed
+						-- to be short (Ghoul Frenzy, Howling Blast), then start a CD bar
+						duration = Cooldown.DetermineShortCooldownFromTooltip(spell)
+						if duration == 0 or duration > 10 then
+							start = nil
+						end
+					else
+						start = nil
 					end
 				end
 			end
 		end
+
+		if start then
+			return start, duration, enabled, spellInfo.name, spellInfo.icon
+		end
 	end
 end
-]]--
+
+function Cooldown.GetSpellChargesCooldown(bar, spellInfo)
+	-- Called by bar:FindCooldown()
+	-- Called OnUpdate. Make sure it's efficient. 
+	local spell = spellInfo.id or spellInfo.name
+	local currentCharges, maxCharges, chargeStart, chargeDuration = GetSpellCharges(spell)
+	if currentCharges ~= maxCharges then
+		if currentCharges == 0 then
+			local start, duration, enabled, name, icon = Cooldown.GetSpellCooldown(bar, spellInfo)
+			return start, duration, enabled, name, icon, maxCharges, chargeStart
+		else
+			return chargeStart, chargeDuration, 1, spellInfo.name, spellInfo.icon, maxCharges - currentCharges
+		end
+	end
+end
+
+function Cooldown.GetAutoShotCooldown(bar, spellInfo)
+	-- Called by bar:FindCooldown()
+	-- Called OnUpdate. Make sure it's efficient. 
+	local now = GetTime()
+	if bar.tAutoShotStart and bar.tAutoShotStart + bar.tAutoShotCD > now then
+		return bar.tAutoShotStart, bar.tAutoShotCD, 1, spellInfo.name, spellInfo.icon
+	else
+		bar.tAutoShotStart = nil
+	end
+end
+
+function Cooldown.GetUnresolvedCooldown(bar, spellInfo)
+	-- Set up cooldowns we haven't figured out yet
+	Cooldown.SetUpSpell(bar, spellInfo)
+	local fn = spellInfo.cooldownFunction
+	if fn ~= Cooldown.GetUnresolvedCooldown then
+		return fn(bar, spellInfo)
+	end
+end
 
 function Cooldown.DetermineShortCooldownFromTooltip(spell)
 	-- Looks at the tooltip for the given spell to see if a cooldown 
@@ -185,104 +237,3 @@ function Cooldown.GetUtilityTooltips()
 	tt2:ClearLines()
 	return tt1, tt2
 end
-
-function Cooldown.GetSpellCooldown(bar, entry)
-	-- Called by bar:FindCooldown()
-	-- Wrapper for GetSpellCooldown() expected to return start, duration, enabled, name, icon
-	-- Called OnUpdate. Make sure it's efficient.
-
-	local spell = entry.id or entry.name
-	local start, duration, enabled = GetSpellCooldown(spell)
-	if start and start > 0 then
-		--[[
-		-- local spellName, _, icon, _, _, _, spellId = g_GetSpellInfo(spell)
-		if not spellName then 
-			if not NeedToKnow.GSIBroken then 
-				NeedToKnow.GSIBroken = {} 
-			end
-			if not NeedToKnow.GSIBroken[spell] then
-				print("NeedToKnow: Warning! Unable to get spell info for",barSpell,".  Try using Spell ID instead.")
-				NeedToKnow.GSIBroken[spell] = true;
-			end
-			spellName = tostring(spell)
-		end
-		]]--
-
-		if enabled == 0 then 
-			-- Filter out conditions like Stealth while stealthed
-			start = nil
-		elseif NeedToKnow.is_DK == 1 then
-			-- Don't show rune cooldowns for death knight abilities in Classic
-			local usesRunes = false
-			-- local costInfo = g_GetSpellPowerCost(spellId)
-			local costInfo = g_GetSpellPowerCost(entry.id)
-			local nCosts = table.getn(costInfo)
-			for iCost = 1, nCosts do
-				if costInfo[iCost].type == SPELL_POWER_RUNES then  
-					usesRunes = true
-				end
-			end
-			if usesRunes then
-				-- Filter out rune cooldown artificially extending the cd
-				if duration <= 10 then
-					local tNow = g_GetTime()
-					if bar.expirationTime and tNow < bar.expirationTime then
-						-- We've already seen the correct CD for this, so keep using it
-						start = bar.expirationTime - bar.duration
-						duration = bar.duration
-					elseif m_last_sent and m_last_sent[spellName] and m_last_sent[spellName] > (tNow - 1.5) then
-						-- We think the spell was just cast, and a CD just started but it's short.
-						-- Look at the tooltip to tell what the correct CD should be. If it's supposed
-						-- to be short (Ghoul Frenzy, Howling Blast), then start a CD bar
-						duration = Cooldown.DetermineShortCooldownFromTooltip(spell)
-						if duration == 0 or duration > 10 then
-							start = nil
-						end
-					else
-						start = nil
-					end
-				end
-			end
-		end
-
-		if start then
-			return start, duration, enabled, entry.name, entry.icon
-		end
-	end
-end
-
-function Cooldown.GetSpellChargesCooldown(bar, entry)
-	-- Called by bar:FindCooldown()
-	-- Called OnUpdate. Make sure it's efficient. 
-	local spell = entry.id or entry.name
-	local currentCharges, maxCharges, chargeStart, chargeDuration = GetSpellCharges(spell)
-	if currentCharges ~= maxCharges then
-		if cur == 0 then
-			local start, duration, enabled, name, icon = Cooldown.GetSpellCooldown(bar, entry)
-			return start, duration, enabled, name, icon, maxCharges, chargeStart
-		else
-			return chargeStart, chargeDuration, 1, entry.name, entry.icon, maxCharges - currentCharges
-		end
-	end
-end
-
-function Cooldown.GetAutoShotCooldown(bar, entry)
-	-- Called by bar:FindCooldown()
-	-- Called OnUpdate. Make sure it's efficient. 
-	local now = GetTime()
-	if bar.tAutoShotStart and bar.tAutoShotStart + bar.tAutoShotCD > now then
-		return bar.tAutoShotStart, bar.tAutoShotCD, 1, entry.name, entry.icon
-	else
-		bar.tAutoShotStart = nil
-	end
-end
-
-function Cooldown.GetUnresolvedCooldown(bar, entry)
-	-- Set up cooldowns we haven't figured out yet
-	Cooldown.SetUpSpell(bar, entry)
-	local fn = bar.cd_functions[entry.idxName]
-	if fn ~= Cooldown.GetUnresolvedCooldown then
-		return fn(bar, entry)
-	end
-end
-
