@@ -3,7 +3,7 @@
 -- local addonName, addonTable = ...
 local Cooldown = NeedToKnow.Cooldown
 
--- Local versions of frequently-used functions
+-- Local versions of global functions
 local GetTime = GetTime
 local GetSpellCooldown = GetSpellCooldown
 local GetItemCooldown = GetItemCooldown
