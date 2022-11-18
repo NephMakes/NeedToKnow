@@ -115,14 +115,13 @@ end
 function ExecutiveFrame:PLAYER_LOGIN()
 	NeedToKnowLoader.SafeUpgrade()
 	self:PLAYER_TALENT_UPDATE()
+
 	NeedToKnow.guidPlayer = UnitGUID("player")
 
 	local _, className = UnitClass("player")
 	if className == "DEATHKNIGHT" and WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
 		NeedToKnow.isClassicDeathKnight = true
 		-- So we can filter rune cooldowns out of ability cooldowns
-		-- NeedToKnow.is_DK = 1
-		-- NeedToKnow.RegisterSpellcastSent()
 	end
 
 	self:RegisterEvent("PLAYER_TALENT_UPDATE")
@@ -157,7 +156,6 @@ end
 
 function ExecutiveFrame:PLAYER_TALENT_UPDATE()
 	if ( NeedToKnow.CharSettings ) then
-		-- local spec = g_GetActiveTalentGroup()
 		local spec = g_GetActiveTalentGroup()
 		local profile_key = NeedToKnow.CharSettings.Specs[spec]
 		if ( not profile_key ) then

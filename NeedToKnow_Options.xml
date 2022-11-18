@@ -31,8 +31,8 @@
                 </HitRectInsets>
                 <Scripts>
                     <OnLoad>
-                        local text = getglobal(self:GetName().."Text");
-                        text:SetText(NEEDTOKNOW.UIPANEL_BARGROUP..self:GetParent():GetID());
+                        local text = _G[self:GetName().."Text"]
+                        text:SetText(NEEDTOKNOW.UIPANEL_BARGROUP..self:GetParent():GetID())
                     </OnLoad>
                     <OnClick>
                         NeedToKnowOptions.GroupEnableButton_OnClick(self);
