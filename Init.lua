@@ -13,8 +13,6 @@ NEEDTOKNOW = {}
 -- We want to eventually be creating fewer global variables and get rid of these: 
 NeedToKnowLoader = {}    -- Used by NeedToKnow.lua
 NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
--- NeedToKnowRMB = {}    -- Used by NeedToKnow.lua, NeedToKnow_Options.lua, NeedToKnow_Options.xml
-                         -- (Right-click bar config menu)
 
 -- ----------
 -- Namespaces
@@ -76,7 +74,7 @@ NEEDTOKNOW.BAR_DEFAULTS = {
     MissingBlink    = { r=0.9, g=0.1, b=0.1, a=0.5 },
     TimeFormat      = "Fmt_SingleUnit",
     vct_enabled     = false,
-    vct_color       = { r=0.6, g=0.6, b=0.0, a=0.3 },
+    vct_color       = { r=0, g=0, b=0, a=0.4 },
     vct_spell       = "",
     vct_extra       = 0,
     bDetectExtends  = false,
@@ -162,34 +160,6 @@ for k, v in pairs(barTextures) do
 	NeedToKnow.LSM:Register("statusbar", k, v) 
 end
 
-
--- -----------------
--- Utility functions
--- -----------------
-
---[[
-function maybe_trace(...)
-	local so_far = ""
-	local p = _G
-	for idx = 1, 40, 1 do
-		local v = select(idx,...)
-		if not v then 
-			break 
-		end
-		p = p[v]
-		if not p then
-			if so_far == "" then
-				trace("global variable", v, "does not exist")
-			else
-				trace(so_far, "does not have member", v)
-			end
-			return;
-		end
-		so_far = so_far.."."..v
-	end
-	trace(so_far, "=", p)
-end
-]]--
 
 -- ---------------------
 -- Kitjan's addon locals

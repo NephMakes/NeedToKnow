@@ -13,27 +13,24 @@ local Bar = NeedToKnow.Bar
 -- ---------
 
 function NeedToKnow:Update()
-	if ( UnitExists("player") and NeedToKnow.ProfileSettings ) then
+	if UnitExists("player") and NeedToKnow.ProfileSettings then
 		for groupID = 1, NeedToKnow.ProfileSettings.nGroups do
-			local group = _G["NeedToKnow_Group"..groupID]
-			group:Update()
+			NeedToKnow:GetBarGroup(groupID):Update()
 		end
 	end
 end
 
-function NeedToKnow.Show(bShow)
-	NeedToKnow.IsVisible = bShow
+function NeedToKnow.Show(showAddon)
 	for groupID = 1, NeedToKnow.ProfileSettings.nGroups do
-		local groupName = "NeedToKnow_Group"..groupID
-		local group = _G[groupName]
-		local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
-	
-		if ( NeedToKnow.IsVisible and groupSettings.Enabled ) then
+		local group = NeedToKnow:GetBarGroup(groupID)
+		local groupSettings = NeedToKnow:GetGroupSettings(groupID)
+		if showAddon and groupSettings.Enabled then
 			group:Show()
 		else
 			group:Hide()
 		end
 	end
+	NeedToKnow.IsVisible = showAddon
 end
 
 function NeedToKnow:GetProfileSettings()
@@ -42,6 +39,10 @@ end
 
 function NeedToKnow:GetBarGroup(groupID)
 	return _G["NeedToKnow_Group"..groupID]
+end
+
+function NeedToKnow:GetGroup(groupID)
+	return NeedToKnow:GetBarGroup(groupID)
 end
 
 function NeedToKnow:GetGroupSettings(groupID)
@@ -57,27 +58,6 @@ function NeedToKnow:UpdateBar(groupID, barID)
 	local bar = NeedToKnow:GetBar(groupID, barID)
 	bar:Update()
 end
-
---[[
-function NeedToKnow.Fmt_SingleUnit(i_fSeconds)
-    return string.format(SecondsToTimeAbbrev(i_fSeconds))
-end
-
-function NeedToKnow.Fmt_TwoUnits(i_fSeconds)
-	if ( i_fSeconds < 6040 ) then
-		local nMinutes, nSeconds
-		nMinutes = floor(i_fSeconds / 60)
-		nSeconds = floor(i_fSeconds - nMinutes*60)
-		return string.format("%02d:%02d", nMinutes, nSeconds)
-	else
-		string.format(SecondsToTimeAbbrev(i_fSeconds))
-	end
-end
-
-function NeedToKnow.Fmt_Float(i_fSeconds)
-	return string.format("%0.1f", i_fSeconds)
-end
-]]--
 
 
 
