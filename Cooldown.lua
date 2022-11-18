@@ -10,10 +10,6 @@ local GetItemCooldown = GetItemCooldown
 local GetSpellCharges = GetSpellCharges
 
 
--- ------------------
--- Cooldown functions
--- ------------------
-
 function Cooldown.SetUpSpell(bar, info)
 	local name, icon, spellID
 
@@ -110,7 +106,6 @@ function Cooldown.GetAutoShotCooldown(bar, spellInfo)
 end
 
 function Cooldown.GetUnresolvedCooldown(bar, spellInfo)
-	-- Set up cooldowns we haven't figured out yet
 	Cooldown.SetUpSpell(bar, spellInfo)
 	local fn = spellInfo.cooldownFunction
 	if fn ~= Cooldown.GetUnresolvedCooldown then

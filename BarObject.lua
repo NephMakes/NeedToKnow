@@ -84,7 +84,7 @@ function Bar:SetAppearance()
 	end
 
 	local castTime = self.CastTime
-	if ( barSettings.vct_enabled ) then
+	if barSettings.vct_enabled then
 		local castColor = barSettings.vct_color
 		castTime:SetColorTexture(castColor.r, castColor.g, castColor.b, castColor.a)
 		castTime:SetHeight(barHeight)
@@ -356,7 +356,7 @@ function Bar:UpdateCastTime()
 
 	local castWidth = 0
 	local barDuration = self.fixedDuration or self.duration
-	if ( barDuration ) then
+	if barDuration then
 		local barWidth = self:GetWidth()
 		local castDuration = self:GetCastTimeDuration()
 		castWidth = barWidth * castDuration / barDuration
@@ -365,7 +365,7 @@ function Bar:UpdateCastTime()
 		end
 	end
 
-	if ( castWidth > 1 ) then
+	if castWidth > 1 then
 		self.CastTime:SetWidth(castWidth)
 		self.CastTime:Show()
 	else
@@ -413,23 +413,28 @@ function Bar:Unlock()
 	self.Spark:Hide()
 	self.Time:Hide()
 	self.Icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
-	self.CastTime:SetWidth(self:GetWidth()/16)
-	self.CastTime:Show()
 
 	local settings = self.settings
+
+	if settings.Enabled then
+		self:SetAlpha(1)
+	else
+		self:SetAlpha(0.4)
+	end
 
 	local barColor = settings.BarColor
 	self.Texture:SetVertexColor(barColor.r, barColor.g, barColor.b)
 	self.Texture:SetAlpha(barColor.a)
 	self.Texture2:Hide()
 
-	if ( settings.Enabled ) then
-		self:SetAlpha(1)
-	else
-		self:SetAlpha(0.4)
-	end
-
 	self:SetUnlockedText(settings)
+
+	if settings.vct_enabled then
+		self.CastTime:SetWidth(self:GetWidth()/8)
+		self.CastTime:Show()
+	else
+		self.CastTime:Hide()
+	end
 end
 
 function Bar:OnEnter()

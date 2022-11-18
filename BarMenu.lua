@@ -479,6 +479,7 @@ function NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
             button:SetText(NEEDTOKNOW.BARMENU_CHOOSESLOT)
             -- TODO: really should disable the button press verb somehow
         end
+    --[[
     elseif ( type == "POWER" ) then
         button = NeedToKnowRMB.BarMenu_GetItem(1, "AuraName");
         if ( button ) then
@@ -494,6 +495,7 @@ function NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
             button:SetText(NEEDTOKNOW.BARMENU_CHOOSEPOWER)
             -- TODO: really should disable the button press verb somehow
         end
+    ]]--
     else
         button = NeedToKnowRMB.BarMenu_GetItem(1, "EquipmentSlotList");
         if not button then button = NeedToKnowRMB.BarMenu_GetItem(1, "PowerTypeList") end
