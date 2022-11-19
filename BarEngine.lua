@@ -507,7 +507,6 @@ m_scratch.bar_entry = {
 
 function Bar:CheckAura()
 	-- Called by many functions
-    -- Called very frequently for cooldowns (OnUpdate). Make sure it's efficient. 
 
     local settings = self.settings
     local unitExists

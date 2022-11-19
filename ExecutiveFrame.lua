@@ -20,7 +20,6 @@ local m_last_cast_head = addonTable.m_last_cast_head
 local m_last_cast_tail = addonTable.m_last_cast_tail
 local m_last_guid      = addonTable.m_last_guid
 
-
 -- For bars that blink only for bosses
 local m_bInCombat       = addonTable.m_bInCombat
 local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
