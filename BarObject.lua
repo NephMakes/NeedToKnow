@@ -23,13 +23,15 @@ function Bar:New(group, barID)
 	-- Called by BarGroup:Update()
 	bar = CreateFrame("Frame", group:GetName().."Bar"..barID, group, "NeedToKnow_BarTemplate")
 	bar:SetID(barID)
+	Mixin(bar, Bar) -- Inherit Bar:Methods()
+	bar:OnLoad()
 	return bar
 end
 
 function Bar:OnLoad()
 	-- Called by NeedToKnow_BarTemplate
 
-	Mixin(self, Bar) -- Inherit Bar:Methods()
+	-- Mixin(self, Bar) -- Inherit Bar:Methods()
 
 	self:RegisterForDrag("LeftButton")
 	self:SetScript("OnEnter", Bar.OnEnter)
@@ -245,9 +247,9 @@ function NeedToKnow.GetPrettyName(barSettings)
 	-- Called by Bar:SetUnlockedText() and BarMenu_Initialize (indirectly)
 
 	if barSettings.BuffOrDebuff == "EQUIPSLOT" then
-		local idx = tonumber(barSettings.AuraName)
-		if idx then 
-			return NEEDTOKNOW.ITEM_NAMES[idx] 
+		local index = tonumber(barSettings.AuraName)
+		if index then 
+			return String.ITEM_NAMES[index] 
 		else 
 			return ""
 		end
@@ -474,7 +476,6 @@ end
 function Bar:OnEnter()
 	local tooltip = _G["GameTooltip"]
 	tooltip:SetOwner(self:GetParent(), "ANCHOR_TOPLEFT")
-	-- tooltip:AddLine(NEEDTOKNOW.BAR_TOOLTIP1, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b, 1)
 	tooltip:AddLine(String.BAR_TOOLTIP1, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b, 1)
 	tooltip:AddLine(String.BAR_TOOLTIP2, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
 	tooltip:Show()

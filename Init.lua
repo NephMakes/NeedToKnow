@@ -38,6 +38,7 @@ NeedToKnow.Cooldown = {}
 NEEDTOKNOW.VERSION = GetAddOnMetadata(addonName, "Version")
 -- to update version, change the .toc 
 
+--[[
 NEEDTOKNOW.ITEM_NAMES = {
     -- Used by NeedToKnow.lua, NeedToKnow_Options.lua
     -- Seems like this should already exist somewhere
@@ -62,6 +63,7 @@ NEEDTOKNOW.ITEM_NAMES = {
     RANGEDSLOT.."/"..RELICSLOT,
     TABARDSLOT
 };
+]]--
 
 -- Default settings
 NEEDTOKNOW.BAR_DEFAULTS = {

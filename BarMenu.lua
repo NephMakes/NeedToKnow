@@ -13,10 +13,12 @@ local NeedToKnowRMB = NeedToKnow.BarMenu
 -- Won't work because XML templates loaded last
 -- Also, BarMenu:Methods() might clash with inherited UIDropDownMenuTemplate
 
+local String = NeedToKnow.String
+
 NeedToKnowRMB.CurrentBar = { groupID = 1, barID = 1 };  -- a dirty hack, i know.  
 
 StaticPopupDialogs["NEEDTOKNOW.CHOOSENAME_DIALOG"] = {
-    text = NEEDTOKNOW.CHOOSENAME_DIALOG,
+    text = String.CHOOSENAME_DIALOG,
     button1 = ACCEPT,
     button2 = CANCEL,
     hasEditBox = 1,
@@ -45,16 +47,16 @@ StaticPopupDialogs["NEEDTOKNOW.CHOOSENAME_DIALOG"] = {
 };
 
 NeedToKnowRMB.BarMenu_MoreOptions = {
-    { VariableName = "Enabled", MenuText = NEEDTOKNOW.BARMENU_ENABLE },
-    { VariableName = "AuraName", MenuText = NEEDTOKNOW.BARMENU_CHOOSENAME, Type = "Dialog", DialogText = "CHOOSENAME_DIALOG" },
-    { VariableName = "BuffOrDebuff", MenuText = NEEDTOKNOW.BARMENU_BUFFORDEBUFF, Type = "Submenu" },
+    { VariableName = "Enabled", MenuText = String.BARMENU_ENABLE },
+    { VariableName = "AuraName", MenuText = String.BARMENU_CHOOSENAME, Type = "Dialog", DialogText = "CHOOSENAME_DIALOG" },
+    { VariableName = "BuffOrDebuff", MenuText = String.BARMENU_BUFFORDEBUFF, Type = "Submenu" },
     { VariableName = "Options", MenuText = "Settings", Type = "Submenu" },
     {},
-    { VariableName = "Show", MenuText = NEEDTOKNOW.BARMENU_SHOW, Type = "Submenu" }, 
-    { VariableName = "TimeFormat", MenuText = NEEDTOKNOW.BARMENU_TIMEFORMAT, Type = "Submenu" }, 
-    { VariableName = "VisualCastTime", MenuText = NEEDTOKNOW.BARMENU_VISUALCASTTIME, Type = "Submenu" },
+    { VariableName = "Show", MenuText = String.BARMENU_SHOW, Type = "Submenu" }, 
+    { VariableName = "TimeFormat", MenuText = String.BARMENU_TIMEFORMAT, Type = "Submenu" }, 
+    { VariableName = "VisualCastTime", MenuText = String.BARMENU_VISUALCASTTIME, Type = "Submenu" },
     { VariableName = "BlinkSettings", MenuText = "Blink Settings", Type = "Submenu" }, -- LOCME
-    { VariableName = "BarColor", MenuText = NEEDTOKNOW.BARMENU_BARCOLOR, Type = "Color" },
+    { VariableName = "BarColor", MenuText = String.BARMENU_BARCOLOR, Type = "Color" },
     {},
     { VariableName = "ImportExport", MenuText = "Import/Export Bar Settings", Type = "Dialog", DialogText = "IMPORTEXPORT_DIALOG" },
 }
@@ -62,48 +64,48 @@ NeedToKnowRMB.BarMenu_MoreOptions = {
 NeedToKnowRMB.BarMenu_SubMenus = {
     -- the keys on this table need to match the settings variable names
     BuffOrDebuff = {
-          { Setting = "HELPFUL", MenuText = NEEDTOKNOW.BARMENU_HELPFUL },
-          { Setting = "HARMFUL", MenuText = NEEDTOKNOW.BARMENU_HARMFUL },
-          { Setting = "TOTEM", MenuText = NEEDTOKNOW.BARMENU_TOTEM },
-          { Setting = "CASTCD", MenuText = NEEDTOKNOW.BARMENU_CASTCD },
-          { Setting = "BUFFCD", MenuText = NEEDTOKNOW.BARMENU_BUFFCD },
-          { Setting = "EQUIPSLOT", MenuText = NEEDTOKNOW.BARMENU_EQUIPSLOT },
-          { Setting = "USABLE", MenuText = NEEDTOKNOW.BARMENU_USABLE },
+          { Setting = "HELPFUL", MenuText = String.BARMENU_HELPFUL },
+          { Setting = "HARMFUL", MenuText = String.BARMENU_HARMFUL },
+          { Setting = "TOTEM", MenuText = String.BARMENU_TOTEM },
+          { Setting = "CASTCD", MenuText = String.BARMENU_CASTCD },
+          { Setting = "BUFFCD", MenuText = String.BARMENU_BUFFCD },
+          { Setting = "EQUIPSLOT", MenuText = String.BARMENU_EQUIPSLOT },
+          { Setting = "USABLE", MenuText = String.BARMENU_USABLE },
           -- Kitjan: Now that Victory Rush adds a buff when you can use it, this confusing option is being removed. The code that drives it remains so that any existing users' bars won't break.
           -- NephMakes: Would be useful in Classic, but without way to automatically query useable time left feels like low-quality feature. Might also need to include cooldown check. 
     },
     TimeFormat = {
-          { Setting = "Fmt_SingleUnit", MenuText = NEEDTOKNOW.FMT_SINGLEUNIT },
-          { Setting = "Fmt_TwoUnits", MenuText = NEEDTOKNOW.FMT_TWOUNITS },
-          { Setting = "Fmt_Float", MenuText = NEEDTOKNOW.FMT_FLOAT },
+          { Setting = "Fmt_SingleUnit", MenuText = String.FMT_SINGLEUNIT },
+          { Setting = "Fmt_TwoUnits", MenuText = String.FMT_TWOUNITS },
+          { Setting = "Fmt_Float", MenuText = String.FMT_FLOAT },
     },
     Unit = {
-        { Setting = "player", MenuText = NEEDTOKNOW.BARMENU_PLAYER }, 
-        { Setting = "target", MenuText = NEEDTOKNOW.BARMENU_TARGET }, 
-        { Setting = "targettarget", MenuText = NEEDTOKNOW.BARMENU_TARGETTARGET }, 
-        { Setting = "focus", MenuText = NEEDTOKNOW.BARMENU_FOCUS }, 
-        { Setting = "pet", MenuText = NEEDTOKNOW.BARMENU_PET }, 
-        { Setting = "vehicle", MenuText = NEEDTOKNOW.BARMENU_VEHICLE }, 
-        { Setting = "lastraid", MenuText = NEEDTOKNOW.BARMENU_LAST_RAID },
+        { Setting = "player", MenuText = String.BARMENU_PLAYER }, 
+        { Setting = "target", MenuText = String.BARMENU_TARGET }, 
+        { Setting = "targettarget", MenuText = String.BARMENU_TARGETTARGET }, 
+        { Setting = "focus", MenuText = String.BARMENU_FOCUS }, 
+        { Setting = "pet", MenuText = String.BARMENU_PET }, 
+        { Setting = "vehicle", MenuText = String.BARMENU_VEHICLE }, 
+        { Setting = "lastraid", MenuText = String.BARMENU_LAST_RAID },
     },
     DebuffUnit = {
-        { Setting = "player", MenuText = NEEDTOKNOW.BARMENU_PLAYER }, 
-        { Setting = "target", MenuText = NEEDTOKNOW.BARMENU_TARGET }, 
-        { Setting = "targettarget", MenuText = NEEDTOKNOW.BARMENU_TARGETTARGET }, 
-        { Setting = "focus", MenuText = NEEDTOKNOW.BARMENU_FOCUS }, 
-        { Setting = "pet", MenuText = NEEDTOKNOW.BARMENU_PET }, 
-        { Setting = "vehicle", MenuText = NEEDTOKNOW.BARMENU_VEHICLE },
+        { Setting = "player", MenuText = String.BARMENU_PLAYER }, 
+        { Setting = "target", MenuText = String.BARMENU_TARGET }, 
+        { Setting = "targettarget", MenuText = String.BARMENU_TARGETTARGET }, 
+        { Setting = "focus", MenuText = String.BARMENU_FOCUS }, 
+        { Setting = "pet", MenuText = String.BARMENU_PET }, 
+        { Setting = "vehicle", MenuText = String.BARMENU_VEHICLE },
     },
     Opt_HELPFUL = {
-      { VariableName = "Unit", MenuText = NEEDTOKNOW.BARMENU_CHOOSEUNIT, Type = "Submenu" },
+      { VariableName = "Unit", MenuText = String.BARMENU_CHOOSEUNIT, Type = "Submenu" },
       { VariableName = "bDetectExtends", MenuText = "Track duration increases" }, -- LOCME
-      { VariableName = "OnlyMine", MenuText = NEEDTOKNOW.BARMENU_ONLYMINE },
+      { VariableName = "OnlyMine", MenuText = String.BARMENU_ONLYMINE },
       { VariableName = "show_all_stacks", MenuText = "Sum stacks from all casters" },
     },
     Opt_HARMFUL = {
-      { VariableName = "DebuffUnit", MenuText = NEEDTOKNOW.BARMENU_CHOOSEUNIT, Type = "Submenu" },
+      { VariableName = "DebuffUnit", MenuText = String.BARMENU_CHOOSEUNIT, Type = "Submenu" },
       { VariableName = "bDetectExtends", MenuText = "Track duration increases" }, -- LOCME
-      { VariableName = "OnlyMine", MenuText = NEEDTOKNOW.BARMENU_ONLYMINE },
+      { VariableName = "OnlyMine", MenuText = String.BARMENU_ONLYMINE },
       { VariableName = "show_all_stacks", MenuText = "Sum stacks from all casters" },
     },
     Opt_TOTEM = {},
@@ -120,7 +122,7 @@ NeedToKnowRMB.BarMenu_SubMenus = {
         { VariableName = "append_cd", MenuText = "Append \"CD\"" }, -- LOCME
     },
     Opt_POWER = {
-      { VariableName = "Unit", MenuText = NEEDTOKNOW.BARMENU_CHOOSEUNIT, Type = "Submenu" },
+      { VariableName = "Unit", MenuText = String.BARMENU_CHOOSEUNIT, Type = "Submenu" },
       { VariableName = "power_sole", MenuText = "Only Show When Primary" }, -- LOCME
     },
     Opt_USABLE = {
@@ -128,47 +130,47 @@ NeedToKnowRMB.BarMenu_SubMenus = {
         { VariableName = "append_usable", MenuText = "Append \"Usable\"" }, -- LOCME
     },
     EquipmentSlotList = {
-        { Setting = "1", MenuText = NEEDTOKNOW.ITEM_NAMES[1] },
-        { Setting = "2", MenuText = NEEDTOKNOW.ITEM_NAMES[2] },
-        { Setting = "3", MenuText = NEEDTOKNOW.ITEM_NAMES[3] },
-        { Setting = "4", MenuText = NEEDTOKNOW.ITEM_NAMES[4] },
-        { Setting = "5", MenuText = NEEDTOKNOW.ITEM_NAMES[5] },
-        { Setting = "6", MenuText = NEEDTOKNOW.ITEM_NAMES[6] },
-        { Setting = "7", MenuText = NEEDTOKNOW.ITEM_NAMES[7] },
-        { Setting = "8", MenuText = NEEDTOKNOW.ITEM_NAMES[8] },
-        { Setting = "9", MenuText = NEEDTOKNOW.ITEM_NAMES[9] },
-        { Setting = "10", MenuText = NEEDTOKNOW.ITEM_NAMES[10] },
-        { Setting = "11", MenuText = NEEDTOKNOW.ITEM_NAMES[11] },
-        { Setting = "12", MenuText = NEEDTOKNOW.ITEM_NAMES[12] },
-        { Setting = "13", MenuText = NEEDTOKNOW.ITEM_NAMES[13] },
-        { Setting = "14", MenuText = NEEDTOKNOW.ITEM_NAMES[14] },
-        { Setting = "15", MenuText = NEEDTOKNOW.ITEM_NAMES[15] },
-        { Setting = "16", MenuText = NEEDTOKNOW.ITEM_NAMES[16] },
-        { Setting = "17", MenuText = NEEDTOKNOW.ITEM_NAMES[17] },
-        { Setting = "18", MenuText = NEEDTOKNOW.ITEM_NAMES[18] },
-        { Setting = "19", MenuText = NEEDTOKNOW.ITEM_NAMES[19] },
+        { Setting = "1", MenuText = String.ITEM_NAMES[1] },
+        { Setting = "2", MenuText = String.ITEM_NAMES[2] },
+        { Setting = "3", MenuText = String.ITEM_NAMES[3] },
+        { Setting = "4", MenuText = String.ITEM_NAMES[4] },
+        { Setting = "5", MenuText = String.ITEM_NAMES[5] },
+        { Setting = "6", MenuText = String.ITEM_NAMES[6] },
+        { Setting = "7", MenuText = String.ITEM_NAMES[7] },
+        { Setting = "8", MenuText = String.ITEM_NAMES[8] },
+        { Setting = "9", MenuText = String.ITEM_NAMES[9] },
+        { Setting = "10", MenuText = String.ITEM_NAMES[10] },
+        { Setting = "11", MenuText = String.ITEM_NAMES[11] },
+        { Setting = "12", MenuText = String.ITEM_NAMES[12] },
+        { Setting = "13", MenuText = String.ITEM_NAMES[13] },
+        { Setting = "14", MenuText = String.ITEM_NAMES[14] },
+        { Setting = "15", MenuText = String.ITEM_NAMES[15] },
+        { Setting = "16", MenuText = String.ITEM_NAMES[16] },
+        { Setting = "17", MenuText = String.ITEM_NAMES[17] },
+        { Setting = "18", MenuText = String.ITEM_NAMES[18] },
+        { Setting = "19", MenuText = String.ITEM_NAMES[19] },
     },
     PowerTypeList = {},
     VisualCastTime = {
-        { VariableName = "vct_enabled", MenuText = NEEDTOKNOW.BARMENU_VCT_ENABLE },
-        { VariableName = "vct_color", MenuText = NEEDTOKNOW.BARMENU_VCT_COLOR, Type = "Color" },
-        { VariableName = "vct_spell", MenuText = NEEDTOKNOW.BARMENU_VCT_SPELL, Type = "Dialog", DialogText = "CHOOSE_VCT_SPELL_DIALOG" },
-        { VariableName = "vct_extra", MenuText = NEEDTOKNOW.BARMENU_VCT_EXTRA, Type = "Dialog", DialogText = "CHOOSE_VCT_EXTRA_DIALOG", Numeric=true },
+        { VariableName = "vct_enabled", MenuText = String.BARMENU_VCT_ENABLE },
+        { VariableName = "vct_color", MenuText = String.BARMENU_VCT_COLOR, Type = "Color" },
+        { VariableName = "vct_spell", MenuText = String.BARMENU_VCT_SPELL, Type = "Dialog", DialogText = "CHOOSE_VCT_SPELL_DIALOG" },
+        { VariableName = "vct_extra", MenuText = String.BARMENU_VCT_EXTRA, Type = "Dialog", DialogText = "CHOOSE_VCT_EXTRA_DIALOG", Numeric=true },
     },
     Show = {
-        { VariableName = "show_icon",      MenuText = NEEDTOKNOW.BARMENU_SHOW_ICON },
-        { VariableName = "show_text",      MenuText = NEEDTOKNOW.BARMENU_SHOW_TEXT },
-        { VariableName = "show_count",     MenuText = NEEDTOKNOW.BARMENU_SHOW_COUNT },
-        { VariableName = "show_time",      MenuText = NEEDTOKNOW.BARMENU_SHOW_TIME },
-        { VariableName = "show_spark",     MenuText = NEEDTOKNOW.BARMENU_SHOW_SPARK },
-        { VariableName = "show_mypip",     MenuText = NEEDTOKNOW.BARMENU_SHOW_MYPIP },
-        { VariableName = "show_ttn1",      MenuText = NEEDTOKNOW.BARMENU_SHOW_TTN1 },
-        { VariableName = "show_ttn2",      MenuText = NEEDTOKNOW.BARMENU_SHOW_TTN2 },
-        { VariableName = "show_ttn3",      MenuText = NEEDTOKNOW.BARMENU_SHOW_TTN3 },
-        { VariableName = "show_text_user", MenuText = NEEDTOKNOW.BARMENU_SHOW_TEXT_USER, Type = "Dialog", DialogText = "CHOOSE_OVERRIDE_TEXT", Checked = function(settings) return "" ~= settings.show_text_user end },
+        { VariableName = "show_icon",      MenuText = String.BARMENU_SHOW_ICON },
+        { VariableName = "show_text",      MenuText = String.BARMENU_SHOW_TEXT },
+        { VariableName = "show_count",     MenuText = String.BARMENU_SHOW_COUNT },
+        { VariableName = "show_time",      MenuText = String.BARMENU_SHOW_TIME },
+        { VariableName = "show_spark",     MenuText = String.BARMENU_SHOW_SPARK },
+        { VariableName = "show_mypip",     MenuText = String.BARMENU_SHOW_MYPIP },
+        { VariableName = "show_ttn1",      MenuText = String.BARMENU_SHOW_TTN1 },
+        { VariableName = "show_ttn2",      MenuText = String.BARMENU_SHOW_TTN2 },
+        { VariableName = "show_ttn3",      MenuText = String.BARMENU_SHOW_TTN3 },
+        { VariableName = "show_text_user", MenuText = String.BARMENU_SHOW_TEXT_USER, Type = "Dialog", DialogText = "CHOOSE_OVERRIDE_TEXT", Checked = function(settings) return "" ~= settings.show_text_user end },
     },
     BlinkSettings = {
-        { VariableName = "blink_enabled", MenuText = NEEDTOKNOW.BARMENU_VCT_ENABLE },
+        { VariableName = "blink_enabled", MenuText = String.BARMENU_VCT_ENABLE },
         { VariableName = "blink_label", MenuText = "Bar text while blinking...", Type = "Dialog", DialogText="CHOOSE_BLINK_TITLE_DIALOG" }, 
         { VariableName = "MissingBlink", MenuText = "Bar color when blinking...", Type = "Color" }, -- LOCME
         { VariableName = "blink_ooc", MenuText = "Blink out of combat" }, -- LOCME
@@ -186,7 +188,10 @@ function NeedToKnowRMB.ShowMenu(bar)
     NeedToKnowRMB.CurrentBar["barID"] = bar:GetID();
     NeedToKnowRMB.CurrentBar["groupID"] = bar:GetParent():GetID();
     if not NeedToKnowRMB.DropDown then
-        NeedToKnowRMB.DropDown = CreateFrame("Frame", "NeedToKnowDropDown", nil, "NeedToKnow_DropDownTemplate") 
+        NeedToKnowRMB.DropDown = CreateFrame("Frame", "NeedToKnowDropDown", nil, "NeedToKnow_DropDownTemplate")
+        -- OnLoad UIDropDownMenu_Initialize(self, NeedToKnow.BarMenu.BarMenu_Initialize, "MENU")
+        -- barMenu:SetScript("OnShow", ....
+        --   UIDropDownMenu_Initialize(self, NeedToKnow.BarMenu.BarMenu_Initialize, "MENU")
     end
 
     -- There's no OpenDropDownMenu that forces it to show in the new place,
@@ -458,7 +463,7 @@ function NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
             arrow:Show();
         end
         -- LOCME
-        -- lbl = lbl .. NEEDTOKNOW["BARMENU_"..type].. " Settings";
+        -- lbl = lbl .. String["BARMENU_"..type].. " Settings";
         lbl = "Settings";
         button:SetText(lbl);
     end
@@ -476,26 +481,9 @@ function NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
             arrow:Show();
             button.hasArrow = true
             button.value = "EquipmentSlotList"
-            button:SetText(NEEDTOKNOW.BARMENU_CHOOSESLOT)
+            button:SetText(String.BARMENU_CHOOSESLOT)
             -- TODO: really should disable the button press verb somehow
         end
-    --[[
-    elseif ( type == "POWER" ) then
-        button = NeedToKnowRMB.BarMenu_GetItem(1, "AuraName");
-        if ( button ) then
-          button.oldvalue = button.value
-        else
-            button = NeedToKnowRMB.BarMenu_GetItem(1, "EquipmentSlotList") 
-        end
-        if ( button ) then
-            local arrow = _G[button:GetName().."ExpandArrow"]
-            arrow:Show();
-            button.hasArrow = true
-            button.value = "PowerTypeList"
-            button:SetText(NEEDTOKNOW.BARMENU_CHOOSEPOWER)
-            -- TODO: really should disable the button press verb somehow
-        end
-    ]]--
     else
         button = NeedToKnowRMB.BarMenu_GetItem(1, "EquipmentSlotList");
         if not button then button = NeedToKnowRMB.BarMenu_GetItem(1, "PowerTypeList") end
@@ -504,7 +492,7 @@ function NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
             arrow:Hide();
             button.hasArrow = false
             if button.oldvalue then button.value = button.oldvalue end
-            button:SetText(NEEDTOKNOW.BARMENU_CHOOSENAME)
+            button:SetText(String.BARMENU_CHOOSENAME)
         end
     end
 end

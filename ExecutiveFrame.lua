@@ -90,6 +90,7 @@ end
 
 function ExecutiveFrame:ADDON_LOADED(addon)
 	if addon == "NeedToKnow" then
+
 		if not NeedToKnow.IsVisible then
 			NeedToKnow.IsVisible = true
 		end
@@ -112,6 +113,8 @@ function ExecutiveFrame:ADDON_LOADED(addon)
 end
 
 function ExecutiveFrame:PLAYER_LOGIN()
+	-- NeedToKnow:SetTemplateScripts()
+
 	NeedToKnowLoader.SafeUpgrade()
 	self:PLAYER_TALENT_UPDATE()
 

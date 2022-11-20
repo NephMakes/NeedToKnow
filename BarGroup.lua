@@ -1,11 +1,13 @@
 -- local addonName, addonTable = ...
+
+local BarGroup = NeedToKnow.BarGroup
+local ResizeButton = NeedToKnow.ResizeButton
 local Bar = NeedToKnow.Bar
+local String = NeedToKnow.String
 
 -- ---------
 -- Bar Group
 -- ---------
-
-local BarGroup = NeedToKnow.BarGroup
 
 function BarGroup:OnLoad()
 	-- Called by NeedToKnow_GroupTemplate
@@ -110,8 +112,6 @@ end
 -- Resize Button
 -- -------------
 
-local ResizeButton = NeedToKnow.ResizeButton
-
 function ResizeButton:OnLoad()
 	self.Texture:SetVertexColor(0.6, 0.6, 0.6)
 	self:SetScript("OnEnter", ResizeButton.OnEnter)
@@ -123,7 +123,8 @@ end
 function ResizeButton:OnEnter()
 	local tooltip = _G["GameTooltip"]
 	GameTooltip_SetDefaultAnchor(tooltip, self)
-	tooltip:AddLine(NEEDTOKNOW.RESIZE_TOOLTIP, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
+	-- tooltip:AddLine(NEEDTOKNOW.RESIZE_TOOLTIP, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
+	tooltip:AddLine(String.RESIZE_TOOLTIP, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
 	tooltip:Show()
 	self.Texture:SetVertexColor(1, 1, 1)
 end

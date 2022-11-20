@@ -515,7 +515,6 @@
         </Layers>
     </Frame>
 
-    <!-- <Frame name="InterfaceOptionsNeedToKnowAppearancePanel" hidden="true" parent="InterfaceOptionsFramePanelContainer"> -->
     <Frame name="InterfaceOptionsNeedToKnowAppearancePanel" hidden="true">
         <Layers>
             <Layer level="ARTWORK">
@@ -739,7 +738,6 @@
         </Frames>
     </Frame>
 
-    <!-- <Frame name="InterfaceOptionsNeedToKnowProfilePanel" hidden="true" parent="InterfaceOptionsFramePanelContainer"> -->
     <Frame name="InterfaceOptionsNeedToKnowProfilePanel" hidden="true">
         <Layers>
             <Layer level="ARTWORK">

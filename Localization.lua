@@ -1,6 +1,6 @@
 ﻿-- Must be loaded early in .toc
 
-local addonName, _ = ...
+-- local addonName, addonTable = ...
 
 NeedToKnow.String = {}
 local Localize = {}
@@ -334,6 +334,31 @@ do
 		NeedToKnow.String = Localize.enUS
 	end
 end
+
+NeedToKnow.String.ITEM_NAMES = {
+    -- Used by NeedToKnow.lua, NeedToKnow_Options.lua
+    -- Seems like this should already exist somewhere
+    -- Strings come from the chart on http://www.wowwiki.com/WoW_constants
+    HEADSLOT,
+    NECKSLOT,
+    SHOULDERSLOT,
+    SHIRTSLOT,
+    CHESTSLOT,
+    WAISTSLOT,
+    LEGSSLOT,
+    FEETSLOT,
+    WRISTSLOT,
+    HANDSSLOT,
+    FINGER0SLOT_UNIQUE,
+    FINGER1SLOT_UNIQUE,
+    TRINKET0SLOT_UNIQUE,
+    TRINKET1SLOT_UNIQUE,
+    BACKSLOT,
+    MAINHANDSLOT,
+    SECONDARYHANDSLOT,
+    RANGEDSLOT.."/"..RELICSLOT,
+    TABARDSLOT
+}
 
 
 

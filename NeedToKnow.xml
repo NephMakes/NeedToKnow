@@ -146,9 +146,11 @@
             </Layer>
         </Layers>
         <Scripts>
+        	<!--
             <OnLoad>
                 NeedToKnow.Bar.OnLoad(self)
             </OnLoad>
+            -->
         </Scripts>
     </Frame>
 

@@ -3,14 +3,11 @@
 -- by NephMakes (aka lieandswell), Kitjan
 -- --------------------------------------
 
-local addonName, addonTable = ...
-
-local Bar = NeedToKnow.Bar
+-- local addonName, addonTable = ...
 
 
--- ---------
--- Functions
--- ---------
+
+--[[ Functions ]]--
 
 function NeedToKnow:Update()
 	if UnitExists("player") and NeedToKnow.ProfileSettings then
