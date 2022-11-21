@@ -3,20 +3,6 @@
 
     <!-- These .xml files must be loaded last in .toc -->
 
-    <Frame name="NeedToKnow_DropDownTemplate" inherits="UIDropDownMenuTemplate" virtual="true">
-        <Anchors>
-            <Anchor point="TOP"/>
-        </Anchors>
-        <Scripts>
-            <OnLoad>
-                UIDropDownMenu_Initialize(self, NeedToKnow.BarMenu.BarMenu_Initialize, "MENU");
-            </OnLoad>
-            <OnShow>
-                UIDropDownMenu_Initialize(self, NeedToKnow.BarMenu.BarMenu_Initialize, "MENU");
-            </OnShow>
-        </Scripts>
-    </Frame>
-
     <Frame name="NeedToKnow_GroupOptionsTemplate" virtual="true">
         <Size>
             <AbsDimension x="128" y="26"/>

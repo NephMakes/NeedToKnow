@@ -145,13 +145,6 @@
                 </Texture>
             </Layer>
         </Layers>
-        <Scripts>
-        	<!--
-            <OnLoad>
-                NeedToKnow.Bar.OnLoad(self)
-            </OnLoad>
-            -->
-        </Scripts>
     </Frame>
 
     <Frame name="NeedToKnow_Group1" inherits="NeedToKnow_GroupTemplate" toplevel="true" movable="true" parent="UIParent" id="1">

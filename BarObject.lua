@@ -12,7 +12,7 @@ local SecondsToTimeAbbrev = SecondsToTimeAbbrev
 
 -- Deprecated: 
 local m_last_guid = addonTable.m_last_guid
-local UPDATE_INTERVAL = 0.025  -- Make this an addon-wide variable
+local UPDATE_INTERVAL = 0.025  -- Make this an addon-wide variable?
 
 
 -- ---------
@@ -507,8 +507,8 @@ function Bar:OnSizeChanged()
 end
 
 function Bar:OnMouseUp(button)
-	if ( button == "RightButton" ) then
+	if button == "RightButton" then
 		PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
-		NeedToKnow.BarMenu.ShowMenu(self)
+		NeedToKnow.BarMenu:ShowMenu(self)
 	end
 end

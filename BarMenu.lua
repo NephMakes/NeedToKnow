@@ -1,19 +1,14 @@
-﻿-- Right-click menu to configure timer bar
+﻿-- Bar right-click menu
+
+-- local addonName, addonTable = ...
+
+local BarMenu = NeedToKnow.BarMenu
+local String = NeedToKnow.String
+local NeedToKnowRMB = NeedToKnow.BarMenu  -- Deprecated
 
 -- TO DO: 
 -- Bar menu only works properly if loaded after NeedToKnow_Options.lua
 -- (the menu items are blank otherwise). Why? Make it more robust and independent. 
-
--- local addonName, addonTable = ...
--- local BarMenu = NeedToKnow.BarMenu
-local NeedToKnowRMB = NeedToKnow.BarMenu
-
--- Note: 
--- NeedToKnow.BarMenu = CreateFrame("Frame", "NeedToKnowDropDown", nil, "NeedToKnow_DropDownTemplate")
--- Won't work because XML templates loaded last
--- Also, BarMenu:Methods() might clash with inherited UIDropDownMenuTemplate
-
-local String = NeedToKnow.String
 
 NeedToKnowRMB.CurrentBar = { groupID = 1, barID = 1 };  -- a dirty hack, i know.  
 
@@ -184,21 +179,96 @@ NeedToKnowRMB.VariableRedirects = {
   PowerTypeList = "AuraName",
 }
 
-function NeedToKnowRMB.ShowMenu(bar)
-    NeedToKnowRMB.CurrentBar["barID"] = bar:GetID();
-    NeedToKnowRMB.CurrentBar["groupID"] = bar:GetParent():GetID();
-    if not NeedToKnowRMB.DropDown then
-        NeedToKnowRMB.DropDown = CreateFrame("Frame", "NeedToKnowDropDown", nil, "NeedToKnow_DropDownTemplate")
-        -- OnLoad UIDropDownMenu_Initialize(self, NeedToKnow.BarMenu.BarMenu_Initialize, "MENU")
-        -- barMenu:SetScript("OnShow", ....
-        --   UIDropDownMenu_Initialize(self, NeedToKnow.BarMenu.BarMenu_Initialize, "MENU")
+
+--[[ Functions ]]--
+
+function BarMenu:New()
+	local barMenu = CreateFrame("Frame", "NeedToKnowDropDownMenu", nil, "UIDropDownMenuTemplate")
+	Mixin(barMenu, BarMenu)  -- Inherit BarMenu methods
+	barMenu.barID = 1
+	barMenu.groupID = 1
+	barMenu:SetScript("OnShow", barMenu.OnShow)
+	barMenu:OnShow()
+	return barMenu
+end
+
+function BarMenu:OnShow()
+	UIDropDownMenu_Initialize(self, self.Initialize, "MENU")
+end
+
+function BarMenu:Initialize()
+    local groupID = NeedToKnowRMB.CurrentBar["groupID"];
+    local barID = NeedToKnowRMB.CurrentBar["barID"];
+    local barSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID];
+
+    if ( barSettings.MissingBlink.a == 0 ) then
+        barSettings.blink_enabled = false;
+    end
+    NeedToKnowRMB.BarMenu_SubMenus.Options = NeedToKnowRMB.BarMenu_SubMenus["Opt_"..barSettings.BuffOrDebuff];
+   
+    if ( UIDROPDOWNMENU_MENU_LEVEL > 1 ) then
+        if ( UIDROPDOWNMENU_MENU_VALUE == "VisualCastTime" ) then
+            -- Create a summary title for the visual cast time submenu
+            local title = "";
+            if ( barSettings.vct_spell and "" ~= barSettings.vct_spell ) then
+                title = title .. barSettings.vct_spell;
+            end
+            local fExtra = tonumber(barSettings.vct_extra);
+            if ( fExtra and fExtra > 0 ) then
+                if ("" ~= title) then
+                    title = title .. " + ";
+                end
+                title = title .. string.format("%0.1fs", fExtra);
+            end
+            if ( "" ~= title ) then
+                local info = UIDropDownMenu_CreateInfo();
+                info.text = title;
+                info.isTitle = true;
+                info.notCheckable = true; -- unindent
+                UIDropDownMenu_AddButton(info, UIDROPDOWNMENU_MENU_LEVEL);
+            end
+        end
+        
+        local subMenus = NeedToKnowRMB.BarMenu_SubMenus;
+        for index, value in ipairs(subMenus[UIDROPDOWNMENU_MENU_VALUE]) do
+            NeedToKnowRMB.BarMenu_AddButton(barSettings, value, UIDROPDOWNMENU_MENU_VALUE);
+        end
+
+        if ( false == barSettings.OnlyMine and UIDROPDOWNMENU_MENU_LEVEL == 2 ) then
+            NeedToKnowRMB.BarMenu_UncheckAndDisable(2, "bDetectExtends", false);
+        end
+        return;
+    end
+    
+    -- show name
+    if ( barSettings.AuraName ) and ( barSettings.AuraName ~= "" ) then
+        local info = UIDropDownMenu_CreateInfo();
+        info.text = NeedToKnow.GetPrettyName(barSettings);
+        info.isTitle = true;
+        info.notCheckable = true; --unindent
+        UIDropDownMenu_AddButton(info);
     end
 
-    -- There's no OpenDropDownMenu that forces it to show in the new place,
-    -- so we have to check if the first Toggle opened or closed it
-    ToggleDropDownMenu(1, nil, NeedToKnowRMB.DropDown, "cursor", 0, 0);
+    local moreOptions = NeedToKnowRMB.BarMenu_MoreOptions;
+    for index, value in ipairs(moreOptions) do
+        NeedToKnowRMB.BarMenu_AddButton(barSettings, moreOptions[index]);
+    end
+
+    NeedToKnowRMB.BarMenu_UpdateSettings(barSettings);
+end
+
+function BarMenu:ShowMenu(bar)
+	-- Called by Bar:OnMouseUp()
+	self.CurrentBar.barID = bar:GetID()
+	self.CurrentBar.groupID = bar:GetParent():GetID()
+	self.barID = bar:GetID()
+	self.groupID = bar:GetParent():GetID()
+	if not NeedToKnowRMB.DropDown then
+		BarMenu.frame = BarMenu:New()
+    end
+    ToggleDropDownMenu(1, nil, BarMenu.frame, "cursor", 0, 0)
     if not DropDownList1:IsShown() then
-        ToggleDropDownMenu(1, nil, NeedToKnowRMB.DropDown, "cursor", 0, 0);
+        ToggleDropDownMenu(1, nil, BarMenu.frame, "cursor", 0, 0)
     end
 end
 
@@ -289,67 +359,6 @@ function NeedToKnowRMB.BarMenu_AddButton(barSettings, i_desc, i_parent)
         local checkBG = _G[buttonName.."UnCheck"];
         checkBG:Hide();
     end
-end
-
-function NeedToKnowRMB.BarMenu_Initialize()
-    local groupID = NeedToKnowRMB.CurrentBar["groupID"];
-    local barID = NeedToKnowRMB.CurrentBar["barID"];
-    local barSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID];
-
-    if ( barSettings.MissingBlink.a == 0 ) then
-        barSettings.blink_enabled = false;
-    end
-    NeedToKnowRMB.BarMenu_SubMenus.Options = NeedToKnowRMB.BarMenu_SubMenus["Opt_"..barSettings.BuffOrDebuff];
-   
-    if ( UIDROPDOWNMENU_MENU_LEVEL > 1 ) then
-        if ( UIDROPDOWNMENU_MENU_VALUE == "VisualCastTime" ) then
-            -- Create a summary title for the visual cast time submenu
-            local title = "";
-            if ( barSettings.vct_spell and "" ~= barSettings.vct_spell ) then
-                title = title .. barSettings.vct_spell;
-            end
-            local fExtra = tonumber(barSettings.vct_extra);
-            if ( fExtra and fExtra > 0 ) then
-                if ("" ~= title) then
-                    title = title .. " + ";
-                end
-                title = title .. string.format("%0.1fs", fExtra);
-            end
-            if ( "" ~= title ) then
-                local info = UIDropDownMenu_CreateInfo();
-                info.text = title;
-                info.isTitle = true;
-                info.notCheckable = true; -- unindent
-                UIDropDownMenu_AddButton(info, UIDROPDOWNMENU_MENU_LEVEL);
-            end
-        end
-        
-        local subMenus = NeedToKnowRMB.BarMenu_SubMenus;
-        for index, value in ipairs(subMenus[UIDROPDOWNMENU_MENU_VALUE]) do
-            NeedToKnowRMB.BarMenu_AddButton(barSettings, value, UIDROPDOWNMENU_MENU_VALUE);
-        end
-
-        if ( false == barSettings.OnlyMine and UIDROPDOWNMENU_MENU_LEVEL == 2 ) then
-            NeedToKnowRMB.BarMenu_UncheckAndDisable(2, "bDetectExtends", false);
-        end
-        return;
-    end
-    
-    -- show name
-    if ( barSettings.AuraName ) and ( barSettings.AuraName ~= "" ) then
-        local info = UIDropDownMenu_CreateInfo();
-        info.text = NeedToKnow.GetPrettyName(barSettings);
-        info.isTitle = true;
-        info.notCheckable = true; --unindent
-        UIDropDownMenu_AddButton(info);
-    end
-
-    local moreOptions = NeedToKnowRMB.BarMenu_MoreOptions;
-    for index, value in ipairs(moreOptions) do
-        NeedToKnowRMB.BarMenu_AddButton(barSettings, moreOptions[index]);
-    end
-
-    NeedToKnowRMB.BarMenu_UpdateSettings(barSettings);
 end
 
 function NeedToKnowRMB.BarMenu_IgnoreToggle(self, a1, a2, checked)
