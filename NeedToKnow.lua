@@ -42,12 +42,17 @@ function NeedToKnow:GetGroup(groupID)
 	return NeedToKnow:GetBarGroup(groupID)
 end
 
+function NeedToKnow:GetBar(groupID, barID)
+	return _G["NeedToKnow_Group"..groupID.."Bar"..barID]
+end
+
 function NeedToKnow:GetGroupSettings(groupID)
 	return NeedToKnow.ProfileSettings.Groups[groupID]
 end
 
-function NeedToKnow:GetBar(groupID, barID)
-	return _G["NeedToKnow_Group"..groupID.."Bar"..barID]
+function NeedToKnow:GetBarSettings(groupID, barID)
+	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
+	return groupSettings.Bars[barID]
 end
 
 function NeedToKnow:UpdateBar(groupID, barID)

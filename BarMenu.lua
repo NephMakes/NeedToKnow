@@ -10,8 +10,6 @@ local NeedToKnowRMB = NeedToKnow.BarMenu  -- Deprecated
 -- Bar menu only works properly if loaded after NeedToKnow_Options.lua
 -- (the menu items are blank otherwise). Why? Make it more robust and independent. 
 
-NeedToKnowRMB.CurrentBar = { groupID = 1, barID = 1 };  -- a dirty hack, i know.  
-
 StaticPopupDialogs["NEEDTOKNOW.CHOOSENAME_DIALOG"] = {
     text = String.CHOOSENAME_DIALOG,
     button1 = ACCEPT,
@@ -23,7 +21,7 @@ StaticPopupDialogs["NEEDTOKNOW.CHOOSENAME_DIALOG"] = {
         local text = self.editBox:GetText();
         local variable = self.variable;
         if ( nil ~= variable ) then
-            NeedToKnowRMB.BarMenu_ChooseName(text, variable);
+            BarMenu.ChooseName(text, variable);
         end
     end,
     EditBoxOnEnterPressed = function(self)
@@ -41,7 +39,7 @@ StaticPopupDialogs["NEEDTOKNOW.CHOOSENAME_DIALOG"] = {
     hideOnEscape = 1,
 };
 
-NeedToKnowRMB.BarMenu_MoreOptions = {
+BarMenu.MoreOptions = {
     { VariableName = "Enabled", MenuText = String.BARMENU_ENABLE },
     { VariableName = "AuraName", MenuText = String.BARMENU_CHOOSENAME, Type = "Dialog", DialogText = "CHOOSENAME_DIALOG" },
     { VariableName = "BuffOrDebuff", MenuText = String.BARMENU_BUFFORDEBUFF, Type = "Submenu" },
@@ -56,7 +54,7 @@ NeedToKnowRMB.BarMenu_MoreOptions = {
     { VariableName = "ImportExport", MenuText = "Import/Export Bar Settings", Type = "Dialog", DialogText = "IMPORTEXPORT_DIALOG" },
 }
 
-NeedToKnowRMB.BarMenu_SubMenus = {
+BarMenu.SubMenus = {
     -- the keys on this table need to match the settings variable names
     BuffOrDebuff = {
           { Setting = "HELPFUL", MenuText = String.BARMENU_HELPFUL },
@@ -173,10 +171,10 @@ NeedToKnowRMB.BarMenu_SubMenus = {
     },
 };
 
-NeedToKnowRMB.VariableRedirects = {
-  DebuffUnit = "Unit",
-  EquipmentSlotList = "AuraName",
-  PowerTypeList = "AuraName",
+BarMenu.VariableRedirects = {
+	DebuffUnit = "Unit",
+	EquipmentSlotList = "AuraName",
+	PowerTypeList = "AuraName",
 }
 
 
@@ -197,73 +195,71 @@ function BarMenu:OnShow()
 end
 
 function BarMenu:Initialize()
-    local groupID = NeedToKnowRMB.CurrentBar["groupID"];
-    local barID = NeedToKnowRMB.CurrentBar["barID"];
-    local barSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID];
+	local groupID = BarMenu.groupID
+	local barID = BarMenu.barID
+	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
 
-    if ( barSettings.MissingBlink.a == 0 ) then
-        barSettings.blink_enabled = false;
-    end
-    NeedToKnowRMB.BarMenu_SubMenus.Options = NeedToKnowRMB.BarMenu_SubMenus["Opt_"..barSettings.BuffOrDebuff];
-   
-    if ( UIDROPDOWNMENU_MENU_LEVEL > 1 ) then
-        if ( UIDROPDOWNMENU_MENU_VALUE == "VisualCastTime" ) then
-            -- Create a summary title for the visual cast time submenu
-            local title = "";
-            if ( barSettings.vct_spell and "" ~= barSettings.vct_spell ) then
-                title = title .. barSettings.vct_spell;
-            end
-            local fExtra = tonumber(barSettings.vct_extra);
-            if ( fExtra and fExtra > 0 ) then
-                if ("" ~= title) then
-                    title = title .. " + ";
-                end
-                title = title .. string.format("%0.1fs", fExtra);
-            end
-            if ( "" ~= title ) then
-                local info = UIDropDownMenu_CreateInfo();
-                info.text = title;
-                info.isTitle = true;
-                info.notCheckable = true; -- unindent
-                UIDropDownMenu_AddButton(info, UIDROPDOWNMENU_MENU_LEVEL);
-            end
-        end
-        
-        local subMenus = NeedToKnowRMB.BarMenu_SubMenus;
-        for index, value in ipairs(subMenus[UIDROPDOWNMENU_MENU_VALUE]) do
-            NeedToKnowRMB.BarMenu_AddButton(barSettings, value, UIDROPDOWNMENU_MENU_VALUE);
-        end
+	if ( barSettings.MissingBlink.a == 0 ) then
+		barSettings.blink_enabled = false;
+	end
+	BarMenu.SubMenus.Options = BarMenu.SubMenus["Opt_"..barSettings.BuffOrDebuff];
 
-        if ( false == barSettings.OnlyMine and UIDROPDOWNMENU_MENU_LEVEL == 2 ) then
-            NeedToKnowRMB.BarMenu_UncheckAndDisable(2, "bDetectExtends", false);
-        end
-        return;
-    end
-    
-    -- show name
-    if ( barSettings.AuraName ) and ( barSettings.AuraName ~= "" ) then
-        local info = UIDropDownMenu_CreateInfo();
-        info.text = NeedToKnow.GetPrettyName(barSettings);
-        info.isTitle = true;
-        info.notCheckable = true; --unindent
-        UIDropDownMenu_AddButton(info);
-    end
+	if ( UIDROPDOWNMENU_MENU_LEVEL > 1 ) then
+		if ( UIDROPDOWNMENU_MENU_VALUE == "VisualCastTime" ) then
+			-- Create a summary title for the visual cast time submenu
+			local title = "";
+			if ( barSettings.vct_spell and "" ~= barSettings.vct_spell ) then
+				title = title .. barSettings.vct_spell;
+			end
+			local fExtra = tonumber(barSettings.vct_extra);
+			if ( fExtra and fExtra > 0 ) then
+				if ("" ~= title) then
+					title = title .. " + ";
+				end
+				title = title .. string.format("%0.1fs", fExtra);
+			end
+			if ( "" ~= title ) then
+				local info = UIDropDownMenu_CreateInfo();
+				info.text = title;
+				info.isTitle = true;
+				info.notCheckable = true; -- unindent
+				UIDropDownMenu_AddButton(info, UIDROPDOWNMENU_MENU_LEVEL);
+			end
+		end
 
-    local moreOptions = NeedToKnowRMB.BarMenu_MoreOptions;
-    for index, value in ipairs(moreOptions) do
-        NeedToKnowRMB.BarMenu_AddButton(barSettings, moreOptions[index]);
-    end
+		local subMenus = BarMenu.SubMenus;
+		for index, value in ipairs(subMenus[UIDROPDOWNMENU_MENU_VALUE]) do
+			NeedToKnowRMB.BarMenu_AddButton(barSettings, value, UIDROPDOWNMENU_MENU_VALUE);
+		end
 
-    NeedToKnowRMB.BarMenu_UpdateSettings(barSettings);
+		if ( false == barSettings.OnlyMine and UIDROPDOWNMENU_MENU_LEVEL == 2 ) then
+			BarMenu:UncheckAndDisable(2, "bDetectExtends", false);
+		end
+		return;
+	end
+
+	-- show name
+	if ( barSettings.AuraName ) and ( barSettings.AuraName ~= "" ) then
+		local info = UIDropDownMenu_CreateInfo();
+		info.text = NeedToKnow.GetPrettyName(barSettings);
+		info.isTitle = true;
+		info.notCheckable = true; --unindent
+		UIDropDownMenu_AddButton(info);
+	end
+
+	local moreOptions = BarMenu.MoreOptions;
+	for index, value in ipairs(moreOptions) do
+		NeedToKnowRMB.BarMenu_AddButton(barSettings, moreOptions[index]);
+	end
+
+	NeedToKnowRMB.BarMenu_UpdateSettings(barSettings);
 end
 
 function BarMenu:ShowMenu(bar)
 	-- Called by Bar:OnMouseUp()
-	self.CurrentBar.barID = bar:GetID()
-	self.CurrentBar.groupID = bar:GetParent():GetID()
-	self.barID = bar:GetID()
-	self.groupID = bar:GetParent():GetID()
-	if not NeedToKnowRMB.DropDown then
+	BarMenu.barID = bar:GetID()
+	BarMenu.groupID = bar:GetParent():GetID()
+	if not BarMenu.frame then
 		BarMenu.frame = BarMenu:New()
     end
     ToggleDropDownMenu(1, nil, BarMenu.frame, "cursor", 0, 0)
@@ -279,7 +275,7 @@ function NeedToKnowRMB.BarMenu_AddButton(barSettings, i_desc, i_parent)
     local varSettings
     if ( nil ~= i_desc["Setting"]) then
         item_type = "SetVar"
-        local v = NeedToKnowRMB.VariableRedirects[i_parent] or i_parent
+        local v = BarMenu.VariableRedirects[i_parent] or i_parent
         varSettings = barSettings[v]
     else
         info.value = i_desc["VariableName"];
@@ -306,15 +302,15 @@ function NeedToKnowRMB.BarMenu_AddButton(barSettings, i_desc, i_parent)
     info.hideUnCheck = true; -- but hide the empty checkbox/radio
 
     if ( not item_type and not text and not info.value ) then
-        info.func = NeedToKnowRMB.BarMenu_IgnoreToggle;
+        info.func = BarMenu.IgnoreToggle;
         info.disabled = true;
     elseif ( nil == item_type or item_type == "Check" ) then
-        info.func = NeedToKnowRMB.BarMenu_ToggleSetting;
+        info.func = BarMenu.ToggleSetting;
         info.checked = (nil ~= varSettings and varSettings);
         info.hideUnCheck = nil;
         info.isNotRadio = true;
     elseif ( item_type == "SetVar" ) then
-        info.func = NeedToKnowRMB.BarMenu_ChooseSetting;
+        info.func = BarMenu.ChooseSetting;
         info.value = i_desc["Setting"];
         info.checked = (varSettings == info.value);
         info.hideUnCheck = nil;
@@ -322,7 +318,7 @@ function NeedToKnowRMB.BarMenu_AddButton(barSettings, i_desc, i_parent)
     elseif ( item_type == "Submenu" ) then
         info.hasArrow = true;
         info.isNotRadio = true;
-        info.func = NeedToKnowRMB.BarMenu_IgnoreToggle;
+        info.func = BarMenu.IgnoreToggle;
     elseif ( item_type == "Dialog" ) then
         info.func = NeedToKnowRMB.BarMenu_ShowNameDialog;
         info.keepShownOnClick = false;
@@ -334,9 +330,9 @@ function NeedToKnowRMB.BarMenu_AddButton(barSettings, i_desc, i_parent)
         info.g = varSettings.g;
         info.b = varSettings.b;
         info.opacity = 1 - varSettings.a;
-        info.swatchFunc = NeedToKnowRMB.BarMenu_SetColor;
-        info.opacityFunc = NeedToKnowRMB.BarMenu_SetOpacity;
-        info.cancelFunc = NeedToKnowRMB.BarMenu_CancelColor;
+        info.swatchFunc = BarMenu.SetColor;
+        info.opacityFunc = BarMenu.SetOpacity;
+        info.cancelFunc = BarMenu.CancelColor;
 
         info.func = UIDropDownMenuButton_OpenColorPicker;
         info.keepShownOnClick = false;
@@ -361,105 +357,102 @@ function NeedToKnowRMB.BarMenu_AddButton(barSettings, i_desc, i_parent)
     end
 end
 
-function NeedToKnowRMB.BarMenu_IgnoreToggle(self, a1, a2, checked)
-    local button = NeedToKnowRMB.BarMenu_GetItem(NeedToKnowRMB.BarMenu_GetItemLevel(self), self.value);
-    if ( button ) then
-        local checkName = button:GetName() .. "Check";
-        _G[checkName]:Hide();
-        button.checked = false;
+function BarMenu.IgnoreToggle(button)
+	if button then
+		_G[button:GetName().."Check"]:Hide()
+		button.checked = false
+	end
+end
+
+function BarMenu.ToggleSetting(button, a1, a2, checked)
+	local groupID = BarMenu.groupID
+	local barID = BarMenu.barID
+
+	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
+	barSettings[button.value] = button.checked
+
+	local level = BarMenu:GetMenuItemLevel(button)
+	if button.value == "OnlyMine" then 
+		if button.checked == false then
+			BarMenu:UncheckAndDisable(level, "bDetectExtends", false)
+		else
+			BarMenu:EnableMenuItem(level, "bDetectExtends")
+			BarMenu:CheckMenuItem(level, "show_all_stacks", false)
+		end
+	elseif button.value == "blink_enabled" then
+		if button.checked and barSettings.MissingBlink.a == 0 then
+			barSettings.MissingBlink.a = 0.5
+		end
+	elseif button.value == "show_all_stacks" then
+		if button.checked then
+			BarMenu:CheckMenuItem(level, "OnlyMine", false)
+		end
+	end
+
+	NeedToKnow:UpdateBar(groupID, barID)
+end
+
+function BarMenu:GetMenuItemLevel(button)
+	local menuLevel = button:GetName():match("%d+")
+	return tonumber(menuLevel)
+end
+
+function BarMenu:GetMenuItem(menuLevel, valueName)
+	local listFrameName = "DropDownList"..menuLevel
+	local numButtons = _G[listFrameName]["numButtons"]
+	for index = 1, numButtons do
+		local button = _G[listFrameName.."Button"..index]
+		local txt
+		if type(button.value) == "table" then
+			txt = button.value.variable
+		else
+			txt = button.value
+		end
+		if txt == valueName then
+			return button
+		end
+	end
+	return nil
+end
+
+function BarMenu:CheckMenuItem(menuLevel, valueName, checkItem)
+	local button = BarMenu:GetMenuItem(menuLevel, valueName)
+	if button then
+		local check = _G[button:GetName().."Check"]
+		if checkItem then
+			check:Show()
+			button.checked = true
+		else
+			check:Hide()
+			button.checked = false
+		end
+		BarMenu.ToggleSetting(button)
+	end
+end
+
+function BarMenu:EnableMenuItem(menuLevel, valueName)
+    local button = BarMenu:GetMenuItem(menuLevel, valueName)
+    if button then
+        button:Enable()
     end
 end
 
-function NeedToKnowRMB.BarMenu_ToggleSetting(self, a1, a2, checked)
-    local groupID = NeedToKnowRMB.CurrentBar["groupID"];
-    local barID = NeedToKnowRMB.CurrentBar["barID"];
-    local barSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID];
-    barSettings[self.value] = self.checked;
-    local level = NeedToKnowRMB.BarMenu_GetItemLevel(self);
-    
-    if ( self.value == "OnlyMine" ) then 
-        if ( false == self.checked ) then
-            NeedToKnowRMB.BarMenu_UncheckAndDisable(level, "bDetectExtends", false);
-        else
-            NeedToKnowRMB.BarMenu_EnableItem(level, "bDetectExtends");
-            NeedToKnowRMB.BarMenu_CheckItem(level, "show_all_stacks", false);
-        end
-    elseif ( self.value == "blink_enabled" ) then
-        if ( true == self.checked and barSettings.MissingBlink.a == 0 ) then
-            barSettings.MissingBlink.a = 0.5
-        end
-    elseif ( self.value == "show_all_stacks" ) then
-        if ( true == self.checked ) then
-            NeedToKnowRMB.BarMenu_CheckItem(level, "OnlyMine", false);
-        end
-    end
-    NeedToKnow:UpdateBar(groupID, barID)
-end
-
-function NeedToKnowRMB.BarMenu_GetItemLevel(i_button)
-    local path = i_button:GetName();
-    local levelStr = path:match("%d+");
-    return tonumber(levelStr);
-end
-
-function NeedToKnowRMB.BarMenu_GetItem(i_level, i_valueName)
-    local listFrame = _G["DropDownList"..i_level];
-    local listFrameName = listFrame:GetName();
-    local n = listFrame.numButtons;
-    for index=1,n do
-        local button = _G[listFrameName.."Button"..index];
-        local txt;
-        if ( type(button.value) == "table" ) then
-            txt = button.value.variable;
-        else
-            txt = button.value;
-        end
-        if ( txt == i_valueName ) then
-            return button;
-        end
-    end
-    return nil;
-end
-
-function NeedToKnowRMB.BarMenu_CheckItem(i_level, i_valueName, i_bCheck)
-    local button = NeedToKnowRMB.BarMenu_GetItem(i_level, i_valueName);
-    if ( button ) then
-        local checkName = button:GetName() .. "Check";
-        local check = _G[checkName];
-        if ( i_bCheck ) then
-            check:Show();
-            button.checked = true;
-        else
-            check:Hide();
-            button.checked = false;
-        end
-        NeedToKnowRMB.BarMenu_ToggleSetting(button);
-    end
-end
-
-function NeedToKnowRMB.BarMenu_EnableItem(i_level, i_valueName)
-    local button = NeedToKnowRMB.BarMenu_GetItem(i_level, i_valueName)
-    if ( button ) then
-        button:Enable();
-    end
-end
-
-function NeedToKnowRMB.BarMenu_UncheckAndDisable(i_level, i_valueName)
-    local button = NeedToKnowRMB.BarMenu_GetItem(i_level, i_valueName);
-    if ( button ) then
-        NeedToKnowRMB.BarMenu_CheckItem(i_level, i_valueName, false);
-        button:Disable();
-    end
+function BarMenu:UncheckAndDisable(menuLevel, valueName)
+	local button = BarMenu:GetMenuItem(menuLevel, valueName)
+	if button then
+		BarMenu:CheckMenuItem(menuLevel, valueName, false)
+		button:Disable()
+	end
 end
 
 function NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
     local type = barSettings.BuffOrDebuff;
     
     -- Set up the options submenu to the corrent name and contents
-    local Opt = NeedToKnowRMB.BarMenu_SubMenus["Opt_"..type];
+    local Opt = BarMenu.SubMenus["Opt_"..type];
     if ( not Opt ) then Opt = {} end
-    NeedToKnowRMB.BarMenu_SubMenus.Options = Opt;
-    local button = NeedToKnowRMB.BarMenu_GetItem(1, "Options");
+    BarMenu.SubMenus.Options = Opt;
+    local button = BarMenu:GetMenuItem(1, "Options");
     if button then
         local arrow = _G[button:GetName().."ExpandArrow"]
         local lbl = ""
@@ -479,11 +472,11 @@ function NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
 
     -- Set up the aura name menu option to behave the right way
     if ( type == "EQUIPSLOT" ) then
-        button = NeedToKnowRMB.BarMenu_GetItem(1, "AuraName");
+        button = BarMenu:GetMenuItem(1, "AuraName");
         if ( button ) then
             button.oldvalue = button.value
         else
-            button = NeedToKnowRMB.BarMenu_GetItem(1, "PowerTypeList") 
+            button = BarMenu:GetMenuItem(1, "PowerTypeList") 
         end
         if ( button ) then
             local arrow = _G[button:GetName().."ExpandArrow"]
@@ -494,8 +487,8 @@ function NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
             -- TODO: really should disable the button press verb somehow
         end
     else
-        button = NeedToKnowRMB.BarMenu_GetItem(1, "EquipmentSlotList");
-        if not button then button = NeedToKnowRMB.BarMenu_GetItem(1, "PowerTypeList") end
+        button = BarMenu:GetMenuItem(1, "EquipmentSlotList");
+        if not button then button = BarMenu:GetMenuItem(1, "PowerTypeList") end
         if ( button ) then
             local arrow = _G[button:GetName().."ExpandArrow"]
             arrow:Hide();
@@ -506,17 +499,16 @@ function NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
     end
 end
 
-function NeedToKnowRMB.BarMenu_ChooseSetting(self, a1, a2, checked)
-    local groupID = NeedToKnowRMB.CurrentBar["groupID"];
-    local barID = NeedToKnowRMB.CurrentBar["barID"];
-    local barSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID]
-    local v = NeedToKnowRMB.VariableRedirects[UIDROPDOWNMENU_MENU_VALUE] or UIDROPDOWNMENU_MENU_VALUE
-
-    barSettings[v] = self.value;
-    NeedToKnow:UpdateBar(groupID, barID)
-    if ( v == "BuffOrDebuff" ) then
-        NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
-    end
+function BarMenu.ChooseSetting(button, a1, a2, checked)
+	local groupID = BarMenu.groupID
+	local barID = BarMenu.barID
+	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
+	local setting = BarMenu.VariableRedirects[UIDROPDOWNMENU_MENU_VALUE] or UIDROPDOWNMENU_MENU_VALUE
+	barSettings[setting] = button.value
+	NeedToKnow:UpdateBar(groupID, barID)
+	if setting == "BuffOrDebuff" then
+		NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
+	end
 end
 
 -- TODO: There has to be a better way to do this, this has pretty bad user feel
@@ -547,9 +539,9 @@ function NeedToKnowRMB.BarMenu_ShowNameDialog(self, a1, a2, checked)
     dialog.variable = self.value.variable;
 
     local edit = _G[dialog:GetName().."EditBox"];
-    local groupID = NeedToKnowRMB.CurrentBar["groupID"];
-    local barID = NeedToKnowRMB.CurrentBar["barID"];
-    local barSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID];
+    local groupID = BarMenu.groupID
+    local barID = BarMenu.barID
+	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
 
     local numeric = self.value.numeric or false;
     -- TODO: There has to be a better way to do this, this has pretty bad user  feel
@@ -572,48 +564,46 @@ function NeedToKnowRMB.BarMenu_ShowNameDialog(self, a1, a2, checked)
     end
 end
 
-function NeedToKnowRMB.BarMenu_ChooseName(text, variable)
-	local groupID = NeedToKnowRMB.CurrentBar["groupID"];
-	local barID = NeedToKnowRMB.CurrentBar["barID"];
-	local barSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID];
-	if ( variable ~= "ImportExport" ) then
-	barSettings[variable] = text;
+function BarMenu.ChooseName(text, variable)
+	local groupID = BarMenu.groupID
+	local barID = BarMenu.barID
+	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
+	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
+	if variable ~= "ImportExport" then
+		barSettings[variable] = text
 	else
-		-- NeedToKnowIE.ImportBarSettingsFromString(text, NeedToKnow.ProfileSettings.Groups[groupID]["Bars"], barID);
-		NeedToKnow.ImportBarSettingsFromString(text, NeedToKnow.ProfileSettings.Groups[groupID]["Bars"], barID);
+		NeedToKnow.ImportBarSettingsFromString(text, groupSettings.Bars, barID)
 	end
 	NeedToKnow:UpdateBar(groupID, barID)
 end
 
-function NeedToKnowRMB.BarMenu_SetColor()
-	local groupID = NeedToKnowRMB.CurrentBar["groupID"];
-	local barID = NeedToKnowRMB.CurrentBar["barID"];
-	local varSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID][ColorPickerFrame.extraInfo];
-
-	varSettings.r,varSettings.g,varSettings.b = ColorPickerFrame:GetColorRGB();
+function BarMenu.SetColor()
+	local groupID = BarMenu.groupID
+	local barID = BarMenu.barID
+	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
+	local color = barSettings[ColorPickerFrame.extraInfo]
+	color.r, color.g, color.b = ColorPickerFrame:GetColorRGB()
 	NeedToKnow:UpdateBar(groupID, barID)
 end
 
-function NeedToKnowRMB.BarMenu_SetOpacity()
-	local groupID = NeedToKnowRMB.CurrentBar["groupID"];
-	local barID = NeedToKnowRMB.CurrentBar["barID"];
-	local varSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID][ColorPickerFrame.extraInfo];
-
-	varSettings.a = 1 - OpacitySliderFrame:GetValue();
+function BarMenu.SetOpacity()
+	local groupID = BarMenu.groupID
+	local barID = BarMenu.barID
+	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
+	local color = barSettings[ColorPickerFrame.extraInfo]
+	color.a = 1 - OpacitySliderFrame:GetValue()
 	NeedToKnow:UpdateBar(groupID, barID)
 end
 
-function NeedToKnowRMB.BarMenu_CancelColor(previousValues)
-	if ( previousValues.r ) then
-		local groupID = NeedToKnowRMB.CurrentBar["groupID"];
-		local barID = NeedToKnowRMB.CurrentBar["barID"];
-		local varSettings = NeedToKnow.ProfileSettings.Groups[groupID]["Bars"][barID][ColorPickerFrame.extraInfo];
-
-		varSettings.r = previousValues.r;
-		varSettings.g = previousValues.g;
-		varSettings.b = previousValues.b;
-	varSettings.a = 1 - previousValues.opacity;
-	NeedToKnow:UpdateBar(groupID, barID)
+function BarMenu.CancelColor(oldColor)
+	if oldColor.r then
+		local groupID = BarMenu.groupID
+		local barID = BarMenu.barID
+		local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
+		local color = barSettings[ColorPickerFrame.extraInfo]
+		color.r, color.g, color.b = oldColor.r, oldColor.g, oldColor.b
+		color.a = 1 - oldColor.opacity
+		NeedToKnow:UpdateBar(groupID, barID)
 	end
 end
 
