@@ -35,137 +35,155 @@ StaticPopupDialogs["NEEDTOKNOW.CHOOSENAME_DIALOG"] = {
 	hideOnEscape = 1,
 }
 
+
+--[[ Bar menu contents ]]--
+
 BarMenu.MainMenu = {
-	{ VariableName = "Enabled", MenuText = String.BARMENU_ENABLE },
-	{ VariableName = "AuraName", MenuText = String.BARMENU_CHOOSENAME, Type = "Dialog", DialogText = "CHOOSENAME_DIALOG" },
-	{ VariableName = "BuffOrDebuff", MenuText = String.BARMENU_BUFFORDEBUFF, Type = "Submenu" },
-	{ VariableName = "Options", MenuText = "Settings", Type = "Submenu" },
+	{varName = "Enabled", menuText = String.BARMENU_ENABLE},
+	{varName = "AuraName", Type = "dialog", dialogText = "CHOOSENAME_DIALOG", menuText = String.BARMENU_CHOOSENAME},
+	{varName = "BuffOrDebuff", Type = "submenu", menuText = String.BARMENU_BUFFORDEBUFF},
+	{varName = "Options", Type = "submenu", menuText = "Settings"},
 	{},
-	{ VariableName = "Show", MenuText = String.BARMENU_SHOW, Type = "Submenu" }, 
-	{ VariableName = "TimeFormat", MenuText = String.BARMENU_TIMEFORMAT, Type = "Submenu" }, 
-	{ VariableName = "VisualCastTime", MenuText = String.BARMENU_VISUALCASTTIME, Type = "Submenu" },
-	{ VariableName = "BlinkSettings", MenuText = "Blink Settings", Type = "Submenu" }, -- LOCME
-	{ VariableName = "BarColor", MenuText = String.BARMENU_BARCOLOR, Type = "Color" },
+	{varName = "Show", Type = "submenu", menuText = String.BARMENU_SHOW}, 
+	{varName = "TimeFormat", Type = "submenu", menuText = String.BARMENU_TIMEFORMAT}, 
+	{varName = "VisualCastTime", Type = "submenu", menuText = String.BARMENU_VISUALCASTTIME},
+	{varName = "BlinkSettings", Type = "submenu", menuText = "Blink Settings"}, 
+	{varName = "BarColor", Type = "color", menuText = String.BARMENU_BARCOLOR},
 	{},
-	{ VariableName = "ImportExport", MenuText = "Import/Export Bar Settings", Type = "Dialog", DialogText = "IMPORTEXPORT_DIALOG" },
+	{varName = "ImportExport", Type = "dialog", dialogText = "IMPORTEXPORT_DIALOG", menuText = "Import/Export Bar Settings"},
 }
 
-BarMenu.SubMenus = {
-    -- the keys on this table need to match the settings variable names
-    BuffOrDebuff = {
-          { Setting = "HELPFUL", MenuText = String.BARMENU_HELPFUL },
-          { Setting = "HARMFUL", MenuText = String.BARMENU_HARMFUL },
-          { Setting = "TOTEM", MenuText = String.BARMENU_TOTEM },
-          { Setting = "CASTCD", MenuText = String.BARMENU_CASTCD },
-          { Setting = "BUFFCD", MenuText = String.BARMENU_BUFFCD },
-          { Setting = "EQUIPSLOT", MenuText = String.BARMENU_EQUIPSLOT },
-          { Setting = "USABLE", MenuText = String.BARMENU_USABLE },
-          -- NephMakes: USABLE is useful in Classic, but without way to automatically query useable time left feels like low-quality feature. Might help to include cooldown check?
-    },
-    TimeFormat = {
-          { Setting = "Fmt_SingleUnit", MenuText = String.FMT_SINGLEUNIT },
-          { Setting = "Fmt_TwoUnits", MenuText = String.FMT_TWOUNITS },
-          { Setting = "Fmt_Float", MenuText = String.FMT_FLOAT },
-    },
-    Unit = {
-        { Setting = "player", MenuText = String.BARMENU_PLAYER }, 
-        { Setting = "target", MenuText = String.BARMENU_TARGET }, 
-        { Setting = "targettarget", MenuText = String.BARMENU_TARGETTARGET }, 
-        { Setting = "focus", MenuText = String.BARMENU_FOCUS }, 
-        { Setting = "pet", MenuText = String.BARMENU_PET }, 
-        { Setting = "vehicle", MenuText = String.BARMENU_VEHICLE }, 
-        { Setting = "lastraid", MenuText = String.BARMENU_LAST_RAID },
-    },
-    DebuffUnit = {
-        { Setting = "player", MenuText = String.BARMENU_PLAYER }, 
-        { Setting = "target", MenuText = String.BARMENU_TARGET }, 
-        { Setting = "targettarget", MenuText = String.BARMENU_TARGETTARGET }, 
-        { Setting = "focus", MenuText = String.BARMENU_FOCUS }, 
-        { Setting = "pet", MenuText = String.BARMENU_PET }, 
-        { Setting = "vehicle", MenuText = String.BARMENU_VEHICLE },
-    },
-    Opt_HELPFUL = {
-      { VariableName = "Unit", MenuText = String.BARMENU_CHOOSEUNIT, Type = "Submenu" },
-      { VariableName = "bDetectExtends", MenuText = "Track duration increases" }, -- LOCME
-      { VariableName = "OnlyMine", MenuText = String.BARMENU_ONLYMINE },
-      { VariableName = "show_all_stacks", MenuText = "Sum stacks from all casters" },
-    },
-    Opt_HARMFUL = {
-      { VariableName = "DebuffUnit", MenuText = String.BARMENU_CHOOSEUNIT, Type = "Submenu" },
-      { VariableName = "bDetectExtends", MenuText = "Track duration increases" }, -- LOCME
-      { VariableName = "OnlyMine", MenuText = String.BARMENU_ONLYMINE },
-      { VariableName = "show_all_stacks", MenuText = "Sum stacks from all casters" },
-    },
-    Opt_TOTEM = {},
-    Opt_CASTCD = {
-        { VariableName = "append_cd", MenuText = "Append \"CD\"" }, -- LOCME
-        { VariableName = "show_charges", MenuText = "Show first and last charge CD" }, -- LOCME
-    },
-    Opt_EQUIPSLOT = {
-        { VariableName = "append_cd", MenuText = "Append \"CD\"" }, -- LOCME
-    },
-    Opt_BUFFCD = {
-        { VariableName = "buffcd_duration", MenuText = "Cooldown duration...", Type = "Dialog", DialogText = "BUFFCD_DURATION_DIALOG", Numeric=true },
-        { VariableName = "buffcd_reset_spells", MenuText = "Reset on buff...", Type = "Dialog", DialogText = "BUFFCD_RESET_DIALOG" },
-        { VariableName = "append_cd", MenuText = "Append \"CD\"" }, -- LOCME
-    },
-    Opt_USABLE = {
-        { VariableName = "usable_duration", MenuText = "Usable duration...",  Type = "Dialog", DialogText = "USABLE_DURATION_DIALOG", Numeric=true },
-        { VariableName = "append_usable", MenuText = "Append \"Usable\"" }, -- LOCME
-    },
-    EquipmentSlotList = {
-        { Setting = "1", MenuText = String.ITEM_NAMES[1] },
-        { Setting = "2", MenuText = String.ITEM_NAMES[2] },
-        { Setting = "3", MenuText = String.ITEM_NAMES[3] },
-        { Setting = "4", MenuText = String.ITEM_NAMES[4] },
-        { Setting = "5", MenuText = String.ITEM_NAMES[5] },
-        { Setting = "6", MenuText = String.ITEM_NAMES[6] },
-        { Setting = "7", MenuText = String.ITEM_NAMES[7] },
-        { Setting = "8", MenuText = String.ITEM_NAMES[8] },
-        { Setting = "9", MenuText = String.ITEM_NAMES[9] },
-        { Setting = "10", MenuText = String.ITEM_NAMES[10] },
-        { Setting = "11", MenuText = String.ITEM_NAMES[11] },
-        { Setting = "12", MenuText = String.ITEM_NAMES[12] },
-        { Setting = "13", MenuText = String.ITEM_NAMES[13] },
-        { Setting = "14", MenuText = String.ITEM_NAMES[14] },
-        { Setting = "15", MenuText = String.ITEM_NAMES[15] },
-        { Setting = "16", MenuText = String.ITEM_NAMES[16] },
-        { Setting = "17", MenuText = String.ITEM_NAMES[17] },
-        { Setting = "18", MenuText = String.ITEM_NAMES[18] },
-        { Setting = "19", MenuText = String.ITEM_NAMES[19] },
-    },
-    PowerTypeList = {},
-    VisualCastTime = {
-        { VariableName = "vct_enabled", MenuText = String.BARMENU_VCT_ENABLE },
-        { VariableName = "vct_color", MenuText = String.BARMENU_VCT_COLOR, Type = "Color" },
-        { VariableName = "vct_spell", MenuText = String.BARMENU_VCT_SPELL, Type = "Dialog", DialogText = "CHOOSE_VCT_SPELL_DIALOG" },
-        { VariableName = "vct_extra", MenuText = String.BARMENU_VCT_EXTRA, Type = "Dialog", DialogText = "CHOOSE_VCT_EXTRA_DIALOG", Numeric=true },
-    },
-    Show = {
-        { VariableName = "show_icon",      MenuText = String.BARMENU_SHOW_ICON },
-        { VariableName = "show_text",      MenuText = String.BARMENU_SHOW_TEXT },
-        { VariableName = "show_count",     MenuText = String.BARMENU_SHOW_COUNT },
-        { VariableName = "show_time",      MenuText = String.BARMENU_SHOW_TIME },
-        { VariableName = "show_spark",     MenuText = String.BARMENU_SHOW_SPARK },
-        { VariableName = "show_mypip",     MenuText = String.BARMENU_SHOW_MYPIP },
-        { VariableName = "show_ttn1",      MenuText = String.BARMENU_SHOW_TTN1 },
-        { VariableName = "show_ttn2",      MenuText = String.BARMENU_SHOW_TTN2 },
-        { VariableName = "show_ttn3",      MenuText = String.BARMENU_SHOW_TTN3 },
-        { VariableName = "show_text_user", MenuText = String.BARMENU_SHOW_TEXT_USER, Type = "Dialog", DialogText = "CHOOSE_OVERRIDE_TEXT", Checked = function(settings) return "" ~= settings.show_text_user end },
-    },
-    BlinkSettings = {
-        { VariableName = "blink_enabled", MenuText = String.BARMENU_VCT_ENABLE },
-        { VariableName = "blink_label", MenuText = "Bar text while blinking...", Type = "Dialog", DialogText="CHOOSE_BLINK_TITLE_DIALOG" }, 
-        { VariableName = "MissingBlink", MenuText = "Bar color when blinking...", Type = "Color" }, -- LOCME
-        { VariableName = "blink_ooc", MenuText = "Blink out of combat" }, -- LOCME
-        { VariableName = "blink_boss", MenuText = "Blink only for bosses" }, -- LOCME
-    },
+BarMenu.SubMenu = {}
+local SubMenu = BarMenu.SubMenu
+-- Keys in SubMenu must match variable names
+
+SubMenu.BuffOrDebuff = {
+	-- Bar type
+	{Setting = "HELPFUL", menuText = String.BARMENU_HELPFUL},
+	{Setting = "HARMFUL", menuText = String.BARMENU_HARMFUL},
+	{Setting = "CASTCD", menuText = String.BARMENU_CASTCD},
+	{Setting = "BUFFCD", menuText = String.BARMENU_BUFFCD},
+	{Setting = "EQUIPSLOT", menuText = String.BARMENU_EQUIPSLOT},
+	{Setting = "USABLE", menuText = String.BARMENU_USABLE},
+	{Setting = "TOTEM", menuText = String.BARMENU_TOTEM},
 }
 
+SubMenu.Unit = {
+	{Setting = "player", menuText = String.BARMENU_PLAYER}, 
+	{Setting = "target", menuText = String.BARMENU_TARGET}, 
+	{Setting = "targettarget", menuText = String.BARMENU_TARGETTARGET}, 
+	{Setting = "focus", menuText = String.BARMENU_FOCUS}, 
+	{Setting = "pet", menuText = String.BARMENU_PET}, 
+	{Setting = "vehicle", menuText = String.BARMENU_VEHICLE}, 
+	{Setting = "lastraid", menuText = String.BARMENU_LAST_RAID},
+}
+
+SubMenu.DebuffUnit = {
+	{Setting = "player", menuText = String.BARMENU_PLAYER}, 
+	{Setting = "target", menuText = String.BARMENU_TARGET}, 
+	{Setting = "targettarget", menuText = String.BARMENU_TARGETTARGET}, 
+	{Setting = "focus", menuText = String.BARMENU_FOCUS}, 
+	{Setting = "pet", menuText = String.BARMENU_PET}, 
+	{Setting = "vehicle", menuText = String.BARMENU_VEHICLE},
+}
+
+SubMenu.EquipmentSlotList = {
+	{Setting = "1", menuText = String.ITEM_NAMES[1]},
+	{Setting = "2", menuText = String.ITEM_NAMES[2]},
+	{Setting = "3", menuText = String.ITEM_NAMES[3]},
+	{Setting = "4", menuText = String.ITEM_NAMES[4]},
+	{Setting = "5", menuText = String.ITEM_NAMES[5]},
+	{Setting = "6", menuText = String.ITEM_NAMES[6]},
+	{Setting = "7", menuText = String.ITEM_NAMES[7]},
+	{Setting = "8", menuText = String.ITEM_NAMES[8]},
+	{Setting = "9", menuText = String.ITEM_NAMES[9]},
+	{Setting = "10", menuText = String.ITEM_NAMES[10]},
+	{Setting = "11", menuText = String.ITEM_NAMES[11]},
+	{Setting = "12", menuText = String.ITEM_NAMES[12]},
+	{Setting = "13", menuText = String.ITEM_NAMES[13]},
+	{Setting = "14", menuText = String.ITEM_NAMES[14]},
+	{Setting = "15", menuText = String.ITEM_NAMES[15]},
+	{Setting = "16", menuText = String.ITEM_NAMES[16]},
+	{Setting = "17", menuText = String.ITEM_NAMES[17]},
+	{Setting = "18", menuText = String.ITEM_NAMES[18]},
+	{Setting = "19", menuText = String.ITEM_NAMES[19]},
+}
+
+SubMenu.Opt_HELPFUL = {
+	{varName = "Unit", menuText = String.BARMENU_CHOOSEUNIT, Type = "submenu"},
+	{varName = "bDetectExtends", menuText = "Track duration increases"}, 
+	{varName = "OnlyMine", menuText = String.BARMENU_ONLYMINE},
+	{varName = "show_all_stacks", menuText = "Sum stacks from all casters"},
+}
+
+SubMenu.Opt_HARMFUL = {
+	{varName = "DebuffUnit", menuText = String.BARMENU_CHOOSEUNIT, Type = "submenu"},
+	{varName = "bDetectExtends", menuText = "Track duration increases"}, 
+	{varName = "OnlyMine", menuText = String.BARMENU_ONLYMINE},
+	{varName = "show_all_stacks", menuText = "Sum stacks from all casters"},
+}
+
+SubMenu.Opt_TOTEM = {}
+
+SubMenu.Opt_CASTCD = {
+	{varName = "append_cd", menuText = "Append \"CD\""}, 
+	{varName = "show_charges", menuText = "Show first and last charge CD"}, 
+}
+
+SubMenu.Opt_EQUIPSLOT = {
+	{varName = "append_cd", menuText = "Append \"CD\""}, 
+}
+
+SubMenu.Opt_BUFFCD = {
+	{varName = "buffcd_duration", Type = "dialog", dialogText = "BUFFCD_DURATION_DIALOG", Numeric = true, menuText = "Cooldown duration..."},
+	{varName = "buffcd_reset_spells", Type = "dialog", dialogText = "BUFFCD_RESET_DIALOG", menuText = "Reset on buff..."},
+	{varName = "append_cd", menuText = "Append \"CD\""}, 
+}
+
+SubMenu.Opt_USABLE = {
+	{varName = "usable_duration", Type = "dialog", dialogText = "USABLE_DURATION_DIALOG", Numeric = true, menuText = "Usable duration..."},
+	{varName = "append_usable", menuText = "Append \"Usable\""}, 
+}
+
+SubMenu.Show = {
+	{varName = "show_icon", menuText = String.BARMENU_SHOW_ICON},
+	{varName = "show_text", menuText = String.BARMENU_SHOW_TEXT},
+	{varName = "show_count", menuText = String.BARMENU_SHOW_COUNT},
+	{varName = "show_time", menuText = String.BARMENU_SHOW_TIME},
+	{varName = "show_spark", menuText = String.BARMENU_SHOW_SPARK},
+	{varName = "show_mypip", menuText = String.BARMENU_SHOW_MYPIP},
+	{varName = "show_ttn1", menuText = String.BARMENU_SHOW_TTN1},
+	{varName = "show_ttn2", menuText = String.BARMENU_SHOW_TTN2},
+	{varName = "show_ttn3", menuText = String.BARMENU_SHOW_TTN3},
+	{varName = "show_text_user", menuText = String.BARMENU_SHOW_TEXT_USER, Type = "dialog", dialogText = "CHOOSE_OVERRIDE_TEXT", Checked = function(settings) return "" ~= settings.show_text_user end},
+}
+
+SubMenu.TimeFormat = {
+	{Setting = "Fmt_SingleUnit", menuText = String.FMT_SINGLEUNIT},
+	{Setting = "Fmt_TwoUnits", menuText = String.FMT_TWOUNITS},
+	{Setting = "Fmt_Float", menuText = String.FMT_FLOAT},
+}
+
+SubMenu.VisualCastTime = {
+	{varName = "vct_enabled", menuText = String.BARMENU_VCT_ENABLE},
+	{varName = "vct_color", menuText = String.BARMENU_VCT_COLOR, Type = "color"},
+	{varName = "vct_spell", menuText = String.BARMENU_VCT_SPELL, Type = "dialog", dialogText = "CHOOSE_VCT_SPELL_DIALOG"},
+	{varName = "vct_extra", menuText = String.BARMENU_VCT_EXTRA, Type = "dialog", dialogText = "CHOOSE_VCT_EXTRA_DIALOG", Numeric = true},
+}
+
+SubMenu.BlinkSettings = {
+	{varName = "blink_enabled", menuText = String.BARMENU_VCT_ENABLE},
+	{varName = "blink_label", menuText = "Bar text while blinking...", Type = "dialog", dialogText = "CHOOSE_BLINK_TITLE_DIALOG"}, 
+	{varName = "MissingBlink", menuText = "Bar color when blinking...", Type = "color"}, 
+	{varName = "blink_ooc", menuText = "Blink out of combat"}, 
+	{varName = "blink_boss", menuText = "Blink only for bosses"}, 
+}
+
+-- Deprecated:
 BarMenu.VariableRedirects = {
 	DebuffUnit = "Unit",
 	EquipmentSlotList = "AuraName",
-	PowerTypeList = "AuraName",
+--	PowerTypeList = "AuraName",
 }
 
 
@@ -194,7 +212,7 @@ function BarMenu:Initialize()
 		barSettings.blink_enabled = false
 	end
 
-	BarMenu.SubMenus.Options = BarMenu.SubMenus["Opt_"..barSettings.BuffOrDebuff]
+	BarMenu.SubMenu.Options = BarMenu.SubMenu["Opt_"..barSettings.BuffOrDebuff]
 
 	if UIDROPDOWNMENU_MENU_LEVEL == 1 then
 		-- Menu heading
@@ -208,7 +226,7 @@ function BarMenu:Initialize()
 
 		local mainMenu = BarMenu.MainMenu
 		for index, value in ipairs(mainMenu) do
-			NeedToKnowRMB.BarMenu_AddButton(barSettings, mainMenu[index])
+			BarMenu:AddButton(barSettings, mainMenu[index])
 		end
 	end
 
@@ -236,9 +254,9 @@ function BarMenu:Initialize()
 			end
 		end
 
-		local subMenus = BarMenu.SubMenus
-		for _, value in ipairs(subMenus[UIDROPDOWNMENU_MENU_VALUE]) do
-			NeedToKnowRMB.BarMenu_AddButton(barSettings, value, UIDROPDOWNMENU_MENU_VALUE)
+		local subMenu = BarMenu.SubMenu
+		for _, menuItem in ipairs(subMenu[UIDROPDOWNMENU_MENU_VALUE]) do
+			BarMenu:AddButton(barSettings, menuItem, UIDROPDOWNMENU_MENU_VALUE)
 		end
 
 		if barSettings.OnlyMine == false and UIDROPDOWNMENU_MENU_LEVEL == 2 then
@@ -263,92 +281,96 @@ function BarMenu:ShowMenu(bar)
     end
 end
 
-function NeedToKnowRMB.BarMenu_AddButton(barSettings, i_desc, i_parent)
-    info = UIDropDownMenu_CreateInfo();
-    local item_type = i_desc["Type"];
-    info.text = i_desc["MenuText"];
-    local varSettings
-    if ( nil ~= i_desc["Setting"]) then
-        item_type = "SetVar"
-        local v = BarMenu.VariableRedirects[i_parent] or i_parent
-        varSettings = barSettings[v]
-    else
-        info.value = i_desc["VariableName"];
-        varSettings = barSettings[info.value];
-    end
-    
-    if ( not varSettings and (item_type == "Check" or item_type == "Color") ) then
-        print(string.format("NTK: Could not find %s in", info.value), barSettings)
-        return
-    end
-    
-    info.hasArrow = false;
-    local b = i_desc["Checked"]
-    if b then
-        if type(b) == "function" then
-            info.checked = b(barSettings)
-        else
-            info.checked = b
-        end
-    end
+function BarMenu:AddButton(barSettings, menuItem, i_parent)
+	-- Make clickable button in dropdown menu
 
-    info.keepShownOnClick = true;
-    info.notCheckable = false; -- indent everything
-    info.hideUnCheck = true; -- but hide the empty checkbox/radio
+	-- Prepare info for UIDropDownMenu_AddButton
+	local item_type = menuItem.Type
+	info = UIDropDownMenu_CreateInfo()
 
-    if ( not item_type and not text and not info.value ) then
-        info.func = BarMenu.IgnoreToggle;
-        info.disabled = true;
-    elseif ( nil == item_type or item_type == "Check" ) then
-        info.func = BarMenu.ToggleSetting;
-        info.checked = (nil ~= varSettings and varSettings);
-        info.hideUnCheck = nil;
-        info.isNotRadio = true;
-    elseif ( item_type == "SetVar" ) then
-        info.func = BarMenu.ChooseSetting;
-        info.value = i_desc["Setting"];
-        info.checked = (varSettings == info.value);
-        info.hideUnCheck = nil;
-        info.keepShownOnClick = false;
-    elseif ( item_type == "Submenu" ) then
-        info.hasArrow = true;
-        info.isNotRadio = true;
-        info.func = BarMenu.IgnoreToggle;
-    elseif ( item_type == "Dialog" ) then
-        info.func = NeedToKnowRMB.BarMenu_ShowNameDialog;
-        info.keepShownOnClick = false;
-        info.value = {variable = i_desc.VariableName, text = i_desc.DialogText, numeric = i_desc.Numeric };
-    elseif ( item_type == "Color" ) then
-        info.hasColorSwatch = 1;
-        info.hasOpacity = true;
-        info.r = varSettings.r;
-        info.g = varSettings.g;
-        info.b = varSettings.b;
-        info.opacity = 1 - varSettings.a;
-        info.swatchFunc = BarMenu.SetColor;
-        info.opacityFunc = BarMenu.SetOpacity;
-        info.cancelFunc = BarMenu.CancelColor;
-        info.func = UIDropDownMenuButton_OpenColorPicker;
-        info.keepShownOnClick = false;
-    end
-  
-    UIDropDownMenu_AddButton(info, UIDROPDOWNMENU_MENU_LEVEL);
-    
-    -- Code to get the button copied from UIDropDownMenu_AddButton
-    local level = UIDROPDOWNMENU_MENU_LEVEL;
-    local listFrame = _G["DropDownList"..level];
-    local index = listFrame and (listFrame.numButtons) or 1;
-    local listFrameName = listFrame:GetName();
-    local buttonName = listFrameName.."Button"..index;
-    if ( item_type == "Color" ) then
-        -- Sadly, extraInfo isn't a field propogated to the button
-        local button = _G[buttonName];
-        button.extraInfo = info.value;
-    end
-    if ( info.hideUnCheck ) then
-        local checkBG = _G[buttonName.."UnCheck"];
-        checkBG:Hide();
-    end
+	local varSettings
+
+	if menuItem.Setting ~= nil then
+		-- Value to select from list
+		item_type = "varValue"
+		local v = BarMenu.VariableRedirects[i_parent] or i_parent
+		varSettings = barSettings[v]
+	else
+		info.value = menuItem.varName
+		varSettings = barSettings[info.value]
+	end
+
+	local b = menuItem.Checked  -- Only true for override text
+	if b then
+		if type(b) == "function" then
+			info.checked = b(barSettings)
+		else
+			info.checked = b
+		end
+	end
+
+	info.text = menuItem.menuText
+	info.hasArrow = false
+	info.keepShownOnClick = true
+	info.notCheckable = false  -- indent everything
+	info.hideUnCheck = true  -- but hide empty checkbox/radio
+
+	if not item_type and not info.text and not info.value then
+		-- Blank line
+		info.func = BarMenu.IgnoreToggle
+		info.disabled = true
+	elseif not item_type then
+		-- True/false
+		info.func = BarMenu.ToggleSetting
+		-- info.checked = (nil ~= varSettings and varSettings)
+		info.checked = (varSettings == true)
+		info.hideUnCheck = nil
+		info.isNotRadio = true
+	elseif item_type == "varValue" then
+		-- Value to select from list
+		info.func = BarMenu.ChooseSetting
+		info.value = menuItem.Setting
+		info.checked = (varSettings == info.value)
+		info.hideUnCheck = nil
+		info.keepShownOnClick = false
+	elseif item_type == "submenu" then
+		info.hasArrow = true
+		info.isNotRadio = true
+		info.func = BarMenu.IgnoreToggle
+	elseif item_type == "dialog" then
+		info.func = NeedToKnowRMB.BarMenu_ShowNameDialog
+		info.keepShownOnClick = false
+		info.value = {variable = menuItem.varName, text = menuItem.dialogText, numeric = menuItem.Numeric}
+	elseif item_type == "color" then
+		info.hasColorSwatch = 1
+		info.hasOpacity = true
+		info.r = varSettings.r
+		info.g = varSettings.g
+		info.b = varSettings.b
+		info.opacity = 1 - varSettings.a
+		info.swatchFunc = BarMenu.SetColor
+		info.opacityFunc = BarMenu.SetOpacity
+		info.cancelFunc = BarMenu.CancelColor
+		info.func = UIDropDownMenuButton_OpenColorPicker
+		info.keepShownOnClick = false
+	end
+
+	-- Make button
+	UIDropDownMenu_AddButton(info, UIDROPDOWNMENU_MENU_LEVEL)
+
+	-- Modify button
+	local listFrame = _G["DropDownList"..UIDROPDOWNMENU_MENU_LEVEL]
+	local index = listFrame and listFrame.numButtons or 1  -- This seems wrong
+	local buttonName = listFrame:GetName().."Button"..index
+	if item_type == "color" then
+		-- Sadly, extraInfo isn't a field propagated to the button
+		local button = _G[buttonName]
+		button.extraInfo = info.value
+	end
+	if info.hideUnCheck then
+		local checkBG = _G[buttonName.."UnCheck"]
+		checkBG:Hide()
+	end
 end
 
 function BarMenu.IgnoreToggle(button)
@@ -442,9 +464,9 @@ function NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
     local barType = barSettings.BuffOrDebuff;
     
     -- Set up the options submenu to the current name and contents
-    local Opt = BarMenu.SubMenus["Opt_"..barType];
+    local Opt = BarMenu.SubMenu["Opt_"..barType];
     if ( not Opt ) then Opt = {} end
-    BarMenu.SubMenus.Options = Opt;
+    BarMenu.SubMenu.Options = Opt;
 
     local button = BarMenu:GetMenuItem(1, "Options");
     if button then
@@ -458,7 +480,7 @@ function NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
             button:Enable();
             arrow:Show();
         end
-        -- LOCME
+        
         -- lbl = lbl .. String["BARMENU_"..barType].. " Settings";
         lbl = "Settings";
         button:SetText(lbl);
@@ -469,8 +491,8 @@ function NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
         button = BarMenu:GetMenuItem(1, "AuraName");
         if ( button ) then
             button.oldvalue = button.value
-        else
-            button = BarMenu:GetMenuItem(1, "PowerTypeList") 
+--        else
+--            button = BarMenu:GetMenuItem(1, "PowerTypeList") 
         end
         if ( button ) then
             local arrow = _G[button:GetName().."ExpandArrow"]
@@ -482,7 +504,7 @@ function NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
         end
     else
         button = BarMenu:GetMenuItem(1, "EquipmentSlotList");
-        if not button then button = BarMenu:GetMenuItem(1, "PowerTypeList") end
+--        if not button then button = BarMenu:GetMenuItem(1, "PowerTypeList") end
         if ( button ) then
             local arrow = _G[button:GetName().."ExpandArrow"]
             arrow:Hide();
