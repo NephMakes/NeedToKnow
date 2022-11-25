@@ -7,17 +7,14 @@ local String = NeedToKnow.String
 local NeedToKnowRMB = NeedToKnow.BarMenu  -- Deprecated
 
 StaticPopupDialogs["NEEDTOKNOW.CHOOSENAME_DIALOG"] = {
-	text = String.CHOOSENAME_DIALOG,
 	button1 = ACCEPT,
 	button2 = CANCEL,
 	hasEditBox = 1,
 	editBoxWidth = 300,
 	maxLetters = 0,
 	OnAccept = function(self)
-		local text = self.editBox:GetText()
-		local variable = self.variable
-		if variable ~= nil then
-			BarMenu.ChooseName(text, variable)
+		if self.varName then
+			BarMenu.ChooseName(self.editBox:GetText(), self.varName)
 		end
 	end,
 	EditBoxOnEnterPressed = function(self)
@@ -36,11 +33,11 @@ StaticPopupDialogs["NEEDTOKNOW.CHOOSENAME_DIALOG"] = {
 }
 
 
---[[ Bar menu contents ]]--
+--[[ Menu contents ]]--
 
 BarMenu.MainMenu = {
 	{varName = "Enabled", itemType = "boolean", menuText = String.BARMENU_ENABLE},
-	{varName = "AuraName", itemType = "dialog", dialogText = "CHOOSENAME_DIALOG", menuText = String.BARMENU_CHOOSENAME},
+	{varName = "AuraName", itemType = "dialog", dialogText = String.CHOOSENAME_DIALOG, menuText = String.BARMENU_CHOOSENAME},
 	{varName = "BuffOrDebuff", itemType = "submenu", menuText = String.BARMENU_BUFFORDEBUFF},
 	{varName = "Options", itemType = "submenu", menuText = "Settings"},
 	{itemType = "blank"},
@@ -50,7 +47,7 @@ BarMenu.MainMenu = {
 	{varName = "BlinkSettings", itemType = "submenu", menuText = "Blink Settings"}, 
 	{varName = "BarColor", itemType = "color", menuText = String.BARMENU_BARCOLOR},
 	{itemType = "blank"},
-	{varName = "ImportExport", itemType = "dialog", dialogText = "IMPORTEXPORT_DIALOG", menuText = "Import/Export Bar Settings"},
+	{varName = "ImportExport", itemType = "dialog", dialogText = String.IMPORTEXPORT_DIALOG, menuText = "Import/Export Bar Settings"},
 }
 
 BarMenu.SubMenu = {}
@@ -135,13 +132,13 @@ SubMenu.Opt_EQUIPSLOT = {
 }
 
 SubMenu.Opt_BUFFCD = {
-	{varName = "buffcd_duration", itemType = "dialog", dialogText = "BUFFCD_DURATION_DIALOG", Numeric = true, menuText = "Cooldown duration..."},
-	{varName = "buffcd_reset_spells", itemType = "dialog", dialogText = "BUFFCD_RESET_DIALOG", menuText = "Reset on buff..."},
+	{varName = "buffcd_duration", itemType = "dialog", dialogText = String.BUFFCD_DURATION_DIALOG, isNumeric = true, menuText = "Cooldown duration..."},
+	{varName = "buffcd_reset_spells", itemType = "dialog", dialogText = String.BUFFCD_RESET_DIALOG, menuText = "Reset on buff..."},
 	{varName = "append_cd", itemType = "boolean", menuText = "Append \"CD\""}, 
 }
 
 SubMenu.Opt_USABLE = {
-	{varName = "usable_duration", itemType = "dialog", dialogText = "USABLE_DURATION_DIALOG", Numeric = true, menuText = "Usable duration..."},
+	{varName = "usable_duration", itemType = "dialog", dialogText = String.USABLE_DURATION_DIALOG, isNumeric = true, menuText = "Usable duration..."},
 	{varName = "append_usable", itemType = "boolean", menuText = "Append \"Usable\""}, 
 }
 
@@ -155,10 +152,8 @@ SubMenu.Show = {
 	{varName = "show_ttn1", itemType = "boolean", menuText = String.BARMENU_SHOW_TTN1},
 	{varName = "show_ttn2", itemType = "boolean", menuText = String.BARMENU_SHOW_TTN2},
 	{varName = "show_ttn3", itemType = "boolean", menuText = String.BARMENU_SHOW_TTN3},
-	{varName = "show_text_user", itemType = "dialog", dialogText = "CHOOSE_OVERRIDE_TEXT", 
-		Checked = function(settings) return "" ~= settings.show_text_user end, 
-		showCheck = true, 
-		menuText = String.BARMENU_SHOW_TEXT_USER},
+	{varName = "show_text_user", itemType = "dialog", dialogText = String.CHOOSE_OVERRIDE_TEXT, 
+		showCheck = true, menuText = String.BARMENU_SHOW_TEXT_USER},
 }
 
 SubMenu.TimeFormat = {
@@ -170,25 +165,39 @@ SubMenu.TimeFormat = {
 SubMenu.VisualCastTime = {
 	{varName = "vct_enabled", itemType = "boolean", menuText = String.BARMENU_VCT_ENABLE},
 	{varName = "vct_color", itemType = "color", menuText = String.BARMENU_VCT_COLOR},
-	{varName = "vct_spell", itemType = "dialog", dialogText = "CHOOSE_VCT_SPELL_DIALOG", menuText = String.BARMENU_VCT_SPELL},
-	{varName = "vct_extra", itemType = "dialog", dialogText = "CHOOSE_VCT_EXTRA_DIALOG", Numeric = true, menuText = String.BARMENU_VCT_EXTRA},
+	{varName = "vct_spell", itemType = "dialog", dialogText = String.CHOOSE_VCT_SPELL_DIALOG, menuText = String.BARMENU_VCT_SPELL},
+	{varName = "vct_extra", itemType = "dialog", dialogText = String.CHOOSE_VCT_EXTRA_DIALOG, isNumeric = true, menuText = String.BARMENU_VCT_EXTRA},
 }
 
 SubMenu.BlinkSettings = {
 	{varName = "blink_enabled", itemType = "boolean", menuText = String.BARMENU_VCT_ENABLE},
-	{varName = "blink_label", itemType = "dialog", dialogText = "CHOOSE_BLINK_TITLE_DIALOG", menuText = "Bar text while blinking..."}, 
+	{varName = "blink_label", itemType = "dialog", dialogText = String.CHOOSE_BLINK_TITLE_DIALOG, menuText = "Bar text while blinking..."}, 
 	{varName = "MissingBlink", itemType = "color", menuText = "Bar color when blinking..."}, 
 	{varName = "blink_ooc", itemType = "boolean", menuText = "Blink out of combat"}, 
 	{varName = "blink_boss", itemType = "boolean", menuText = "Blink only for bosses"}, 
 }
 
 BarMenu.VariableRedirects = {
+	-- SubMenuKey = varName
 	DebuffUnit = "Unit",
 	EquipmentSlotList = "AuraName",
 }
 
 
 --[[ Functions ]]--
+
+function BarMenu:ShowMenu(bar)
+	-- Called by Bar:OnMouseUp()
+	BarMenu.barID = bar:GetID()
+	BarMenu.groupID = bar:GetParent():GetID()
+	if not BarMenu.frame then
+		BarMenu.frame = BarMenu:New()
+    end
+    ToggleDropDownMenu(1, nil, BarMenu.frame, "cursor", 0, 0)
+    if not DropDownList1:IsShown() then
+        ToggleDropDownMenu(1, nil, BarMenu.frame, "cursor", 0, 0)
+    end
+end
 
 function BarMenu:New()
 	local barMenu = CreateFrame("Frame", "NeedToKnowDropDownMenu", nil, "UIDropDownMenuTemplate")
@@ -269,19 +278,6 @@ function BarMenu:Initialize()
 	NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
 end
 
-function BarMenu:ShowMenu(bar)
-	-- Called by Bar:OnMouseUp()
-	BarMenu.barID = bar:GetID()
-	BarMenu.groupID = bar:GetParent():GetID()
-	if not BarMenu.frame then
-		BarMenu.frame = BarMenu:New()
-    end
-    ToggleDropDownMenu(1, nil, BarMenu.frame, "cursor", 0, 0)
-    if not DropDownList1:IsShown() then
-        ToggleDropDownMenu(1, nil, BarMenu.frame, "cursor", 0, 0)
-    end
-end
-
 function BarMenu:AddButton(barSettings, menuItem, subMenuKey)
 	-- Make clickable item for dropdown menu
 
@@ -289,32 +285,39 @@ function BarMenu:AddButton(barSettings, menuItem, subMenuKey)
 	local varName = menuItem.varName
 
 	-- Make info for UIDropDownMenu_AddButton()
-	info = UIDropDownMenu_CreateInfo()
+	-- info = UIDropDownMenu_CreateInfo()
+	info = {}
 	info.text = menuItem.menuText
 	info.notCheckable = false  -- Indent everything
 	info.hideUnCheck = true  -- Hide empty checkbox/radio
 	info.keepShownOnClick = true
-	if itemType == "submenu" then
+	if itemType == "heading" then
+	elseif itemType == "submenu" then
 		info.value = varName
+		info.func = BarMenu.IgnoreToggle
 		info.hasArrow = true
 		info.isNotRadio = true
-		info.func = BarMenu.IgnoreToggle
 	elseif itemType == "boolean" then
 		info.value = varName
 		info.func = BarMenu.ToggleSetting
-		info.checked = (barSettings[menuItem.varName] == true)
+		info.checked = (barSettings[varName] == true)
 		info.hideUnCheck = nil
 		info.isNotRadio = true
 	elseif itemType == "varValue" then
+		-- Value to select from list of options
 		info.value = menuItem.varValue
 		info.func = BarMenu.ChooseSetting
-		local v = BarMenu.VariableRedirects[subMenuKey] or subMenuKey
-		info.checked = (barSettings[v] == menuItem.varValue)
+		if subMenuKey then
+			varName = BarMenu.VariableRedirects[subMenuKey] or subMenuKey
+			info.checked = (barSettings[varName] == menuItem.varValue)
+		end
 		info.hideUnCheck = nil
 		info.keepShownOnClick = false
 	elseif itemType == "dialog" then
-		info.value = {variable = varName, text = menuItem.dialogText, numeric = menuItem.Numeric}
-		info.func = NeedToKnowRMB.BarMenu_ShowNameDialog
+		info.value = varName
+		info.func = BarMenu.ShowDialog
+		info.arg1 = menuItem.dialogText
+		info.arg2 = menuItem.isNumeric
 		info.keepShownOnClick = false
 		if menuItem.showCheck then
 			info.checked = (barSettings[varName] and barSettings[varName] ~= "")
@@ -398,13 +401,7 @@ function BarMenu:GetMenuItem(menuLevel, valueName)
 	local numButtons = _G[listFrameName]["numButtons"]
 	for index = 1, numButtons do
 		local button = _G[listFrameName.."Button"..index]
-		local txt
-		if type(button.value) == "table" then
-			txt = button.value.variable
-		else
-			txt = button.value
-		end
-		if txt == valueName then
+		if button.value == valueName then
 			return button
 		end
 	end
@@ -472,8 +469,6 @@ function NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
         button = BarMenu:GetMenuItem(1, "AuraName");
         if ( button ) then
             button.oldvalue = button.value
---        else
---            button = BarMenu:GetMenuItem(1, "PowerTypeList") 
         end
         if ( button ) then
             local arrow = _G[button:GetName().."ExpandArrow"]
@@ -497,21 +492,22 @@ function NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
 end
 
 function BarMenu.ChooseSetting(button, arg1, arg2, checked)
+	-- Choose this setting value from list of options
 	local groupID = BarMenu.groupID
 	local barID = BarMenu.barID
 	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
-	local setting = BarMenu.VariableRedirects[UIDROPDOWNMENU_MENU_VALUE] or UIDROPDOWNMENU_MENU_VALUE
-	barSettings[setting] = button.value
+	local varName = BarMenu.VariableRedirects[UIDROPDOWNMENU_MENU_VALUE] or UIDROPDOWNMENU_MENU_VALUE
+	barSettings[varName] = button.value
 	NeedToKnow:UpdateBar(groupID, barID)
 
 	-- Update menu items
-	if setting == "BuffOrDebuff" then
+	if varName == "BuffOrDebuff" then
 		NeedToKnowRMB.BarMenu_UpdateSettings(barSettings)
 	end
 end
 
--- TODO: There has to be a better way to do this, this has pretty bad user feel
 function NeedToKnowRMB.EditBox_Numeric_OnTextChanged(self, isUserInput)
+	-- self is EditBox
     if ( isUserInput ) then
         local txt = self:GetText();
         local culled = txt:gsub("[^0-9.]",""); -- Remove non-digits
@@ -530,47 +526,42 @@ function NeedToKnowRMB.EditBox_Numeric_OnTextChanged(self, isUserInput)
     end
 end
 
-function NeedToKnowRMB.BarMenu_ShowNameDialog(self, arg1, arg2, checked)
-    if not self.value.text or not NEEDTOKNOW[self.value.text] then return end
+function BarMenu.ShowDialog(button, dialogText, isNumeric, checked)
+	StaticPopupDialogs["NEEDTOKNOW.CHOOSENAME_DIALOG"].text = dialogText
+	local dialog = StaticPopup_Show("NEEDTOKNOW.CHOOSENAME_DIALOG")
+	dialog.varName = button.value
 
-    StaticPopupDialogs["NEEDTOKNOW.CHOOSENAME_DIALOG"].text = NEEDTOKNOW[self.value.text]
-    local dialog = StaticPopup_Show("NEEDTOKNOW.CHOOSENAME_DIALOG")
-    dialog.variable = self.value.variable
+	-- Pre-populate text
+	local editBox = _G[dialog:GetName().."EditBox"]
+	local barSettings = NeedToKnow:GetBarSettings(BarMenu.groupID, BarMenu.barID)
+	if dialog.varName == "ImportExport" then
+		editBox:SetText(NeedToKnow.ExportBarSettingsToString(barSettings))
+		editBox:HighlightText()
+	else
+		editBox:SetText(barSettings[dialog.varName])
+	end
+	editBox:SetFocus()
 
-    local edit = _G[dialog:GetName().."EditBox"]
-    local groupID = BarMenu.groupID
-    local barID = BarMenu.barID
-	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
-
-    -- TODO: There has to be a better way to do this, this has pretty bad user  feel
-    local isNumeric = self.value.numeric or false
-    if NeedToKnowRMB.EditBox_Original_OnTextChanged == nil then
-        NeedToKnowRMB.EditBox_Original_OnTextChanged = edit:GetScript("OnTextChanged")
-    end
-    if isNumeric then
-        edit:SetScript("OnTextChanged", NeedToKnowRMB.EditBox_Numeric_OnTextChanged)
-    else
-        edit:SetScript("OnTextChanged", NeedToKnowRMB.EditBox_Original_OnTextChanged)
-    end
-    
-    edit:SetFocus()
-    if dialog.variable ~= "ImportExport" then
-        edit:SetText(barSettings[dialog.variable])
-    else
-        edit:SetText(NeedToKnow.ExportBarSettingsToString(barSettings))
-        edit:HighlightText()
-    end
+	-- Only allow user to enter numeric text?
+	if not NeedToKnowRMB.EditBox_Original_OnTextChanged then
+		NeedToKnowRMB.EditBox_Original_OnTextChanged = editBox:GetScript("OnTextChanged")
+	end
+	if isNumeric then
+		editBox:SetScript("OnTextChanged", NeedToKnowRMB.EditBox_Numeric_OnTextChanged)
+	else
+		editBox:SetScript("OnTextChanged", NeedToKnowRMB.EditBox_Original_OnTextChanged)
+	end
 end
 
-function BarMenu.ChooseName(text, variable)
+function BarMenu.ChooseName(text, varName)
 	local groupID = BarMenu.groupID
 	local barID = BarMenu.barID
 	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
 	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
-	if variable == "ImportExport" then
+	if varName == "ImportExport" then
 		NeedToKnow.ImportBarSettingsFromString(text, groupSettings.Bars, barID)
 	else
-		barSettings[variable] = text
+		barSettings[varName] = text
 	end
 	NeedToKnow:UpdateBar(groupID, barID)
 end
