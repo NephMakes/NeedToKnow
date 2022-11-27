@@ -8,9 +8,9 @@ local addonName, addonTable = ...
 -- ------------------------
 
 NeedToKnow = {}
-NEEDTOKNOW = {}
 
--- We want to eventually be creating fewer global variables and get rid of these: 
+-- Deprecated:
+NEEDTOKNOW = {}
 NeedToKnowLoader = {}    -- Used by NeedToKnow.lua
 NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
 
@@ -20,7 +20,6 @@ NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
 
 NeedToKnow.ExecutiveFrame = CreateFrame("Frame", "NeedToKnow_ExecutiveFrame")
 
--- Object methods
 NeedToKnow.Bar = {}
 NeedToKnow.BarGroup = {}
 NeedToKnow.BarMenu = {}
@@ -37,33 +36,6 @@ NeedToKnow.Cooldown = {}
 
 NEEDTOKNOW.VERSION = GetAddOnMetadata(addonName, "Version")
 -- to update version, change the .toc 
-
---[[
-NEEDTOKNOW.ITEM_NAMES = {
-    -- Used by NeedToKnow.lua, NeedToKnow_Options.lua
-    -- Seems like this should already exist somewhere
-    -- Strings come from the chart on http://www.wowwiki.com/WoW_constants
-    HEADSLOT,
-    NECKSLOT,
-    SHOULDERSLOT,
-    SHIRTSLOT,
-    CHESTSLOT,
-    WAISTSLOT,
-    LEGSSLOT,
-    FEETSLOT,
-    WRISTSLOT,
-    HANDSSLOT,
-    FINGER0SLOT_UNIQUE,
-    FINGER1SLOT_UNIQUE,
-    TRINKET0SLOT_UNIQUE,
-    TRINKET1SLOT_UNIQUE,
-    BACKSLOT,
-    MAINHANDSLOT,
-    SECONDARYHANDSLOT,
-    RANGEDSLOT.."/"..RELICSLOT,
-    TABARDSLOT
-};
-]]--
 
 -- Default settings
 NEEDTOKNOW.BAR_DEFAULTS = {
@@ -93,10 +65,10 @@ NEEDTOKNOW.BAR_DEFAULTS = {
     show_ttn3       = false,
     show_text_user  = "",
     blink_enabled   = false,
-    blink_ooc       = true,
+    blink_ooc       = false,
     blink_boss      = false,
     blink_label     = "",
-    buffcd_duration = 0,
+    buffcd_duration = 0,  -- Most procs have 45 sec internal cooldowns
     buffcd_reset_spells = "",
     usable_duration = 0,
     append_cd       = false,

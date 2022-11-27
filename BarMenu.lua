@@ -15,14 +15,8 @@ BarMenu.MainMenu = {
 	{varName = "AuraName", itemType = "dialog", dialogText = String.CHOOSENAME_DIALOG, menuText = String.BARMENU_CHOOSENAME},
 	{varName = "BuffOrDebuff", itemType = "submenu", menuText = String.BARMENU_BAR_TYPE},
 	{varName = "Options", itemType = "submenu", menuText =  String.BARMENU_SETTINGS},
-	{itemType = "blank"},
-	{varName = "Show", itemType = "submenu", menuText = String.BARMENU_SHOW}, 
-	{varName = "TimeFormat", itemType = "submenu", menuText = String.BARMENU_TIMEFORMAT}, 
-	{varName = "VisualCastTime", itemType = "submenu", menuText = String.BARMENU_VISUALCASTTIME},
-	{varName = "BlinkSettings", itemType = "submenu", menuText = String.BARMENU_BLINK_SETTINGS}, 
 	{varName = "BarColor", itemType = "color", menuText = String.BARMENU_BARCOLOR},
-	{itemType = "blank"},
-	{varName = "ImportExport", itemType = "dialog", dialogText = String.IMPORTEXPORT_DIALOG, menuText = String.BARMENU_IMPORT_EXPORT},
+	{varName = "moreOptions", itemType = "submenu", menuText = String.BARMENU_MORE_OPTIONS}, 
 }
 
 BarMenu.SubMenu = {}
@@ -34,9 +28,9 @@ SubMenu.BuffOrDebuff = {
 	{varValue = "HELPFUL", itemType = "varValue", menuText = String.BARMENU_HELPFUL},
 	{varValue = "HARMFUL", itemType = "varValue", menuText = String.BARMENU_HARMFUL},
 	{varValue = "CASTCD", itemType = "varValue", menuText = String.BARMENU_CASTCD},
-	{varValue = "BUFFCD", itemType = "varValue", menuText = String.BARMENU_BUFFCD},
 	{varValue = "EQUIPSLOT", itemType = "varValue", menuText = String.BARMENU_EQUIPSLOT},
 	{varValue = "USABLE", itemType = "varValue", menuText = String.BARMENU_USABLE},
+	{varValue = "BUFFCD", itemType = "varValue", menuText = String.BARMENU_BUFFCD},
 	{varValue = "TOTEM", itemType = "varValue", menuText = String.BARMENU_TOTEM},
 }
 
@@ -83,14 +77,13 @@ SubMenu.EquipmentSlotList = {
 
 SubMenu.HELPFUL = {
 	{varName = "Unit", itemType = "submenu", menuText = String.BARMENU_CHOOSEUNIT},
-	{varName = "bDetectExtends", itemType == "boolean", menuText = String.BARMENU_TRACK_EXTENDS}, 
-	{varName = "OnlyMine", itemType == "boolean", menuText = String.BARMENU_ONLYMINE},
-	{varName = "show_all_stacks", itemType == "boolean", menuText = String.BARMENU_SUM_STACKS},
+	{varName = "OnlyMine", itemType = "boolean", menuText = String.BARMENU_ONLYMINE},
+	{varName = "show_all_stacks", itemType = "boolean", menuText = String.BARMENU_SUM_STACKS},
+	-- {varName = "bDetectExtends", itemType = "boolean", menuText = String.BARMENU_TRACK_EXTENDS}, 
 }
 
 SubMenu.HARMFUL = {
 	{varName = "DebuffUnit", itemType = "submenu", menuText = String.BARMENU_CHOOSEUNIT},
-	{varName = "bDetectExtends", itemType = "boolean", menuText = String.BARMENU_TRACK_EXTENDS}, 
 	{varName = "OnlyMine", itemType = "boolean", menuText = String.BARMENU_ONLYMINE},
 	{varName = "show_all_stacks", itemType = "boolean", menuText = String.BARMENU_SUM_STACKS},
 }
@@ -106,7 +99,7 @@ SubMenu.EQUIPSLOT = {
 
 SubMenu.USABLE = {
 	{varName = "usable_duration", itemType = "dialog", dialogText = String.USABLE_DURATION_DIALOG, isNumeric = true, menuText = String.BARMENU_USABLE_DURATION},
-	{varName = "append_usable", itemType = "boolean", menuText = BARMENU_APPEND_USABLE}, 
+	{varName = "append_usable", itemType = "boolean", menuText = String.BARMENU_APPEND_USABLE}, 
 }
 
 SubMenu.BUFFCD = {
@@ -117,6 +110,16 @@ SubMenu.BUFFCD = {
 
 SubMenu.TOTEM = {}
 
+SubMenu.moreOptions = {
+	{varName = "Show", itemType = "submenu", menuText = String.BARMENU_SHOW}, 
+	{varName = "TimeFormat", itemType = "submenu", menuText = String.BARMENU_TIMEFORMAT}, 
+	{varName = "VisualCastTime", itemType = "submenu", menuText = String.BARMENU_VISUALCASTTIME},
+	{varName = "BlinkSettings", itemType = "submenu", menuText = String.BARMENU_BLINK_SETTINGS}, 
+	{varName = "show_text_user", itemType = "dialog", dialogText = String.CHOOSE_OVERRIDE_TEXT, 
+		showCheck = true, menuText = String.BARMENU_SHOW_TEXT_USER},
+	{varName = "ImportExport", itemType = "dialog", dialogText = String.IMPORTEXPORT_DIALOG, menuText = String.BARMENU_IMPORT_EXPORT},
+}
+
 SubMenu.Show = {
 	{varName = "show_text", itemType = "boolean", menuText = String.BARMENU_SHOW_NAME},
 	{varName = "show_time", itemType = "boolean", menuText = String.BARMENU_SHOW_TIME},
@@ -124,8 +127,7 @@ SubMenu.Show = {
 	{varName = "show_spark", itemType = "boolean", menuText = String.BARMENU_SHOW_SPARK},
 	{varName = "show_icon", itemType = "boolean", menuText = String.BARMENU_SHOW_ICON},
 	{varName = "show_mypip", itemType = "boolean", menuText = String.BARMENU_SHOW_MYPIP},
-	{varName = "show_text_user", itemType = "dialog", dialogText = String.CHOOSE_OVERRIDE_TEXT, 
-		showCheck = true, menuText = String.BARMENU_SHOW_TEXT_USER},
+	-- {varName = "bDetectExtends", itemType = "boolean", menuText = String.BARMENU_TRACK_EXTENDS}, 
 	-- {varName = "show_ttn1", itemType = "boolean", menuText = String.BARMENU_SHOW_TTN1},
 	-- {varName = "show_ttn2", itemType = "boolean", menuText = String.BARMENU_SHOW_TTN2},
 	-- {varName = "show_ttn3", itemType = "boolean", menuText = String.BARMENU_SHOW_TTN3},
@@ -147,7 +149,7 @@ SubMenu.VisualCastTime = {
 
 SubMenu.BlinkSettings = {
 	{varName = "blink_enabled", itemType = "boolean", menuText = String.BARMENU_VCT_ENABLE},
-	{varName = "blink_label", itemType = "dialog", dialogText = String.CHOOSE_BLINK_TITLE_DIALOG, menuText = "Bar text while blinking..."}, 
+	{varName = "blink_label", itemType = "dialog", dialogText = String.CHOOSE_BLINK_TITLE_DIALOG, menuText = String.BARMENU_BLINK_TEXT}, 
 	{varName = "MissingBlink", itemType = "color", menuText = String.BARMENU_BLINK_COLOR}, 
 	{varName = "blink_ooc", itemType = "boolean", menuText = String.BARMENU_BLINK_OUTSIDE_COMBAT}, 
 	{varName = "blink_boss", itemType = "boolean", menuText = String.BARMENU_BLINK_ONLY_BOSS}, 
@@ -241,20 +243,14 @@ end
 function BarMenu:GetHeadingText(headingType, barSettings)
 	local text
 	if headingType == "auraName" then
-		text = barSettings.AuraName or ""
+		-- text = barSettings.AuraName or ""
+		text = NeedToKnow:GetPrettyName(barSettings) or ""
 		if text ~= "" then
 			local barType = barSettings.BuffOrDebuff
 			text = text .. " – " .. String["BARMENU_"..barType]
 			if barType == "HELPFUL" or barType == "HARMFUL" then
 				text = text .. " ("..barSettings.Unit..")"
 			end
-		end
-	elseif headingType == "barType" then
-		-- Show bar type and unit tracked (if applicable)
-		local barType = barSettings.BuffOrDebuff
-		text = String["BARMENU_"..barType]
-		if barType == "HELPFUL" or barType == "HARMFUL" then
-			text = text .. " ("..barSettings.Unit..")"
 		end
 	elseif headingType == "castTime" then
 		-- Show timed spell and/or extra time
@@ -362,12 +358,14 @@ function BarMenu.IgnoreToggle(button)
 end
 
 function BarMenu.ToggleSetting(button, arg1, arg2, checked)
+	-- print("ToggleSetting")
 	local groupID = BarMenu.groupID
 	local barID = BarMenu.barID
 	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
 	barSettings[button.value] = button.checked
 	NeedToKnow:UpdateBar(groupID, barID)
-	-- BarMenu:UpdateMenu(barSettings)  -- Don't make an infinite loop!
+	BarMenu:UpdateMenu(barSettings)  -- Don't make an infinite loop!
+	--[[
 	local level = BarMenu:GetMenuItemLevel(button)
 	if button.value == "OnlyMine" then 
 		if button.checked == false then
@@ -376,15 +374,16 @@ function BarMenu.ToggleSetting(button, arg1, arg2, checked)
 			BarMenu:EnableMenuItem(level, "bDetectExtends")
 			BarMenu:CheckMenuItem(level, "show_all_stacks", false)
 		end
-	elseif button.value == "blink_enabled" then
-		if button.checked and barSettings.MissingBlink.a == 0 then
-			barSettings.MissingBlink.a = 0.5  -- ???
-		end
 	elseif button.value == "show_all_stacks" then
 		if button.checked then
 			BarMenu:CheckMenuItem(level, "OnlyMine", false)
 		end
+	elseif button.value == "blink_enabled" then
+		if button.checked and barSettings.MissingBlink.a == 0 then
+			barSettings.MissingBlink.a = 0.5  -- ???
+		end
 	end
+	]]--
 end
 
 function BarMenu:GetMenuItemLevel(button)
@@ -415,7 +414,7 @@ function BarMenu:CheckMenuItem(menuLevel, valueName, checkItem)
 			check:Hide()
 			button.checked = false
 		end
-		BarMenu.ToggleSetting(button)
+		-- BarMenu.ToggleSetting(button)
 	end
 end
 
@@ -437,8 +436,10 @@ end
 function BarMenu:UpdateMenu(barSettings)
 	-- Update menu to reflect current bar settings
 	local barType = barSettings.BuffOrDebuff
-    
-	-- Set up options submenu for barType
+
+	-- Update menu heading
+
+	-- Set barType options submenu
 	local subMenu = SubMenu[barType] or {}
 	SubMenu.Options = subMenu
 	local button = BarMenu:GetMenuItem(1, "Options")
@@ -455,7 +456,7 @@ function BarMenu:UpdateMenu(barSettings)
 			arrow:Show()
 		end
 		text = text..String["BARMENU_"..barType].." settings"
-		-- text = "Settings"  -- "Equipment slot cooldown settings" is too long
+		-- text = "Settings"  -- "Equipped item cooldown settings" too long?
 		button:SetText(text)
 	end
 
@@ -478,7 +479,9 @@ function BarMenu:UpdateMenu(barSettings)
 			local arrow = _G[button:GetName().."ExpandArrow"]
 			arrow:Hide()
 			button.hasArrow = false
-			if button.oldvalue then button.value = button.oldvalue end
+			if button.oldvalue then 
+				button.value = button.oldvalue 
+			end
 			button:SetText(String.BARMENU_CHOOSENAME)
 		end
 	end
@@ -564,39 +567,6 @@ function BarMenu.ShowDialog(button, dialogText, isNumeric, checked)
 	end
 end
 
-function BarMenu.ChooseName(text, varName)
-	-- Make user text the new setting value
-	local groupID = BarMenu.groupID
-	local barID = BarMenu.barID
-	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
-	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
-	if varName == "ImportExport" then
-		NeedToKnow.ImportBarSettingsFromString(text, groupSettings.Bars, barID)
-	else
-		barSettings[varName] = text
-	end
-	NeedToKnow:UpdateBar(groupID, barID)
-end
-
-function BarMenu.OnTextChangedNumeric(editBox, isUserInput)
-    if isUserInput then
-        local text = editBox:GetText()
-        local culled = text:gsub("[^0-9.]", "") -- Remove non-digits
-        local iPeriod = culled:find("[.]")
-        if iPeriod ~= nil then
-            local before = culled:sub(1, iPeriod)
-            local after = string.gsub(culled:sub(iPeriod+1), "[.]", "")
-            culled = before .. after
-        end
-        if text ~= culled then
-            editBox:SetText(culled)
-        end
-    end
-    if BarMenu.OnTextChangedOriginal then
-        BarMenu.OnTextChangedOriginal(editBox, isUserInput)
-    end
-end
-
 function BarMenu.SetColor()
 	local groupID = BarMenu.groupID
 	local barID = BarMenu.barID
@@ -630,4 +600,42 @@ function BarMenu.CancelColor(oldColor)
 		NeedToKnow:UpdateBar(groupID, barID)
 	end
 end
+
+
+--[[ Static popup dialogs ]]--
+
+function BarMenu.ChooseName(text, varName)
+	-- Make user text the new setting value
+	local groupID = BarMenu.groupID
+	local barID = BarMenu.barID
+	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
+	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
+	if varName == "ImportExport" then
+		NeedToKnow.ImportBarSettingsFromString(text, groupSettings.Bars, barID)
+	else
+		barSettings[varName] = text
+	end
+	NeedToKnow:UpdateBar(groupID, barID)
+end
+
+function BarMenu.OnTextChangedNumeric(editBox, isUserInput)
+    if isUserInput then
+        local text = editBox:GetText()
+        local culled = text:gsub("[^0-9.]", "") -- Remove non-digits
+        local iPeriod = culled:find("[.]")
+        if iPeriod ~= nil then
+            local before = culled:sub(1, iPeriod)
+            local after = string.gsub(culled:sub(iPeriod+1), "[.]", "")
+            culled = before .. after
+        end
+        if text ~= culled then
+            editBox:SetText(culled)
+        end
+    end
+    if BarMenu.OnTextChangedOriginal then
+        BarMenu.OnTextChangedOriginal(editBox, isUserInput)
+    end
+end
+
+
 

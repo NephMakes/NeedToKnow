@@ -607,7 +607,7 @@ function Bar:CheckAura()
                     r.dur = duration 
                     r.expiry= expirationTime
                 else
-                    r.expiry= expirationTime
+                    r.expiry = expirationTime
                     extended = expirationTime - (r.time + r.dur)
                     if extended > 1 then
                         duration = r.dur 

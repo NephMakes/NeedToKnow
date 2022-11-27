@@ -243,21 +243,6 @@ end
 -- Bar text
 -- --------
 
-function NeedToKnow.GetPrettyName(barSettings)
-	-- Called by Bar:SetUnlockedText() and BarMenu_Initialize (indirectly)
-
-	if barSettings.BuffOrDebuff == "EQUIPSLOT" then
-		local index = tonumber(barSettings.AuraName)
-		if index then 
-			return String.ITEM_NAMES[index] 
-		else 
-			return ""
-		end
-	else
-		return barSettings.AuraName
-	end
-end
-
 function Bar:UpdateBarText(barSettings, count, extended, buff_stacks)
 	-- Called by Bar:CheckAura() if duration found
 
@@ -301,7 +286,7 @@ function Bar:UpdateBarText(barSettings, count, extended, buff_stacks)
 end
 
 function Bar:ComputeText(buffName, count, extended, buff_stacks)
-    -- Called by Bar:ConfigureVisibleText()
+    -- Called by Bar:UpdateBarText()
 
     local text = buffName
 
@@ -326,10 +311,8 @@ end
 
 function Bar:SetUnlockedText(barSettings)
 	-- Called by Bar:Unlock()
-
 	local settings = barSettings or self.settings
 	local text = ""
-
 	if settings.show_mypip then
 		text = text .. "* "
 	end
@@ -337,9 +320,8 @@ function Bar:SetUnlockedText(barSettings)
 		if settings.show_text_user ~= "" then
 			text = settings.show_text_user
 		else
-			text = text .. NeedToKnow.GetPrettyName(settings)
+			text = text .. NeedToKnow:GetPrettyName(settings)
 		end
-
 		if ( settings.append_cd and (
 			settings.BuffOrDebuff == "CASTCD"
 			or settings.BuffOrDebuff == "BUFFCD"
@@ -351,12 +333,10 @@ function Bar:SetUnlockedText(barSettings)
 		elseif settings.append_usable and settings.BuffOrDebuff == "USABLE" then
 			text = text .. " Usable"
 		end
-
 		if settings.bDetectExtends == true then
 			text = text .. " + 3s"
 		end
 	end
-
 	self.Text:SetText(text)
 end
 

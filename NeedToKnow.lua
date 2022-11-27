@@ -5,6 +5,7 @@
 
 -- local addonName, addonTable = ...
 
+local String = NeedToKnow.String
 
 
 --[[ Functions ]]--
@@ -59,6 +60,20 @@ function NeedToKnow:UpdateBar(groupID, barID)
 	-- Called by BarMenu functions
 	local bar = NeedToKnow:GetBar(groupID, barID)
 	bar:Update()
+end
+
+function NeedToKnow:GetPrettyName(barSettings)
+	-- Called by Bar:SetUnlockedText() and BarMenu_Initialize (indirectly)
+	if barSettings.BuffOrDebuff == "EQUIPSLOT" then
+		local index = tonumber(barSettings.AuraName)
+		if index then 
+			return String.ITEM_NAMES[index] 
+		else 
+			return ""
+		end
+	else
+		return barSettings.AuraName
+	end
 end
 
 
