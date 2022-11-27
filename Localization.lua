@@ -26,7 +26,7 @@ Localize.enUS = {
 	BARMENU_HARMFUL = "Debuff",
 	BARMENU_CASTCD = "Spell or item cooldown",
 	BARMENU_EQUIPSLOT = "Equipped item cooldown",
-	BARMENU_USABLE = "Reactive spell or ability",
+	BARMENU_USABLE = "Reactive ability",
 	BARMENU_BUFFCD = "Internal cooldown",
 	BARMENU_TOTEM = "Totem",
 
@@ -67,7 +67,7 @@ Localize.enUS = {
 	-- BARMENU_SHOW_TEXT_USER = "Override aura name",
 	BARMENU_SHOW_TEXT_USER = "Replace bar text",
 	BARMENU_APPEND_CD = "Append \"CD\"",
-	BARMENU_APPEND_USABLE = "Append \"Usable\"",
+	BARMENU_APPEND_USABLE = "Append \"usable\"",
 
 	BARMENU_TIMEFORMAT = "Time format", 
 	FMT_SINGLEUNIT = "Single unit (12 s)",

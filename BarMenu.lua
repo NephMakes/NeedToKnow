@@ -1,16 +1,15 @@
 ﻿--[[ Bar right-click menu ]]--
 
 -- local addonName, addonTable = ...
-
 local BarMenu = NeedToKnow.BarMenu
+local Dialog = NeedToKnow.Dialog
 local String = NeedToKnow.String
-local NeedToKnowRMB = NeedToKnow.BarMenu  -- Deprecated
 
 
 --[[ Menu contents ]]--
 
 BarMenu.MainMenu = {
-	{itemType = "heading", headingType = "auraName"},
+	{varName = "mainHeading", itemType = "heading", headingType = "auraName"},
 	{varName = "Enabled", itemType = "boolean", menuText = String.BARMENU_ENABLE},
 	{varName = "AuraName", itemType = "dialog", dialogText = String.CHOOSENAME_DIALOG, menuText = String.BARMENU_CHOOSENAME},
 	{varName = "BuffOrDebuff", itemType = "submenu", menuText = String.BARMENU_BAR_TYPE},
@@ -21,7 +20,6 @@ BarMenu.MainMenu = {
 
 BarMenu.SubMenu = {}
 local SubMenu = BarMenu.SubMenu
--- Keys in SubMenu must match variable names
 
 SubMenu.BuffOrDebuff = {
 	-- Bar type
@@ -127,10 +125,10 @@ SubMenu.Show = {
 	{varName = "show_spark", itemType = "boolean", menuText = String.BARMENU_SHOW_SPARK},
 	{varName = "show_icon", itemType = "boolean", menuText = String.BARMENU_SHOW_ICON},
 	{varName = "show_mypip", itemType = "boolean", menuText = String.BARMENU_SHOW_MYPIP},
-	-- {varName = "bDetectExtends", itemType = "boolean", menuText = String.BARMENU_TRACK_EXTENDS}, 
-	-- {varName = "show_ttn1", itemType = "boolean", menuText = String.BARMENU_SHOW_TTN1},
-	-- {varName = "show_ttn2", itemType = "boolean", menuText = String.BARMENU_SHOW_TTN2},
-	-- {varName = "show_ttn3", itemType = "boolean", menuText = String.BARMENU_SHOW_TTN3},
+	{varName = "bDetectExtends", itemType = "boolean", menuText = String.BARMENU_TRACK_EXTENDS}, 
+	{varName = "show_ttn1", itemType = "boolean", menuText = String.BARMENU_SHOW_TTN1},
+	{varName = "show_ttn2", itemType = "boolean", menuText = String.BARMENU_SHOW_TTN2},
+	{varName = "show_ttn3", itemType = "boolean", menuText = String.BARMENU_SHOW_TTN3},
 }
 
 SubMenu.TimeFormat = {
@@ -157,7 +155,7 @@ SubMenu.BlinkSettings = {
 
 BarMenu.VariableRedirects = {
 	-- SubMenuKey = varName
-	DebuffUnit = "Unit",  -- Different list of options
+	DebuffUnit = "Unit",  -- Different list of possible values
 	EquipmentSlotList = "AuraName",  -- Reused button
 }
 
@@ -197,7 +195,7 @@ StaticPopupDialogs["NEEDTOKNOW.CHOOSENAME"] = {
 -- StaticPopupDialogs["NEEDTOKNOW_IMPORT_EXPORT"] = {}
 
 
---[[ Functions ]]--
+--[[ BarMenu functions ]]--
 
 function BarMenu:ShowMenu(bar)
 	-- Called by Bar:OnMouseUp()
@@ -240,32 +238,6 @@ function BarMenu:MakeMenu()
 	BarMenu:UpdateMenu(barSettings)
 end
 
-function BarMenu:GetHeadingText(headingType, barSettings)
-	local text
-	if headingType == "auraName" then
-		-- text = barSettings.AuraName or ""
-		text = NeedToKnow:GetPrettyName(barSettings) or ""
-		if text ~= "" then
-			local barType = barSettings.BuffOrDebuff
-			text = text .. " – " .. String["BARMENU_"..barType]
-			if barType == "HELPFUL" or barType == "HARMFUL" then
-				text = text .. " ("..barSettings.Unit..")"
-			end
-		end
-	elseif headingType == "castTime" then
-		-- Show timed spell and/or extra time
-		text = barSettings.vct_spell or ""
-		local extraTime = tonumber(barSettings.vct_extra)
-		if extraTime and extraTime > 0 then
-			if text ~= "" then
-				text = text .. " + "
-			end
-			text = text .. string.format("%0.1fs", extraTime)
-		end
-	end
-	return text
-end
-
 function BarMenu:AddButton(barSettings, menuItem, subMenuKey)
 	-- Make clickable item for dropdown menu
 
@@ -279,10 +251,9 @@ function BarMenu:AddButton(barSettings, menuItem, subMenuKey)
 	info.hideUnCheck = true  -- Hide empty checkbox/radio
 	info.keepShownOnClick = true
 	if itemType == "heading" then
+		info.value = varName
 		info.text = BarMenu:GetHeadingText(menuItem.headingType, barSettings)
-		if not info.text or info.text == "" then
-			return  -- No empty headings
-		end
+		if not info.text or info.text == "" then return end  -- No empty headings
 		info.isTitle = true
 		info.notCheckable = true  -- Unindent
 	elseif itemType == "submenu" then
@@ -350,7 +321,38 @@ function BarMenu:AddButton(barSettings, menuItem, subMenuKey)
 	end
 end
 
+function BarMenu:GetHeadingText(headingType, barSettings)
+	local text
+	if headingType == "auraName" then
+		-- Show concise summary of what bar does
+		text = NeedToKnow:GetPrettyName(barSettings) or ""
+		if text ~= "" then
+			local barType = barSettings.BuffOrDebuff
+			text = text .. " – " .. String["BARMENU_"..barType]
+			if barType == "HELPFUL" or barType == "HARMFUL" then
+				text = text .. " ("..barSettings.Unit..")"
+			-- elseif barType == "USABLE" then
+				-- usable time
+			-- elseif barType == "BUFFCD" then
+				-- cooldown time
+			end
+		end
+	elseif headingType == "castTime" then
+		-- Show timed spell and/or extra time
+		text = barSettings.vct_spell or ""
+		local extraTime = tonumber(barSettings.vct_extra)
+		if extraTime and extraTime > 0 then
+			if text ~= "" then
+				text = text .. " + "
+			end
+			text = text .. string.format("%0.1fs", extraTime)
+		end
+	end
+	return text
+end
+
 function BarMenu.IgnoreToggle(button)
+	-- For submenu buttons
 	if button then
 		_G[button:GetName().."Check"]:Hide()
 		button.checked = false
@@ -358,172 +360,13 @@ function BarMenu.IgnoreToggle(button)
 end
 
 function BarMenu.ToggleSetting(button, arg1, arg2, checked)
-	-- print("ToggleSetting")
+	-- Button function for true/false settings
 	local groupID = BarMenu.groupID
 	local barID = BarMenu.barID
 	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
 	barSettings[button.value] = button.checked
 	NeedToKnow:UpdateBar(groupID, barID)
-	BarMenu:UpdateMenu(barSettings)  -- Don't make an infinite loop!
-	--[[
-	local level = BarMenu:GetMenuItemLevel(button)
-	if button.value == "OnlyMine" then 
-		if button.checked == false then
-			BarMenu:UncheckAndDisable(level, "bDetectExtends")
-		else
-			BarMenu:EnableMenuItem(level, "bDetectExtends")
-			BarMenu:CheckMenuItem(level, "show_all_stacks", false)
-		end
-	elseif button.value == "show_all_stacks" then
-		if button.checked then
-			BarMenu:CheckMenuItem(level, "OnlyMine", false)
-		end
-	elseif button.value == "blink_enabled" then
-		if button.checked and barSettings.MissingBlink.a == 0 then
-			barSettings.MissingBlink.a = 0.5  -- ???
-		end
-	end
-	]]--
-end
-
-function BarMenu:GetMenuItemLevel(button)
-	local menuLevel = button:GetName():match("%d+")
-	return tonumber(menuLevel)
-end
-
-function BarMenu:GetMenuItem(menuLevel, valueName)
-	local listFrameName = "DropDownList"..menuLevel
-	local numButtons = _G[listFrameName]["numButtons"]
-	for index = 1, numButtons do
-		local button = _G[listFrameName.."Button"..index]
-		if button.value == valueName then
-			return button
-		end
-	end
-	return nil
-end
-
-function BarMenu:CheckMenuItem(menuLevel, valueName, checkItem)
-	local button = BarMenu:GetMenuItem(menuLevel, valueName)
-	if button then
-		local check = _G[button:GetName().."Check"]
-		if checkItem then
-			check:Show()
-			button.checked = true
-		else
-			check:Hide()
-			button.checked = false
-		end
-		-- BarMenu.ToggleSetting(button)
-	end
-end
-
-function BarMenu:EnableMenuItem(menuLevel, valueName)
-    local button = BarMenu:GetMenuItem(menuLevel, valueName)
-    if button then
-        button:Enable()
-    end
-end
-
-function BarMenu:UncheckAndDisable(menuLevel, valueName)
-	local button = BarMenu:GetMenuItem(menuLevel, valueName)
-	if button then
-		BarMenu:CheckMenuItem(menuLevel, valueName, false)
-		button:Disable()
-	end
-end
-
-function BarMenu:UpdateMenu(barSettings)
-	-- Update menu to reflect current bar settings
-	local barType = barSettings.BuffOrDebuff
-
-	-- Update menu heading
-
-	-- Set barType options submenu
-	local subMenu = SubMenu[barType] or {}
-	SubMenu.Options = subMenu
-	local button = BarMenu:GetMenuItem(1, "Options")
-	if button then
-		local arrow = _G[button:GetName().."ExpandArrow"]
-		local text
-		if #subMenu == 0 then
-			text = "No "
-			button:Disable()
-			arrow:Hide()
-		else
-			text = ""
-			button:Enable()
-			arrow:Show()
-		end
-		text = text..String["BARMENU_"..barType].." settings"
-		-- text = "Settings"  -- "Equipped item cooldown settings" too long?
-		button:SetText(text)
-	end
-
-	-- Reuse auraName button for inventory slot
-	if barType == "EQUIPSLOT" then
-		button = BarMenu:GetMenuItem(1, "AuraName")
-		if button then
-			button.oldvalue = button.value
-			local arrow = _G[button:GetName().."ExpandArrow"]
-			arrow:Show()
-			button.hasArrow = true
-			button.value = "EquipmentSlotList"
-			button:SetText(String.BARMENU_CHOOSESLOT)
-			-- TODO: really should disable the button press verb somehow
-		end
-	else
-		-- Restore auraName button 
-		button = BarMenu:GetMenuItem(1, "EquipmentSlotList")
-		if button then
-			local arrow = _G[button:GetName().."ExpandArrow"]
-			arrow:Hide()
-			button.hasArrow = false
-			if button.oldvalue then 
-				button.value = button.oldvalue 
-			end
-			button:SetText(String.BARMENU_CHOOSENAME)
-		end
-	end
-
-	-- Disable/enable buttons
-	--[[
-	local menuLevel = UIDROPDOWNMENU_MENU_LEVEL
-	if barSettings.OnlyMine == false and menuLevel == 2 then
-		BarMenu:UncheckAndDisable(menuLevel, "bDetectExtends")
-	else
-		BarMenu:EnableMenuItem(menuLevel, "bDetectExtends")
-		BarMenu:CheckMenuItem(menuLevel, "show_all_stacks", false)
-	end
-	if barSettings.show_all_stacks == false and menuLevel == 2 then
-		BarMenu:CheckMenuItem(menuLevel, "OnlyMine", false)
-	end
-	]]--
-
---	if barSettings.blink_enabled and barSettings.MissingBlink.a == 0 then
---		barSettings.blink_enabled = false
---	end
-
-	--[[
-	-- From BarMenu.ToggleSetting()
-	local level = BarMenu:GetMenuItemLevel(button)
-	if button.value == "OnlyMine" then 
-		if button.checked == false then
-			BarMenu:UncheckAndDisable(level, "bDetectExtends")
-		else
-			BarMenu:EnableMenuItem(level, "bDetectExtends")
-			BarMenu:CheckMenuItem(level, "show_all_stacks", false)
-		end
-	elseif button.value == "blink_enabled" then
-		if button.checked and barSettings.MissingBlink.a == 0 then
-			barSettings.MissingBlink.a = 0.5  -- ???
-		end
-	elseif button.value == "show_all_stacks" then
-		if button.checked then
-			BarMenu:CheckMenuItem(level, "OnlyMine", false)
-		end
-	end
-	]]--
+	BarMenu:UpdateMenu(barSettings)
 end
 
 function BarMenu.ChooseSetting(button, arg1, arg2, checked)
@@ -534,10 +377,11 @@ function BarMenu.ChooseSetting(button, arg1, arg2, checked)
 	local varName = BarMenu.VariableRedirects[UIDROPDOWNMENU_MENU_VALUE] or UIDROPDOWNMENU_MENU_VALUE
 	barSettings[varName] = button.value
 	NeedToKnow:UpdateBar(groupID, barID)
-	if varName == "BuffOrDebuff" then
-		-- Changed bar type, so update menu items
-		BarMenu:UpdateMenu(barSettings)
-	end
+	BarMenu:UpdateMenu(barSettings)
+--	if varName == "BuffOrDebuff" then
+--		-- Changed bar type, so update menu items
+--		BarMenu:UpdateMenu(barSettings)
+--	end
 end
 
 function BarMenu.ShowDialog(button, dialogText, isNumeric, checked)
@@ -567,42 +411,15 @@ function BarMenu.ShowDialog(button, dialogText, isNumeric, checked)
 	end
 end
 
-function BarMenu.SetColor()
-	local groupID = BarMenu.groupID
-	local barID = BarMenu.barID
-	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
-	local color = barSettings[ColorPickerFrame.extraInfo]
-	color.r, color.g, color.b = ColorPickerFrame:GetColorRGB()
-	NeedToKnow:UpdateBar(groupID, barID)
+function BarMenu:ShowTextDialog() 
 end
 
-function BarMenu.SetOpacity()
-	local groupID = BarMenu.groupID
-	local barID = BarMenu.barID
-	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
-	local color = barSettings[ColorPickerFrame.extraInfo]
-	color.a = 1 - OpacitySliderFrame:GetValue()
---	Kitjan had blink automatically disabling if opacity set to zero
---	if barSettings.MissingBlink.a == 0 then
---		barSettings.blink_enabled = false
---	end
-	NeedToKnow:UpdateBar(groupID, barID)
+function BarMenu:ShowNumericDialog() 
 end
 
-function BarMenu.CancelColor(oldColor)
-	if oldColor.r then
-		local groupID = BarMenu.groupID
-		local barID = BarMenu.barID
-		local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
-		local color = barSettings[ColorPickerFrame.extraInfo]
-		color.r, color.g, color.b = oldColor.r, oldColor.g, oldColor.b
-		color.a = 1 - oldColor.opacity
-		NeedToKnow:UpdateBar(groupID, barID)
-	end
+function BarMenu:ShowImportExportDialog() 
 end
 
-
---[[ Static popup dialogs ]]--
 
 function BarMenu.ChooseName(text, varName)
 	-- Make user text the new setting value
@@ -635,6 +452,187 @@ function BarMenu.OnTextChangedNumeric(editBox, isUserInput)
     if BarMenu.OnTextChangedOriginal then
         BarMenu.OnTextChangedOriginal(editBox, isUserInput)
     end
+end
+
+function BarMenu.SetColor()
+	local groupID = BarMenu.groupID
+	local barID = BarMenu.barID
+	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
+	local color = barSettings[ColorPickerFrame.extraInfo]
+	color.r, color.g, color.b = ColorPickerFrame:GetColorRGB()
+	NeedToKnow:UpdateBar(groupID, barID)
+end
+
+function BarMenu.SetOpacity()
+	local groupID = BarMenu.groupID
+	local barID = BarMenu.barID
+	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
+	local color = barSettings[ColorPickerFrame.extraInfo]
+	color.a = 1 - OpacitySliderFrame:GetValue()
+	NeedToKnow:UpdateBar(groupID, barID)
+end
+
+function BarMenu.CancelColor(oldColor)
+	if oldColor.r then
+		local groupID = BarMenu.groupID
+		local barID = BarMenu.barID
+		local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
+		local color = barSettings[ColorPickerFrame.extraInfo]
+		color.r, color.g, color.b = oldColor.r, oldColor.g, oldColor.b
+		color.a = 1 - oldColor.opacity
+		NeedToKnow:UpdateBar(groupID, barID)
+	end
+end
+
+function BarMenu:UpdateMenu(barSettings)
+	-- Update menu for current bar settings
+	local barType = barSettings.BuffOrDebuff
+	local button, text
+
+	-- Update menu heading
+	button = BarMenu:GetMenuButton(1, "mainHeading")
+	if button then
+		text = BarMenu:GetHeadingText("auraName", barSettings)
+		button:SetText(text)
+	end
+
+	-- Set barType options submenu
+	local subMenu = SubMenu[barType] or {}
+	SubMenu.Options = subMenu
+	button = BarMenu:GetMenuButton(1, "Options")
+	if button then
+		local arrow = _G[button:GetName().."ExpandArrow"]
+		if #subMenu == 0 then
+			text = "No "
+			button:Disable()
+			arrow:Hide()
+		else
+			text = ""
+			button:Enable()
+			arrow:Show()
+		end
+		text = text..String["BARMENU_"..barType].." settings"
+		-- text = "Settings"  -- "Equipped item cooldown settings" too long?
+		button:SetText(text)
+	end
+
+	-- Reuse auraName button for inventory slot
+	if barType == "EQUIPSLOT" then
+		button = BarMenu:GetMenuButton(1, "AuraName")
+		if button then
+			button.oldvalue = button.value
+			local arrow = _G[button:GetName().."ExpandArrow"]
+			arrow:Show()
+			button.hasArrow = true
+			button.value = "EquipmentSlotList"
+			button:SetText(String.BARMENU_CHOOSESLOT)
+			-- TODO: really should disable the button press verb somehow
+		end
+	else
+		-- Restore auraName button 
+		button = BarMenu:GetMenuButton(1, "EquipmentSlotList")
+		if button then
+			local arrow = _G[button:GetName().."ExpandArrow"]
+			arrow:Hide()
+			button.hasArrow = false
+			if button.oldvalue then 
+				button.value = button.oldvalue 
+			end
+			button:SetText(String.BARMENU_CHOOSENAME)
+		end
+	end
+
+	-- Disable/enable buttons
+	if barSettings.show_all_stacks then
+		BarMenu:DisableMenuItem(2, "OnlyMine")
+	else
+		BarMenu:EnableMenuItem(2, "OnlyMine")
+	end
+	if barSettings.OnlyMine then
+		BarMenu:DisableMenuItem(2, "show_all_stacks")
+	else
+		BarMenu:EnableMenuItem(2, "show_all_stacks")
+	end
+	-- Make sure order of operations matches BarEngine.lua
+
+	--[[
+	-- Kitjan's code from BarMenu.ToggleSetting()
+	local level = BarMenu:GetMenuItemLevel(button)
+	if button.value == "OnlyMine" then 
+		if button.checked == false then
+			BarMenu:UncheckAndDisable(level, "bDetectExtends")
+		else
+			BarMenu:EnableMenuItem(level, "bDetectExtends")
+		end
+	elseif button.value == "blink_enabled" then
+		if button.checked and barSettings.MissingBlink.a == 0 then
+			barSettings.MissingBlink.a = 0.5  -- ???
+		end
+	end
+
+	if barSettings.blink_enabled and barSettings.MissingBlink.a == 0 then
+		barSettings.blink_enabled = false
+	end
+
+	-- Kitjan had blink automatically disabling if opacity set to zero
+	if barSettings.MissingBlink.a == 0 then
+		barSettings.blink_enabled = false
+	end
+	]]--
+end
+
+function BarMenu:GetMenuItemLevel(button)
+	local menuLevel = button:GetName():match("%d+")
+	return tonumber(menuLevel)
+end
+
+function BarMenu:GetMenuButton(menuLevel, buttonValue)
+	local listFrameName = "DropDownList"..menuLevel
+	local numButtons = _G[listFrameName]["numButtons"]
+	for index = 1, numButtons do
+		local button = _G[listFrameName.."Button"..index]
+		if button.value == buttonValue then
+			return button
+		end
+	end
+	-- return nil
+end
+
+function BarMenu:EnableMenuItem(menuLevel, valueName)
+    local button = BarMenu:GetMenuButton(menuLevel, valueName)
+    if button then
+        button:Enable()
+    end
+end
+
+function BarMenu:DisableMenuItem(menuLevel, valueName)
+    local button = BarMenu:GetMenuButton(menuLevel, valueName)
+    if button then
+        button:Disable()
+    end
+end
+
+function BarMenu:UncheckAndDisable(menuLevel, valueName)
+	local button = BarMenu:GetMenuButton(menuLevel, valueName)
+	if button then
+		button:Disable()
+		BarMenu:CheckMenuItem(menuLevel, valueName, false)
+	end
+end
+
+function BarMenu:CheckMenuItem(menuLevel, valueName, checkItem)
+	local button = BarMenu:GetMenuButton(menuLevel, valueName)
+	if button then
+		local check = _G[button:GetName().."Check"]
+		if checkItem then
+			check:Show()
+			button.checked = true
+		else
+			check:Hide()
+			button.checked = false
+		end
+		BarMenu.ToggleSetting(button)
+	end
 end
 
 

@@ -22,12 +22,14 @@ NeedToKnow.ExecutiveFrame = CreateFrame("Frame", "NeedToKnow_ExecutiveFrame")
 
 NeedToKnow.Bar = {}
 NeedToKnow.BarGroup = {}
-NeedToKnow.BarMenu = {}
 NeedToKnow.ResizeButton = {}
 
 NeedToKnow.BarEvent = {}
 NeedToKnow.FindAura = {}
 NeedToKnow.Cooldown = {}
+
+NeedToKnow.BarMenu = {}
+NeedToKnow.Dialog = {}
 
 
 -- ---------------------
@@ -68,7 +70,7 @@ NEEDTOKNOW.BAR_DEFAULTS = {
     blink_ooc       = false,
     blink_boss      = false,
     blink_label     = "",
-    buffcd_duration = 0,  -- Most procs have 45 sec internal cooldowns
+    buffcd_duration = 45,  -- Most procs have 45 sec internal cooldown
     buffcd_reset_spells = "",
     usable_duration = 0,
     append_cd       = false,
