@@ -2,8 +2,8 @@
 
 -- local addonName, addonTable = ...
 local BarMenu = NeedToKnow.BarMenu
-local Dialog = NeedToKnow.Dialog
 local String = NeedToKnow.String
+local Dialog = NeedToKnow.Dialog
 
 
 --[[ Menu contents ]]--
@@ -11,9 +11,9 @@ local String = NeedToKnow.String
 BarMenu.MainMenu = {
 	{varName = "mainHeading", itemType = "heading", headingType = "auraName"},
 	{varName = "Enabled", itemType = "boolean", menuText = String.BARMENU_ENABLE},
-	{varName = "AuraName", itemType = "dialog", dialogText = String.CHOOSENAME_DIALOG, menuText = String.BARMENU_CHOOSENAME},
 	{varName = "BuffOrDebuff", itemType = "submenu", menuText = String.BARMENU_BAR_TYPE},
-	{varName = "Options", itemType = "submenu", menuText =  String.BARMENU_SETTINGS},
+	{varName = "AuraName", itemType = "dialog", dialogText = String.CHOOSENAME_DIALOG, menuText = String.BARMENU_CHOOSENAME},
+	{varName = "options", itemType = "submenu", menuText = String.BARMENU_SETTINGS},
 	{varName = "BarColor", itemType = "color", menuText = String.BARMENU_BARCOLOR},
 	{varName = "moreOptions", itemType = "submenu", menuText = String.BARMENU_MORE_OPTIONS}, 
 }
@@ -159,40 +159,27 @@ BarMenu.VariableRedirects = {
 	EquipmentSlotList = "AuraName",  -- Reused button
 }
 
-
---[[ Dialog boxes ]]--
-
-StaticPopupDialogs["NEEDTOKNOW.CHOOSENAME"] = {
-	button1 = ACCEPT,
-	button2 = CANCEL,
-	hasEditBox = 1,
-	editBoxWidth = 300,
-	maxLetters = 0,
-	OnAccept = function(self)
-		if self.varName then
-			BarMenu.ChooseName(self.editBox:GetText(), self.varName)
-		end
-	end,
-	EditBoxOnEnterPressed = function(self)
-		StaticPopupDialogs["NEEDTOKNOW.CHOOSENAME"].OnAccept(self:GetParent())
-		self:GetParent():Hide()
-	end,
-	EditBoxOnEscapePressed = function(self) 
-		self:GetParent():Hide()
-	end,
-	OnHide = function(self)
-		self.editBox:SetText("")
-	end,
-	timeout = 0,
-	whileDead = 1,
-	hideOnEscape = 1,
+-- Button text that depends on barType
+local ButtonText = {}
+ButtonText["AuraName"] = {
+	HELPFUL = "Choose buff", 
+	HARMFUL = "Choose debuff", 
+	CASTCD = "Choose spell, item, or ability", 
+	EQUIPSLOT = "Choose item slot", 
+	USABLE = "Choose spell or ability", 
+	BUFFCD = "Choose buff", 
+	TOTEM = "Choose totem", 
 }
-
--- StaticPopupDialogs["NEEDTOKNOW_TEXT_ENTRY"] = {}
-
--- StaticPopupDialogs["NEEDTOKNOW_NUMERIC_ENTRY"] = {}
-
--- StaticPopupDialogs["NEEDTOKNOW_IMPORT_EXPORT"] = {}
+ButtonText["options"] = {
+	HELPFUL = "Buff settings", 
+	HARMFUL = "Debuff settings", 
+	CASTCD = "Cooldown settings", 
+	EQUIPSLOT = "Cooldown settings", 
+	USABLE = "Reactive settings", 
+	BUFFCD = "Cooldown settings", 
+	TOTEM = "Totem settings", 
+}
+-- e.g. ButtonText[varName][barType]
 
 
 --[[ BarMenu functions ]]--
@@ -232,7 +219,7 @@ function BarMenu:MakeMenu()
 	elseif UIDROPDOWNMENU_MENU_LEVEL > 1 then
 		menu = BarMenu.SubMenu[UIDROPDOWNMENU_MENU_VALUE]
 	end
-	for _, menuItem in ipairs(menu) do
+	for index, menuItem in ipairs(menu) do
 		BarMenu:AddButton(barSettings, menuItem, UIDROPDOWNMENU_MENU_VALUE)
 	end
 	BarMenu:UpdateMenu(barSettings)
@@ -280,6 +267,7 @@ function BarMenu:AddButton(barSettings, menuItem, subMenuKey)
 	elseif itemType == "dialog" then
 		info.value = varName
 		info.func = BarMenu.ShowDialog
+		-- info.arg1 = menuItem.dialogType
 		info.arg1 = menuItem.dialogText
 		info.arg2 = menuItem.isNumeric
 		info.keepShownOnClick = false
@@ -384,76 +372,6 @@ function BarMenu.ChooseSetting(button, arg1, arg2, checked)
 --	end
 end
 
-function BarMenu.ShowDialog(button, dialogText, isNumeric, checked)
-	StaticPopupDialogs["NEEDTOKNOW.CHOOSENAME"].text = dialogText
-	local dialog = StaticPopup_Show("NEEDTOKNOW.CHOOSENAME")
-	dialog.varName = button.value
-
-	-- Pre-populate text
-	local editBox = _G[dialog:GetName().."EditBox"]
-	local barSettings = NeedToKnow:GetBarSettings(BarMenu.groupID, BarMenu.barID)
-	if dialog.varName == "ImportExport" then
-		editBox:SetText(NeedToKnow.ExportBarSettingsToString(barSettings))
-		editBox:HighlightText()
-	else
-		editBox:SetText(barSettings[dialog.varName])
-	end
-	editBox:SetFocus()
-
-	-- Only allow user to enter numeric text?
-	if not BarMenu.OnTextChangedOriginal then
-		BarMenu.OnTextChangedOriginal = editBox:GetScript("OnTextChanged")
-	end
-	if isNumeric then
-		editBox:SetScript("OnTextChanged", BarMenu.OnTextChangedNumeric)
-	else
-		editBox:SetScript("OnTextChanged", BarMenu.OnTextChangedOriginal)
-	end
-end
-
-function BarMenu:ShowTextDialog() 
-end
-
-function BarMenu:ShowNumericDialog() 
-end
-
-function BarMenu:ShowImportExportDialog() 
-end
-
-
-function BarMenu.ChooseName(text, varName)
-	-- Make user text the new setting value
-	local groupID = BarMenu.groupID
-	local barID = BarMenu.barID
-	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
-	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
-	if varName == "ImportExport" then
-		NeedToKnow.ImportBarSettingsFromString(text, groupSettings.Bars, barID)
-	else
-		barSettings[varName] = text
-	end
-	NeedToKnow:UpdateBar(groupID, barID)
-end
-
-function BarMenu.OnTextChangedNumeric(editBox, isUserInput)
-    if isUserInput then
-        local text = editBox:GetText()
-        local culled = text:gsub("[^0-9.]", "") -- Remove non-digits
-        local iPeriod = culled:find("[.]")
-        if iPeriod ~= nil then
-            local before = culled:sub(1, iPeriod)
-            local after = string.gsub(culled:sub(iPeriod+1), "[.]", "")
-            culled = before .. after
-        end
-        if text ~= culled then
-            editBox:SetText(culled)
-        end
-    end
-    if BarMenu.OnTextChangedOriginal then
-        BarMenu.OnTextChangedOriginal(editBox, isUserInput)
-    end
-end
-
 function BarMenu.SetColor()
 	local groupID = BarMenu.groupID
 	local barID = BarMenu.barID
@@ -496,10 +414,10 @@ function BarMenu:UpdateMenu(barSettings)
 		button:SetText(text)
 	end
 
-	-- Set barType options submenu
+	-- Options submenu for bar type
 	local subMenu = SubMenu[barType] or {}
-	SubMenu.Options = subMenu
-	button = BarMenu:GetMenuButton(1, "Options")
+	SubMenu["options"] = subMenu
+	button = BarMenu:GetMenuButton(1, "options")
 	if button then
 		local arrow = _G[button:GetName().."ExpandArrow"]
 		if #subMenu == 0 then
@@ -512,9 +430,11 @@ function BarMenu:UpdateMenu(barSettings)
 			arrow:Show()
 		end
 		text = text..String["BARMENU_"..barType].." settings"
+		-- e.g. ButtonText["options"][barType]
 		-- text = "Settings"  -- "Equipped item cooldown settings" too long?
 		button:SetText(text)
 	end
+
 
 	-- Reuse auraName button for inventory slot
 	if barType == "EQUIPSLOT" then
@@ -541,6 +461,7 @@ function BarMenu:UpdateMenu(barSettings)
 			button:SetText(String.BARMENU_CHOOSENAME)
 		end
 	end
+	-- e.g. ButtonText[varName][barType]
 
 	-- Disable/enable buttons
 	if barSettings.show_all_stacks then
@@ -634,6 +555,111 @@ function BarMenu:CheckMenuItem(menuLevel, valueName, checkItem)
 		BarMenu.ToggleSetting(button)
 	end
 end
+
+
+--[[ Dialog box ]]--
+
+StaticPopupDialogs["NEEDTOKNOW_DIALOG"] = {
+	button1 = ACCEPT,
+	button2 = CANCEL,
+	hasEditBox = 1,
+	editBoxWidth = 300,
+	maxLetters = 0,
+	OnAccept = function(self)
+		if self.value then
+			BarMenu.ChooseName(self.editBox:GetText(), self.value)
+		end
+	end,
+	EditBoxOnEnterPressed = function(self)
+		StaticPopupDialogs["NEEDTOKNOW_DIALOG"].OnAccept(self:GetParent())
+		self:GetParent():Hide()
+	end,
+	EditBoxOnEscapePressed = function(self) 
+		self:GetParent():Hide()
+	end,
+	OnHide = function(self)
+		self.editBox:SetText("")
+	end,
+	timeout = 0,
+	whileDead = 1,
+	hideOnEscape = 1,
+}
+
+function BarMenu.ShowDialog(button, dialogText, isNumeric, checked)
+	StaticPopupDialogs["NEEDTOKNOW_DIALOG"].text = dialogText
+	local dialog = StaticPopup_Show("NEEDTOKNOW_DIALOG")
+	dialog.value = button.value  -- varName
+
+	-- Pre-populate text
+	local editBox = _G[dialog:GetName().."EditBox"]
+	local barSettings = NeedToKnow:GetBarSettings(BarMenu.groupID, BarMenu.barID)
+	if dialog.value == "ImportExport" then
+		editBox:SetText(NeedToKnow.ExportBarSettingsToString(barSettings))
+		editBox:HighlightText()
+	else
+		editBox:SetText(barSettings[dialog.value])
+	end
+	editBox:SetFocus()
+
+	-- Only allow user to enter numeric text?
+	if not BarMenu.OnTextChangedOriginal then
+		BarMenu.OnTextChangedOriginal = editBox:GetScript("OnTextChanged")
+	end
+	if isNumeric then
+		editBox:SetScript("OnTextChanged", BarMenu.OnTextChangedNumeric)
+	else
+		editBox:SetScript("OnTextChanged", BarMenu.OnTextChangedOriginal)
+	end
+end
+
+--[[
+function BarMenu.ShowDialog(button, dialogType, arg2, checked)
+	Dialog:ShowTextInput(button.value)
+	-- if dialogType == "text" then
+		-- Dialog:ShowTextInput(button.value)
+	-- elseif dialogType == "numeric" then
+		-- Dialog:ShowNumericInput(button.value)
+	-- elseif dialogType == "importExport" then
+	-- end
+end
+]]--
+
+function BarMenu.ChooseName(text, varName)
+	-- Make user text the new setting value
+	local groupID = BarMenu.groupID
+	local barID = BarMenu.barID
+	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
+	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
+	if varName == "ImportExport" then
+		NeedToKnow.ImportBarSettingsFromString(text, groupSettings.Bars, barID)
+	else
+		barSettings[varName] = text
+	end
+	NeedToKnow:UpdateBar(groupID, barID)
+end
+
+function BarMenu.OnTextChangedNumeric(editBox, isUserInput)
+    if isUserInput then
+        local text = editBox:GetText()
+        local culled = text:gsub("[^0-9.]", "") -- Remove non-digits
+        local iPeriod = culled:find("[.]")
+        if iPeriod ~= nil then
+            local before = culled:sub(1, iPeriod)
+            local after = string.gsub(culled:sub(iPeriod+1), "[.]", "")
+            culled = before .. after
+        end
+        if text ~= culled then
+            editBox:SetText(culled)
+        end
+    end
+    if BarMenu.OnTextChangedOriginal then
+        BarMenu.OnTextChangedOriginal(editBox, isUserInput)
+    end
+end
+
+
+
+
 
 
 

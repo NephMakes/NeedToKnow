@@ -78,7 +78,7 @@ Localize.enUS = {
 	BARMENU_VCT_ENABLE = "Enable for this bar",
 	-- BARMENU_VCT_COLOR = "Overlay color",
 	BARMENU_VCT_COLOR = "Color",
-	BARMENU_VCT_SPELL = "Choose spell to time",
+	BARMENU_VCT_SPELL = "Choose spell for time",
 	BARMENU_VCT_EXTRA = "Set extra time",
 
 	BARMENU_BLINK_SETTINGS = "Blink options", 
