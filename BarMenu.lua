@@ -11,8 +11,8 @@ local Dialog = NeedToKnow.Dialog
 BarMenu.MainMenu = {
 	{varName = "mainHeading", itemType = "heading", headingType = "auraName"},
 	{varName = "Enabled", itemType = "boolean", menuText = String.BARMENU_ENABLE},
-	{varName = "BuffOrDebuff", itemType = "submenu", menuText = String.BARMENU_BAR_TYPE},
-	{varName = "AuraName", itemType = "dialog", dialogText = String.CHOOSENAME_DIALOG, menuText = String.BARMENU_CHOOSENAME},
+	{varName = "BuffOrDebuff", itemType = "submenu", menuText = String.BARTYPE},
+	{varName = "AuraName", itemType = "dialog", dialogText = String.CHOOSENAME_DIALOG, menuText = String.CHOOSE_SPELL_ITEM_ABILITY},
 	{varName = "options", itemType = "submenu", menuText = String.BARMENU_SETTINGS},
 	{varName = "BarColor", itemType = "color", menuText = String.BARMENU_BARCOLOR},
 	{varName = "moreOptions", itemType = "submenu", menuText = String.BARMENU_MORE_OPTIONS}, 
@@ -23,13 +23,13 @@ local SubMenu = BarMenu.SubMenu
 
 SubMenu.BuffOrDebuff = {
 	-- Bar type
-	{varValue = "HELPFUL", itemType = "varValue", menuText = String.BARMENU_HELPFUL},
-	{varValue = "HARMFUL", itemType = "varValue", menuText = String.BARMENU_HARMFUL},
-	{varValue = "CASTCD", itemType = "varValue", menuText = String.BARMENU_CASTCD},
-	{varValue = "EQUIPSLOT", itemType = "varValue", menuText = String.BARMENU_EQUIPSLOT},
-	{varValue = "USABLE", itemType = "varValue", menuText = String.BARMENU_USABLE},
-	{varValue = "BUFFCD", itemType = "varValue", menuText = String.BARMENU_BUFFCD},
-	{varValue = "TOTEM", itemType = "varValue", menuText = String.BARMENU_TOTEM},
+	{varValue = "HELPFUL", itemType = "varValue", menuText = String.BARTYPE_HELPFUL},
+	{varValue = "HARMFUL", itemType = "varValue", menuText = String.BARTYPE_HARMFUL},
+	{varValue = "CASTCD", itemType = "varValue", menuText = String.BARTYPE_CASTCD},
+	{varValue = "EQUIPSLOT", itemType = "varValue", menuText = String.BARTYPE_EQUIPSLOT},
+	{varValue = "USABLE", itemType = "varValue", menuText = String.BARTYPE_USABLE},
+	{varValue = "BUFFCD", itemType = "varValue", menuText = String.BARTYPE_BUFFCD},
+	{varValue = "TOTEM", itemType = "varValue", menuText = String.BARTYPE_TOTEM},
 }
 
 SubMenu.Unit = {
@@ -161,25 +161,25 @@ BarMenu.VariableRedirects = {
 
 -- Button text that depends on barType
 local ButtonText = {}
-ButtonText["AuraName"] = {
-	HELPFUL = "Choose buff", 
-	HARMFUL = "Choose debuff", 
-	CASTCD = "Choose spell, item, or ability", 
-	EQUIPSLOT = "Choose item slot", 
-	USABLE = "Choose spell or ability", 
-	BUFFCD = "Choose buff", 
-	TOTEM = "Choose totem", 
+ButtonText["barType"] = {
+	-- For GetHeadingText()
+	HELPFUL = String.BARTYPE_HELPFUL, 
+	HARMFUL = String.BARTYPE_HARMFUL, 
+	CASTCD = String.BARTYPE_CASTCD, 
+	EQUIPSLOT = String.BARTYPE_EQUIPSLOT, 
+	USABLE = String.BARTYPE_USABLE, 
+	BUFFCD = String.BARTYPE_BUFFCD, 
+	TOTEM = String.BARTYPE_TOTEM, 
 }
 ButtonText["options"] = {
-	HELPFUL = "Buff settings", 
-	HARMFUL = "Debuff settings", 
-	CASTCD = "Cooldown settings", 
-	EQUIPSLOT = "Cooldown settings", 
-	USABLE = "Reactive settings", 
-	BUFFCD = "Cooldown settings", 
-	TOTEM = "Totem settings", 
+	HELPFUL = String.BUFF_SETTINGS, 
+	HARMFUL = String.DEBUFF_SETTINGS, 
+	CASTCD = String.COOLDOWN_SETTINGS, 
+	EQUIPSLOT = String.COOLDOWN_SETTINGS, 
+	USABLE = String.USABLE_SETTINGS, 
+	BUFFCD = String.COOLDOWN_SETTINGS, 
+	TOTEM = String.TOTEM_SETTINGS, 
 }
--- e.g. ButtonText[varName][barType]
 
 
 --[[ BarMenu functions ]]--
@@ -313,24 +313,28 @@ function BarMenu:GetHeadingText(headingType, barSettings)
 	local text, time
 	if headingType == "auraName" then
 		-- Show concise summary of what bar does
-		text = NeedToKnow:GetPrettyName(barSettings) or ""
+		text = NeedToKnow:GetPrettyName(barSettings) -- or ""
+		if not text or text == "" then
+			text = "??"
+		end
 		if text ~= "" then
 			local barType = barSettings.BuffOrDebuff
-			text = text .. " – " .. String["BARMENU_"..barType]
+			-- text = text.." – "..String["BARMENU_"..barType]
+			text = text.." – "..ButtonText["barType"][barType]
 			if barType == "HELPFUL" or barType == "HARMFUL" then
-				text = text .. " ("..barSettings.Unit..")"
+				text = text.." ("..barSettings.Unit..")"
 			elseif barType == "USABLE" then
 				time = barSettings.usable_duration
 				if not time or time == "" then 
 					time = "??"
 				end
-				text = text .. " ("..time.." s)"
+				text = text.." ("..time.." s)"
 			elseif barType == "BUFFCD" then
 				time = barSettings.buffcd_duration
 				if not time or time == "" then 
 					time = "??"
 				end
-				text = text .. " ("..time.." s)"
+				text = text.." ("..time.." s)"
 			end
 		end
 	elseif headingType == "castTime" then
@@ -339,9 +343,9 @@ function BarMenu:GetHeadingText(headingType, barSettings)
 		local extraTime = tonumber(barSettings.vct_extra)
 		if extraTime and extraTime > 0 then
 			if text ~= "" then
-				text = text .. " + "
+				text = text.." + "
 			end
-			text = text .. string.format("%0.1fs", extraTime)
+			text = text..string.format("%0.1fs", extraTime)
 		end
 	end
 	return text
@@ -428,7 +432,6 @@ function BarMenu:UpdateMenu(barSettings)
 			-- To do: Disable button clickable?
 			button.oldvalue = button.value
 			button.value = "EquipmentSlotList"
-			button:SetText(ButtonText["AuraName"][barType])
 		end
 	else
 		-- Restore auraName button 
@@ -440,7 +443,6 @@ function BarMenu:UpdateMenu(barSettings)
 			if button.oldvalue then 
 				button.value = button.oldvalue 
 			end
-			button:SetText(ButtonText["AuraName"][barType])
 		end
 	end
 
