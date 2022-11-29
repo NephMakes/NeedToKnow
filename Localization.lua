@@ -10,20 +10,18 @@ Localize.enUS = {
 	BAR_TOOLTIP2 = "Right click bars to set up. More options in Blizzard interface options menu. Type /needtoknow to lock and enable.",
 	RESIZE_TOOLTIP = "Click and drag to change size",
 
-	BARMENU_ENABLE = "Enable bar",
+	ENABLE = ENABLE,  -- "Enable" 
+	ENABLE_BAR = "Enable bar",
 	BARMENU_CHOOSENAME = "Choose spell, item, or ability",
-	BARMENU_BARCOLOR = "Bar color",
-	COLOR = "Color",
+	BARCOLOR = "Bar color",
+	COLOR = COLOR,  -- "Color"
 
 	BARMENU_OPTIONS = "Options", 
-	BARMENU_SETTINGS = "Settings", 
 	BARMENU_MORE_OPTIONS = "More options", 
 	BARMENU_IMPORT_EXPORT = "Import or export settings",
 	BARMENU_CLEAR_SETTINGS = "Clear settings",
 
-	BARMENU_BAR_TYPE = "Bar type",
 	BARTYPE = "Bar type",
-
 	BARTYPE_HELPFUL = "Buff",
 	BARTYPE_HARMFUL = "Debuff",
 	BARTYPE_CASTCD = "Spell or item cooldown",
@@ -39,6 +37,7 @@ Localize.enUS = {
 --	CHOOSE_INVSLOT = "Choose item slot", 
 --	CHOOSE_TOTEM = "Choose totem", 
 
+	SETTINGS = SETTINGS, -- "Settings"
 	BUFF_SETTINGS = "Buff settings", 
 	DEBUFF_SETTINGS = "Debuff settings", 
 	COOLDOWN_SETTINGS = "Cooldown settings", 
@@ -46,14 +45,14 @@ Localize.enUS = {
 	TOTEM_SETTINGS = "Totem settings", 
 
 	BARMENU_CHOOSEUNIT = "Unit to watch",
-	BARMENU_PLAYER = "Player",
-	BARMENU_TARGET = "Target",
-	BARMENU_FOCUS = "Focus",
-	BARMENU_PET = "Pet",
+	BARMENU_PLAYER = PLAYER,  -- "Player"
+	BARMENU_TARGET = TARGET,  -- "Target"
+	BARMENU_FOCUS = FOCUS,  -- "Focus"
+	BARMENU_PET = PET,  -- "Pet"
 	BARMENU_VEHICLE = "Vehicle",
 	BARMENU_TARGETTARGET = "Target of target",
 	BARMENU_LAST_RAID = "Last raid recipient",
-	BARMENU_CHOOSESLOT = "Equipped item",
+	-- BARMENU_INVSLOT = "Equipped item",
 
 	BARMENU_ONLYMINE = "Only show mine",
 	BARMENU_SUM_STACKS = "Sum from all casters",
@@ -65,8 +64,8 @@ Localize.enUS = {
 	BARMENU_BUFFCD_DURATION = "Set cooldown time",
 	BARMENU_BUFFCD_RESET = "Reset on buff...", 
 
-	BARMENU_SHOW = "Show",
-	BARMENU_SHOW_NAME = "Name",
+	BARMENU_SHOW = SHOW,  -- "Show"
+	BARMENU_SHOW_NAME = NAME,  -- "Name"
 	BARMENU_SHOW_ICON = "Icon",
 	BARMENU_SHOW_COUNT = "Count",
 	BARMENU_SHOW_TIME = "Time",
@@ -90,9 +89,9 @@ Localize.enUS = {
 	FMT_FLOAT = "Decimal seconds (12.1)",
 
 	BARMENU_VISUALCASTTIME = "Cast time overlay",
-	BARMENU_VCT_ENABLE = "Enable for this bar",
+	-- BARMENU_VCT_ENABLE = "Enable for this bar",
 	-- BARMENU_VCT_COLOR = "Overlay color",
-	BARMENU_VCT_COLOR = "Color",
+	BARMENU_VCT_COLOR = COLOR,  -- "Color"
 	BARMENU_VCT_SPELL = "Choose spell",
 	BARMENU_VCT_EXTRA = "Set extra time",
 

@@ -10,11 +10,11 @@ local Dialog = NeedToKnow.Dialog
 
 BarMenu.MainMenu = {
 	{varName = "mainHeading", itemType = "heading", headingType = "auraName"},
-	{varName = "Enabled", itemType = "boolean", menuText = String.BARMENU_ENABLE},
+	{varName = "Enabled", itemType = "boolean", menuText = String.ENABLE_BAR},
 	{varName = "BuffOrDebuff", itemType = "submenu", menuText = String.BARTYPE},
 	{varName = "AuraName", itemType = "dialog", dialogText = String.CHOOSENAME_DIALOG, menuText = String.CHOOSE_SPELL_ITEM_ABILITY},
-	{varName = "options", itemType = "submenu", menuText = String.BARMENU_SETTINGS},
-	{varName = "BarColor", itemType = "color", menuText = String.BARMENU_BARCOLOR},
+	{varName = "options", itemType = "submenu", menuText = String.SETTINGS},
+	{varName = "BarColor", itemType = "color", menuText = String.COLOR},
 	{varName = "moreOptions", itemType = "submenu", menuText = String.BARMENU_MORE_OPTIONS}, 
 }
 
@@ -139,14 +139,14 @@ SubMenu.TimeFormat = {
 
 SubMenu.VisualCastTime = {
 	{itemType = "heading", headingType = "castTime"}, 
-	{varName = "vct_enabled", itemType = "boolean", menuText = String.BARMENU_VCT_ENABLE},
-	{varName = "vct_color", itemType = "color", menuText = String.BARMENU_VCT_COLOR},
+	{varName = "vct_enabled", itemType = "boolean", menuText = String.ENABLE},
+	{varName = "vct_color", itemType = "color", menuText = String.COLOR},
 	{varName = "vct_spell", itemType = "dialog", dialogText = String.CHOOSE_VCT_SPELL_DIALOG, menuText = String.BARMENU_VCT_SPELL},
 	{varName = "vct_extra", itemType = "dialog", dialogText = String.CHOOSE_VCT_EXTRA_DIALOG, isNumeric = true, menuText = String.BARMENU_VCT_EXTRA},
 }
 
 SubMenu.BlinkSettings = {
-	{varName = "blink_enabled", itemType = "boolean", menuText = String.BARMENU_VCT_ENABLE},
+	{varName = "blink_enabled", itemType = "boolean", menuText = String.ENABLE},
 	{varName = "blink_label", itemType = "dialog", dialogText = String.CHOOSE_BLINK_TITLE_DIALOG, menuText = String.BARMENU_BLINK_TEXT}, 
 	{varName = "MissingBlink", itemType = "color", menuText = String.BARMENU_BLINK_COLOR}, 
 	{varName = "blink_ooc", itemType = "boolean", menuText = String.BARMENU_BLINK_OUTSIDE_COMBAT}, 
