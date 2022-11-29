@@ -55,13 +55,13 @@ local DialogText = {
 	USABLE = "Enter spell or ability name", 
 	BUFFCD = "Enter buff name", 
 	TOTEM = "Enter totem name", 
-	usable_duration = "Enter time in seconds reactive spell or abiliity is usable", 
+	usable_duration = "Enter time in seconds reactive spell or ability is usable", 
 	buffcd_duration = "Enter time in seconds for proc internal cooldown", 
 	buffcd_reset_spells = "Enter spell or ability name", 
 	vct_spell = "Enter spell or ability name", 
 	vct_extra = "Enter time in seconds to add to cast time", 
-	blink_label = "Enter text", 
-	show_text_user = "Enter text", 
+	blink_label = "Enter text to replace spell, item, and ability names", 
+	show_text_user = "Enter text to replace spell, item, and ability names", 
 }
 
 local DialogSubText = {
@@ -76,8 +76,8 @@ local DialogSubText = {
 	vct_spell = "Leave blank to show cast time for spell with buff or debuff name", 
 	vct_extra = nil, 
 	buffcd_reset_spells = "These spells and abilities reset internal cooldown. For more than one, enter names separated by commas. Spell IDs accepted.", 
-	blink_label = "Clear text to stop showing", 
-	show_text_user = "Clear text to stop showing", 
+	blink_label = "Clear text to stop replacing", 
+	show_text_user = "Clear text to stop replacing", 
 }
 
 local DialogData = {} -- Reused table {groupID, barID, varName, currentValue}

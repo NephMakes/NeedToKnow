@@ -15,7 +15,7 @@ BarMenu.MainMenu = {
 	{varName = "AuraName", itemType = "dialog", dialogText = String.CHOOSENAME_DIALOG, menuText = String.CHOOSE_SPELL_ITEM_ABILITY},
 	{varName = "options", itemType = "submenu", menuText = String.SETTINGS},
 	{varName = "BarColor", itemType = "color", menuText = String.COLOR},
-	{varName = "moreOptions", itemType = "submenu", menuText = String.BARMENU_MORE_OPTIONS}, 
+	{varName = "moreOptions", itemType = "submenu", menuText = String.MORE_OPTIONS}, 
 }
 
 BarMenu.SubMenu = {}
@@ -33,22 +33,22 @@ SubMenu.BuffOrDebuff = {
 }
 
 SubMenu.Unit = {
-	{varValue = "player", itemType = "varValue", menuText = String.BARMENU_PLAYER}, 
-	{varValue = "target", itemType = "varValue", menuText = String.BARMENU_TARGET}, 
-	{varValue = "targettarget", itemType = "varValue", menuText = String.BARMENU_TARGETTARGET}, 
-	{varValue = "focus", itemType = "varValue", menuText = String.BARMENU_FOCUS}, 
-	{varValue = "pet", itemType = "varValue", menuText = String.BARMENU_PET}, 
-	{varValue = "vehicle", itemType = "varValue", menuText = String.BARMENU_VEHICLE}, 
-	{varValue = "lastraid", itemType = "varValue", menuText = String.BARMENU_LAST_RAID},
+	{varValue = "player", itemType = "varValue", menuText = String.UNIT_PLAYER}, 
+	{varValue = "target", itemType = "varValue", menuText = String.UNIT_TARGET}, 
+	{varValue = "focus", itemType = "varValue", menuText = String.UNIT_FOCUS}, 
+	{varValue = "pet", itemType = "varValue", menuText = String.UNIT_PET}, 
+	{varValue = "targettarget", itemType = "varValue", menuText = String.UNIT_TARGETTARGET}, 
+	{varValue = "vehicle", itemType = "varValue", menuText = String.UNIT_VEHICLE}, 
+	{varValue = "lastraid", itemType = "varValue", menuText = String.UNIT_LAST_RAID},
 }
 
 SubMenu.DebuffUnit = {
-	{varValue = "player", itemType = "varValue", menuText = String.BARMENU_PLAYER}, 
-	{varValue = "target", itemType = "varValue", menuText = String.BARMENU_TARGET}, 
-	{varValue = "targettarget", itemType = "varValue", menuText = String.BARMENU_TARGETTARGET}, 
-	{varValue = "focus", itemType = "varValue", menuText = String.BARMENU_FOCUS}, 
-	{varValue = "pet", itemType = "varValue", menuText = String.BARMENU_PET}, 
-	{varValue = "vehicle", itemType = "varValue", menuText = String.BARMENU_VEHICLE},
+	{varValue = "player", itemType = "varValue", menuText = String.UNIT_PLAYER}, 
+	{varValue = "target", itemType = "varValue", menuText = String.UNIT_TARGET}, 
+	{varValue = "focus", itemType = "varValue", menuText = String.UNIT_FOCUS}, 
+	{varValue = "pet", itemType = "varValue", menuText = String.UNIT_PET}, 
+	{varValue = "targettarget", itemType = "varValue", menuText = String.UNIT_TARGETTARGET}, 
+	{varValue = "vehicle", itemType = "varValue", menuText = String.UNIT_VEHICLE},
 }
 
 SubMenu.EquipmentSlotList = {
@@ -74,30 +74,30 @@ SubMenu.EquipmentSlotList = {
 }
 
 SubMenu.HELPFUL = {
-	{varName = "Unit", itemType = "submenu", menuText = String.BARMENU_CHOOSEUNIT},
+	{varName = "Unit", itemType = "submenu", menuText = String.CHOOSE_UNIT},
 	{varName = "OnlyMine", itemType = "boolean", menuText = String.BARMENU_ONLYMINE},
 	{varName = "show_all_stacks", itemType = "boolean", menuText = String.BARMENU_SUM_STACKS},
 	-- {varName = "bDetectExtends", itemType = "boolean", menuText = String.BARMENU_TRACK_EXTENDS}, 
 }
 
 SubMenu.HARMFUL = {
-	{varName = "DebuffUnit", itemType = "submenu", menuText = String.BARMENU_CHOOSEUNIT},
+	{varName = "DebuffUnit", itemType = "submenu", menuText = String.CHOOSE_UNIT},
 	{varName = "OnlyMine", itemType = "boolean", menuText = String.BARMENU_ONLYMINE},
 	{varName = "show_all_stacks", itemType = "boolean", menuText = String.BARMENU_SUM_STACKS},
 }
 
 SubMenu.CASTCD = {
-	{varName = "append_cd", itemType = "boolean", menuText = String.BARMENU_APPEND_CD}, 
-	{varName = "show_charges", itemType = "boolean", menuText = String.BARMENU_SHOW_CHARGES}, 
+	{varName = "show_charges", itemType = "boolean", menuText = String.SHOW_CHARGE_COOLDOWN}, 
+	{varName = "append_cd", itemType = "boolean", menuText = String.APPEND_CD}, 
 }
 
 SubMenu.EQUIPSLOT = {
-	{varName = "append_cd", itemType = "boolean", menuText = String.BARMENU_APPEND_CD}, 
+	{varName = "append_cd", itemType = "boolean", menuText = String.APPEND_CD}, 
 }
 
 SubMenu.USABLE = {
 	{varName = "usable_duration", itemType = "dialog", dialogText = String.USABLE_DURATION_DIALOG, isNumeric = true, menuText = String.BARMENU_USABLE_DURATION},
-	{varName = "append_usable", itemType = "boolean", menuText = String.BARMENU_APPEND_USABLE}, 
+	{varName = "append_usable", itemType = "boolean", menuText = String.APPEND_USABLE}, 
 }
 
 SubMenu.BUFFCD = {
@@ -109,26 +109,26 @@ SubMenu.BUFFCD = {
 SubMenu.TOTEM = {}
 
 SubMenu.moreOptions = {
-	{varName = "Show", itemType = "submenu", menuText = String.BARMENU_SHOW}, 
-	{varName = "TimeFormat", itemType = "submenu", menuText = String.BARMENU_TIMEFORMAT}, 
+	{varName = "Show", itemType = "submenu", menuText = String.SHOW}, 
+	{varName = "TimeFormat", itemType = "submenu", menuText = String.TIME_FORMAT}, 
 	{varName = "VisualCastTime", itemType = "submenu", menuText = String.BARMENU_VISUALCASTTIME},
-	{varName = "BlinkSettings", itemType = "submenu", menuText = String.BARMENU_BLINK_SETTINGS}, 
+	{varName = "BlinkSettings", itemType = "submenu", menuText = String.BLINK_SETTINGS}, 
 	{varName = "show_text_user", itemType = "dialog", dialogText = String.CHOOSE_OVERRIDE_TEXT, 
-		showCheck = true, menuText = String.BARMENU_SHOW_TEXT_USER},
-	{varName = "ImportExport", itemType = "dialog", dialogText = String.IMPORTEXPORT_DIALOG, menuText = String.BARMENU_IMPORT_EXPORT},
+		showCheck = true, menuText = String.REPLACE_BAR_TEXT},
+	{varName = "ImportExport", itemType = "dialog", dialogText = String.IMPORTEXPORT_DIALOG, menuText = String.IMPORT_EXPORT_SETTINGS},
 }
 
 SubMenu.Show = {
-	{varName = "show_text", itemType = "boolean", menuText = String.BARMENU_SHOW_NAME},
-	{varName = "show_time", itemType = "boolean", menuText = String.BARMENU_SHOW_TIME},
-	{varName = "show_count", itemType = "boolean", menuText = String.BARMENU_SHOW_COUNT},
-	{varName = "show_spark", itemType = "boolean", menuText = String.BARMENU_SHOW_SPARK},
-	{varName = "show_icon", itemType = "boolean", menuText = String.BARMENU_SHOW_ICON},
-	{varName = "show_mypip", itemType = "boolean", menuText = String.BARMENU_SHOW_MYPIP},
-	{varName = "bDetectExtends", itemType = "boolean", menuText = String.BARMENU_TRACK_EXTENDS}, 
-	{varName = "show_ttn1", itemType = "boolean", menuText = String.BARMENU_SHOW_TTN1},
-	{varName = "show_ttn2", itemType = "boolean", menuText = String.BARMENU_SHOW_TTN2},
-	{varName = "show_ttn3", itemType = "boolean", menuText = String.BARMENU_SHOW_TTN3},
+	{varName = "show_text", itemType = "boolean", menuText = String.SHOW_NAME},
+	{varName = "show_time", itemType = "boolean", menuText = String.SHOW_TIME},
+	{varName = "show_count", itemType = "boolean", menuText = String.SHOW_COUNT},
+	{varName = "show_spark", itemType = "boolean", menuText = String.SHOW_SPARK},
+	{varName = "show_icon", itemType = "boolean", menuText = String.SHOW_ICON},
+	{varName = "show_mypip", itemType = "boolean", menuText = String.SHOW_MYPIP},
+	{varName = "bDetectExtends", itemType = "boolean", menuText = String.SHOW_TIME_ADDED}, 
+	{varName = "show_ttn1", itemType = "boolean", menuText = String.SHOW_TTN1},
+	{varName = "show_ttn2", itemType = "boolean", menuText = String.SHOW_TTN2},
+	{varName = "show_ttn3", itemType = "boolean", menuText = String.SHOW_TTN3},
 }
 
 SubMenu.TimeFormat = {
@@ -147,10 +147,10 @@ SubMenu.VisualCastTime = {
 
 SubMenu.BlinkSettings = {
 	{varName = "blink_enabled", itemType = "boolean", menuText = String.ENABLE},
-	{varName = "blink_label", itemType = "dialog", dialogText = String.CHOOSE_BLINK_TITLE_DIALOG, menuText = String.BARMENU_BLINK_TEXT}, 
-	{varName = "MissingBlink", itemType = "color", menuText = String.BARMENU_BLINK_COLOR}, 
-	{varName = "blink_ooc", itemType = "boolean", menuText = String.BARMENU_BLINK_OUTSIDE_COMBAT}, 
-	{varName = "blink_boss", itemType = "boolean", menuText = String.BARMENU_BLINK_ONLY_BOSS}, 
+	{varName = "blink_label", itemType = "dialog", dialogText = String.CHOOSE_BLINK_TITLE_DIALOG, menuText = String.BLINK_TEXT}, 
+	{varName = "MissingBlink", itemType = "color", menuText = String.BLINK_COLOR}, 
+	{varName = "blink_ooc", itemType = "boolean", menuText = String.BLINK_OUT_OF_COMBAT}, 
+	{varName = "blink_boss", itemType = "boolean", menuText = String.BLINK_ONLY_BOSS}, 
 }
 
 BarMenu.VariableRedirects = {
@@ -172,6 +172,7 @@ ButtonText["barType"] = {
 	TOTEM = String.BARTYPE_TOTEM, 
 }
 ButtonText["options"] = {
+	-- barType options submenu
 	HELPFUL = String.BUFF_SETTINGS, 
 	HARMFUL = String.DEBUFF_SETTINGS, 
 	CASTCD = String.COOLDOWN_SETTINGS, 
@@ -313,39 +314,31 @@ function BarMenu:GetHeadingText(headingType, barSettings)
 	local text, time
 	if headingType == "auraName" then
 		-- Show concise summary of what bar does
-		text = NeedToKnow:GetPrettyName(barSettings) -- or ""
-		if not text or text == "" then
-			text = "??"
-		end
+		-- and show user if important info missing
+		text = NeedToKnow:GetPrettyName(barSettings)
+		if not text or text == "" then text = "??" end
 		if text ~= "" then
 			local barType = barSettings.BuffOrDebuff
-			-- text = text.." – "..String["BARMENU_"..barType]
 			text = text.." – "..ButtonText["barType"][barType]
 			if barType == "HELPFUL" or barType == "HARMFUL" then
 				text = text.." ("..barSettings.Unit..")"
 			elseif barType == "USABLE" then
 				time = barSettings.usable_duration
-				if not time or time == "" then 
-					time = "??"
-				end
+				if not time or time == "" then time = "??" end
 				text = text.." ("..time.." s)"
 			elseif barType == "BUFFCD" then
 				time = barSettings.buffcd_duration
-				if not time or time == "" then 
-					time = "??"
-				end
+				if not time or time == "" then time = "??" end
 				text = text.." ("..time.." s)"
 			end
 		end
 	elseif headingType == "castTime" then
 		-- Show timed spell and/or extra time
 		text = barSettings.vct_spell or ""
-		local extraTime = tonumber(barSettings.vct_extra)
-		if extraTime and extraTime > 0 then
-			if text ~= "" then
-				text = text.." + "
-			end
-			text = text..string.format("%0.1fs", extraTime)
+		time = tonumber(barSettings.vct_extra)
+		if time and time > 0 then
+			if text ~= "" then text = text.." + " end
+			text = text..string.format("%0.1fs", time)
 		end
 	end
 	return text
@@ -446,7 +439,7 @@ function BarMenu:UpdateMenu(barSettings)
 		end
 	end
 
-	-- Options submenu for bar type
+	-- Set options submenu for bar type
 	local subMenu = SubMenu[barType] or {}
 	SubMenu["options"] = subMenu
 	button = BarMenu:GetMenuButton(1, "options")
@@ -532,6 +525,7 @@ function BarMenu:DisableMenuItem(menuLevel, valueName)
     end
 end
 
+--[[
 function BarMenu:UncheckAndDisable(menuLevel, valueName)
 	local button = BarMenu:GetMenuButton(menuLevel, valueName)
 	if button then
@@ -554,6 +548,7 @@ function BarMenu:CheckMenuItem(menuLevel, valueName, checkItem)
 		BarMenu.ToggleSetting(button)
 	end
 end
+]]--
 
 
 --[[ Dialog box ]]--

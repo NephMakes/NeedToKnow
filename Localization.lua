@@ -12,14 +12,9 @@ Localize.enUS = {
 
 	ENABLE = ENABLE,  -- "Enable" 
 	ENABLE_BAR = "Enable bar",
-	BARMENU_CHOOSENAME = "Choose spell, item, or ability",
-	BARCOLOR = "Bar color",
+	CHOOSE_SPELL_ITEM_ABILITY = "Choose spell, item, or ability", 
+	BAR_COLOR = "Bar color",
 	COLOR = COLOR,  -- "Color"
-
-	BARMENU_OPTIONS = "Options", 
-	BARMENU_MORE_OPTIONS = "More options", 
-	BARMENU_IMPORT_EXPORT = "Import or export settings",
-	BARMENU_CLEAR_SETTINGS = "Clear settings",
 
 	BARTYPE = "Bar type",
 	BARTYPE_HELPFUL = "Buff",
@@ -30,76 +25,63 @@ Localize.enUS = {
 	BARTYPE_BUFFCD = "Proc internal cooldown",
 	BARTYPE_TOTEM = "Totem",
 
-	CHOOSE_SPELL_ITEM_ABILITY = "Choose spell, item, or ability", 
---	CHOOSE_BUFF = "Choose buff", 
---	CHOOSE_DEBUFF = "Choose debuff", 
---	CHOOSE_SPELL_ABILITY = "Choose spell or ability", 
---	CHOOSE_INVSLOT = "Choose item slot", 
---	CHOOSE_TOTEM = "Choose totem", 
-
 	SETTINGS = SETTINGS, -- "Settings"
+	OPTIONS = "Options", 
+	MORE_OPTIONS = "More options", 
+	IMPORT_EXPORT_SETTINGS = "Import or export settings",
+	CLEAR_SETTINGS = "Clear settings",
 	BUFF_SETTINGS = "Buff settings", 
 	DEBUFF_SETTINGS = "Debuff settings", 
 	COOLDOWN_SETTINGS = "Cooldown settings", 
 	USABLE_SETTINGS = "Reactive settings", 
 	TOTEM_SETTINGS = "Totem settings", 
 
-	BARMENU_CHOOSEUNIT = "Unit to watch",
-	BARMENU_PLAYER = PLAYER,  -- "Player"
-	BARMENU_TARGET = TARGET,  -- "Target"
-	BARMENU_FOCUS = FOCUS,  -- "Focus"
-	BARMENU_PET = PET,  -- "Pet"
-	BARMENU_VEHICLE = "Vehicle",
-	BARMENU_TARGETTARGET = "Target of target",
-	BARMENU_LAST_RAID = "Last raid recipient",
-	-- BARMENU_INVSLOT = "Equipped item",
+	CHOOSE_UNIT = "Unit to watch",
+	UNIT_PLAYER = PLAYER,  -- "Player"
+	UNIT_TARGET = TARGET,  -- "Target"
+	UNIT_FOCUS = FOCUS,  -- "Focus"
+	UNIT_PET = PET,  -- "Pet"
+	UNIT_VEHICLE = "Vehicle",
+	UNIT_TARGETTARGET = "Target of target",
+	UNIT_LAST_RAID = "Last raid recipient",
 
 	BARMENU_ONLYMINE = "Only show mine",
 	BARMENU_SUM_STACKS = "Sum from all casters",
-	-- BARMENU_SPELLID = "Use spell ID",
-	-- BARMENU_ONLYMINE = "Only show if cast by self",
-	-- BARMENU_SUM_STACKS = "Sum stacks from all casters",
-	BARMENU_SHOW_CHARGES = "Show first and last charge cooldown",
+	SHOW_CHARGE_COOLDOWN = "Show first and last charge cooldown",
 	BARMENU_USABLE_DURATION = "Set usable time",
 	BARMENU_BUFFCD_DURATION = "Set cooldown time",
 	BARMENU_BUFFCD_RESET = "Reset on buff...", 
 
-	BARMENU_SHOW = SHOW,  -- "Show"
-	BARMENU_SHOW_NAME = NAME,  -- "Name"
-	BARMENU_SHOW_ICON = "Icon",
-	BARMENU_SHOW_COUNT = "Count",
-	BARMENU_SHOW_TIME = "Time",
-	BARMENU_SHOW_SPARK = "Spark",
-	-- BARMENU_SHOW_MYPIP = "Indicator if mine",
-	BARMENU_SHOW_MYPIP = "* if mine",
-	-- BARMENU_TRACK_EXTENDS = "Track duration increases",
-	BARMENU_TRACK_EXTENDS = "Time increase (+ 3s)",
-	BARMENU_SHOW_TTN1 = "First tooltip number",
-	BARMENU_SHOW_TTN2 = "Second tooltip number",
-	BARMENU_SHOW_TTN3 = "Third tooltip number",
+	SHOW = SHOW,  -- "Show"
+	SHOW_NAME = NAME,  -- "Name"
+	SHOW_ICON = "Icon",
+	SHOW_COUNT = "Count",
+	SHOW_TIME = "Time",
+	SHOW_SPARK = "Spark",
+	SHOW_MYPIP = "* if mine",
+	SHOW_TIME_ADDED = "Time added (+ 3s)",
+	SHOW_TTN1 = "First tooltip number",
+	SHOW_TTN2 = "Second tooltip number",
+	SHOW_TTN3 = "Third tooltip number",
 
-	-- BARMENU_SHOW_TEXT_USER = "Override aura name",
-	BARMENU_SHOW_TEXT_USER = "Replace bar text",
-	BARMENU_APPEND_CD = "Append \"CD\"",
-	BARMENU_APPEND_USABLE = "Append \"usable\"",
-
-	BARMENU_TIMEFORMAT = "Time format", 
+	TIME_FORMAT = "Time format", 
 	FMT_SINGLEUNIT = "Single unit (12 s)",
 	FMT_TWOUNITS = "Minutes and seconds (01:10)",
 	FMT_FLOAT = "Decimal seconds (12.1)",
 
 	BARMENU_VISUALCASTTIME = "Cast time overlay",
-	-- BARMENU_VCT_ENABLE = "Enable for this bar",
-	-- BARMENU_VCT_COLOR = "Overlay color",
-	BARMENU_VCT_COLOR = COLOR,  -- "Color"
 	BARMENU_VCT_SPELL = "Choose spell",
-	BARMENU_VCT_EXTRA = "Set extra time",
+	BARMENU_VCT_EXTRA = "Add extra time",
 
-	BARMENU_BLINK_SETTINGS = "Blink options", 
-	BARMENU_BLINK_COLOR = "Color when blinking", 
-	BARMENU_BLINK_TEXT = "Set text when blinking", 
-	BARMENU_BLINK_OUTSIDE_COMBAT = "Blink out of combat", 
-	BARMENU_BLINK_ONLY_BOSS = "Blink only for bosses", 
+	BLINK_SETTINGS = "Blink options", 
+	BLINK_COLOR = "Color when blinking", 
+	BLINK_TEXT = "Replace text when blinking", 
+	BLINK_OUT_OF_COMBAT = "Blink out of combat", 
+	BLINK_ONLY_BOSS = "Blink only for bosses", 
+
+	REPLACE_BAR_TEXT = "Replace bar text",
+	APPEND_CD = "Append \"CD\"",
+	APPEND_USABLE = "Append \"usable\"",
 
 	-- CHOOSENAME_DIALOG = "Enter the name of the buff or debuff to time with this bar", 
 	CHOOSENAME_DIALOG = "Enter name of spell, item, or ability", 
