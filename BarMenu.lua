@@ -1,4 +1,4 @@
-﻿--[[ Bar right-click menu ]]--
+﻿-- Bar right-click menu
 
 -- local addonName, addonTable = ...
 local BarMenu = NeedToKnow.BarMenu
@@ -310,7 +310,7 @@ function BarMenu:AddButton(barSettings, menuItem, subMenuKey)
 end
 
 function BarMenu:GetHeadingText(headingType, barSettings)
-	local text
+	local text, time
 	if headingType == "auraName" then
 		-- Show concise summary of what bar does
 		text = NeedToKnow:GetPrettyName(barSettings) or ""
@@ -319,10 +319,18 @@ function BarMenu:GetHeadingText(headingType, barSettings)
 			text = text .. " – " .. String["BARMENU_"..barType]
 			if barType == "HELPFUL" or barType == "HARMFUL" then
 				text = text .. " ("..barSettings.Unit..")"
-			-- elseif barType == "USABLE" then
-				-- usable time
-			-- elseif barType == "BUFFCD" then
-				-- cooldown time
+			elseif barType == "USABLE" then
+				time = barSettings.usable_duration
+				if not time or time == "" then 
+					time = "??"
+				end
+				text = text .. " ("..time.." s)"
+			elseif barType == "BUFFCD" then
+				time = barSettings.buffcd_duration
+				if not time or time == "" then 
+					time = "??"
+				end
+				text = text .. " ("..time.." s)"
 			end
 		end
 	elseif headingType == "castTime" then
@@ -366,10 +374,6 @@ function BarMenu.ChooseSetting(button, arg1, arg2, checked)
 	barSettings[varName] = button.value
 	NeedToKnow:UpdateBar(groupID, barID)
 	BarMenu:UpdateMenu(barSettings)
---	if varName == "BuffOrDebuff" then
---		-- Changed bar type, so update menu items
---		BarMenu:UpdateMenu(barSettings)
---	end
 end
 
 function BarMenu.SetColor()
@@ -414,39 +418,17 @@ function BarMenu:UpdateMenu(barSettings)
 		button:SetText(text)
 	end
 
-	-- Options submenu for bar type
-	local subMenu = SubMenu[barType] or {}
-	SubMenu["options"] = subMenu
-	button = BarMenu:GetMenuButton(1, "options")
-	if button then
-		local arrow = _G[button:GetName().."ExpandArrow"]
-		if #subMenu == 0 then
-			text = "No "
-			button:Disable()
-			arrow:Hide()
-		else
-			text = ""
-			button:Enable()
-			arrow:Show()
-		end
-		text = text..String["BARMENU_"..barType].." settings"
-		-- e.g. ButtonText["options"][barType]
-		-- text = "Settings"  -- "Equipped item cooldown settings" too long?
-		button:SetText(text)
-	end
-
-
-	-- Reuse auraName button for inventory slot
+	-- Reuse AuraName button for inventory slot
 	if barType == "EQUIPSLOT" then
 		button = BarMenu:GetMenuButton(1, "AuraName")
 		if button then
-			button.oldvalue = button.value
 			local arrow = _G[button:GetName().."ExpandArrow"]
 			arrow:Show()
 			button.hasArrow = true
+			-- To do: Disable button clickable?
+			button.oldvalue = button.value
 			button.value = "EquipmentSlotList"
-			button:SetText(String.BARMENU_CHOOSESLOT)
-			-- TODO: really should disable the button press verb somehow
+			button:SetText(ButtonText["AuraName"][barType])
 		end
 	else
 		-- Restore auraName button 
@@ -458,10 +440,25 @@ function BarMenu:UpdateMenu(barSettings)
 			if button.oldvalue then 
 				button.value = button.oldvalue 
 			end
-			button:SetText(String.BARMENU_CHOOSENAME)
+			button:SetText(ButtonText["AuraName"][barType])
 		end
 	end
-	-- e.g. ButtonText[varName][barType]
+
+	-- Options submenu for bar type
+	local subMenu = SubMenu[barType] or {}
+	SubMenu["options"] = subMenu
+	button = BarMenu:GetMenuButton(1, "options")
+	if button then
+		local arrow = _G[button:GetName().."ExpandArrow"]
+		if #subMenu > 0 then
+			button:Enable()
+			arrow:Show()
+		else
+			button:Disable()
+			arrow:Hide()
+		end
+		button:SetText(ButtonText["options"][barType])
+	end
 
 	-- Disable/enable buttons
 	if barSettings.show_all_stacks then

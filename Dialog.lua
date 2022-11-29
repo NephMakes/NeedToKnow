@@ -1,9 +1,11 @@
-﻿--[[ Pop-up dialog boxes for user input ]]--
+﻿-- Pop-up dialog boxes for user input
 
 -- local addonName, addonTable = ...
 local Dialog = NeedToKnow.Dialog
 local String = NeedToKnow.String
 
+
+--[[ Dialog info ]]--
 
 StaticPopupDialogs["NEEDTOKNOW_TEXT_INPUT"] = {
 	-- text = "", 
@@ -18,7 +20,9 @@ StaticPopupDialogs["NEEDTOKNOW_TEXT_INPUT"] = {
 		-- self.editBox:SetText("")
 		self.editBox:SetFocus()
 	end,
-	OnAccept = nil,
+	OnAccept = function(self)
+		-- Dialog:SetTextVar()
+	end,
 	OnHide = function(self)
 		ChatEdit_FocusActiveWindow()
 		self.editBox:SetText("")
@@ -28,6 +32,7 @@ StaticPopupDialogs["NEEDTOKNOW_TEXT_INPUT"] = {
 --		if( GetCurrentArenaSeasonUsesTeams() ) then
 --			ArenaTeamInviteByName(PVPTeamDetails.team, parent.editBox:GetText());
 --		end
+		-- Dialog:SetTextVar()
 		parent:Hide()
 	end,
 	EditBoxOnEscapePressed = function(self)
@@ -90,7 +95,7 @@ function Dialog:ShowTextInput(varName)
 	data.varName = varName
 	-- data.currentValue = 
 	local dialog = StaticPopup_Show(info, nil, nil, data)
-		-- e.g. self.data.varName
+		-- e.g. dialog.data.varName
 end
 
 function Dialog:SetTextVar(varName, varValue)

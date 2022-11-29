@@ -27,7 +27,7 @@ Localize.enUS = {
 	BARMENU_CASTCD = "Spell or item cooldown",
 	BARMENU_EQUIPSLOT = "Equipped item cooldown",
 	BARMENU_USABLE = "Reactive ability",
-	BARMENU_BUFFCD = "Internal cooldown",
+	BARMENU_BUFFCD = "Proc internal cooldown",
 	BARMENU_TOTEM = "Totem",
 
 	BARMENU_CHOOSEUNIT = "Unit to watch",
@@ -78,7 +78,7 @@ Localize.enUS = {
 	BARMENU_VCT_ENABLE = "Enable for this bar",
 	-- BARMENU_VCT_COLOR = "Overlay color",
 	BARMENU_VCT_COLOR = "Color",
-	BARMENU_VCT_SPELL = "Choose spell for time",
+	BARMENU_VCT_SPELL = "Choose spell",
 	BARMENU_VCT_EXTRA = "Set extra time",
 
 	BARMENU_BLINK_SETTINGS = "Blink options", 
