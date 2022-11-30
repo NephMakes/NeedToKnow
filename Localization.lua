@@ -58,19 +58,24 @@ Localize.enUS = {
 	SHOW_COUNT = "Count",
 	SHOW_TIME = "Time",
 	SHOW_SPARK = "Spark",
-	SHOW_MYPIP = "* if mine",
-	SHOW_TIME_ADDED = "Time added (+ 3s)",
-	SHOW_TTN1 = "First tooltip number",
-	SHOW_TTN2 = "Second tooltip number",
-	SHOW_TTN3 = "Third tooltip number",
 
 	TIME_FORMAT = "Time format", 
 	TIME_SINGLE_UNIT = "Single unit (12 s)",
 	TIME_MIN_SEC = "Minutes and seconds (01:10)",
 	TIME_DECIMAL = "Decimal seconds (12.1)",
 
-	CAST_TIME_ENABLE = "Show cast time", 
-	CAST_TIME_OVERLAY = "Cast time overlay",
+	TEXT_OPTIONS = "Text options", 
+	SHOW_MYPIP = "* if mine",
+	SHOW_TIME_ADDED = "Time added (+ 3s)",
+	SHOW_TTN1 = "First tooltip number",
+	SHOW_TTN2 = "Second tooltip number",
+	SHOW_TTN3 = "Third tooltip number",
+	REPLACE_BAR_TEXT = "Replace bar text",
+	APPEND_CD = "Append \"CD\"",
+	APPEND_USABLE = "Append \"usable\"",
+
+	CAST_TIME = "Cast timer",
+	CAST_TIME_ENABLE = "Show cast time overlay", 
 	CAST_TIME_CHOOSE_SPELL = "Choose spell",
 	CAST_TIME_ADD_TIME = "Add extra time",
 
@@ -80,10 +85,6 @@ Localize.enUS = {
 	BLINK_TEXT = "Replace text when blinking", 
 	BLINK_OUT_OF_COMBAT = "Blink out of combat", 
 	BLINK_ONLY_BOSS = "Blink only for bosses", 
-
-	REPLACE_BAR_TEXT = "Replace bar text",
-	APPEND_CD = "Append \"CD\"",
-	APPEND_USABLE = "Append \"usable\"",
 
 	-- CHOOSENAME_DIALOG = "Enter the name of the buff or debuff to time with this bar", 
 	CHOOSENAME_DIALOG = "Enter name of spell, item, or ability", 

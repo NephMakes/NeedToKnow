@@ -10,12 +10,12 @@ local Dialog = NeedToKnow.Dialog
 
 local MainMenu = {
 	{varName = "mainHeading", itemType = "heading", headingType = "auraName"},
-	{varName = "Enabled", itemType = "boolean", menuText = String.ENABLE_BAR},
-	{varName = "BuffOrDebuff", itemType = "submenu", menuText = String.BARTYPE},
 	{varName = "AuraName", itemType = "dialog", dialogType = "text", menuText = String.CHOOSE_SPELL_ITEM_ABILITY},
+	{varName = "BuffOrDebuff", itemType = "submenu", menuText = String.BARTYPE},
 	{varName = "options", itemType = "submenu", menuText = String.SETTINGS},
-	{varName = "BarColor", itemType = "color", menuText = String.COLOR},
 	{varName = "moreOptions", itemType = "submenu", menuText = String.MORE_OPTIONS}, 
+	{varName = "BarColor", itemType = "color", menuText = String.COLOR},
+	{varName = "Enabled", itemType = "boolean", menuText = String.ENABLE_BAR},
 }
 
 local SubMenu = {}
@@ -107,20 +107,24 @@ SubMenu.BUFFCD = {
 SubMenu.TOTEM = {}
 
 SubMenu.moreOptions = {
-	{varName = "Show", itemType = "submenu", menuText = String.SHOW}, 
+	{varName = "show", itemType = "submenu", menuText = String.SHOW}, 
 	{varName = "TimeFormat", itemType = "submenu", menuText = String.TIME_FORMAT}, 
-	{varName = "VisualCastTime", itemType = "submenu", menuText = String.CAST_TIME_OVERLAY},
-	{varName = "BlinkSettings", itemType = "submenu", menuText = String.BLINK_SETTINGS}, 
-	{varName = "show_text_user", itemType = "dialog", dialogType = "text", menuText = String.REPLACE_BAR_TEXT},
+	{varName = "textOptions", itemType = "submenu", menuText = String.TEXT_OPTIONS}, 
+	{varName = "castTimeOptions", itemType = "submenu", menuText = String.CAST_TIME},
+	{varName = "blinkOptions", itemType = "submenu", menuText = String.BLINK_SETTINGS}, 
 	{varName = "ImportExport", itemType = "dialog", dialogType = "importExport", menuText = String.IMPORT_EXPORT_SETTINGS},
 }
 
-SubMenu.Show = {
+SubMenu.show = {
 	{varName = "show_text", itemType = "boolean", menuText = String.SHOW_NAME},
 	{varName = "show_time", itemType = "boolean", menuText = String.SHOW_TIME},
 	{varName = "show_count", itemType = "boolean", menuText = String.SHOW_COUNT},
 	{varName = "show_spark", itemType = "boolean", menuText = String.SHOW_SPARK},
 	{varName = "show_icon", itemType = "boolean", menuText = String.SHOW_ICON},
+}
+
+SubMenu.textOptions = {
+	{varName = "show_text_user", itemType = "dialog", dialogType = "text", showCheck = true, menuText = String.REPLACE_BAR_TEXT},
 	{varName = "show_mypip", itemType = "boolean", menuText = String.SHOW_MYPIP},
 	{varName = "bDetectExtends", itemType = "boolean", menuText = String.SHOW_TIME_ADDED}, 
 	{varName = "show_ttn1", itemType = "boolean", menuText = String.SHOW_TTN1},
@@ -134,20 +138,20 @@ SubMenu.TimeFormat = {
 	{varValue = "Fmt_Float", itemType = "varValue", menuText = String.TIME_DECIMAL},
 }
 
-SubMenu.VisualCastTime = {
-	{itemType = "heading", headingType = "castTime"}, 
+SubMenu.castTimeOptions = {
+	-- {itemType = "heading", headingType = "castTime"}, 
 	{varName = "vct_enabled", itemType = "boolean", menuText = String.CAST_TIME_ENABLE},
 	{varName = "vct_color", itemType = "color", menuText = String.COLOR},
 	{varName = "vct_spell", itemType = "dialog", dialogType = "text", menuText = String.CAST_TIME_CHOOSE_SPELL},
 	{varName = "vct_extra", itemType = "dialog", dialogType = "numeric", menuText = String.CAST_TIME_ADD_TIME},
 }
 
-SubMenu.BlinkSettings = {
+SubMenu.blinkOptions = {
 	{varName = "blink_enabled", itemType = "boolean", menuText = String.BLINK_ENABLE},
-	{varName = "blink_label", itemType = "dialog", dialogType = "text", showCheck = true, menuText = String.BLINK_TEXT}, 
 	{varName = "MissingBlink", itemType = "color", menuText = String.BLINK_COLOR}, 
 	{varName = "blink_ooc", itemType = "boolean", menuText = String.BLINK_OUT_OF_COMBAT}, 
 	{varName = "blink_boss", itemType = "boolean", menuText = String.BLINK_ONLY_BOSS}, 
+	{varName = "blink_label", itemType = "dialog", dialogType = "text", showCheck = true, menuText = String.BLINK_TEXT}, 
 }
 
 BarMenu.VariableRedirects = {
