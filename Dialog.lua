@@ -51,26 +51,36 @@ StaticPopupDialogs["NEEDTOKNOW_NUMERIC_INPUT"] = {
 	OnShow = function(self)
 		local text = tonumber(self.data.currentValue) or ""
 		self.editBox:SetText(text)
-		self.editBox:SetNumeric(true)
 		self.editBox:SetFocus()
 	end,
 	OnAccept = function(self)
-		local value = tonumber(self.editBox:GetText())
+		local value = Dialog:GetNumericValue(self.editBox:GetText())
 		local data = self.data
 		Dialog:SetSetting(data.varName, value, data.groupID, data.barID)
 	end,
+	EditBoxOnTextChanged = function(self) 
+		-- Disable Accept button if not valid number
+		local value = Dialog:GetNumericValue(self:GetText())
+		local acceptButton = self:GetParent().button1
+		if value then
+			acceptButton:Enable()
+		else
+			acceptButton:Disable()
+		end
+	end, 
 	EditBoxOnEnterPressed = function(self)
-		local value = tonumber(self:GetParent().editBox:GetText())
-		local data = self:GetParent().data
-		Dialog:SetSetting(data.varName, value, data.groupID, data.barID)
-		self:GetParent():Hide()
+		local value = Dialog:GetNumericValue(self:GetText())
+		if value then
+			local data = self:GetParent().data
+			Dialog:SetSetting(data.varName, value, data.groupID, data.barID)
+			self:GetParent():Hide()
+		end
 	end,
 	EditBoxOnEscapePressed = function(self)
 		self:GetParent():Hide()
 	end,
 	OnHide = function(self)
 		ChatEdit_FocusActiveWindow()
-		self.editBox:SetNumeric(false)
 		self.editBox:SetText("")
 	end,
 	timeout = 0,
@@ -170,6 +180,16 @@ function Dialog:ShowInputDialog(dialogType, varName, groupID, barID, currentValu
 	StaticPopup_Show(dialogType, nil, nil, data)
 end
 
+function Dialog:GetNumericValue(text)
+	local value
+	if text == "" then
+		value = 0  -- Leave blank to set to zero
+	else
+		value = tonumber(text)
+	end
+	return value  -- returns number or nil
+end
+
 function Dialog:SetSetting(varName, value, groupID, barID)
 	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
 	barSettings[varName] = value
@@ -192,33 +212,6 @@ function Dialog:ImportSettings(text, groupID, barID)
 end
 
 --[[
-function BarMenu.ShowDialog(button, dialogText, isNumeric, checked)
-	StaticPopupDialogs["NEEDTOKNOW_DIALOG"].text = dialogText
-	local dialog = StaticPopup_Show("NEEDTOKNOW_DIALOG")
-	dialog.value = button.value  -- varName
-
-	-- Pre-populate text
-	local editBox = _G[dialog:GetName().."EditBox"]
-	local barSettings = NeedToKnow:GetBarSettings(BarMenu.groupID, BarMenu.barID)
-	if dialog.value == "ImportExport" then
-		editBox:SetText(NeedToKnow.ExportBarSettingsToString(barSettings))
-		editBox:HighlightText()
-	else
-		editBox:SetText(barSettings[dialog.value])
-	end
-	editBox:SetFocus()
-
-	-- Only allow user to enter numeric text?
-	if not BarMenu.OnTextChangedOriginal then
-		BarMenu.OnTextChangedOriginal = editBox:GetScript("OnTextChanged")
-	end
-	if isNumeric then
-		editBox:SetScript("OnTextChanged", BarMenu.OnTextChangedNumeric)
-	else
-		editBox:SetScript("OnTextChanged", BarMenu.OnTextChangedOriginal)
-	end
-end
-
 function BarMenu.OnTextChangedNumeric(editBox, isUserInput)
 	-- Kitjan wasn't happy with this method because it shows then quickly replaces non-numeric text
     if isUserInput then
@@ -239,6 +232,3 @@ function BarMenu.OnTextChangedNumeric(editBox, isUserInput)
     end
 end
 ]]--
-
-
-
