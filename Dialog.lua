@@ -59,7 +59,6 @@ StaticPopupDialogs["NEEDTOKNOW_NUMERIC_INPUT"] = {
 		Dialog:SetSetting(data.varName, value, data.groupID, data.barID)
 	end,
 	EditBoxOnTextChanged = function(self) 
-		-- Disable Accept button if not valid number
 		local value = Dialog:GetNumericValue(self:GetText())
 		local acceptButton = self:GetParent().button1
 		if value then

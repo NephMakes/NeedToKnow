@@ -19,7 +19,6 @@ local MainMenu = {
 }
 
 local SubMenu = {}
-
 SubMenu.BuffOrDebuff = {
 	-- Bar type
 	{value = "HELPFUL", itemType = "varValue", menuText = String.BARTYPE_HELPFUL},
@@ -30,7 +29,6 @@ SubMenu.BuffOrDebuff = {
 	{value = "BUFFCD", itemType = "varValue", menuText = String.BARTYPE_BUFFCD},
 	{value = "TOTEM", itemType = "varValue", menuText = String.BARTYPE_TOTEM},
 }
-
 SubMenu.Unit = {
 	{value = "player", itemType = "varValue", menuText = String.UNIT_PLAYER}, 
 	{value = "target", itemType = "varValue", menuText = String.UNIT_TARGET}, 
@@ -40,7 +38,6 @@ SubMenu.Unit = {
 	{value = "vehicle", itemType = "varValue", menuText = String.UNIT_VEHICLE}, 
 	{value = "lastraid", itemType = "varValue", menuText = String.UNIT_LAST_RAID},
 }
-
 SubMenu.debuffUnit = {
 	{value = "player", itemType = "varValue", menuText = String.UNIT_PLAYER}, 
 	{value = "target", itemType = "varValue", menuText = String.UNIT_TARGET}, 
@@ -49,8 +46,7 @@ SubMenu.debuffUnit = {
 	{value = "targettarget", itemType = "varValue", menuText = String.UNIT_TARGETTARGET}, 
 	{value = "vehicle", itemType = "varValue", menuText = String.UNIT_VEHICLE},
 }
-
-SubMenu.gearSlot = {
+SubMenu.inventorySlot = {
 	{value = "1", itemType = "varValue", menuText = String.ITEM_NAMES[1]},
 	{value = "2", itemType = "varValue", menuText = String.ITEM_NAMES[2]},
 	{value = "3", itemType = "varValue", menuText = String.ITEM_NAMES[3]},
@@ -71,50 +67,41 @@ SubMenu.gearSlot = {
 	{value = "18", itemType = "varValue", menuText = String.ITEM_NAMES[18]},
 	{value = "19", itemType = "varValue", menuText = String.ITEM_NAMES[19]},
 }
-
 SubMenu.HELPFUL = {
 	{value = "Unit", itemType = "submenu", menuText = String.CHOOSE_UNIT},
 	{value = "OnlyMine", itemType = "boolean", menuText = String.ONLY_MINE},
 	{value = "show_all_stacks", itemType = "boolean", menuText = String.SUM_ALL_CASTERS},
 }
-
 SubMenu.HARMFUL = {
 	{value = "debuffUnit", itemType = "submenu", menuText = String.CHOOSE_UNIT},
 	{value = "OnlyMine", itemType = "boolean", menuText = String.ONLY_MINE},
 	{value = "show_all_stacks", itemType = "boolean", menuText = String.SUM_ALL_CASTERS},
 }
-
 SubMenu.CASTCD = {
 	{value = "show_charges", itemType = "boolean", menuText = String.SHOW_CHARGE_COOLDOWN}, 
 	{value = "append_cd", itemType = "boolean", menuText = String.APPEND_CD}, 
 }
-
 SubMenu.EQUIPSLOT = {
 	{value = "append_cd", itemType = "boolean", menuText = String.APPEND_CD}, 
 }
-
 SubMenu.USABLE = {
 	{value = "usable_duration", itemType = "dialog", dialogType = "numeric", menuText = String.SET_USABLE_DURATION},
 	{value = "append_usable", itemType = "boolean", menuText = String.APPEND_USABLE}, 
 }
-
 SubMenu.BUFFCD = {
 	{value = "buffcd_duration", itemType = "dialog", dialogType = "numeric", menuText = String.SET_BUFFCD_DURATION},
 	{value = "buffcd_reset_spells", itemType = "dialog", dialogType = "text", menuText = String.BUFFCD_RESET},
 	{value = "append_cd", itemType = "boolean", menuText = String.APPEND_CD}, 
 }
-
 SubMenu.TOTEM = {}
-
 SubMenu.moreOptions = {
 	{value = "show", itemType = "submenu", menuText = String.SHOW}, 
 	{value = "TimeFormat", itemType = "submenu", menuText = String.TIME_FORMAT}, 
 	{value = "textOptions", itemType = "submenu", menuText = String.TEXT_OPTIONS}, 
 	{value = "castTimeOptions", itemType = "submenu", menuText = String.CAST_TIME},
 	{value = "blinkOptions", itemType = "submenu", menuText = String.BLINK_SETTINGS}, 
-	{value = "ImportExport", itemType = "dialog", dialogType = "importExport", menuText = String.IMPORT_EXPORT_SETTINGS},
+	{value = "importExport", itemType = "dialog", dialogType = "importExport", menuText = String.IMPORT_EXPORT_SETTINGS},
 }
-
 SubMenu.show = {
 	{value = "show_text", itemType = "boolean", menuText = String.SHOW_NAME},
 	{value = "show_time", itemType = "boolean", menuText = String.SHOW_TIME},
@@ -122,7 +109,6 @@ SubMenu.show = {
 	{value = "show_spark", itemType = "boolean", menuText = String.SHOW_SPARK},
 	{value = "show_icon", itemType = "boolean", menuText = String.SHOW_ICON},
 }
-
 SubMenu.textOptions = {
 	{value = "show_text_user", itemType = "dialog", dialogType = "text", showCheck = true, menuText = String.REPLACE_BAR_TEXT},
 	{value = "show_mypip", itemType = "boolean", menuText = String.SHOW_MYPIP},
@@ -131,13 +117,11 @@ SubMenu.textOptions = {
 	{value = "show_ttn2", itemType = "boolean", menuText = String.SHOW_TTN2},
 	{value = "show_ttn3", itemType = "boolean", menuText = String.SHOW_TTN3},
 }
-
 SubMenu.TimeFormat = {
-	{varValue = "Fmt_SingleUnit", itemType = "varValue", menuText = String.TIME_SINGLE_UNIT},
-	{varValue = "Fmt_TwoUnits", itemType = "varValue", menuText = String.TIME_MIN_SEC},
-	{varValue = "Fmt_Float", itemType = "varValue", menuText = String.TIME_DECIMAL},
+	{value = "Fmt_SingleUnit", itemType = "varValue", menuText = String.TIME_SINGLE_UNIT},
+	{value = "Fmt_TwoUnits", itemType = "varValue", menuText = String.TIME_MIN_SEC},
+	{value = "Fmt_Float", itemType = "varValue", menuText = String.TIME_DECIMAL},
 }
-
 SubMenu.castTimeOptions = {
 	-- {itemType = "heading", headingType = "castTime"}, 
 	{value = "vct_enabled", itemType = "boolean", menuText = String.CAST_TIME_ENABLE},
@@ -145,7 +129,6 @@ SubMenu.castTimeOptions = {
 	{value = "vct_spell", itemType = "dialog", dialogType = "text", showCheck = true, menuText = String.CAST_TIME_CHOOSE_SPELL},
 	{value = "vct_extra", itemType = "dialog", dialogType = "numeric", showCheck = true, menuText = String.CAST_TIME_ADD_TIME},
 }
-
 SubMenu.blinkOptions = {
 	{value = "blink_enabled", itemType = "boolean", menuText = String.BLINK_ENABLE},
 	{value = "MissingBlink", itemType = "color", menuText = String.BLINK_COLOR}, 
@@ -156,11 +139,11 @@ SubMenu.blinkOptions = {
 
 local VariableRedirects = {
 	-- Format: subMenuKey = varName
+	inventorySlot = "AuraName",  -- Reused button
 	debuffUnit = "Unit",  -- Different list of possible values
-	gearSlot = "AuraName",  -- Reused button
 }
 
--- Button text that depends on barType
+-- Menu text that changes with barType
 local ButtonText = {}
 ButtonText["barType"] = {
 	-- For GetHeadingText()
@@ -351,7 +334,6 @@ function BarMenu.IgnoreToggle(button)
 end
 
 function BarMenu.ToggleSetting(button, arg1, arg2, checked)
-	-- Button function for true/false settings
 	local groupID, barID = BarMenu.groupID, BarMenu.barID
 	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
 	barSettings[button.value] = button.checked
@@ -431,11 +413,11 @@ function BarMenu:UpdateMenu(barSettings)
 			button.hasArrow = true
 			-- To do: Disable button clickable?
 			button.oldvalue = button.value
-			button.value = "gearSlot"
+			button.value = "inventorySlot"
 		end
 	else
 		-- Restore auraName button 
-		button = BarMenu:GetMenuButton(1, "gearSlot")
+		button = BarMenu:GetMenuButton(1, "inventorySlot")
 		if button then
 			local arrow = _G[button:GetName().."ExpandArrow"]
 			arrow:Hide()

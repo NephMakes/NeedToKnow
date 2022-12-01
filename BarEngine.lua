@@ -8,7 +8,7 @@ local BarEvent = NeedToKnow.BarEvent
 local FindAura = NeedToKnow.FindAura
 local Cooldown = NeedToKnow.Cooldown
 
-local UPDATE_INTERVAL = 0.025  -- 40 fps
+local UPDATE_INTERVAL = 0.025  -- 40 /sec
 
 local BarEventList = {
 	-- Used by Bar:SetType(), Bar:Activate(), Bar:Inactivate()
@@ -429,6 +429,7 @@ function BarEvent:UNIT_PET()
 	end
 end
 
+-- Needs testing
 local autoShotName = GetSpellInfo(75)  -- Localized name
 function BarEvent:UNIT_SPELLCAST_SUCCEEDED(unit, ...)
 	-- To track Auto Shot
