@@ -10,11 +10,13 @@ Localize.enUS = {
 	BAR_TOOLTIP2 = "Right click bars to set up. More options in Blizzard interface options menu. Type /needtoknow to lock and enable.",
 	RESIZE_TOOLTIP = "Click and drag to change size",
 
-	ENABLE = ENABLE,  -- "Enable" 
-	ENABLE_BAR = "Enable bar",
+	-- BarMenu
+
 	CHOOSE_SPELL_ITEM_ABILITY = "Choose spell, item, or ability", 
 	BAR_COLOR = "Bar color",
 	COLOR = COLOR,  -- "Color"
+	ENABLE = ENABLE,  -- "Enable" 
+	ENABLE_BAR = "Enable bar",
 
 	BARTYPE = "Bar type",
 	BARTYPE_HELPFUL = "Buff",
@@ -28,13 +30,13 @@ Localize.enUS = {
 	SETTINGS = SETTINGS, -- "Settings"
 	OPTIONS = "Options", 
 	MORE_OPTIONS = "More options", 
-	IMPORT_EXPORT_SETTINGS = "Import or export settings",
-	CLEAR_SETTINGS = "Clear settings",
 	BUFF_SETTINGS = "Buff settings", 
 	DEBUFF_SETTINGS = "Debuff settings", 
 	COOLDOWN_SETTINGS = "Cooldown settings", 
 	USABLE_SETTINGS = "Reactive settings", 
 	TOTEM_SETTINGS = "Totem settings", 
+	IMPORT_EXPORT_SETTINGS = "Import or export settings",
+	CLEAR_SETTINGS = "Clear settings",
 
 	CHOOSE_UNIT = "Unit to watch",
 	UNIT_PLAYER = PLAYER,  -- "Player"
@@ -48,7 +50,7 @@ Localize.enUS = {
 	ONLY_MINE = "Only show mine",
 	SUM_ALL_CASTERS = "Sum from all casters",
 	SHOW_CHARGE_COOLDOWN = "Show first and last charge cooldown",
-	BUFFCD_RESET = "Reset on buff...", 
+	BUFFCD_RESET = "Reset on buff...",  -- Needs review
 	SET_USABLE_DURATION = "Set usable time",
 	SET_BUFFCD_DURATION = "Set cooldown time",
 
@@ -65,14 +67,15 @@ Localize.enUS = {
 	TIME_DECIMAL = "Decimal seconds (12.1)",
 
 	TEXT_OPTIONS = "Text options", 
-	SHOW_MYPIP = "* if mine",
-	SHOW_TIME_ADDED = "Time added (+ 3s)",
-	SHOW_TTN1 = "First tooltip number",
-	SHOW_TTN2 = "Second tooltip number",
-	SHOW_TTN3 = "Third tooltip number",
+	SHOW_MYPIP = "Show * if mine",
+	SHOW_TIME_ADDED = "Show time added",
+	SHOW_TTN1 = "Show 1st tooltip number",
+	SHOW_TTN2 = "Show 2nd tooltip number",
+	SHOW_TTN3 = "Show 3rd tooltip number",
 	REPLACE_BAR_TEXT = "Replace bar text",
-	APPEND_CD = "Append \"CD\"",
-	APPEND_USABLE = "Append \"usable\"",
+	ADD_BAR_TEXT = "Add bar text",
+	APPEND_CD = "Append \"CD\"",  -- Deprecated
+	APPEND_USABLE = "Append \"usable\"",  -- Deprecated
 
 	CAST_TIME = "Cast timer",
 	CAST_TIME_ENABLE = "Show cast time overlay", 
@@ -86,17 +89,21 @@ Localize.enUS = {
 	BLINK_OUT_OF_COMBAT = "Blink out of combat", 
 	BLINK_ONLY_BOSS = "Blink only for bosses", 
 
-	-- CHOOSENAME_DIALOG = "Enter the name of the buff or debuff to time with this bar", 
-	CHOOSENAME_DIALOG = "Enter name of spell, item, or ability", 
-	IMPORTEXPORT_DIALOG = "The current settings for the bar appear below.  To copy these settings to the clipboard, press Ctrl+C. To paste the last settings you copied (such as from another bar), press Ctrl+V. Clear this text to reset the bar to the defaults.",
-	CHOOSE_OVERRIDE_TEXT = "Normally, the name of the aura/item/spell that activated the bar is displayed.  By entering text here, you can override that text with something else.  Leave this blank to use the default behavior.",
+	-- Dialog
+	DIALOG_HELPFUL = "Enter buff name", 
+	DIALOG_HARMFUL = "Enter debuff name", 
+	DIALOG_CASTCD = "Enter spell, item, or ability name", 
+	DIALOG_USABLE = "Enter spell or ability name", 
+	DIALOG_BUFFCD = "Enter buff name", 
+	DIALOG_TOTEM = "Enter totem name", 
+	DIALOG_USABLE_TIME = "Enter time in seconds\nreactive spell or ability is usable", 
+	DIALOG_BUFFCD_TIME = "Enter time in seconds\nfor proc internal cooldown", 
+	DIALOG_BUFFCD_SPELL = "Enter spell or ability name", 
+	DIALOG_CAST_TIME_SPELL = "Enter spell or ability name", 
+	DIALOG_CAST_TIME_ADD = "Enter time in seconds\nto add to cast time", 
+	DIALOG_BLINK_TEXT = "Enter text to replace\nspell, item, and ability names", 
+	DIALOG_REPLACE_TEXT = "Enter text to replace\nspell, item, and ability names", 
 
-	CHOOSE_VCT_SPELL_DIALOG = "Enter the name of a spell (in your spellbook) whose cast time will determine the base length of the cast time indicator.  If left blank, the aura name will be used as the spell name.  To force this to be 0, type 0.",
-	CHOOSE_VCT_EXTRA_DIALOG = "Enter an amount of seconds that will be added to the cast time of the spell.  Ex: 1.5",
-	CHOOSE_BLINK_TITLE_DIALOG = "Enter the text to display on the bar when it is blinking.",
-	BUFFCD_DURATION_DIALOG = "Enter the cooldown duration triggered by the buffs watched by this bar.",
-	BUFFCD_RESET_DIALOG = "Enter the buff (or buffs) to watch for which reset the cooldown to 0.",
-	USABLE_DURATION_DIALOG = "Enter the useable duration for abilities watched by this bar.", 
 }
 
 Localize.deDE = {

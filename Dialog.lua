@@ -146,6 +146,17 @@ local DialogSubText = {
 	show_text_user = "Clear text to stop replacing", 
 }
 
+--[[
+	CHOOSENAME_DIALOG = "Enter name of spell, item, or ability", 
+	IMPORTEXPORT_DIALOG = "The current settings for the bar appear below.  To copy these settings to the clipboard, press Ctrl+C. To paste the last settings you copied (such as from another bar), press Ctrl+V. Clear this text to reset the bar to the defaults.",
+	CHOOSE_VCT_SPELL_DIALOG = "Enter the name of a spell (in your spellbook) whose cast time will determine the base length of the cast time indicator.  If left blank, the aura name will be used as the spell name.  To force this to be 0, type 0.",
+	CHOOSE_VCT_EXTRA_DIALOG = "Enter an amount of seconds that will be added to the cast time of the spell.  Ex: 1.5",
+	CHOOSE_BLINK_TITLE_DIALOG = "Enter the text to display on the bar when it is blinking.",
+	BUFFCD_DURATION_DIALOG = "Enter the cooldown duration triggered by the buffs watched by this bar.",
+	BUFFCD_RESET_DIALOG = "Enter the buff (or buffs) to watch for which reset the cooldown to 0.",
+	USABLE_DURATION_DIALOG = "Enter the useable duration for abilities watched by this bar.", 
+]]--
+
 local DialogData = {} -- Reused table {varName, currentValue, groupID, barID}
 
 

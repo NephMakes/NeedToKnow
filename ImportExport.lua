@@ -2,7 +2,6 @@
 
 -- local addonName, addonTable = ...
 
--- NEEDTOKNOW.SHORTENINGS = {
 local SHORTENINGS = {
     Enabled         = "On",
     AuraName        = "Aura",
@@ -62,7 +61,6 @@ local SHORTENINGS = {
     --FontOutline = "FOl",
 }
 
--- NEEDTOKNOW.LENGTHENINGS= {
 local LENGTHENINGS = {
    On = "Enabled",
    Aura = "AuraName",
@@ -139,7 +137,6 @@ local function CombineKeyValue(key,value)
     end
 end
 
--- function NeedToKnowIE.TableToString(v)
 local function TableToString(v)
     local i = 1
     local ret= "{"
@@ -163,7 +160,6 @@ local function TableToString(v)
     return ret
 end
 
--- function NeedToKnowIE.StringToTable(text, ofs)
 local function StringToTable(text, ofs)
     local cur = ofs or 1
 
@@ -215,7 +211,6 @@ local function StringToTable(text, ofs)
             print("Unexpected end of string")
             return nil,nil
         elseif text:byte(cur) == 123 then -- '{'
-            -- v, cur = NeedToKnowIE.StringToTable(text, cur)
             v, cur = StringToTable(text, cur)
             if not v then return nil,nil end
             cur = cur+1
@@ -263,33 +258,31 @@ local function StringToTable(text, ofs)
     return ret,cur
 end
 
--- function NeedToKnowIE.ImportBarSettingsFromString(text, bars, barID)
 function NeedToKnow.ImportBarSettingsFromString(text, bars, barID)
-    local pruned
-    if text and text ~= "" then
-        local ver, packed = text:match("bv(%d+):(.*)")
-        if not ver then
-            print("Could not find bar settings header")
-        elseif not packed then
-            print("Could not find bar settings")
-        end
-        -- pruned = NeedToKnowIE.StringToTable(packed)
-        pruned = StringToTable(packed)
-    else
-        pruned = {}
-    end
-    if pruned then
-        NeedToKnow.AddDefaultsToTable(pruned, NEEDTOKNOW.BAR_DEFAULTS)
-        bars[barID] = pruned
-    end
+	-- Called by Dialog:ImportSettings()
+	local pruned
+	if text and text ~= "" then
+		local ver, packed = text:match("bv(%d+):(.*)")
+		if not ver then
+			print("Could not find bar settings header")
+		elseif not packed then
+			print("Could not find bar settings")
+		end
+		pruned = StringToTable(packed)
+	else
+		pruned = {}
+	end
+	if pruned then
+		NeedToKnow.AddDefaultsToTable(pruned, NEEDTOKNOW.BAR_DEFAULTS)
+		bars[barID] = pruned
+	end
 end
 
--- function NeedToKnowIE.ExportBarSettingsToString(barSettings)
 function NeedToKnow.ExportBarSettingsToString(barSettings)
-    local pruned = CopyTable(barSettings)
-    NeedToKnow.RemoveDefaultValues(pruned, NEEDTOKNOW.BAR_DEFAULTS)
-    -- return 'bv1:' .. NeedToKnowIE.TableToString(pruned);
-    return 'bv1:' .. TableToString(pruned);
+	-- Called by Dialog:ExportSettings()
+	local pruned = CopyTable(barSettings)
+	NeedToKnow.RemoveDefaultValues(pruned, NEEDTOKNOW.BAR_DEFAULTS)
+	return "bv1:"..TableToString(pruned)
 end
 
 --[[

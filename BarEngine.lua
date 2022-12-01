@@ -688,7 +688,6 @@ function FindAura:FindSingle(spellEntry, allStacks)
 		filter = filter .. "|PLAYER"
 	end
 	if spellEntry.id then
-		-- Can't search by spellID, so walk through them
 		local j = 1
 		while true do
 			local name, icon, count, _, duration, expirationTime, sourceUnit, _, _, spellID, _, _, _, _, _, value1, value2, value3 = UnitAura(self.unit, j, filter)
@@ -738,8 +737,7 @@ function FindAura:FindSpellUsable(spellEntry, allStacks)
 		if isUsable or notEnoughMana then
 			local duration, expirationTime
 			local now = GetTime()
-			if 
-				not self.expirationTime or 
+			if not self.expirationTime or 
 				(self.expirationTime > 0 and self.expirationTime < now - 0.01) 
 			then
 				duration = self.settings.usable_duration  -- Has to be set by user
@@ -784,7 +782,6 @@ function FindAura:FindCooldown(spellInfo, allStacks)
 	end
 end
 
--- Needs testing
 function FindAura:FindEquipSlotCooldown(spellEntry, allStacks)
 	-- Find item cooldown then update allStacks
 	if spellEntry.id then
@@ -799,30 +796,6 @@ function FindAura:FindEquipSlotCooldown(spellEntry, allStacks)
 		end
 	end
 end
---[[
-function NeedToKnow.mfn_AuraCheck_EQUIPSLOT(bar, bar_entry, all_stacks)
-    -- Bar_AuraCheck helper for tracking usable gear based on the slot its in
-    -- rather than the equipment name
-    local spellName, _, spellIconPath
-    if ( bar_entry.id ) then
-        local id = GetInventoryItemID("player", bar_entry.id)
-        if id then
-            local item_entry = m_scratch.bar_entry
-            item_entry.id = id
-            local start, cd_len, enable, name, icon = Cooldown.GetItemCooldown(bar, item_entry)
-            if ( start and start > 0 ) then
-                NeedToKnow.mfn_AddInstanceToStacks(all_stacks, bar_entry, 
-                       cd_len,                                     -- duration
-                       name,                                       -- name
-                       1,                                          -- count
-                       start + cd_len,                             -- expiration time
-                       icon,                                       -- icon path
-                       "player" )                                  -- caster
-            end
-        end
-    end
-end
-]]--
 
 -- Needs testing
 function FindAura:FindTotem(spellEntry, allStacks)
@@ -1028,12 +1001,12 @@ function Bar:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, e
 			allStacks.max.expirationTime = expirationTime
 		end 
 		allStacks.total = allStacks.total + count
-		if value1 then
+		if value1 and tonumber(value1) ~= nil then
 			allStacks.total_ttn[1] = allStacks.total_ttn[1] + value1
-			if value2 then
+			if value2 and tonumber(value2) ~= nil then
 				allStacks.total_ttn[2] = allStacks.total_ttn[2] + value2
 			end
-			if value3 then
+			if value3 and tonumber(value3) ~= nil then
 				allStacks.total_ttn[3] = allStacks.total_ttn[3] + value3
 			end
 		end
@@ -1060,14 +1033,13 @@ function Bar:OnUpdate(elapsed)
 
 		if self.blink then
 			self.blink_phase = self.blink_phase + UPDATE_INTERVAL
-			if self.blink_phase >= 2 then
+			if self.blink_phase >= 2 then  -- 2 second blink cycle
 				self.blink_phase = 0
 			end
 			local a = self.blink_phase
 			if a > 1 then
 				a = 2 - a
 			end
-
 			self.bar1:SetVertexColor(self.settings.MissingBlink.r, self.settings.MissingBlink.g, self.settings.MissingBlink.b)
 			self.bar1:SetAlpha(self.settings.MissingBlink.a * a)
 			return
@@ -1088,7 +1060,7 @@ function Bar:OnUpdate(elapsed)
 				end
 				bar1_timeLeft = 0
 			end
-			self:SetValue(self.bar1, bar1_timeLeft);
+			self:SetValue(self.bar1, bar1_timeLeft)
 
 			if self.settings.show_time then
 				self.time:SetText(self:FormatTime(bar1_timeLeft))

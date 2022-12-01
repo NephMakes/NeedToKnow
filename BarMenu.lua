@@ -497,10 +497,12 @@ function BarMenu:UpdateMenu(barSettings)
 	]]--
 end
 
+--[[
 function BarMenu:GetMenuItemLevel(button)
 	local menuLevel = button:GetName():match("%d+")
 	return tonumber(menuLevel)
 end
+]]--
 
 function BarMenu:GetMenuButton(menuLevel, buttonValue)
 	local listFrameName = "DropDownList"..menuLevel

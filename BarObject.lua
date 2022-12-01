@@ -286,27 +286,24 @@ function Bar:UpdateBarText(barSettings, count, extended, buff_stacks)
 end
 
 function Bar:ComputeText(buffName, count, extended, buff_stacks)
-    -- Called by Bar:UpdateBarText()
-
-    local text = buffName
-
-    if ( count > 1 ) then
-        text = buffName.."  ["..count.."]"
-    end
-    if ( self.settings.show_ttn1 and buff_stacks.total_ttn[1] > 0 ) then
-        text = text .. " ("..buff_stacks.total_ttn[1]..")"
-    end
-    if ( self.settings.show_ttn2 and buff_stacks.total_ttn[2] > 0 ) then
-        text = text .. " ("..buff_stacks.total_ttn[2]..")"
-    end
-    if ( self.settings.show_ttn3 and buff_stacks.total_ttn[3] > 0 ) then
-        text = text .. " ("..buff_stacks.total_ttn[3]..")"
-    end
-    if ( extended and extended > 1 ) then
-        text = text .. string.format(" + %.0fs", extended)
-    end
-
-    return text
+	-- Called by Bar:UpdateBarText()
+	local text = buffName
+	if count > 1 then
+		text = buffName.."  ["..count.."]"
+	end
+	if self.settings.show_ttn1 and buff_stacks.total_ttn[1] > 0 then
+		text = text.." ("..buff_stacks.total_ttn[1]..")"
+	end
+	if self.settings.show_ttn2 and buff_stacks.total_ttn[2] > 0 then
+		text = text.." ("..buff_stacks.total_ttn[2]..")"
+	end
+	if self.settings.show_ttn3 and buff_stacks.total_ttn[3] > 0 then
+		text = text.." ("..buff_stacks.total_ttn[3]..")"
+	end
+	if extended and extended > 1 then
+		text = text..string.format(" + %.0fs", extended)
+	end
+	return text
 end
 
 function Bar:SetUnlockedText(barSettings)
