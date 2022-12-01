@@ -80,8 +80,8 @@ StaticPopupDialogs["NEEDTOKNOW_NUMERIC_INPUT"] = {
 }
 
 StaticPopupDialogs["NEEDTOKNOW_IMPORT_EXPORT"] = {
-	text = "Copy or paste bar settings here", 
-	subText = "Clear text to clear settings", 
+	text = String.DIALOG_IMPORT_EXPORT, 
+	subText = String.DIALOG_SUBTEXT_IMPORT_EXPORT, 
 	button1 = ACCEPT,
 	button2 = CANCEL,
 	hasEditBox = 1,
@@ -115,47 +115,36 @@ StaticPopupDialogs["NEEDTOKNOW_IMPORT_EXPORT"] = {
 }
 
 local DialogText = {
-	HELPFUL = "Enter buff name", 
-	HARMFUL = "Enter debuff name", 
-	CASTCD = "Enter spell, item, or ability name", 
-	USABLE = "Enter spell or ability name", 
-	BUFFCD = "Enter buff name", 
-	TOTEM = "Enter totem name", 
-	usable_duration = "Enter time in seconds\nreactive spell or ability is usable", 
-	buffcd_duration = "Enter time in seconds\nfor proc internal cooldown", 
-	buffcd_reset_spells = "Enter spell or ability name", 
-	vct_spell = "Enter spell or ability name", 
-	vct_extra = "Enter time in seconds\nto add to cast time", 
-	blink_label = "Enter text to replace\nspell, item, and ability names", 
-	show_text_user = "Enter text to replace\nspell, item, and ability names", 
+	HELPFUL = String.DIALOG_HELPFUL,  
+	HARMFUL = String.DIALOG_HARMFUL, 
+	CASTCD = String.DIALOG_CASTCD, 
+	USABLE = String.DIALOG_USABLE, 
+	BUFFCD = String.DIALOG_BUFFCD, 
+	TOTEM = String.DIALOG_TOTEM, 
+	usable_duration = String.DIALOG_USABLE_TIME, 
+	buffcd_duration = String.DIALOG_BUFFCD_TIME, 
+	buffcd_reset_spells = String.DIALOG_BUFFCD_SPELL, 
+	vct_spell = String.DIALOG_CAST_TIME_SPELL, 
+	vct_extra = String.DIALOG_CAST_TIME_ADD, 
+	blink_label = String.DIALOG_BLINK_TEXT, 
+	show_text_user = String.DIALOG_REPLACE_TEXT, 
 }
 
 local DialogSubText = {
-	HELPFUL = "To track more than one with this bar, enter names in order of priority separated by commas. Spell IDs accepted.", 
-	HARMFUL = "To track more than one with this bar, enter names in order of priority separated by commas. Spell IDs accepted.", 
-	CASTCD = "To track more than one with this bar, enter names in order of priority separated by commas. Spell IDs accepted.", 
-	USABLE = "To track more than one with this bar, enter names in order of priority separated by commas. Spell IDs accepted.", 
-	BUFFCD = "To track more than one with this bar, enter names in order of priority separated by commas. Spell IDs accepted.", 
-	TOTEM = "To track more than one with this bar, enter names in order of priority separated by commas. Spell IDs accepted.", 
-	usable_duration = "", 
-	buffcd_duration = "For most procs the internal cooldown is 45 seconds", 
-	vct_spell = "Leave blank to show cast time for spell with buff or debuff name", 
-	vct_extra = "", 
-	buffcd_reset_spells = "These spells and abilities reset the internal cooldown. For more than one, enter names separated by commas. Spell IDs accepted.", 
-	blink_label = "Clear text to stop replacing", 
-	show_text_user = "Clear text to stop replacing", 
+	HELPFUL = String.DIALOG_SUBTEXT_HELPFUL, 
+	HARMFUL = String.DIALOG_SUBTEXT_HARMFUL, 
+	CASTCD = String.DIALOG_SUBTEXT_CASTCD, 
+	USABLE = String.DIALOG_SUBTEXT_USABLE, 
+	BUFFCD = String.DIALOG_SUBTEXT_BUFFCD, 
+	TOTEM = String.DIALOG_SUBTEXT_TOTEM, 
+	usable_duration = String.DIALOG_SUBTEXT_USABLE_TIME, 
+	buffcd_duration = String.DIALOG_SUBTEXT_BUFFCD_TIME, 
+	buffcd_reset_spells = String.DIALOG_SUBTEXT_BUFFCD_SPELL, 
+	vct_spell = String.DIALOG_SUBTEXT_CAST_TIME_SPELL, 
+	vct_extra = String.DIALOG_SUBTEXT_CAST_TIME_ADD, 
+	blink_label = String.DIALOG_SUBTEXT_BLINK_TEXT, 
+	show_text_user = String.DIALOG_SUBTEXT_REPLACE_TEXT, 
 }
-
---[[
-	CHOOSENAME_DIALOG = "Enter name of spell, item, or ability", 
-	IMPORTEXPORT_DIALOG = "The current settings for the bar appear below.  To copy these settings to the clipboard, press Ctrl+C. To paste the last settings you copied (such as from another bar), press Ctrl+V. Clear this text to reset the bar to the defaults.",
-	CHOOSE_VCT_SPELL_DIALOG = "Enter the name of a spell (in your spellbook) whose cast time will determine the base length of the cast time indicator.  If left blank, the aura name will be used as the spell name.  To force this to be 0, type 0.",
-	CHOOSE_VCT_EXTRA_DIALOG = "Enter an amount of seconds that will be added to the cast time of the spell.  Ex: 1.5",
-	CHOOSE_BLINK_TITLE_DIALOG = "Enter the text to display on the bar when it is blinking.",
-	BUFFCD_DURATION_DIALOG = "Enter the cooldown duration triggered by the buffs watched by this bar.",
-	BUFFCD_RESET_DIALOG = "Enter the buff (or buffs) to watch for which reset the cooldown to 0.",
-	USABLE_DURATION_DIALOG = "Enter the useable duration for abilities watched by this bar.", 
-]]--
 
 local DialogData = {} -- Reused table {varName, currentValue, groupID, barID}
 

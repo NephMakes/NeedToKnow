@@ -1001,12 +1001,12 @@ function Bar:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, e
 			allStacks.max.expirationTime = expirationTime
 		end 
 		allStacks.total = allStacks.total + count
-		if value1 and tonumber(value1) ~= nil then
+		if value1 and type(value1) == "number" then
 			allStacks.total_ttn[1] = allStacks.total_ttn[1] + value1
-			if value2 and tonumber(value2) ~= nil then
+			if value2 and type(value2) == "number" then
 				allStacks.total_ttn[2] = allStacks.total_ttn[2] + value2
 			end
-			if value3 and tonumber(value3) ~= nil then
+			if value3 and type(value3) == "number" then
 				allStacks.total_ttn[3] = allStacks.total_ttn[3] + value3
 			end
 		end
