@@ -1,0 +1,17 @@
+## Interface: 30400
+## Title: Nephilist Nameplates
+## Version: 2.5.0
+## Notes: Simple, effective nameplates
+## Author: NephMakes / lieandswell
+## SavedVariablesPerCharacter: NephilistNameplatesOptions
+
+NephilistNameplates.xml
+NephilistNameplates.lua
+Nameplate.lua
+Auras.lua
+Power.lua
+LossBar.lua
+PlayerPlate.lua
+OptionsLibrary.lua
+Options.lua
+Localization.lua
