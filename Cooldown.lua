@@ -34,11 +34,7 @@ function Cooldown.SetUpSpell(bar, info)
 		info.name = name
 		info.id = spellID
 		info.icon = icon
-
-		if spellID == 75 then  -- Auto Shot
-			bar.settings.bAutoShot = true
-			info.cooldownFunction = Cooldown.GetAutoShotCooldown
-		elseif bar.settings.show_charges and GetSpellCharges(spell) then
+		if bar.settings.show_charges and GetSpellCharges(spell) then
 			info.cooldownFunction = Cooldown.GetSpellChargesCooldown
 		else
 			info.cooldownFunction = Cooldown.GetSpellCooldown
@@ -92,16 +88,6 @@ function Cooldown.GetSpellChargesCooldown(bar, spellInfo)
 		else
 			return chargeStart, chargeDuration, 1, spellInfo.name, spellInfo.icon, maxCharges - currentCharges
 		end
-	end
-end
-
-function Cooldown.GetAutoShotCooldown(bar, spellInfo)
-	-- Called by bar:FindCooldown()
-	local now = GetTime()
-	if bar.tAutoShotStart and bar.tAutoShotStart + bar.tAutoShotCD > now then
-		return bar.tAutoShotStart, bar.tAutoShotCD, 1, spellInfo.name, spellInfo.icon
-	else
-		bar.tAutoShotStart = nil
 	end
 end
 

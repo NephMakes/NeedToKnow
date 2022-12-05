@@ -246,12 +246,10 @@ v4.0.27 (beta)
 -Optimized performance slightly
 
 2.4.1 
-
--Fixed character restriction on buff names, no accepts up to 255 characters.
+-Fixed character restriction on buff names, now accepts up to 255 characters.
 -Added Russian localization
 
 2.4
-
 -Brought up to 3.2 API standards
 -Added multiple buffs/debuffs per bar
 -Dual-Specialization support

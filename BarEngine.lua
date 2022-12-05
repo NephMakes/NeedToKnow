@@ -19,11 +19,8 @@ local BarEventList = {
 	"PLAYER_TOTEM_UPDATE", 
 	"SPELL_UPDATE_COOLDOWN", 
 	"SPELL_UPDATE_USABLE", 
-	"START_AUTOREPEAT_SPELL", 
-	"STOP_AUTOREPEAT_SPELL", 
 	"UNIT_AURA", 
 	"UNIT_PET", 
-	"UNIT_SPELLCAST_SUCCEEDED", 
 	"UNIT_TARGET"
 }
 
@@ -37,7 +34,6 @@ local GetTotemInfo = GetTotemInfo
 local UnitExists = UnitExists
 local UnitGUID = UnitGUID
 local UnitRangedDamage = UnitRangedDamage
--- local SecondsToTimeAbbrev = SecondsToTimeAbbrev
 
 -- Deprecated: 
 local g_UnitIsFriend = UnitIsFriend
@@ -171,7 +167,6 @@ function Bar:UpdateBarType()
 	elseif barType == "EQUIPSLOT" then
 		self.fnCheck = FindAura.FindEquipSlotCooldown
 	elseif barType == "CASTCD" then
-		settings.bAutoShot = nil
 		for index, spellInfo in ipairs(self.spells) do
 			Cooldown.SetUpSpell(self, spellInfo)
 		end
@@ -201,12 +196,6 @@ function Bar:Activate()
 		self:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 		self.ACTIONBAR_UPDATE_COOLDOWN = BarEvent.ACTIONBAR_UPDATE_COOLDOWN
 		self.SPELL_UPDATE_COOLDOWN = BarEvent.SPELL_UPDATE_COOLDOWN
-		if settings.bAutoShot then
-			self:RegisterEvent("START_AUTOREPEAT_SPELL")
-			self:RegisterEvent("STOP_AUTOREPEAT_SPELL")
-			self.START_AUTOREPEAT_SPELL = BarEvent.START_AUTOREPEAT_SPELL
-			self.STOP_AUTOREPEAT_SPELL = BarEvent.STOP_AUTOREPEAT_SPELL
-		end
 	elseif barType == "EQUIPSLOT" then
 		self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 		self.ACTIONBAR_UPDATE_COOLDOWN = BarEvent.ACTIONBAR_UPDATE_COOLDOWN
@@ -297,11 +286,8 @@ function Bar:Inactivate()
 		"PLAYER_TOTEM_UPDATE", 
 		"SPELL_UPDATE_COOLDOWN", 
 		"SPELL_UPDATE_USABLE", 
-		"START_AUTOREPEAT_SPELL", 
-		"STOP_AUTOREPEAT_SPELL", 
 		"UNIT_AURA", 
 		"UNIT_PET", 
-		"UNIT_SPELLCAST_SUCCEEDED", 
 		"UNIT_TARGET"
 	}
 	for k, event in pairs(eventList) do
@@ -374,8 +360,7 @@ function BarEvent:PLAYER_FOCUS_CHANGED(unit, ...)
 end
 
 function BarEvent:PLAYER_SPELLCAST_SUCCEEDED(unit, ...)
-	-- To monitor last raid recipient
-	-- Fake event called by ExecutiveFrame 
+	-- Fake event called by ExecutiveFrame to monitor last raid recipient
 	local spellName, spellID, target = select(1,...)
 	local i, entry
 	for i, entry in ipairs(self.spells) do
@@ -407,16 +392,6 @@ function BarEvent:SPELL_UPDATE_USABLE()
 	self:CheckAura()
 end
 
-function BarEvent:START_AUTOREPEAT_SPELL()
-	-- To track Auto Shot
-	self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
-end
-
-function BarEvent:STOP_AUTOREPEAT_SPELL()
-	-- To track Auto Shot
-	self:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
-end
-
 function BarEvent:UNIT_AURA(unit, ...)
 	if unit == self.unit then
 		self:CheckAura()
@@ -426,33 +401,6 @@ end
 function BarEvent:UNIT_PET()
 	if unit == "player" then
 		self:CheckAura()
-	end
-end
-
--- Needs testing
-local autoShotName = GetSpellInfo(75)  -- Localized name
-function BarEvent:UNIT_SPELLCAST_SUCCEEDED(unit, ...)
-	-- To track Auto Shot
-	--[[
-	local spellID  = select(2, ...)
-	local spellName = select(1, GetSpellInfo(spellId))
-	if self.settings.bAutoShot and unit == "player" and spellName == autoShotName then
-		local interval = UnitRangedDamage("player")
-		self.tAutoShotCD = interval
-		self.tAutoShotStart = GetTime()
-		self:CheckAura()
-	end
-	]]--
-	if unit == "player" then 
-		-- UNIT_SPELLCAST_SUCCEEDED only registered by bar if self.settings.bAutoShot
-		local spellID  = select(2, ...)
-		local spellName = select(1, GetSpellInfo(spellId))
-		if spellName == autoShotName then
-			local interval = UnitRangedDamage("player")
-			self.tAutoShotCD = interval
-			self.tAutoShotStart = GetTime()
-			self:CheckAura()
-		end
 	end
 end
 
@@ -759,7 +707,7 @@ function FindAura:FindCooldown(spellInfo, allStacks)
 	local start, duration, _, name, icon, count, start2 = GetCooldown(self, spellInfo)
 
 	-- Filter out global cooldown
-	if start and duration <= 1.5 and GetCooldown ~= Cooldown.GetAutoShotCooldown then
+	if start and duration <= 1.5 then
 		if self.expirationTime and self.expirationTime <= start + duration then
 			start = self.expirationTime - self.duration
 			duration = self.duration
