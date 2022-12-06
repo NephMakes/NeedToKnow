@@ -131,6 +131,7 @@ function Bar:UpdateSpells()
 		self.reset_spells = nil
 		self.reset_start = nil
 	end
+	-- To do: Factor this out into its own function
 end
 
 function Bar:UpdateBarType()
@@ -256,6 +257,7 @@ function Bar:Activate()
 		NeedToKnow.RegisterSpellcastSent()
 	end
 
+	-- To do: Factor this out into its own function Bar:RegisterBossFight()
 	if settings.blink_enabled and settings.blink_boss then
 		if not NeedToKnow.BossStateBars then
 			NeedToKnow.BossStateBars = {}
@@ -295,6 +297,7 @@ function Bar:Inactivate()
 	end
 	self["PLAYER_SPELLCAST_SUCCEEDED"] = nil  -- Fake event called by ExecutiveFrame
 
+	-- self:UnregisterBossFight()
 	if NeedToKnow.BossStateBars then
 		NeedToKnow.BossStateBars[self] = nil
 	end
@@ -457,8 +460,8 @@ function Bar:CheckAura()
 	-- Called by many functions
 
     local settings = self.settings
-    local unitExists
 
+    local unitExists
     if settings.Unit == "player" then
         unitExists = true
     elseif settings.Unit == "lastraid" then
@@ -494,6 +497,7 @@ function Bar:CheckAura()
 
     -- Cancel work done above if reset spell encountered
     -- reset_spells only set for BUFFCD
+    -- To do: Factor this out into its own function 
     if self.reset_spells then
         local maxStart = 0
         local tNow = GetTime()
@@ -531,6 +535,7 @@ function Bar:CheckAura()
         duration = tonumber(duration)
 
         -- Handle duration increases
+	    -- To do: Factor this out into its own function
         local extended
         if (settings.bDetectExtends) then
             local curStart = expirationTime - duration
@@ -579,33 +584,34 @@ function Bar:CheckAura()
             self.max_expirationTime = nil
         end
 
-        -- Mark bar as not blinking first, since UpdateAppearance() calls OnUpdate which checks bar.isBlinking
+        -- Mark bar as not blinking first because 
+        -- UpdateAppearance() calls OnUpdate which checks bar.isBlinking
         self.isBlinking = false
         self:UpdateAppearance()
 		self:UpdateBarText(self.settings, count, extended, all_stacks)
         self:Show()
-    else
-        if (settings.bDetectExtends and self.buffName) then
-            local r = m_last_guid[self.buffName]
-            if ( r ) then
-                local guidTarget = UnitGUID(self.unit)
-                if guidTarget then
-                    r[guidTarget] = nil
-                end
-            end
-        end
-        self.buffName = nil
-        self.duration = nil
-        self.expirationTime = nil
+	else
+		if (settings.bDetectExtends and self.buffName) then
+			local r = m_last_guid[self.buffName]
+			if ( r ) then
+				local guidTarget = UnitGUID(self.unit)
+				if guidTarget then
+					r[guidTarget] = nil
+				end
+			end
+		end
+		self.buffName = nil
+		self.duration = nil
+		self.expirationTime = nil
 
-        if self:ShouldBlink(settings, unitExists) then
-            self:Blink(settings)
-            self:Show()
-        else    
-            self.isBlinking = false
-            self:Hide()
-        end
-    end
+		if self:ShouldBlink(settings, unitExists) then
+			self:Blink(settings)
+			self:Show()
+		else    
+			self.isBlinking = false
+			self:Hide()
+		end
+	end
 end
 
 -- FindAura:Methods() 

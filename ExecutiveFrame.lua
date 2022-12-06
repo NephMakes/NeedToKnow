@@ -273,7 +273,7 @@ end
 ]]--
 
 function ExecutiveFrame:COMBAT_LOG_EVENT_UNFILTERED()
-	-- For monitoring last raid recipient (and maybe detect extends?)
+	-- For monitoring last raid recipient and detect extends
 
     local tod, event, hideCaster, guidCaster, sourceName, sourceFlags, sourceRaidFlags, guidTarget, nameTarget, _, _, spellid, spell = CombatLogGetCurrentEventInfo()
 
@@ -397,7 +397,7 @@ function ExecutiveFrame:UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID, spellID)
 end
 
 function NeedToKnow.RegisterSpellcastSent()
-	-- For monitoring last raid recipient
+	-- For monitoring last raid recipient and detect extends
 	if ( NeedToKnow.nRegisteredSent ) then
 		NeedToKnow.nRegisteredSent = NeedToKnow.nRegisteredSent + 1
 	else
@@ -407,7 +407,7 @@ function NeedToKnow.RegisterSpellcastSent()
 end
 
 function NeedToKnow.UnregisterSpellcastSent()
-	-- For monitoring last raid recipient
+	-- For monitoring last raid recipient and detect extends
 	if ( NeedToKnow.nRegisteredSent ) then
 		NeedToKnow.nRegisteredSent = NeedToKnow.nRegisteredSent - 1
 		if ( 0 == NeedToKnow.nRegisteredSent ) then

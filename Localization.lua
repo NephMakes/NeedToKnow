@@ -78,7 +78,7 @@ Localize.enUS = {
 	BLINK_COLOR = "Color when blinking", 
 	BLINK_TEXT = "Replace text when blinking", 
 	BLINK_OUT_OF_COMBAT = "Blink out of combat", 
-	BLINK_ONLY_BOSS = "Blink only for bosses", 
+	BLINK_ONLY_BOSS = "Blink only for boss fights", 
 
 	-- Dialog
 	DIALOG_HELPFUL = "Enter buff name", 

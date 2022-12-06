@@ -172,7 +172,7 @@ function Bar:UpdateAppearance()
 			self:UpdateCastTime()
 		end
         
-		-- Force an update to get all the bars to the current position (sharing code)
+		-- Kitjan: Force an update to get all the bars to the current position (sharing code)
 		-- This will call UpdateCastTime again, but that seems ok
 		self.nextUpdate = UPDATE_INTERVAL
 		if self.expirationTime > GetTime() then
@@ -228,7 +228,7 @@ function Bar:UpdateBarText(barSettings, count, extended, buff_stacks)
 	local text = ""
 
 	if settings.show_mypip then
-		text = text .. "* "
+		text = text .. "* "  -- Shouldn't this be checking if it's player's aura?
 	end
 
 	local name = ""

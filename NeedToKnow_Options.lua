@@ -60,22 +60,24 @@ function NeedToKnow.SlashCommand(cmd)
 end
 
 function NeedToKnow.LockToggle(bLock)
-    if nil == bLock then 
-        if NeedToKnow.CharSettings["Locked"] then
-            bLock = false;
-        else
-            bLock = true;
-        end
-    end
+	-- To do: Clean up this convoluted bullshit
 
-    NeedToKnow.Show(true);
-    PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON);
+	if bLock == nil then 
+		if NeedToKnow.CharSettings["Locked"] then
+			bLock = false
+		else
+			bLock = true
+		end
+	end
 
-    if NeedToKnow.CharSettings["Locked"] ~= bLock then
-        NeedToKnow.CharSettings["Locked"] = bLock;
-        NeedToKnow.last_cast = {};
-        NeedToKnow.Update();
-    end
+	NeedToKnow.Show(true)
+	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
+
+	if NeedToKnow.CharSettings["Locked"] ~= bLock then
+		NeedToKnow.CharSettings["Locked"] = bLock
+		NeedToKnow.last_cast = {}
+		NeedToKnow.Update()
+	end
 end
 
 
