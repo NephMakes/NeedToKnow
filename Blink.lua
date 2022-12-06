@@ -33,29 +33,40 @@ function Bar:ShouldBlink(settings, unitExists)
 	end
 end
 
-function Bar:Blink(settings)
-	settings = settings or self.settings
-
+function Bar:Blink(barSettings)
 	if not self.isBlinking then
+		-- barSettings = barSettings or self.settings
+
 		self.isBlinking = true
-		self.blinkPhase = 1
-		self.max_value = 1
-		self:SetValue(self.bar1, 1)
-		local blinkColor = settings.MissingBlink
-		self.Texture:SetVertexColor(blinkColor.r, blinkColor.g, blinkColor.b)
-		self.Texture:SetAlpha(blinkColor.a)
-	end
+		self.blinkPhase = 0
 
-	if settings.blink_label and settings.blink_label ~= "" then
-		self.Text:SetText(settings.blink_label)
-	end
+		self:SetBlinkText(barSettings)
+		local blinkColor = barSettings.MissingBlink
+		self.Texture:SetVertexColor(blinkColor.r, blinkColor.g, blinkColor.b, blinkColor.a)
+		-- self.max_value = 1
+		self:SetValue(self.bar1, self.max_value)
 
-	self.Time:Hide()
-	self.Spark:Hide()
-	self.CastTime:Hide()
-	self.Texture2:Hide()
-	self.Icon:Hide()
-	self:SetBackgroundSize(false)
+		self.Time:Hide()
+		self.Spark:Hide()
+		self.CastTime:Hide()
+		self.Icon:Hide()
+		self.Texture2:Hide()
+		self:SetBackgroundSize(false)
+	end
+end
+
+function Bar:SetBlinkText(barSettings)
+	-- barSettings = barSettings or self.settings
+	if barSettings.blink_label and barSettings.blink_label ~= "" then
+		self.Text:SetText(barSettings.blink_label)
+	else
+		local oldText = self.Text:GetText()
+		if oldText and oldText ~= "" then
+			self.Text:SetText(oldText)
+		else
+			self.Text:SetText("")
+		end
+	end
 end
 
 function Bar:UpdateBlink(elapsed)
