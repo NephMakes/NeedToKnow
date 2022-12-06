@@ -38,6 +38,9 @@ local function GetNameAndServer(unit)
 end
 
 local function RefreshRaidMemberNames()
+	-- So we can see if any are in combat with a boss
+	-- Used for bars that blink only in boss fights
+
 	NeedToKnow.raid_members = {}
 
 	if ( IsInRaid() ) then
@@ -174,6 +177,7 @@ end
 -- ----------------
 
 function ExecutiveFrame:UNIT_TARGET(unitTargeting)
+	-- Used for bars that blink only in boss fights
 	-- Determine if in combat with boss, for bars that blink only for bosses
     if ( m_bInCombat and not m_bCombatWithBoss ) then
         if ( UnitLevel(unitTargeting .. 'target') == -1 ) then
@@ -188,6 +192,7 @@ function ExecutiveFrame:UNIT_TARGET(unitTargeting)
 end
 
 function ExecutiveFrame:PLAYER_REGEN_DISABLED(unitTargeting)
+	-- Used for bars that blink only in boss fights
 	-- Determine if in combat with boss, for bars that blink only for bosses
     m_bInCombat = true
     m_bCombatWithBoss = false
@@ -216,7 +221,7 @@ function ExecutiveFrame:PLAYER_REGEN_DISABLED(unitTargeting)
 end
 
 function ExecutiveFrame:PLAYER_REGEN_ENABLED(unitTargeting)
-	-- For bars that blink only for bosses
+	-- Used for bars that blink only in boss fights
     m_bInCombat = false
     m_bCombatWithBoss = false
     if ( NeedToKnow.BossStateBars ) then
@@ -227,6 +232,7 @@ function ExecutiveFrame:PLAYER_REGEN_ENABLED(unitTargeting)
 end
 
 function ExecutiveFrame:GROUP_ROSTER_UPDATE()
+	-- Used for bars that blink only in boss fights
 	RefreshRaidMemberNames();
 end
 
@@ -267,6 +273,7 @@ end
 ]]--
 
 function ExecutiveFrame:COMBAT_LOG_EVENT_UNFILTERED()
+	-- For monitoring last raid recipient (and maybe detect extends?)
 
     local tod, event, hideCaster, guidCaster, sourceName, sourceFlags, sourceRaidFlags, guidTarget, nameTarget, _, _, spellid, spell = CombatLogGetCurrentEventInfo()
 
@@ -322,6 +329,7 @@ function ExecutiveFrame:COMBAT_LOG_EVENT_UNFILTERED()
 end
 
 function ExecutiveFrame:UNIT_SPELLCAST_SENT(unit, tgt, lineID, spellID)
+	-- For monitoring target of target (and maybe detect extends?)
     if unit == "player" then
         -- TODO: I hate to pay this memory cost for every "spell" ever cast.
         --       Would be nice to at least garbage collect this data at some point, but that
@@ -357,6 +365,7 @@ function ExecutiveFrame:UNIT_SPELLCAST_SENT(unit, tgt, lineID, spellID)
 end
 
 function ExecutiveFrame:UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID, spellID)
+	-- For monitoring target of target (and maybe detect extends?)
     if unit == "player" then
         local found
         local t = m_last_cast
@@ -370,10 +379,9 @@ function ExecutiveFrame:UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID, spellID)
         end
         if found then
             if ( NeedToKnow.BarsForPSS ) then
-                local bar,one, spellName
-                for bar,one in pairs(NeedToKnow.BarsForPSS) do
+                local bar, one, spellName
+                for bar, one in pairs(NeedToKnow.BarsForPSS) do
                     local unitTarget = NeedToKnow.raid_members[t[found].target or ""]
-                    -- NeedToKnow.Bar_OnEvent(bar, "PLAYER_SPELLCAST_SUCCEEDED", "player", spellName, spellID, unitTarget);
                     bar:OnEvent("PLAYER_SPELLCAST_SUCCEEDED", "player", spellName, spellID, unitTarget)
                 end
             end
@@ -389,6 +397,7 @@ function ExecutiveFrame:UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID, spellID)
 end
 
 function NeedToKnow.RegisterSpellcastSent()
+	-- For monitoring last raid recipient
 	if ( NeedToKnow.nRegisteredSent ) then
 		NeedToKnow.nRegisteredSent = NeedToKnow.nRegisteredSent + 1
 	else
@@ -398,6 +407,7 @@ function NeedToKnow.RegisterSpellcastSent()
 end
 
 function NeedToKnow.UnregisterSpellcastSent()
+	-- For monitoring last raid recipient
 	if ( NeedToKnow.nRegisteredSent ) then
 		NeedToKnow.nRegisteredSent = NeedToKnow.nRegisteredSent - 1
 		if ( 0 == NeedToKnow.nRegisteredSent ) then

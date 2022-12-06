@@ -47,7 +47,7 @@ NEEDTOKNOW.BAR_DEFAULTS = {
     BuffOrDebuff    = "HELPFUL",
     OnlyMine        = true,
     BarColor        = { r=0.6, g=0.6, b=0.6, a=1.0 },
-    MissingBlink    = { r=0.9, g=0.1, b=0.1, a=0.5 },
+    MissingBlink    = { r=1, g=0, b=0, a=1 },
     TimeFormat      = "Fmt_SingleUnit",
     vct_enabled     = false,
     vct_color       = { r=0, g=0, b=0, a=0.4 },
@@ -67,7 +67,7 @@ NEEDTOKNOW.BAR_DEFAULTS = {
     show_ttn3       = false,
     show_text_user  = "",
     blink_enabled   = false,
-    blink_ooc       = false,
+    blink_ooc       = true,
     blink_boss      = false,
     blink_label     = "",
     buffcd_duration = 45,  -- Most procs have 45 sec internal cooldown

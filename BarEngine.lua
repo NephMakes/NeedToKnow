@@ -33,13 +33,12 @@ local GetTime = GetTime
 local GetTotemInfo = GetTotemInfo
 local UnitExists = UnitExists
 local UnitGUID = UnitGUID
-local UnitRangedDamage = UnitRangedDamage
 
 -- Deprecated: 
 local g_UnitIsFriend = UnitIsFriend
 local g_UnitAffectingCombat = UnitAffectingCombat
-local m_last_guid = addonTable.m_last_guid
-local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
+local m_last_guid = addonTable.m_last_guid  -- Used by detect extends
+local m_bCombatWithBoss = addonTable.m_bCombatWithBoss  -- For bars that only blink in boss fights
 
 
 -- ---------
@@ -266,7 +265,7 @@ function Bar:Activate()
 end
 
 function Bar:RegisterCombatLog()
-	-- Used to track auras on target of target
+	-- For monitoring target of target
     if UnitExists(self.unit) then
         self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     else
@@ -580,8 +579,8 @@ function Bar:CheckAura()
             self.max_expirationTime = nil
         end
 
-        -- Mark bar as not blinking first, since UpdateAppearance() calls OnUpdate which checks bar.blink
-        self.blink = false
+        -- Mark bar as not blinking first, since UpdateAppearance() calls OnUpdate which checks bar.isBlinking
+        self.isBlinking = false
         self:UpdateAppearance()
 		self:UpdateBarText(self.settings, count, extended, all_stacks)
         self:Show()
@@ -598,28 +597,12 @@ function Bar:CheckAura()
         self.buffName = nil
         self.duration = nil
         self.expirationTime = nil
-        
-        local bBlink = false
-        if settings.blink_enabled and settings.MissingBlink.a > 0 then
-            bBlink = unitExists and not UnitIsDead(self.unit)
-        end
-        if ( bBlink and not settings.blink_ooc ) then
-            if not g_UnitAffectingCombat("player") then
-                bBlink = false
-            end
-        end
-        if ( bBlink and settings.blink_boss ) then
-            if g_UnitIsFriend(self.unit, "player") then
-                bBlink = m_bCombatWithBoss
-            else
-                bBlink = (UnitLevel(self.unit) == -1)
-            end
-        end
-        if ( bBlink ) then
-            self:StartBlink()
+
+        if self:ShouldBlink(settings, unitExists) then
+            self:Blink(settings)
             self:Show()
         else    
-            self.blink = false
+            self.isBlinking = false
             self:Hide()
         end
     end
@@ -650,9 +633,7 @@ function FindAura:FindSingle(spellEntry, allStacks)
 			j = j + 1
 		end
 	else
-		-- AuraUtil.FindAuraByName() added in patch 8.0, available in Classic
 		local name, icon, count, _, duration, expirationTime, sourceUnit, _, _, spellID, _, _, _, _, _, value1, value2, value3 = AuraUtil.FindAuraByName(spellEntry.name, self.unit, filter)
-		-- if name and name == spellEntry.name then 
 		if name then 
 			self:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
 			return
@@ -980,17 +961,8 @@ function Bar:OnUpdate(elapsed)
 	if now > self.nextUpdate then
 		self.nextUpdate = now + UPDATE_INTERVAL
 
-		if self.blink then
-			self.blink_phase = self.blink_phase + UPDATE_INTERVAL
-			if self.blink_phase >= 2 then  -- 2 second blink cycle
-				self.blink_phase = 0
-			end
-			local a = self.blink_phase
-			if a > 1 then
-				a = 2 - a
-			end
-			self.bar1:SetVertexColor(self.settings.MissingBlink.r, self.settings.MissingBlink.g, self.settings.MissingBlink.b)
-			self.bar1:SetAlpha(self.settings.MissingBlink.a * a)
+		if self.isBlinking then
+			self:UpdateBlink(elapsed)
 			return
 		end
         

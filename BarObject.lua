@@ -216,28 +216,6 @@ function Bar:SetValue(barTexture, value, value0)
 	barTexture.cur_value = value  -- So bars size properly with resized group
 end
 
-function Bar:StartBlink()
-	local settings = self.settings
-
-	if ( not self.blink ) then
-		self.blink = true
-		self.blink_phase = 1
-		local blinkColor = settings.MissingBlink
-		self.Texture:SetVertexColor(blinkColor.r, blinkColor.g, blinkColor.b)
-		self.Texture:SetAlpha(blinkColor.a)
-	end
-	self.max_value = 1
-	self:SetValue(self.bar1, 1)
-	self.Text:SetText(settings.blink_label)
-
-	self.Time:Hide()
-	self.Spark:Hide()
-	self.CastTime:Hide()
-	self.Texture2:Hide()
-	self.Icon:Hide()
-	self:SetBackgroundSize(false)
-end
-
 
 -- --------
 -- Bar text
@@ -360,7 +338,7 @@ end
 -- Cast time
 -- ---------
 
--- Note: Kitjan's VCT = Visual Cast Time
+-- Note: Kitjan's VCT = "Visual Cast Time"
 
 function Bar:UpdateCastTime()
 	-- Called by Bar:ConfigureVisible()
@@ -388,7 +366,7 @@ end
 
 function Bar:GetCastTimeDuration()
 	-- Called by Bar:UpdateCastTime()
-	-- Called by Bar:OnUpdate() if CastTime used, so make sure it's efficent
+	-- Which is called by Bar:OnUpdate() if CastTime used, so make sure it's efficent
 
 	local castDuration = 0
 
