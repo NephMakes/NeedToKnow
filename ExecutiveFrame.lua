@@ -80,16 +80,14 @@ end
 -- -----------
 
 function ExecutiveFrame:OnEvent(event, ...)
-	local fn = self[event]
-	if ( fn ) then
-		fn(self, ...)
+	local f = self[event]
+	if f then
+		f(self, ...)
 	end
 end
-do
-	ExecutiveFrame:SetScript("OnEvent", ExecutiveFrame.OnEvent)
-	ExecutiveFrame:RegisterEvent("ADDON_LOADED")
-	ExecutiveFrame:RegisterEvent("PLAYER_LOGIN")
-end
+ExecutiveFrame:SetScript("OnEvent", ExecutiveFrame.OnEvent)
+ExecutiveFrame:RegisterEvent("ADDON_LOADED")
+ExecutiveFrame:RegisterEvent("PLAYER_LOGIN")
 
 function ExecutiveFrame:ADDON_LOADED(addon)
 	if addon == "NeedToKnow" then
@@ -116,8 +114,6 @@ function ExecutiveFrame:ADDON_LOADED(addon)
 end
 
 function ExecutiveFrame:PLAYER_LOGIN()
-	-- NeedToKnow:SetTemplateScripts()
-
 	NeedToKnowLoader.SafeUpgrade()
 	self:PLAYER_TALENT_UPDATE()
 
@@ -131,6 +127,8 @@ function ExecutiveFrame:PLAYER_LOGIN()
 
 	self:RegisterEvent("PLAYER_TALENT_UPDATE")
 	self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+
+	-- BossFight events
 	self:RegisterEvent("UNIT_TARGET")
 	self:RegisterEvent("PLAYER_REGEN_DISABLED")
 	self:RegisterEvent("PLAYER_REGEN_ENABLED")

@@ -1,10 +1,7 @@
--- Blink bar when tracked aura is missing
+-- Blink bar when aura/cooldown missing
 
-local addonName, addonTable = ...
+local _, addonTable = ...
 local Bar = NeedToKnow.Bar
-
--- local versions of frequently-used functions
--- local GetTime = GetTime
 
 -- To do: replace with NeedToKnow.isBossFight
 local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
@@ -35,31 +32,29 @@ end
 
 function Bar:Blink(barSettings)
 	-- Called by Bar:CheckAura()
-	-- barSettings = barSettings or self.settings
-
 	if not self.isBlinking then
 		self.isBlinking = true
 		self.blinkPhase = 0
-	end
 
-	-- Blink appearance
-	local blinkColor = barSettings.MissingBlink
-	self.Texture:SetVertexColor(blinkColor.r, blinkColor.g, blinkColor.b, blinkColor.a)
-	self:SetValue(self.bar1, self.max_value)
-	self.Texture2:Hide()
-	self.Spark:Hide()
-	self.Time:Hide()
-	self.Icon:Hide()
-	self:SetBackgroundSize(false)  -- Update background for no icon
-	self.CastTime:Hide()
+		-- Bar appearance
+		local blinkColor = barSettings.MissingBlink
+		self.Texture:SetVertexColor(blinkColor.r, blinkColor.g, blinkColor.b, blinkColor.a)
+		self:SetValue(self.bar1, self.max_value)
+		self.Texture2:Hide()
+		self.Spark:Hide()
+		self.Time:Hide()
+		self.Icon:Hide()
+		self:SetBackgroundSize(false)  -- Update background for no icon
+		self.CastTime:Hide()
 
-	-- Blink text
-	if barSettings.blink_label and barSettings.blink_label ~= "" then
-		self.Text:SetText(barSettings.blink_label)
-	else
-		local oldText = self.Text:GetText()
-		if not oldText or oldText == "" then
-			self.Text:SetText(NeedToKnow:GetPrettyName(barSettings))
+		-- Bar text
+		if barSettings.blink_label and barSettings.blink_label ~= "" then
+			self.Text:SetText(barSettings.blink_label)
+		else
+			local oldText = self.Text:GetText()
+			if not oldText or oldText == "" then
+				self.Text:SetText(NeedToKnow:GetPrettyName(barSettings))
+			end
 		end
 	end
 end
@@ -69,6 +64,7 @@ function Bar:UpdateBlink(elapsed)
 	self.blinkPhase = self.blinkPhase + elapsed/CYCLE_DURATION
 	if self.blinkPhase >= 1 then
 		self.blinkPhase = self.blinkPhase - 1
+		-- To do: self.blinkPhase = self.blinkPhase%1  -- Keep decimal remainder
 	end
 	self.bar1:SetAlpha(self.settings.MissingBlink.a * 
 		(0.6 + 0.4 * math.cos(2 * math.pi * self.blinkPhase))

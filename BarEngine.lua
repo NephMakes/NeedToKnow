@@ -10,6 +10,7 @@ local Cooldown = NeedToKnow.Cooldown
 
 local UPDATE_INTERVAL = 0.025  -- 40 /sec
 
+--[[
 local BarEventList = {
 	-- Used by Bar:SetType(), Bar:Activate(), Bar:Inactivate()
 	"ACTIONBAR_UPDATE_COOLDOWN", 
@@ -23,6 +24,7 @@ local BarEventList = {
 	"UNIT_PET", 
 	"UNIT_TARGET"
 }
+]]--
 
 -- Local versions of frequently-used global functions
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
@@ -57,8 +59,8 @@ function Bar:Update()
 
 	self:UpdateSpells()
 	self:UpdateBarType()
-
 	self:SetAppearance()
+
 	self.max_value = 1
 	self:SetValue(self.bar1, 1)
 	self.fixedDuration = tonumber(groupSettings.FixedDuration)
@@ -67,8 +69,6 @@ function Bar:Update()
 	end
 
 	if NeedToKnow.CharSettings["Locked"] then
-		-- local enabled = self.settings.Enabled and groupSettings.Enabled
-		-- if enabled then
 		if self.settings.Enabled and groupSettings.Enabled then
 			self:EnableMouse(false)  -- Click through
 			self:Activate()
@@ -131,7 +131,6 @@ function Bar:UpdateSpells()
 		self.reset_spells = nil
 		self.reset_start = nil
 	end
-	-- To do: Factor this out into its own function
 end
 
 function Bar:UpdateBarType()
@@ -141,8 +140,7 @@ function Bar:UpdateBarType()
 	local settings = self.settings
 	local barType = settings.BuffOrDebuff
 
-	if
-    	barType == "BUFFCD" or
+	if barType == "BUFFCD" or
 		barType == "TOTEM" or
 		barType == "USABLE" or
 		barType == "EQUIPSLOT" or
@@ -226,6 +224,7 @@ function Bar:Activate()
 		self.PLAYER_TARGET_CHANGED = BarEvent.PLAYER_TARGET_CHANGED
 	elseif self.unit == "pet" then
 		self:RegisterEvent("UNIT_PET")
+		-- self:RegisterUnitEvent("UNIT_PET", "pet")  -- To do
 		self.UNIT_PET = BarEvent.UNIT_PET
 	elseif settings.Unit == "lastraid" then
 		if not NeedToKnow.BarsForPSS then
@@ -257,14 +256,27 @@ function Bar:Activate()
 		NeedToKnow.RegisterSpellcastSent()
 	end
 
-	-- To do: Factor this out into its own function Bar:RegisterBossFight()
-	if settings.blink_enabled and settings.blink_boss then
-		if not NeedToKnow.BossStateBars then
-			NeedToKnow.BossStateBars = {}
+	if settings.blink_enabled then
+		if not settings.blink_ooc then
+			self:RegisterEvent("PLAYER_REGEN_DISABLED")
+			self:RegisterEvent("PLAYER_REGEN_ENABLED")
+			self.PLAYER_REGEN_DISABLED = BarEvent.PLAYER_REGEN_DISABLED
+			self.PLAYER_REGEN_ENABLED = BarEvent.PLAYER_REGEN_ENABLED
 		end
-		NeedToKnow.BossStateBars[self] = 1
+		if settings.blink_boss then
+			-- To do: Factor this out into its own function Bar:RegisterBossFight()
+			if not NeedToKnow.BossStateBars then
+				NeedToKnow.BossStateBars = {}
+			end
+			NeedToKnow.BossStateBars[self] = 1
+		end
 	end
 end
+
+--function Bar:ActivateEvent(event)
+--	self:RegisterEvent(event)
+--	self[event] = BarEvent[event]
+--end
 
 function Bar:RegisterCombatLog()
 	-- For monitoring target of target
@@ -289,7 +301,9 @@ function Bar:Inactivate()
 		"SPELL_UPDATE_USABLE", 
 		"UNIT_AURA", 
 		"UNIT_PET", 
-		"UNIT_TARGET"
+		"UNIT_TARGET", 
+		"PLAYER_REGEN_DISABLED", 
+		"PLAYER_REGEN_ENABLED", 
 	}
 	for k, event in pairs(eventList) do
 		self:UnregisterEvent(event)
@@ -297,10 +311,11 @@ function Bar:Inactivate()
 	end
 	self["PLAYER_SPELLCAST_SUCCEEDED"] = nil  -- Fake event called by ExecutiveFrame
 
-	-- self:UnregisterBossFight()
+	self.isBlinking = nil
 	if NeedToKnow.BossStateBars then
 		NeedToKnow.BossStateBars[self] = nil
 	end
+	-- self:UnregisterBossFight()
 
 	if self.settings.bDetectExtends then
 		NeedToKnow.UnregisterSpellcastSent()
@@ -321,25 +336,15 @@ end
 -- -------------
 
 function Bar:OnEvent(event, unit, ...)
-	local fn = self[event]  -- Assigned by Bar:Activate()
-	if fn then
-		fn(self, unit, ...)
+	local f = self[event]  -- Assigned by Bar:Activate()
+	if f then
+		f(self, unit, ...)
 	end
 end
 
 function BarEvent:ACTIONBAR_UPDATE_COOLDOWN()
 	self:CheckAura()
 end
-
-local auraEvents = {
-    SPELL_AURA_APPLIED = true,
-    SPELL_AURA_REMOVED = true,
-    SPELL_AURA_APPLIED_DOSE = true,
-    SPELL_AURA_REMOVED_DOSE = true,
-    SPELL_AURA_REFRESH = true,
-    SPELL_AURA_BROKEN = true,
-    SPELL_AURA_BROKEN_SPELL = true
-}
 
 function BarEvent:COMBAT_LOG_EVENT_UNFILTERED(unit, ...)
 	-- To monitor target of target
@@ -356,8 +361,25 @@ function BarEvent:COMBAT_LOG_EVENT_UNFILTERED(unit, ...)
 		end
 	end 
 end
+local auraEvents = {
+    SPELL_AURA_APPLIED = true,
+    SPELL_AURA_REMOVED = true,
+    SPELL_AURA_APPLIED_DOSE = true,
+    SPELL_AURA_REMOVED_DOSE = true,
+    SPELL_AURA_REFRESH = true,
+    SPELL_AURA_BROKEN = true,
+    SPELL_AURA_BROKEN_SPELL = true
+}
 
 function BarEvent:PLAYER_FOCUS_CHANGED(unit, ...)
+	self:CheckAura()
+end
+
+function BarEvent:PLAYER_REGEN_DISABLED()
+	self:CheckAura()
+end
+
+function BarEvent:PLAYER_REGEN_ENABLED()
 	self:CheckAura()
 end
 
@@ -400,7 +422,7 @@ function BarEvent:UNIT_AURA(unit, ...)
 	end
 end
 
-function BarEvent:UNIT_PET()
+function BarEvent:UNIT_PET(unit, ...)
 	if unit == "player" then
 		self:CheckAura()
 	end
@@ -994,7 +1016,7 @@ function Bar:OnUpdate(elapsed)
 			end
             
 			if self.settings.show_spark and bar1_timeLeft <= duration then
-				self.spark:SetPoint("CENTER", self, "LEFT", self:GetWidth()*bar1_timeLeft/duration, 0)
+				self.spark:SetPoint("CENTER", self, "LEFT", self:GetWidth() * bar1_timeLeft/duration, 0)
 				self.spark:Show()
 			else
 				self.spark:Hide()
