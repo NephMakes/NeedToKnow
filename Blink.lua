@@ -3,13 +3,11 @@
 local _, addonTable = ...
 local Bar = NeedToKnow.Bar
 
--- To do: replace with NeedToKnow.isBossFight
-local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
+-- local CYCLE_DURATION = 1
 
-local CYCLE_DURATION = 1  -- In seconds
 
 function Bar:ShouldBlink(barSettings, unitExists)
-	-- Determine if bar should blink
+	-- Determine if bar should blink, return true/false
 	-- Called by Bar:CheckAura()
 	if barSettings.blink_enabled then
 		local shouldBlink = unitExists and not UnitIsDead(self.unit)
@@ -18,8 +16,7 @@ function Bar:ShouldBlink(barSettings, unitExists)
 		end
 		if shouldBlink and barSettings.blink_boss then
 			if UnitIsFriend(self.unit, "player") then
-				shouldBlink = m_bCombatWithBoss
-				-- shouldBlink = NeedToKnow.isBossFight  -- To do
+				shouldBlink = NeedToKnow.isBossFight
 			else
 				shouldBlink = (UnitLevel(self.unit) == -1)
 			end
@@ -61,7 +58,8 @@ end
 
 function Bar:UpdateBlink(elapsed)
 	-- Called by Bar:OnUpdate()
-	self.blinkPhase = self.blinkPhase + elapsed/CYCLE_DURATION
+	-- self.blinkPhase = self.blinkPhase + elapsed/CYCLE_DURATION
+	self.blinkPhase = self.blinkPhase + elapsed  -- 1 sec cycle duration
 	if self.blinkPhase >= 1 then
 		self.blinkPhase = self.blinkPhase%1  -- Keep decimal remainder
 	end

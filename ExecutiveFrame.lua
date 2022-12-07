@@ -15,10 +15,6 @@ local m_last_cast_head = addonTable.m_last_cast_head
 local m_last_cast_tail = addonTable.m_last_cast_tail
 local m_last_guid      = addonTable.m_last_guid
 
--- For bars that blink only for bosses
-local m_bInCombat       = addonTable.m_bInCombat
-local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
-
 
 --[[ ExecutiveFrame functions ]]--
 
@@ -47,6 +43,8 @@ function ExecutiveFrame:ADDON_LOADED(addon)
 			self.BarGroup[groupID] = _G["NeedToKnow_Group"..groupID]
 		end
 
+		self.BossFightBars = {}
+
 		m_last_cast = {} -- [n] = { spell, target, serial }
 		m_last_cast_head = 1
 		m_last_cast_tail = 1
@@ -70,19 +68,25 @@ function ExecutiveFrame:PLAYER_LOGIN()
 	self:RegisterEvent("PLAYER_TALENT_UPDATE")
 	self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 
-	-- BossFight events
+	NeedToKnow:Update()
+
+	-- For BossFight
 	self:RegisterEvent("UNIT_TARGET")
 	self:RegisterEvent("PLAYER_REGEN_DISABLED")
 	self:RegisterEvent("PLAYER_REGEN_ENABLED")
 	self:RegisterEvent("GROUP_ROSTER_UPDATE")
 
-	NeedToKnow:Update()
-
 	self:UnregisterEvent("PLAYER_LOGIN")
 	self:UnregisterEvent("ADDON_LOADED")
 	NeedToKnowLoader = nil
 
-	RefreshRaidMemberNames()
+	self:RefreshRaidMemberNames()
+end
+
+function ExecutiveFrame:UpdateEvents()
+	-- Don't register events if we don't need to
+	-- Because no bars registering BossFight
+	-- Because already know isBossFight
 end
 
 function ExecutiveFrame:ACTIVE_TALENT_GROUP_CHANGED()
@@ -107,68 +111,60 @@ function ExecutiveFrame:PLAYER_TALENT_UPDATE()
 end
 
 function ExecutiveFrame:PLAYER_REGEN_DISABLED(unitTargeting)
-	m_bInCombat = true
-	m_bCombatWithBoss = false
-
+	self.inCombat = true
+	NeedToKnow.isBossFight = nil
 	if UnitLevel("target") == -1 then
-		m_bCombatWithBoss = true
+		NeedToKnow.isBossFight = true
 	elseif IsInRaid() then
 		for i = 1, 40 do
 			if UnitLevel("raid"..i.."target") == -1 then
-				m_bCombatWithBoss = true
+				NeedToKnow.isBossFight = true
 				break
 			end
 		end
 	elseif IsInGroup() then
 		for i = 1, 5 do
 			if UnitLevel("party"..i.."target") == -1 then
-				m_bCombatWithBoss = true
+				NeedToKnow.isBossFight = true
 				break
 			end
 		end
 	end
+	self:UpdateBossFightBars()
+end
 
-	if NeedToKnow.BossStateBars then
-		for bar, unused in pairs(NeedToKnow.BossStateBars) do
-			bar:CheckAura()
-		end
+function ExecutiveFrame:UpdateBossFightBars()
+	for bar, unused in pairs(self.BossFightBars) do
+		bar:CheckAura()
 	end
 end
 
 function ExecutiveFrame:PLAYER_REGEN_ENABLED(unitTargeting)
-	m_bInCombat = false
-	m_bCombatWithBoss = false
-	if NeedToKnow.BossStateBars then
-		for bar, unused in pairs(NeedToKnow.BossStateBars) do
-			bar:CheckAura()
-		end
-	end
+	self.inCombat = nil
+	NeedToKnow.isBossFight = nil
+	self:UpdateBossFightBars()
 end
 
 function ExecutiveFrame:UNIT_TARGET(unitTargeting)
-	if m_bInCombat and not m_bCombatWithBoss then
+	if self.inCombat and not NeedToKnow.isBossFight then
 		if UnitLevel(unitTargeting.."target") == -1 then
-			m_bCombatWithBoss = true
-			if NeedToKnow.BossStateBars then
-				for bar, unused in pairs(NeedToKnow.BossStateBars) do
-					bar:CheckAura()
-				end
-			end
+			NeedToKnow.isBossFight = true
+			self:UpdateBossFightBars()
 		end
 	end
 end
 
 function ExecutiveFrame:GROUP_ROSTER_UPDATE()
-	RefreshRaidMemberNames()
+	self:RefreshRaidMemberNames()
 end
 
-local function RefreshRaidMemberNames()
+function ExecutiveFrame:RefreshRaidMemberNames()
 	NeedToKnow.raid_members = {}
 
 	if IsInRaid() then
 		for i = 1, 40 do
 			local unit = "raid"..i
-			local name = GetNameAndServer(unit)
+			local name = self:GetNameAndServer(unit)
 			if name then 
 				NeedToKnow.raid_members[name] = unit
 			else
@@ -178,7 +174,7 @@ local function RefreshRaidMemberNames()
 	elseif IsInGroup() then
 		for i = 1, 5 do
 			local unit = "party"..i
-			local name = GetNameAndServer(unit)
+			local name = self:GetNameAndServer(unit)
 			if name then 
 				NeedToKnow.raid_members[name] = unit
 			else
@@ -202,7 +198,7 @@ local function RefreshRaidMemberNames()
 	end
 end
 
-local function GetNameAndServer(unit)
+function ExecutiveFrame:GetNameAndServer(unit)
 	local name, server = UnitName(unit)
 	if name and server then 
 		return name..'-'..server

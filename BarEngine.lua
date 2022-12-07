@@ -1,11 +1,11 @@
 -- Bar tracking behavior
 
-local addonName, addonTable = ...
+local _, addonTable = ...
 
--- Namespaces
 local Bar = NeedToKnow.Bar
 local FindAura = NeedToKnow.FindAura
 local Cooldown = NeedToKnow.Cooldown
+local ExecutiveFrame = NeedToKnow.ExecutiveFrame
 
 local UPDATE_INTERVAL = 0.025  -- 40 /sec
 
@@ -20,8 +20,7 @@ local UnitExists = UnitExists
 local UnitGUID = UnitGUID
 
 -- Deprecated: 
-local m_last_guid = addonTable.m_last_guid  -- Used by detect extends
-local m_bCombatWithBoss = addonTable.m_bCombatWithBoss  -- For bars that only blink in boss fights
+local m_last_guid = addonTable.m_last_guid  -- For detect extends
 
 
 -- ---------
@@ -229,11 +228,7 @@ function Bar:Activate()
 			self:RegisterEvent("PLAYER_REGEN_ENABLED")
 		end
 		if settings.blink_boss then
-			-- To do: Factor this out into its own function Bar:RegisterBossFight()
-			if not NeedToKnow.BossStateBars then
-				NeedToKnow.BossStateBars = {}
-			end
-			NeedToKnow.BossStateBars[self] = 1
+			self:RegisterBossFight()
 		end
 	end
 end
@@ -245,6 +240,10 @@ function Bar:RegisterCombatLog()
     else
         self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     end
+end
+
+function Bar:RegisterBossFight()
+	ExecutiveFrame.BossFightBars[self] = 1
 end
 
 function Bar:Inactivate()
@@ -271,10 +270,7 @@ function Bar:Inactivate()
 	self["PLAYER_SPELLCAST_SUCCEEDED"] = nil  -- Fake event called by ExecutiveFrame
 
 	self.isBlinking = nil
-	if NeedToKnow.BossStateBars then
-		NeedToKnow.BossStateBars[self] = nil
-	end
-	-- self:UnregisterBossFight()
+	self:UnregisterBossFight()
 
 	if self.settings.bDetectExtends then
 		NeedToKnow.UnregisterSpellcastSent()
@@ -287,6 +283,10 @@ function Bar:Inactivate()
 			NeedToKnow.UnregisterSpellcastSent()
 		end
 	end
+end
+
+function Bar:UnregisterBossFight()
+	ExecutiveFrame.BossFightBars[self] = nil
 end
 
 
