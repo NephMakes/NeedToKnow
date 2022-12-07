@@ -20,8 +20,6 @@ local UnitExists = UnitExists
 local UnitGUID = UnitGUID
 
 -- Deprecated: 
-local g_UnitIsFriend = UnitIsFriend
-local g_UnitAffectingCombat = UnitAffectingCombat
 local m_last_guid = addonTable.m_last_guid  -- Used by detect extends
 local m_bCombatWithBoss = addonTable.m_bCombatWithBoss  -- For bars that only blink in boss fights
 
@@ -269,7 +267,6 @@ function Bar:Inactivate()
 	}
 	for k, event in pairs(eventList) do
 		self:UnregisterEvent(event)
-		-- self[event] = nil
 	end
 	self["PLAYER_SPELLCAST_SUCCEEDED"] = nil  -- Fake event called by ExecutiveFrame
 
@@ -800,7 +797,6 @@ function FindAura:FindBuffCooldown(spellEntry, allStacks)
 		local start = buffStacks.max.expirationTime - buffStacks.max.duration
 		local expirationTime = start + duration
 		if expirationTime > now then
-			-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, buffStacks.min.buffName, 1, expirationTime, buffStacks.min.iconPath, buffStacks.min.caster)                   
 			self:AddInstanceToStacks(allStacks, spellEntry, duration, buffStacks.min.buffName, 1, expirationTime, buffStacks.min.iconPath, buffStacks.min.caster)                   
 		end
 	elseif self.expirationTime and self.expirationTime > now + 0.1 then

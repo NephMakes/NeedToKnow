@@ -13,7 +13,7 @@ function Bar:ShouldBlink(barSettings, unitExists)
 	-- Called by Bar:CheckAura()
 	if barSettings.blink_enabled then
 		local shouldBlink = unitExists and not UnitIsDead(self.unit)
-		if shouldBlink and not UnitAffectingCombat("player") and not barSettings.blink_ooc then
+		if shouldBlink and not barSettings.blink_ooc and not UnitAffectingCombat("player") then
 			shouldBlink = false
 		end
 		if shouldBlink and barSettings.blink_boss then

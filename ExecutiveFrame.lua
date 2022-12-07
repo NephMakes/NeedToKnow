@@ -1,14 +1,9 @@
-﻿-- Handles addon setup and certain combat functions 
+﻿-- Addon setup and certain combat functions 
 
 local addonName, addonTable = ...
 local ExecutiveFrame = NeedToKnow.ExecutiveFrame
 
 local MAX_BARGROUPS = 4
-
-
--- ----------------------
--- Kitjan's addon locals:
--- ----------------------
 
 -- Local version of global functions
 local g_GetActiveTalentGroup = _G.GetSpecialization or _G.GetActiveTalentGroup
@@ -25,59 +20,7 @@ local m_bInCombat       = addonTable.m_bInCombat
 local m_bCombatWithBoss = addonTable.m_bCombatWithBoss
 
 
--- ---------------
--- Local functions
--- ---------------
-
-local function GetNameAndServer(unit)
-	local name, server = UnitName(unit)
-	if ( name and server ) then 
-		return name .. '-' .. server
-	end
-	return name
-end
-
-local function RefreshRaidMemberNames()
-	-- So we can see if any are in combat with a boss
-	-- Used for bars that blink only in boss fights
-
-	NeedToKnow.raid_members = {}
-
-	if ( IsInRaid() ) then
-		for i = 1, 40 do
-			local unit = "raid"..i
-			-- local name = NeedToKnow.GetNameAndServer(unit)
-			local name = GetNameAndServer(unit)
-			if ( name ) then NeedToKnow.raid_members[name] = unit end
-		end
-	elseif ( IsInGroup() ) then
-		for i = 1, 5 do
-			local unit = "party"..i
-			-- local name = NeedToKnow.GetNameAndServer(unit)
-			local name = GetNameAndServer(unit)
-			if ( name ) then NeedToKnow.raid_members[name] = unit end
-		end
-	end
-	-- Kitjan: Raid pets don't get server name decoration in combat log
-
-	-- Get the player and their pet in directly
-	-- (player will always have a nil server)
-
-	local unit = "player"
-	local name = UnitName(unit)
-	NeedToKnow.raid_members[name] = unit
-
-	unit = "pet"
-	name = UnitName(unit)
-	if ( name ) then
-		NeedToKnow.raid_members[name] = unit
-	end
-end
-
-
--- -----------
--- Addon setup
--- -----------
+--[[ ExecutiveFrame functions ]]--
 
 function ExecutiveFrame:OnEvent(event, ...)
 	local f = self[event]
@@ -90,8 +33,7 @@ ExecutiveFrame:RegisterEvent("ADDON_LOADED")
 ExecutiveFrame:RegisterEvent("PLAYER_LOGIN")
 
 function ExecutiveFrame:ADDON_LOADED(addon)
-	if addon == "NeedToKnow" then
-
+	if addon == addonName then
 		if not NeedToKnow.IsVisible then
 			NeedToKnow.IsVisible = true
 		end
@@ -143,11 +85,6 @@ function ExecutiveFrame:PLAYER_LOGIN()
 	RefreshRaidMemberNames()
 end
 
-
--- ----------------------------
--- Player settings and profiles
--- ----------------------------
-
 function ExecutiveFrame:ACTIVE_TALENT_GROUP_CHANGED()
 	-- Kitjan: This is the only event we're guaranteed to get on a talent switch,
 	-- so we have to listen for it.  However, the client may not yet have
@@ -158,117 +95,120 @@ function ExecutiveFrame:ACTIVE_TALENT_GROUP_CHANGED()
 end
 
 function ExecutiveFrame:PLAYER_TALENT_UPDATE()
-	if ( NeedToKnow.CharSettings ) then
+	if NeedToKnow.CharSettings then
 		local spec = g_GetActiveTalentGroup()
 		local profile_key = NeedToKnow.CharSettings.Specs[spec]
-		if ( not profile_key ) then
+		if not profile_key then
 			print("NeedToKnow: Switching to spec", spec, "for the first time")
 			profile_key = NeedToKnow.CreateProfile(CopyTable(NEEDTOKNOW.PROFILE_DEFAULTS), spec)
 		end
-		NeedToKnow.ChangeProfile(profile_key);
+		NeedToKnow.ChangeProfile(profile_key)
 	end
 end
 
-
--- ----------------
--- Combat functions
--- ----------------
-
-function ExecutiveFrame:UNIT_TARGET(unitTargeting)
-	-- Used for bars that blink only in boss fights
-	-- Determine if in combat with boss, for bars that blink only for bosses
-    if ( m_bInCombat and not m_bCombatWithBoss ) then
-        if ( UnitLevel(unitTargeting .. 'target') == -1 ) then
-            m_bCombatWithBoss = true
-            if ( NeedToKnow.BossStateBars ) then
-                for bar, unused in pairs(NeedToKnow.BossStateBars) do
-                    bar:CheckAura()
-                end
-            end
-        end
-    end
-end
-
 function ExecutiveFrame:PLAYER_REGEN_DISABLED(unitTargeting)
-	-- Used for bars that blink only in boss fights
-	-- Determine if in combat with boss, for bars that blink only for bosses
-    m_bInCombat = true
-    m_bCombatWithBoss = false
-    if ( IsInRaid() ) then
-        for i = 1, 40 do
-            if ( UnitLevel("raid"..i.."target") == -1 ) then
-                m_bCombatWithBoss = true;
-                break;
-            end
-        end
-    elseif ( IsInGroup() ) then
-        for i = 1, 5 do
-            if ( UnitLevel("party"..i.."target") == -1 ) then
-                m_bCombatWithBoss = true;
-                break;
-            end
-        end
-    elseif ( UnitLevel("target") == -1 ) then
-        m_bCombatWithBoss = true
-    end
-    if ( NeedToKnow.BossStateBars ) then
-        for bar, unused in pairs(NeedToKnow.BossStateBars) do
-            bar:CheckAura()
-        end
-    end
+	m_bInCombat = true
+	m_bCombatWithBoss = false
+
+	if UnitLevel("target") == -1 then
+		m_bCombatWithBoss = true
+	elseif IsInRaid() then
+		for i = 1, 40 do
+			if UnitLevel("raid"..i.."target") == -1 then
+				m_bCombatWithBoss = true
+				break
+			end
+		end
+	elseif IsInGroup() then
+		for i = 1, 5 do
+			if UnitLevel("party"..i.."target") == -1 then
+				m_bCombatWithBoss = true
+				break
+			end
+		end
+	end
+
+	if NeedToKnow.BossStateBars then
+		for bar, unused in pairs(NeedToKnow.BossStateBars) do
+			bar:CheckAura()
+		end
+	end
 end
 
 function ExecutiveFrame:PLAYER_REGEN_ENABLED(unitTargeting)
-	-- Used for bars that blink only in boss fights
-    m_bInCombat = false
-    m_bCombatWithBoss = false
-    if ( NeedToKnow.BossStateBars ) then
-        for bar, unused in pairs(NeedToKnow.BossStateBars) do
-            bar:CheckAura()
-        end
-    end
+	m_bInCombat = false
+	m_bCombatWithBoss = false
+	if NeedToKnow.BossStateBars then
+		for bar, unused in pairs(NeedToKnow.BossStateBars) do
+			bar:CheckAura()
+		end
+	end
+end
+
+function ExecutiveFrame:UNIT_TARGET(unitTargeting)
+	if m_bInCombat and not m_bCombatWithBoss then
+		if UnitLevel(unitTargeting.."target") == -1 then
+			m_bCombatWithBoss = true
+			if NeedToKnow.BossStateBars then
+				for bar, unused in pairs(NeedToKnow.BossStateBars) do
+					bar:CheckAura()
+				end
+			end
+		end
+	end
 end
 
 function ExecutiveFrame:GROUP_ROSTER_UPDATE()
-	-- Used for bars that blink only in boss fights
-	RefreshRaidMemberNames();
+	RefreshRaidMemberNames()
 end
 
---[[
-function NeedToKnow.RefreshRaidMemberNames()
-    NeedToKnow.raid_members = {}
+local function RefreshRaidMemberNames()
+	NeedToKnow.raid_members = {}
 
-    -- Note, if I did want to handle raid pets as well, they do not get the 
-    -- server name decoration in the combat log as of 5.0.4
-    if IsInRaid() then
-        for i = 1, 40 do
-            local unit = "raid"..i
-            -- local name = NeedToKnow.GetNameAndServer(unit)
-            local name = GetNameAndServer(unit)
-            if ( name ) then NeedToKnow.raid_members[name] = unit end
-        end
-    elseif IsInGroup() then
-        for i = 1, 5 do
-            local unit = "party"..i
-            -- local name = NeedToKnow.GetNameAndServer(unit)
-            local name = GetNameAndServer(unit)
-            if ( name ) then NeedToKnow.raid_members[name] = unit end
-        end
-    end
+	if IsInRaid() then
+		for i = 1, 40 do
+			local unit = "raid"..i
+			local name = GetNameAndServer(unit)
+			if name then 
+				NeedToKnow.raid_members[name] = unit
+			else
+				break
+			end
+		end
+	elseif IsInGroup() then
+		for i = 1, 5 do
+			local unit = "party"..i
+			local name = GetNameAndServer(unit)
+			if name then 
+				NeedToKnow.raid_members[name] = unit
+			else
+				break
+			end
+		end
+	end
+	-- Kitjan: Raid pets don't get server name decoration in combat log
 
-    -- Also get the player and their pet in directly
-    -- (don't need NameAndServer since the player will always have a nil server.)
-    local unit = "player"
-    local name = UnitName(unit)
-    NeedToKnow.raid_members[name] = unit
+	-- Get player and their pet directly
+	-- (player will always have a nil server)
 
-    unit = "pet"
-    name = UnitName(unit)
-    if ( name ) then
-        NeedToKnow.raid_members[name] = unit
-    end
+	local unit = "player"
+	local name = UnitName(unit)
+	NeedToKnow.raid_members[name] = unit
+
+	unit = "pet"
+	name = UnitName(unit)
+	if name then
+		NeedToKnow.raid_members[name] = unit
+	end
 end
-]]--
+
+local function GetNameAndServer(unit)
+	local name, server = UnitName(unit)
+	if name and server then 
+		return name..'-'..server
+	end
+	return name
+end
 
 function ExecutiveFrame:COMBAT_LOG_EVENT_UNFILTERED()
 	-- For monitoring last raid recipient and detect extends
@@ -297,7 +237,6 @@ function ExecutiveFrame:COMBAT_LOG_EVENT_UNFILTERED()
                 local bar, one
                 for bar, one in pairs(NeedToKnow.BarsForPSS) do
                     local unitTarget = NeedToKnow.raid_members[t[found].target or ""]
-                    -- NeedToKnow.Bar_OnEvent(bar, "PLAYER_SPELLCAST_SUCCEEDED", "player", spell, spellid, unitTarget);
 					bar:OnEvent("PLAYER_SPELLCAST_SUCCEEDED", "player", spell, spellid, unitTarget)
                 end
             end
