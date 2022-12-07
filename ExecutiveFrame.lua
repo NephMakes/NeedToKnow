@@ -103,7 +103,7 @@ end
 
 function ExecutiveFrame:UpdateBossEvents()
 	-- Called by Bar:RegisterBossFight() and Bar:UnregisterBossFight()
-	if self.BossFightBars ~= {} then
+	if next(self.BossFightBars) ~= nil then
 		self:RegisterEvent("PLAYER_REGEN_DISABLED")
 		self:RegisterEvent("PLAYER_REGEN_ENABLED")
 	else
@@ -113,7 +113,6 @@ function ExecutiveFrame:UpdateBossEvents()
 end
 
 function ExecutiveFrame:PLAYER_REGEN_DISABLED()
-	-- self.inCombat = true
 	NeedToKnow.isBossFight = nil
 	if UnitLevel("target") == -1 then
 		NeedToKnow.isBossFight = true
@@ -140,17 +139,14 @@ function ExecutiveFrame:PLAYER_REGEN_DISABLED()
 end
 
 function ExecutiveFrame:UNIT_TARGET(unit)
-	-- if self.inCombat and not NeedToKnow.isBossFight then
 	if UnitLevel(unit.."target") == -1 then
 		NeedToKnow.isBossFight = true
 		self:UnregisterEvent("UNIT_TARGET")
 		self:UpdateBossFightBars()
 	end
-	-- end
 end
 
 function ExecutiveFrame:PLAYER_REGEN_ENABLED()
-	-- self.inCombat = nil
 	NeedToKnow.isBossFight = nil
 	self:UnregisterEvent("UNIT_TARGET")
 	self:UpdateBossFightBars()
