@@ -4,27 +4,10 @@ local addonName, addonTable = ...
 
 -- Namespaces
 local Bar = NeedToKnow.Bar
-local BarEvent = NeedToKnow.BarEvent
 local FindAura = NeedToKnow.FindAura
 local Cooldown = NeedToKnow.Cooldown
 
 local UPDATE_INTERVAL = 0.025  -- 40 /sec
-
---[[
-local BarEventList = {
-	-- Used by Bar:SetType(), Bar:Activate(), Bar:Inactivate()
-	"ACTIONBAR_UPDATE_COOLDOWN", 
-	"COMBAT_LOG_EVENT_UNFILTERED", 
-	"PLAYER_FOCUS_CHANGED", 
-	"PLAYER_TARGET_CHANGED", 
-	"PLAYER_TOTEM_UPDATE", 
-	"SPELL_UPDATE_COOLDOWN", 
-	"SPELL_UPDATE_USABLE", 
-	"UNIT_AURA", 
-	"UNIT_PET", 
-	"UNIT_TARGET"
-}
-]]--
 
 -- Local versions of frequently-used global functions
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
@@ -188,51 +171,37 @@ function Bar:Activate()
 	local barType = settings.BuffOrDebuff
 	if barType == "TOTEM" then
 		self:RegisterEvent("PLAYER_TOTEM_UPDATE")
-		self.PLAYER_TOTEM_UPDATE = BarEvent.PLAYER_TOTEM_UPDATE
 	elseif barType == "CASTCD" then
 		self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 		self:RegisterEvent("SPELL_UPDATE_COOLDOWN")
-		self.ACTIONBAR_UPDATE_COOLDOWN = BarEvent.ACTIONBAR_UPDATE_COOLDOWN
-		self.SPELL_UPDATE_COOLDOWN = BarEvent.SPELL_UPDATE_COOLDOWN
 	elseif barType == "EQUIPSLOT" then
 		self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
-		self.ACTIONBAR_UPDATE_COOLDOWN = BarEvent.ACTIONBAR_UPDATE_COOLDOWN
 	elseif barType == "USABLE" then
 		self:RegisterEvent("SPELL_UPDATE_USABLE")
-		self.SPELL_UPDATE_USABLE = BarEvent.SPELL_UPDATE_USABLE
 	elseif self.unit == "targettarget" then
 		-- We don't get UNIT_AURA for target of target
 		self:RegisterEvent("PLAYER_TARGET_CHANGED")
 		self:RegisterEvent("UNIT_TARGET")
 		self:RegisterCombatLog() 
-		self.PLAYER_TARGET_CHANGED = BarEvent.PLAYER_TARGET_CHANGED
-		self.UNIT_TARGET = BarEvent.UNIT_TARGET
-		self.COMBAT_LOG_EVENT_UNFILTERED = BarEvent.COMBAT_LOG_EVENT_UNFILTERED
 	-- elseif self.unit ~== "lastraid" then
 		-- self:RegisterUnitEvent("UNIT_AURA", self.unit)
-		-- self.UNIT_AURA = BarEvent.UNIT_AURA
 	else
 		self:RegisterEvent("UNIT_AURA")
-		self.UNIT_AURA = BarEvent.UNIT_AURA
 	end
 
 	if self.unit == "focus" then
 		self:RegisterEvent("PLAYER_FOCUS_CHANGED")
-		self.PLAYER_FOCUS_CHANGED = BarEvent.PLAYER_FOCUS_CHANGED
 	elseif self.unit == "target" then
 		self:RegisterEvent("PLAYER_TARGET_CHANGED")
-		self.PLAYER_TARGET_CHANGED = BarEvent.PLAYER_TARGET_CHANGED
 	elseif self.unit == "pet" then
 		self:RegisterEvent("UNIT_PET")
 		-- self:RegisterUnitEvent("UNIT_PET", "pet")  -- To do
-		self.UNIT_PET = BarEvent.UNIT_PET
 	elseif settings.Unit == "lastraid" then
 		if not NeedToKnow.BarsForPSS then
 			NeedToKnow.BarsForPSS = {}
 		end
 		NeedToKnow.BarsForPSS[self] = true
 		NeedToKnow.RegisterSpellcastSent()
-		self.PLAYER_SPELLCAST_SUCCEEDED = BarEvent.PLAYER_SPELLCAST_SUCCEEDED
 	end
 
 	if settings.bDetectExtends then
@@ -260,8 +229,6 @@ function Bar:Activate()
 		if not settings.blink_ooc then
 			self:RegisterEvent("PLAYER_REGEN_DISABLED")
 			self:RegisterEvent("PLAYER_REGEN_ENABLED")
-			self.PLAYER_REGEN_DISABLED = BarEvent.PLAYER_REGEN_DISABLED
-			self.PLAYER_REGEN_ENABLED = BarEvent.PLAYER_REGEN_ENABLED
 		end
 		if settings.blink_boss then
 			-- To do: Factor this out into its own function Bar:RegisterBossFight()
@@ -272,11 +239,6 @@ function Bar:Activate()
 		end
 	end
 end
-
---function Bar:ActivateEvent(event)
---	self:RegisterEvent(event)
---	self[event] = BarEvent[event]
---end
 
 function Bar:RegisterCombatLog()
 	-- For monitoring target of target
@@ -307,7 +269,7 @@ function Bar:Inactivate()
 	}
 	for k, event in pairs(eventList) do
 		self:UnregisterEvent(event)
-		self[event] = nil
+		-- self[event] = nil
 	end
 	self["PLAYER_SPELLCAST_SUCCEEDED"] = nil  -- Fake event called by ExecutiveFrame
 
@@ -342,11 +304,11 @@ function Bar:OnEvent(event, unit, ...)
 	end
 end
 
-function BarEvent:ACTIONBAR_UPDATE_COOLDOWN()
+function Bar:ACTIONBAR_UPDATE_COOLDOWN()
 	self:CheckAura()
 end
 
-function BarEvent:COMBAT_LOG_EVENT_UNFILTERED(unit, ...)
+function Bar:COMBAT_LOG_EVENT_UNFILTERED(unit, ...)
 	-- To monitor target of target
 	local _, event, _, _, _, _, _, targetGUID, _, _, _, spellID, spellName = CombatLogGetCurrentEventInfo()
 	if auraEvents[event] then
@@ -371,19 +333,19 @@ local auraEvents = {
     SPELL_AURA_BROKEN_SPELL = true
 }
 
-function BarEvent:PLAYER_FOCUS_CHANGED(unit, ...)
+function Bar:PLAYER_FOCUS_CHANGED(unit, ...)
 	self:CheckAura()
 end
 
-function BarEvent:PLAYER_REGEN_DISABLED()
+function Bar:PLAYER_REGEN_DISABLED()
 	self:CheckAura()
 end
 
-function BarEvent:PLAYER_REGEN_ENABLED()
+function Bar:PLAYER_REGEN_ENABLED()
 	self:CheckAura()
 end
 
-function BarEvent:PLAYER_SPELLCAST_SUCCEEDED(unit, ...)
+function Bar:PLAYER_SPELLCAST_SUCCEEDED(unit, ...)
 	-- Fake event called by ExecutiveFrame to monitor last raid recipient
 	local spellName, spellID, target = select(1,...)
 	local i, entry
@@ -397,38 +359,38 @@ function BarEvent:PLAYER_SPELLCAST_SUCCEEDED(unit, ...)
 	end
 end
 
-function BarEvent:PLAYER_TARGET_CHANGED(unit, ...)
+function Bar:PLAYER_TARGET_CHANGED(unit, ...)
 	if self.unit == "targettarget" then
 		self:RegisterCombatLog()
 	end
 	self:CheckAura()
 end
 
-function BarEvent:PLAYER_TOTEM_UPDATE()
+function Bar:PLAYER_TOTEM_UPDATE()
 	self:CheckAura()
 end
 
-function BarEvent:SPELL_UPDATE_COOLDOWN()
+function Bar:SPELL_UPDATE_COOLDOWN()
 	self:CheckAura()
 end
 
-function BarEvent:SPELL_UPDATE_USABLE()
+function Bar:SPELL_UPDATE_USABLE()
 	self:CheckAura()
 end
 
-function BarEvent:UNIT_AURA(unit, ...)
+function Bar:UNIT_AURA(unit, ...)
 	if unit == self.unit then
 		self:CheckAura()
 	end
 end
 
-function BarEvent:UNIT_PET(unit, ...)
+function Bar:UNIT_PET(unit, ...)
 	if unit == "player" then
 		self:CheckAura()
 	end
 end
 
-function BarEvent:UNIT_TARGET(unit, ...)
+function Bar:UNIT_TARGET(unit, ...)
 	if self.unit == "targettarget" and unit == "target" then
 		self:RegisterCombatLog()
 	end

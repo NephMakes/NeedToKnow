@@ -63,8 +63,7 @@ function Bar:UpdateBlink(elapsed)
 	-- Called by Bar:OnUpdate()
 	self.blinkPhase = self.blinkPhase + elapsed/CYCLE_DURATION
 	if self.blinkPhase >= 1 then
-		self.blinkPhase = self.blinkPhase - 1
-		-- To do: self.blinkPhase = self.blinkPhase%1  -- Keep decimal remainder
+		self.blinkPhase = self.blinkPhase%1  -- Keep decimal remainder
 	end
 	self.bar1:SetAlpha(self.settings.MissingBlink.a * 
 		(0.6 + 0.4 * math.cos(2 * math.pi * self.blinkPhase))
