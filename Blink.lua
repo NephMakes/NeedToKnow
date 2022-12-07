@@ -1,10 +1,9 @@
 -- Blink bar when aura/cooldown missing
 
-local _, addonTable = ...
+-- local _, addonTable = ...
 local Bar = NeedToKnow.Bar
 
 -- local CYCLE_DURATION = 1
-
 
 function Bar:ShouldBlink(barSettings, unitExists)
 	-- Determine if bar should blink, return true/false

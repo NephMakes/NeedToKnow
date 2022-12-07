@@ -29,10 +29,6 @@ function Bar:New(group, barID)
 end
 
 function Bar:OnLoad()
-	-- Called by NeedToKnow_BarTemplate
-
-	-- Mixin(self, Bar) -- Inherit Bar:Methods()
-
 	self:RegisterForDrag("LeftButton")
 	self:SetScript("OnEnter", Bar.OnEnter)
 	self:SetScript("OnLeave", Bar.OnLeave)

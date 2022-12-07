@@ -244,6 +244,7 @@ end
 
 function Bar:RegisterBossFight()
 	ExecutiveFrame.BossFightBars[self] = 1
+	ExecutiveFrame:UpdateBossEvents()
 end
 
 function Bar:Inactivate()
@@ -287,6 +288,7 @@ end
 
 function Bar:UnregisterBossFight()
 	ExecutiveFrame.BossFightBars[self] = nil
+	ExecutiveFrame:UpdateBossEvents()
 end
 
 

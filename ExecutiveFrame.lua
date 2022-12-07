@@ -6,8 +6,8 @@ local ExecutiveFrame = NeedToKnow.ExecutiveFrame
 local MAX_BARGROUPS = 4
 
 -- Local version of global functions
-local g_GetActiveTalentGroup = _G.GetSpecialization or _G.GetActiveTalentGroup
-local g_GetTime = GetTime
+local GetSpec = _G.GetSpecialization or _G.GetActiveTalentGroup  -- Retail or Classic
+local GetTime = GetTime
 
 -- Spellcast tracking
 local m_last_cast      = addonTable.m_last_cast
@@ -43,13 +43,12 @@ function ExecutiveFrame:ADDON_LOADED(addon)
 			self.BarGroup[groupID] = _G["NeedToKnow_Group"..groupID]
 		end
 
+		NeedToKnow.totem_drops = {} -- array 1-4 of precise times totems appeared
 		self.BossFightBars = {}
-
 		m_last_cast = {} -- [n] = { spell, target, serial }
 		m_last_cast_head = 1
 		m_last_cast_tail = 1
 		m_last_guid = {} -- [spell][guidTarget] = { time, dur, expiry }
-		NeedToKnow.totem_drops = {} -- array 1-4 of precise times totems appeared
 	end
 end
 
@@ -57,36 +56,37 @@ function ExecutiveFrame:PLAYER_LOGIN()
 	NeedToKnowLoader.SafeUpgrade()
 	self:PLAYER_TALENT_UPDATE()
 
-	NeedToKnow.guidPlayer = UnitGUID("player")
-
+	self:RegisterEvent("PLAYER_TALENT_UPDATE")
+	self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 	local _, className = UnitClass("player")
 	if className == "DEATHKNIGHT" and WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
 		NeedToKnow.isClassicDeathKnight = true
 		-- So we can filter rune cooldowns out of ability cooldowns
 	end
-
-	self:RegisterEvent("PLAYER_TALENT_UPDATE")
-	self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+	NeedToKnow.guidPlayer = UnitGUID("player")
 
 	NeedToKnow:Update()
 
-	-- For BossFight
-	self:RegisterEvent("UNIT_TARGET")
-	self:RegisterEvent("PLAYER_REGEN_DISABLED")
-	self:RegisterEvent("PLAYER_REGEN_ENABLED")
+	self:UpdateBossFight()  -- In case fight already in progress
+
 	self:RegisterEvent("GROUP_ROSTER_UPDATE")
+	self:RefreshRaidMemberNames()
 
 	self:UnregisterEvent("PLAYER_LOGIN")
 	self:UnregisterEvent("ADDON_LOADED")
 	NeedToKnowLoader = nil
-
-	self:RefreshRaidMemberNames()
 end
 
-function ExecutiveFrame:UpdateEvents()
-	-- Don't register events if we don't need to
-	-- Because no bars registering BossFight
-	-- Because already know isBossFight
+function ExecutiveFrame:PLAYER_TALENT_UPDATE()
+	if NeedToKnow.CharSettings then
+		local spec = GetSpec()
+		local profile_key = NeedToKnow.CharSettings.Specs[spec]
+		if not profile_key then
+			print("NeedToKnow: Switching to spec", spec, "for the first time")
+			profile_key = NeedToKnow.CreateProfile(CopyTable(NEEDTOKNOW.PROFILE_DEFAULTS), spec)
+		end
+		NeedToKnow.ChangeProfile(profile_key)
+	end
 end
 
 function ExecutiveFrame:ACTIVE_TALENT_GROUP_CHANGED()
@@ -98,20 +98,22 @@ function ExecutiveFrame:ACTIVE_TALENT_GROUP_CHANGED()
 	self:PLAYER_TALENT_UPDATE()
 end
 
-function ExecutiveFrame:PLAYER_TALENT_UPDATE()
-	if NeedToKnow.CharSettings then
-		local spec = g_GetActiveTalentGroup()
-		local profile_key = NeedToKnow.CharSettings.Specs[spec]
-		if not profile_key then
-			print("NeedToKnow: Switching to spec", spec, "for the first time")
-			profile_key = NeedToKnow.CreateProfile(CopyTable(NEEDTOKNOW.PROFILE_DEFAULTS), spec)
-		end
-		NeedToKnow.ChangeProfile(profile_key)
+
+-- BossFight (Used if blink only for bosses and bar unit friendly)
+
+function ExecutiveFrame:UpdateBossEvents()
+	-- Called by Bar:RegisterBossFight() and Bar:UnregisterBossFight()
+	if self.BossFightBars ~= {} then
+		self:RegisterEvent("PLAYER_REGEN_DISABLED")
+		self:RegisterEvent("PLAYER_REGEN_ENABLED")
+	else
+		self:UnregisterEvent("PLAYER_REGEN_DISABLED")
+		self:UnregisterEvent("PLAYER_REGEN_ENABLED")
 	end
 end
 
-function ExecutiveFrame:PLAYER_REGEN_DISABLED(unitTargeting)
-	self.inCombat = true
+function ExecutiveFrame:PLAYER_REGEN_DISABLED()
+	-- self.inCombat = true
 	NeedToKnow.isBossFight = nil
 	if UnitLevel("target") == -1 then
 		NeedToKnow.isBossFight = true
@@ -130,26 +132,65 @@ function ExecutiveFrame:PLAYER_REGEN_DISABLED(unitTargeting)
 			end
 		end
 	end
+	if not NeedToKnow.isBossFight then
+		-- Keep checking in case boss shows up later or was face-pulled
+		self:RegisterEvent("UNIT_TARGET")
+	end
+	self:UpdateBossFightBars()
+end
+
+function ExecutiveFrame:UNIT_TARGET(unit)
+	-- if self.inCombat and not NeedToKnow.isBossFight then
+	if UnitLevel(unit.."target") == -1 then
+		NeedToKnow.isBossFight = true
+		self:UnregisterEvent("UNIT_TARGET")
+		self:UpdateBossFightBars()
+	end
+	-- end
+end
+
+function ExecutiveFrame:PLAYER_REGEN_ENABLED()
+	-- self.inCombat = nil
+	NeedToKnow.isBossFight = nil
+	self:UnregisterEvent("UNIT_TARGET")
 	self:UpdateBossFightBars()
 end
 
 function ExecutiveFrame:UpdateBossFightBars()
-	for bar, unused in pairs(self.BossFightBars) do
+	for bar, v in pairs(self.BossFightBars) do
 		bar:CheckAura()
 	end
 end
 
-function ExecutiveFrame:PLAYER_REGEN_ENABLED(unitTargeting)
-	self.inCombat = nil
-	NeedToKnow.isBossFight = nil
-	self:UpdateBossFightBars()
+function ExecutiveFrame:UpdateBossFight()
+	-- In case fight already in progress
+	if UnitAffectingCombat("player") and self.BossFightBars ~= {} then
+		self:PLAYER_REGEN_DISABLED()
+	end
 end
 
-function ExecutiveFrame:UNIT_TARGET(unitTargeting)
-	if self.inCombat and not NeedToKnow.isBossFight then
-		if UnitLevel(unitTargeting.."target") == -1 then
-			NeedToKnow.isBossFight = true
-			self:UpdateBossFightBars()
+
+-- For last raid recipient and detect extends
+
+function NeedToKnow.RegisterSpellcastSent()
+	-- Called by Bar:Activate() for last raid recipient and detect extends
+	if ( NeedToKnow.nRegisteredSent ) then
+		NeedToKnow.nRegisteredSent = NeedToKnow.nRegisteredSent + 1
+	else
+		NeedToKnow.nRegisteredSent = 1
+		ExecutiveFrame:RegisterEvent("UNIT_SPELLCAST_SENT")
+	end
+end
+
+function NeedToKnow.UnregisterSpellcastSent()
+	-- Called by Bar:Inactivate() for last raid recipient and detect extends
+	if ( NeedToKnow.nRegisteredSent ) then
+		NeedToKnow.nRegisteredSent = NeedToKnow.nRegisteredSent - 1
+		if ( 0 == NeedToKnow.nRegisteredSent ) then
+			NeedToKnow.nRegisteredSent = nil
+			ExecutiveFrame:UnregisterEvent("UNIT_SPELLCAST_SENT")
+			ExecutiveFrame:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+			ExecutiveFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 		end
 	end
 end
@@ -159,6 +200,10 @@ function ExecutiveFrame:GROUP_ROSTER_UPDATE()
 end
 
 function ExecutiveFrame:RefreshRaidMemberNames()
+	-- For ExecutiveFrame:COMBAT_LOG_EVENT_UNFILTERED()
+	-- and ExecutiveFrame:UNIT_SPELLCAST_SUCCEEDED
+
+	-- self.GroupRoster = {}
 	NeedToKnow.raid_members = {}
 
 	if IsInRaid() then
@@ -199,6 +244,7 @@ function ExecutiveFrame:RefreshRaidMemberNames()
 end
 
 function ExecutiveFrame:GetNameAndServer(unit)
+	-- Called by ExecutiveFrame:RefreshRaidMemberNames()
 	local name, server = UnitName(unit)
 	if name and server then 
 		return name..'-'..server
@@ -207,12 +253,12 @@ function ExecutiveFrame:GetNameAndServer(unit)
 end
 
 function ExecutiveFrame:COMBAT_LOG_EVENT_UNFILTERED()
-	-- For monitoring last raid recipient and detect extends
+	-- For last raid recipient and detect extends
 
     local tod, event, hideCaster, guidCaster, sourceName, sourceFlags, sourceRaidFlags, guidTarget, nameTarget, _, _, spellid, spell = CombatLogGetCurrentEventInfo()
 
     -- the time that's passed in appears to be time of day, not game time like everything else.
-    local time = g_GetTime() 
+    local time = GetTime() 
 
     -- TODO: Is checking r.state sufficient or must event be checked instead?
     if ( guidCaster == NeedToKnow.guidPlayer and event=="SPELL_CAST_SUCCESS") then
@@ -262,7 +308,7 @@ function ExecutiveFrame:COMBAT_LOG_EVENT_UNFILTERED()
 end
 
 function ExecutiveFrame:UNIT_SPELLCAST_SENT(unit, tgt, lineID, spellID)
-	-- For monitoring target of target (and maybe detect extends?)
+	-- For last raid recipient and detect extends
     if unit == "player" then
         -- TODO: I hate to pay this memory cost for every "spell" ever cast.
         --       Would be nice to at least garbage collect this data at some point, but that
@@ -270,7 +316,7 @@ function ExecutiveFrame:UNIT_SPELLCAST_SENT(unit, tgt, lineID, spellID)
         if ( not m_last_sent ) then
             m_last_sent = {}
         end
-        m_last_sent[spellID] = g_GetTime()
+        m_last_sent[spellID] = GetTime()
 
         -- How expensive a second check do we need?
         if ( m_last_guid[spellID] or NeedToKnow.BarsForPSS ) then
@@ -298,7 +344,7 @@ function ExecutiveFrame:UNIT_SPELLCAST_SENT(unit, tgt, lineID, spellID)
 end
 
 function ExecutiveFrame:UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID, spellID)
-	-- For monitoring target of target (and maybe detect extends?)
+	-- For last raid recipient and detect extends
     if unit == "player" then
         local found
         local t = m_last_cast
@@ -327,29 +373,6 @@ function ExecutiveFrame:UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID, spellID)
             end
         end
     end
-end
-
-function NeedToKnow.RegisterSpellcastSent()
-	-- For monitoring last raid recipient and detect extends
-	if ( NeedToKnow.nRegisteredSent ) then
-		NeedToKnow.nRegisteredSent = NeedToKnow.nRegisteredSent + 1
-	else
-		NeedToKnow.nRegisteredSent = 1
-		ExecutiveFrame:RegisterEvent("UNIT_SPELLCAST_SENT")
-	end
-end
-
-function NeedToKnow.UnregisterSpellcastSent()
-	-- For monitoring last raid recipient and detect extends
-	if ( NeedToKnow.nRegisteredSent ) then
-		NeedToKnow.nRegisteredSent = NeedToKnow.nRegisteredSent - 1
-		if ( 0 == NeedToKnow.nRegisteredSent ) then
-			NeedToKnow.nRegisteredSent = nil
-			ExecutiveFrame:UnregisterEvent("UNIT_SPELLCAST_SENT")
-			ExecutiveFrame:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
-			ExecutiveFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-		end
-	end
 end
 
 
