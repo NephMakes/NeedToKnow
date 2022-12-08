@@ -5,7 +5,6 @@ local ExecutiveFrame = NeedToKnow.ExecutiveFrame
 
 local MAX_BARGROUPS = 4
 
--- Local version of global functions
 local GetSpec = _G.GetSpecialization or _G.GetActiveTalentGroup  -- Retail or Classic
 local GetTime = GetTime
 
@@ -66,7 +65,6 @@ function ExecutiveFrame:PLAYER_LOGIN()
 	NeedToKnow.guidPlayer = UnitGUID("player")
 
 	NeedToKnow:Update()
-
 	self:UpdateBossFight()  -- In case fight already in progress
 
 	self:RegisterEvent("GROUP_ROSTER_UPDATE")
@@ -116,15 +114,17 @@ function ExecutiveFrame:PLAYER_REGEN_DISABLED()
 	NeedToKnow.isBossFight = nil
 	if UnitLevel("target") == -1 then
 		NeedToKnow.isBossFight = true
+	elseif UnitExists("boss1") then
+		NeedToKnow.isBossFight = true
 	elseif IsInRaid() then
-		for i = 1, 40 do
+		for i = 1, GetNumGroupMembers() do
 			if UnitLevel("raid"..i.."target") == -1 then
 				NeedToKnow.isBossFight = true
 				break
 			end
 		end
 	elseif IsInGroup() then
-		for i = 1, 5 do
+		for i = 1, GetNumSubgroupMembers() do 
 			if UnitLevel("party"..i.."target") == -1 then
 				NeedToKnow.isBossFight = true
 				break
@@ -160,7 +160,7 @@ end
 
 function ExecutiveFrame:UpdateBossFight()
 	-- In case fight already in progress
-	if UnitAffectingCombat("player") and self.BossFightBars ~= {} then
+	if UnitAffectingCombat("player") and next(self.BossFightBars) ~= nil then
 		self:PLAYER_REGEN_DISABLED()
 	end
 end
