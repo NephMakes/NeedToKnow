@@ -65,7 +65,6 @@ function ExecutiveFrame:PLAYER_LOGIN()
 	NeedToKnow.guidPlayer = UnitGUID("player")
 
 	NeedToKnow:Update()
-	self:UpdateBossFight()  -- In case fight already in progress
 
 	self:RegisterEvent("GROUP_ROSTER_UPDATE")
 	self:RefreshRaidMemberNames()
@@ -96,80 +95,26 @@ function ExecutiveFrame:ACTIVE_TALENT_GROUP_CHANGED()
 	self:PLAYER_TALENT_UPDATE()
 end
 
-
--- BossFight (Used if blink only for bosses and bar unit friendly)
-
-function ExecutiveFrame:UpdateBossEvents()
-	-- Called by Bar:RegisterBossFight() and Bar:UnregisterBossFight()
-	if next(self.BossFightBars) ~= nil then
-		self:RegisterEvent("PLAYER_REGEN_DISABLED")
-		self:RegisterEvent("PLAYER_REGEN_ENABLED")
-	else
-		self:UnregisterEvent("PLAYER_REGEN_DISABLED")
-		self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-	end
-end
-
 function ExecutiveFrame:PLAYER_REGEN_DISABLED()
-	NeedToKnow.isBossFight = nil
-	if UnitLevel("target") == -1 then
-		NeedToKnow.isBossFight = true
-	elseif UnitExists("boss1") then
-		NeedToKnow.isBossFight = true
-	elseif IsInRaid() then
-		for i = 1, GetNumGroupMembers() do
-			if UnitLevel("raid"..i.."target") == -1 then
-				NeedToKnow.isBossFight = true
-				break
-			end
-		end
-	elseif IsInGroup() then
-		for i = 1, GetNumSubgroupMembers() do 
-			if UnitLevel("party"..i.."target") == -1 then
-				NeedToKnow.isBossFight = true
-				break
-			end
-		end
-	end
-	if not NeedToKnow.isBossFight then
-		-- Keep checking in case boss shows up later or was face-pulled
-		self:RegisterEvent("UNIT_TARGET")
-	end
-	self:UpdateBossFightBars()
+	-- Registered by ExecutiveFrame:UpdateBossFightEvents()
+	self:GetBossFight()
 end
 
 function ExecutiveFrame:UNIT_TARGET(unit)
-	if UnitLevel(unit.."target") == -1 then
-		NeedToKnow.isBossFight = true
-		self:UnregisterEvent("UNIT_TARGET")
-		self:UpdateBossFightBars()
-	end
+	-- Registered by ExecutiveFrame:GetBossFight()
+	self:UpdateBossFight(unit)
 end
 
 function ExecutiveFrame:PLAYER_REGEN_ENABLED()
-	NeedToKnow.isBossFight = nil
-	self:UnregisterEvent("UNIT_TARGET")
-	self:UpdateBossFightBars()
-end
-
-function ExecutiveFrame:UpdateBossFightBars()
-	for bar, v in pairs(self.BossFightBars) do
-		bar:CheckAura()
-	end
-end
-
-function ExecutiveFrame:UpdateBossFight()
-	-- In case fight already in progress
-	if UnitAffectingCombat("player") and next(self.BossFightBars) ~= nil then
-		self:PLAYER_REGEN_DISABLED()
-	end
+	-- Registered by ExecutiveFrame:UpdateBossFightEvents()
+	self:ClearBossFight()
 end
 
 
--- For last raid recipient and detect extends
+-- For last raid recipient and detect extends:
 
 function NeedToKnow.RegisterSpellcastSent()
-	-- Called by Bar:Activate() for last raid recipient and detect extends
+	-- Called by Bar:Activate()
 	if ( NeedToKnow.nRegisteredSent ) then
 		NeedToKnow.nRegisteredSent = NeedToKnow.nRegisteredSent + 1
 	else
@@ -179,7 +124,7 @@ function NeedToKnow.RegisterSpellcastSent()
 end
 
 function NeedToKnow.UnregisterSpellcastSent()
-	-- Called by Bar:Inactivate() for last raid recipient and detect extends
+	-- Called by Bar:Inactivate()
 	if ( NeedToKnow.nRegisteredSent ) then
 		NeedToKnow.nRegisteredSent = NeedToKnow.nRegisteredSent - 1
 		if ( 0 == NeedToKnow.nRegisteredSent ) then
@@ -189,118 +134,6 @@ function NeedToKnow.UnregisterSpellcastSent()
 			ExecutiveFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 		end
 	end
-end
-
-function ExecutiveFrame:GROUP_ROSTER_UPDATE()
-	self:RefreshRaidMemberNames()
-end
-
-function ExecutiveFrame:RefreshRaidMemberNames()
-	-- For ExecutiveFrame:COMBAT_LOG_EVENT_UNFILTERED()
-	-- and ExecutiveFrame:UNIT_SPELLCAST_SUCCEEDED
-
-	-- self.GroupRoster = {}
-	NeedToKnow.raid_members = {}
-
-	if IsInRaid() then
-		for i = 1, 40 do
-			local unit = "raid"..i
-			local name = self:GetNameAndServer(unit)
-			if name then 
-				NeedToKnow.raid_members[name] = unit
-			else
-				break
-			end
-		end
-	elseif IsInGroup() then
-		for i = 1, 5 do
-			local unit = "party"..i
-			local name = self:GetNameAndServer(unit)
-			if name then 
-				NeedToKnow.raid_members[name] = unit
-			else
-				break
-			end
-		end
-	end
-	-- Kitjan: Raid pets don't get server name decoration in combat log
-
-	-- Get player and their pet directly
-	-- (player will always have a nil server)
-
-	local unit = "player"
-	local name = UnitName(unit)
-	NeedToKnow.raid_members[name] = unit
-
-	unit = "pet"
-	name = UnitName(unit)
-	if name then
-		NeedToKnow.raid_members[name] = unit
-	end
-end
-
-function ExecutiveFrame:GetNameAndServer(unit)
-	-- Called by ExecutiveFrame:RefreshRaidMemberNames()
-	local name, server = UnitName(unit)
-	if name and server then 
-		return name..'-'..server
-	end
-	return name
-end
-
-function ExecutiveFrame:COMBAT_LOG_EVENT_UNFILTERED()
-	-- For last raid recipient and detect extends
-
-    local tod, event, hideCaster, guidCaster, sourceName, sourceFlags, sourceRaidFlags, guidTarget, nameTarget, _, _, spellid, spell = CombatLogGetCurrentEventInfo()
-
-    -- the time that's passed in appears to be time of day, not game time like everything else.
-    local time = GetTime() 
-
-    -- TODO: Is checking r.state sufficient or must event be checked instead?
-    if ( guidCaster == NeedToKnow.guidPlayer and event=="SPELL_CAST_SUCCESS") then
-        -- local guidTarget, nameTarget, _, _, spellid, spell = select(4, ...) -- source_name, source_flags, source_flags2, 
-
-        local found
-        local t = m_last_cast
-        local last = m_last_cast_tail-1
-        local i
-        for i = last,m_last_cast_head,-1  do
-            if t[i].spell == spell then
-                found = i
-                break
-            end
-        end
-        if found then
-            if ( NeedToKnow.BarsForPSS ) then
-                local bar, one
-                for bar, one in pairs(NeedToKnow.BarsForPSS) do
-                    local unitTarget = NeedToKnow.raid_members[t[found].target or ""]
-					bar:OnEvent("PLAYER_SPELLCAST_SUCCEEDED", "player", spell, spellid, unitTarget)
-                end
-            end
-
-            local rBySpell = m_last_guid[spell]
-            if ( rBySpell ) then
-                local rByGuid = rBySpell[guidTarget]
-                if not rByGuid then
-                    rByGuid = { time=time, dur=0, expiry=0 }
-                    rBySpell[guidTarget] = rByGuid
-                else
-                    rByGuid.time= time
-                    rByGuid.dur = 0
-                    rByGuid.expiry = 0
-                end
-            end
-
-            if ( found == last ) then
-                m_last_cast_tail = 1
-                m_last_cast_head = 1
-                self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-            else
-                m_last_cast_head = found+1
-            end
-        end
-    end
 end
 
 function ExecutiveFrame:UNIT_SPELLCAST_SENT(unit, tgt, lineID, spellID)
@@ -370,6 +203,119 @@ function ExecutiveFrame:UNIT_SPELLCAST_SUCCEEDED(unit, target, lineID, spellID)
         end
     end
 end
+
+function ExecutiveFrame:COMBAT_LOG_EVENT_UNFILTERED()
+	-- For last raid recipient and detect extends
+
+    local tod, event, hideCaster, guidCaster, sourceName, sourceFlags, sourceRaidFlags, guidTarget, nameTarget, _, _, spellid, spell = CombatLogGetCurrentEventInfo()
+
+    -- the time that's passed in appears to be time of day, not game time like everything else.
+    local time = GetTime() 
+
+    -- TODO: Is checking r.state sufficient or must event be checked instead?
+    if ( guidCaster == NeedToKnow.guidPlayer and event=="SPELL_CAST_SUCCESS") then
+        -- local guidTarget, nameTarget, _, _, spellid, spell = select(4, ...) -- source_name, source_flags, source_flags2, 
+
+        local found
+        local t = m_last_cast
+        local last = m_last_cast_tail-1
+        local i
+        for i = last,m_last_cast_head,-1  do
+            if t[i].spell == spell then
+                found = i
+                break
+            end
+        end
+        if found then
+            if ( NeedToKnow.BarsForPSS ) then
+                local bar, one
+                for bar, one in pairs(NeedToKnow.BarsForPSS) do
+                    local unitTarget = NeedToKnow.raid_members[t[found].target or ""]
+					bar:OnEvent("PLAYER_SPELLCAST_SUCCEEDED", "player", spell, spellid, unitTarget)
+                end
+            end
+
+            local rBySpell = m_last_guid[spell]
+            if ( rBySpell ) then
+                local rByGuid = rBySpell[guidTarget]
+                if not rByGuid then
+                    rByGuid = { time=time, dur=0, expiry=0 }
+                    rBySpell[guidTarget] = rByGuid
+                else
+                    rByGuid.time= time
+                    rByGuid.dur = 0
+                    rByGuid.expiry = 0
+                end
+            end
+
+            if ( found == last ) then
+                m_last_cast_tail = 1
+                m_last_cast_head = 1
+                self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+            else
+                m_last_cast_head = found+1
+            end
+        end
+    end
+end
+
+function ExecutiveFrame:GROUP_ROSTER_UPDATE()
+	self:RefreshRaidMemberNames()
+end
+
+function ExecutiveFrame:RefreshRaidMemberNames()
+	-- For ExecutiveFrame:COMBAT_LOG_EVENT_UNFILTERED()
+	-- and ExecutiveFrame:UNIT_SPELLCAST_SUCCEEDED
+
+	-- self.GroupRoster = {}
+	NeedToKnow.raid_members = {}
+
+	if IsInRaid() then
+		for i = 1, 40 do
+			local unit = "raid"..i
+			local name = self:GetNameAndServer(unit)
+			if name then 
+				NeedToKnow.raid_members[name] = unit
+			else
+				break
+			end
+		end
+	elseif IsInGroup() then
+		for i = 1, 5 do
+			local unit = "party"..i
+			local name = self:GetNameAndServer(unit)
+			if name then 
+				NeedToKnow.raid_members[name] = unit
+			else
+				break
+			end
+		end
+	end
+	-- Kitjan: Raid pets don't get server name decoration in combat log
+
+	-- Get player and their pet directly
+	-- (player will always have a nil server)
+
+	local unit = "player"
+	local name = UnitName(unit)
+	NeedToKnow.raid_members[name] = unit
+
+	unit = "pet"
+	name = UnitName(unit)
+	if name then
+		NeedToKnow.raid_members[name] = unit
+	end
+end
+
+function ExecutiveFrame:GetNameAndServer(unit)
+	-- Called by ExecutiveFrame:RefreshRaidMemberNames()
+	local name, server = UnitName(unit)
+	if name and server then 
+		return name..'-'..server
+	end
+	return name
+end
+
 
 
 

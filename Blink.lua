@@ -3,8 +3,6 @@
 -- local _, addonTable = ...
 local Bar = NeedToKnow.Bar
 
--- local CYCLE_DURATION = 1
-
 function Bar:ShouldBlink(barSettings, unitExists)
 	-- Determine if bar should blink, return true/false
 	-- Called by Bar:CheckAura()
@@ -57,8 +55,7 @@ end
 
 function Bar:UpdateBlink(elapsed)
 	-- Called by Bar:OnUpdate()
-	-- self.blinkPhase = self.blinkPhase + elapsed/CYCLE_DURATION
-	self.blinkPhase = self.blinkPhase + elapsed  -- 1 sec cycle duration
+	self.blinkPhase = self.blinkPhase + elapsed/0.75  -- elapsed/CYCLE_DURATION
 	if self.blinkPhase >= 1 then
 		self.blinkPhase = self.blinkPhase%1  -- Keep decimal remainder
 	end

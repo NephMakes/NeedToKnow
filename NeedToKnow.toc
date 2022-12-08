@@ -24,6 +24,7 @@ BarObject.lua
 BarEngine.lua
 Cooldown.lua
 Blink.lua
+BossFight.lua
 NeedToKnow_Options.lua
 BarMenu.lua
 Dialog.lua

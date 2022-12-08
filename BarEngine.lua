@@ -242,11 +242,6 @@ function Bar:RegisterCombatLog()
     end
 end
 
-function Bar:RegisterBossFight()
-	ExecutiveFrame.BossFightBars[self] = 1
-	ExecutiveFrame:UpdateBossEvents()
-end
-
 function Bar:Inactivate()
 	self:SetScript("OnEvent", nil)
 	self:SetScript("OnUpdate", nil)
@@ -284,11 +279,6 @@ function Bar:Inactivate()
 			NeedToKnow.UnregisterSpellcastSent()
 		end
 	end
-end
-
-function Bar:UnregisterBossFight()
-	ExecutiveFrame.BossFightBars[self] = nil
-	ExecutiveFrame:UpdateBossEvents()
 end
 
 
@@ -947,7 +937,7 @@ function Bar:OnUpdate(elapsed)
 	-- Called very frequently. Make sure it's efficient. 
 	local now = GetTime()
 	if now > self.nextUpdate then
-		self.nextUpdate = now + UPDATE_INTERVAL
+		self.nextUpdate = now + 0.025  -- now + UPDATE_INTERVAL, 40 /sec
 
 		if self.isBlinking then
 			self:UpdateBlink(elapsed)
