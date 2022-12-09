@@ -56,6 +56,15 @@ function NeedToKnow:GetBarSettings(groupID, barID)
 	return groupSettings.Bars[barID]
 end
 
+function NeedToKnow:UpdateBarGroup(groupID)
+	local group = NeedToKnow:GetBarGroup(groupID)
+	group:Update()
+end
+
+function NeedToKnow:UpdateGroup(groupID)
+	 NeedToKnow:UpdateBarGroup(groupID)
+end
+
 function NeedToKnow:UpdateBar(groupID, barID)
 	-- Called by BarMenu functions
 	local bar = NeedToKnow:GetBar(groupID, barID)

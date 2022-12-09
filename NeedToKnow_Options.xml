@@ -4,69 +4,50 @@
     <!-- These .xml files must be loaded last in .toc -->
 
     <Frame name="NeedToKnow_GroupOptionsTemplate" virtual="true">
-        <Size>
-            <AbsDimension x="128" y="26"/>
-        </Size>
+        <Size x="128" y="26" />
         <Frames>
-            <CheckButton name="$parentEnableButton" inherits="InterfaceOptionsCheckButtonTemplate">
+            <CheckButton parentKey="enableButton" name="$parentEnableButton" inherits="InterfaceOptionsCheckButtonTemplate">
                 <Anchors>
-                    <Anchor point="LEFT" relativeTo="$parent" relativePoint="LEFT" />
+                    <Anchor point="LEFT" relativeTo="$parent" relativePoint="LEFT"/>
                 </Anchors>
-                <HitRectInsets>
-                    <AbsInset left="0" right="-70" top="0" bottom="0"/>
-                </HitRectInsets>
+                <HitRectInsets left="0" right="-60" top="0" bottom="0"/>
                 <Scripts>
                     <OnLoad>
-                        local text = _G[self:GetName().."Text"]
-                        text:SetText(NEEDTOKNOW.UIPANEL_BARGROUP..self:GetParent():GetID())
+                        self.Text:SetText(NEEDTOKNOW.UIPANEL_BARGROUP..self:GetParent():GetID())
                     </OnLoad>
                     <OnClick>
-                        NeedToKnowOptions.GroupEnableButton_OnClick(self);
+                        NeedToKnowOptions.GroupEnableButton_OnClick(self)
                     </OnClick>
                     <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT");
-                        GameTooltip:SetText(NEEDTOKNOW.UIPANEL_TOOLTIP_ENABLEGROUP, nil, nil, nil, nil, 1);
+                        GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+                        GameTooltip:SetText(NEEDTOKNOW.UIPANEL_TOOLTIP_ENABLEGROUP, nil, nil, nil, nil, 1)
                     </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
+                    <OnLeave function="GameTooltip_Hide"/>
                 </Scripts>
             </CheckButton>
-            <Frame name="$parentNumberbarsWidget">
-                <Size>
-                    <AbsDimension x="64" y="32"/>
-                </Size>
+            <Frame parentKey="numberBarsWidget" name="$parentNumberbarsWidget">
+                <Size x="64" y="32"/>
                 <Anchors>
-                    <Anchor point="CENTER" relativeTo="$parent" relativePoint="LEFT">
-                        <Offset>
-                            <AbsDimension x="125" y="0"/>
-                        </Offset>
-                    </Anchor>
+                    <Anchor point="CENTER" relativeTo="$parent" relativePoint="LEFT" x="125" y="0"/>
                 </Anchors>
                 <Layers>
                     <Layer level="BACKGROUND">
-                        <FontString name="$parentText" inherits="GameFontHighlight" justifyH="CENTER" text="X">
+                        <FontString parentKey="text" name="$parentText" inherits="GameFontHighlight" justifyH="CENTER" text="X">
                             <Anchors>
-                                <Anchor point="CENTER" relativeTo="$parent" relativePoint="CENTER" />
+                                <Anchor point="CENTER" relativeTo="$parent" relativePoint="CENTER"/>
                             </Anchors>
                         </FontString>
                     </Layer>
                 </Layers>
                 <Frames>
-                    <Button name="$parentLeftButton">
-                        <Size>
-                            <AbsDimension x="20" y="20"/>
-                        </Size>
+                    <Button parentKey="leftButton" name="$parentLeftButton">
+                        <Size x="20" y="20"/>
                         <Anchors>
-                            <Anchor point="RIGHT" relativeTo="$parent" relativePoint="CENTER">
-                                <Offset>
-                                    <AbsDimension x="-8" y="0"/>
-                                </Offset>
-                            </Anchor>
+                            <Anchor point="RIGHT" relativeTo="$parent" relativePoint="CENTER" x="-8" y="0"/>
                         </Anchors>
                         <Scripts>
                             <OnClick>
-                                NeedToKnowOptions.NumberbarsButton_OnClick(self, -1);
+                                NeedToKnowOptions.NumberbarsButton_OnClick(self, -1)
                             </OnClick>
                         </Scripts>
                         <NormalTexture file="Interface\Buttons\UI-SpellbookIcon-PrevPage-Up"/>
@@ -74,20 +55,14 @@
                         <DisabledTexture file="Interface\Buttons\UI-SpellbookIcon-PrevPage-Disabled"/>
                         <HighlightTexture file="Interface\Buttons\UI-Common-MouseHilight" alphaMode="ADD"/>
                     </Button>
-                    <Button name="$parentRightButton">
-                        <Size>
-                            <AbsDimension x="20" y="20"/>
-                        </Size>
+                    <Button parentKey="rightButton" name="$parentRightButton">
+                        <Size x="20" y="20"/>
                         <Anchors>
-                            <Anchor point="LEFT" relativeTo="$parent" relativePoint="CENTER">
-                                <Offset>
-                                    <AbsDimension x="8" y="0"/>
-                                </Offset>
-                            </Anchor>
+                            <Anchor point="LEFT" relativeTo="$parent" relativePoint="CENTER" x="8" y="0"/>
                         </Anchors>
                         <Scripts>
                             <OnClick>
-                                NeedToKnowOptions.NumberbarsButton_OnClick(self, 1);
+                                NeedToKnowOptions.NumberbarsButton_OnClick(self, 1)
                             </OnClick>
                         </Scripts>
                         <NormalTexture file="Interface\Buttons\UI-SpellbookIcon-NextPage-Up"/>
@@ -97,91 +72,24 @@
                     </Button>
                 </Frames>
             </Frame>
-            <EditBox name="$parentFixedDurationBox" numeric="true" letters="3" autoFocus="false">
-                <Size>
-                    <AbsDimension x="30" y="20"/>
-                </Size>
+            <EditBox parentKey="fixedDurationBox" name="$parentFixedDurationBox" inherits="InputBoxTemplate" numeric="true" letters="3" autoFocus="false">
+                <Size x="30" y="20"/>
                 <Anchors>
-                    <Anchor point="CENTER" relativeTo="$parentNumberbarsWidget" relativePoint="RIGHT">
-                        <Offset>
-                            <AbsDimension x="40" y="0"/>
-                        </Offset>
-                    </Anchor>
+                    <Anchor point="CENTER" relativeTo="$parentNumberbarsWidget" relativePoint="RIGHT" x="40" y="0"/>
                 </Anchors>
-                <Layers>
-                    <Layer level="BACKGROUND">
-                        <Texture name="$parentLeft" file="Interface\Common\Common-Input-Border">
-                            <Size>
-                                <AbsDimension x="8" y="20"/>
-                            </Size>
-                            <Anchors>
-                                <Anchor point="TOPLEFT">
-                                    <Offset>
-                                        <AbsDimension x="-5" y="0"/>
-                                    </Offset>
-                                </Anchor>
-                            </Anchors>
-                            <TexCoords left="0" right="0.0625" top="0" bottom="0.625"/>
-                        </Texture>
-                        <Texture name="$parentRight" file="Interface\Common\Common-Input-Border">
-                            <Size>
-                                <AbsDimension x="8" y="20"/>
-                            </Size>
-                            <Anchors>
-                                <Anchor point="RIGHT">
-                                    <Offset>
-                                        <AbsDimension x="0" y="0"/>
-                                    </Offset>
-                                </Anchor>
-                            </Anchors>
-                            <TexCoords left="0.9375" right="1.0" top="0" bottom="0.625"/>
-                        </Texture>
-                        <Texture name="$parentMiddle" file="Interface\Common\Common-Input-Border">
-                            <Size>
-                                <AbsDimension x="10" y="20"/>
-                            </Size>
-                            <Anchors>
-                                <Anchor point="LEFT" relativeTo="$parentLeft" relativePoint="RIGHT"/>
-                                <Anchor point="RIGHT" relativeTo="$parentRight" relativePoint="LEFT"/>
-                            </Anchors>
-                            <TexCoords left="0.0625" right="0.9375" top="0" bottom="0.625"/>
-                        </Texture>
-                    </Layer>
-                </Layers>
                 <Scripts>
                     <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT");
-                        GameTooltip:SetText(NEEDTOKNOW.UIPANEL_TOOLTIP_FIXEDDURATION, nil, nil, nil, nil, 1);
+                        GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+                        GameTooltip:SetText(NEEDTOKNOW.UIPANEL_TOOLTIP_FIXEDDURATION, nil, nil, nil, nil, 1)
                     </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide();
-                    </OnLeave>
-                    <OnTabPressed>
-                        --if ( IsShiftKeyDown() ) then
-                        --	local prevGroup = max(1, self:GetParent():GetID() - 1);
-                        --	_G[self:GetParent():GetParent():GetName().."Group"..prevGroup.."FixedDurationBox"]:SetFocus();
-                        --else
-                        --	local nextGroup = min(NEEDTOKNOW.MAXGROUPS, self:GetParent():GetID() + 1);
-                        --	_G[self:GetParent():GetParent():GetName().."Group"..nextGroup.."FixedDurationBox"]:SetFocus();
-                        --end
-                    </OnTabPressed>
+                    <OnLeave function="GameTooltip_Hide"/>
                     <OnEnterPressed>
-                        EditBox_ClearFocus(self);
+                        EditBox_ClearFocus(self)
                     </OnEnterPressed>
-                    <OnEscapePressed>
-                        EditBox_ClearFocus(self);
-                    </OnEscapePressed>
                     <OnTextChanged>
-                        NeedToKnowOptions.FixedDurationEditBox_OnTextChanged(self);
+                        NeedToKnowOptions.FixedDurationEditBox_OnTextChanged(self)
                     </OnTextChanged>
-                    <OnEditFocusLost>
-                        EditBox_ClearHighlight(self);
-                    </OnEditFocusLost>
-                    <OnEditFocusGained>
-                        EditBox_HighlightText(self);
-                    </OnEditFocusGained>
                 </Scripts>
-                <FontString inherits="ChatFontNormal"/>
             </EditBox>
         </Frames>
     </Frame>
@@ -226,154 +134,77 @@
             <Layer level="ARTWORK">
                 <FontString name="$parentTitle" text="NeedToKnow" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="TOP">
                     <Anchors>
-                        <Anchor point="TOPLEFT">
-                            <Offset>
-                                <AbsDimension x="16" y="-16"/>
-                            </Offset>
-                        </Anchor>
+                        <Anchor point="TOPLEFT" x="16" y="-16"/>
                     </Anchors>
                 </FontString>
-                <FontString name="$parentVersion" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="TOP">
+                <FontString parentKey="version" name="$parentVersion" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="TOP">
                     <Anchors>
-                        <Anchor point="LEFT" relativeTo="$parentTitle" relativePoint="RIGHT">
-                            <Offset>
-                                <AbsDimension x="4" y="-0"/>
-                            </Offset>
-                        </Anchor>
+                        <Anchor point="LEFT" relativeTo="$parentTitle" relativePoint="RIGHT" x="4" y="-0"/>
                     </Anchors>
                 </FontString>
-                <FontString name="$parentSubText1" inherits="GameFontHighlightSmall" nonspacewrap="true" maxLines="3" justifyH="LEFT" justifyV="TOP">
-                    <Size>
-                        <AbsDimension y="24" x="0"/>
-                    </Size>
+                <FontString parentKey="subText1" name="$parentSubText1" inherits="GameFontHighlightSmall" nonspacewrap="true" maxLines="3" justifyH="LEFT" justifyV="TOP">
+                    <Size y="24" x="0"/>
                     <Anchors>
-                        <Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT">
-                            <Offset>
-                                <AbsDimension x="0" y="-8"/>
-                            </Offset>
-                        </Anchor>
-                        <Anchor point="RIGHT">
-                            <Offset>
-                                <AbsDimension x="-24" y="0"/>
-                            </Offset>
-                        </Anchor>
+                        <Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
+                        <Anchor point="RIGHT" x="-24" y="0"/>
                     </Anchors>
                 </FontString>
-                <FontString name="$parentNumberbarsLabel" inherits="GameFontNormalSmall">
+                <FontString parentKey="numberBarsLabel" name="$parentNumberbarsLabel" inherits="GameFontNormalSmall">
                     <Anchors>
-                        <Anchor point="BOTTOM" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT">
-                            <Offset>
-                                <AbsDimension x="133" y="-28"/>
-                            </Offset>
-                        </Anchor>
+                        <Anchor point="BOTTOM" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="133" y="-28"/>
                     </Anchors>
                 </FontString>
-                <FontString name="$parentFixedDurationLabel" inherits="GameFontNormalSmall">
+                <FontString parentKey="fixedDurationLabel" name="$parentFixedDurationLabel" inherits="GameFontNormalSmall">
                     <Anchors>
-                        <Anchor point="BOTTOM" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT">
-                            <Offset>
-                                <AbsDimension x="203" y="-28"/>
-                            </Offset>
-                        </Anchor>
+                        <Anchor point="BOTTOM" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="203" y="-28"/>
                     </Anchors>
                 </FontString>
             </Layer>
         </Layers>
         <Scripts>
             <OnLoad>
-                self.name = "NeedToKnow";
-                self.default = NeedToKnow.ResetCharacter;
-                self.cancel = NeedToKnowOptions.Cancel;
-                InterfaceOptions_AddCategory(self);
-                NeedToKnowOptions.UIPanel_OnLoad(self);
+                NeedToKnowOptions.UIPanel_OnLoad(self)
             </OnLoad>
             <OnShow>
-                --NeedToKnow_OldSettings = CopyTable(NeedToKnow_Settings);
-                NeedToKnowOptions.UIPanel_OnShow();
+                NeedToKnowOptions.UIPanel_OnShow(self)
             </OnShow>
         </Scripts>
         <Frames>
-            <Frame name="$parentGroup1" inherits="NeedToKnow_GroupOptionsTemplate" id="1">
+            <Frame parentKey="group1" name="$parentGroup1" inherits="NeedToKnow_GroupOptionsTemplate" id="1"/>
+            <Frame parentKey="group2" name="$parentGroup2" inherits="NeedToKnow_GroupOptionsTemplate" id="2"/>
+            <Frame parentKey="group3" name="$parentGroup3" inherits="NeedToKnow_GroupOptionsTemplate" id="3"/>
+            <Frame parentKey="group4" name="$parentGroup4" inherits="NeedToKnow_GroupOptionsTemplate" id="4"/>
+            <Button parentKey="configModeButton" name="$parentConfigModeButton" inherits="UIPanelButtonTemplate">
+                <Size x="128" y="22"/>
                 <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT">
-                        <Offset x="8" y="-40"/>
-                    </Anchor>
-                </Anchors>
-            </Frame>
-            <Frame name="$parentGroup2" inherits="NeedToKnow_GroupOptionsTemplate" id="2">
-                <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="$parentGroup1" relativePoint="BOTTOMLEFT">
-                        <Offset x="0" y="-8"/>
-                    </Anchor>
-                </Anchors>
-            </Frame>
-            <Frame name="$parentGroup3" inherits="NeedToKnow_GroupOptionsTemplate" id="3">
-                <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="$parentGroup2" relativePoint="BOTTOMLEFT">
-                        <Offset x="0" y="-8"/>
-                    </Anchor>
-                </Anchors>
-            </Frame>
-            <Frame name="$parentGroup4" inherits="NeedToKnow_GroupOptionsTemplate" id="4">
-                <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="$parentGroup3" relativePoint="BOTTOMLEFT">
-                        <Offset x="0" y="-8"/>
-                    </Anchor>
-                </Anchors>
-            </Frame>
-            <Button name="$parentConfigModeButton" inherits="UIPanelButtonTemplate">
-                <Size>
-                    <AbsDimension x="128" y="22"/>
-                </Size>
-                <Anchors>
-                    <Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOMLEFT">
-                        <Offset>
-                            <AbsDimension x="24" y="24"/>
-                        </Offset>
-                    </Anchor>
+                    <Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOMLEFT" x="24" y="24"/>
                 </Anchors>
                 <Scripts>
-                    <OnLoad>
-                        _G[self:GetName().."Text"]:SetText(NEEDTOKNOW.UIPANEL_CONFIGMODE);
-                    </OnLoad>
                     <OnClick>
-                        NeedToKnow.LockToggle(false);
+                        NeedToKnow.LockToggle(false)
                     </OnClick>
                     <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(NEEDTOKNOW.UIPANEL_CONFIGMODE_TOOLTIP, nil, nil, nil, nil, 1);
+                        GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+                        GameTooltip:SetText(NEEDTOKNOW.UIPANEL_CONFIGMODE_TOOLTIP, nil, nil, nil, nil, 1)
                     </OnEnter>
                     <OnLeave function="GameTooltip_Hide"/>
                 </Scripts>
-                <NormalFont style="GameFontNormalSmall"/>
-                <HighlightFont style="GameFontHighlightSmall"/>
             </Button>
-            <Button name="$parentPlayModeButton" inherits="UIPanelButtonTemplate">
-                <Size>
-                    <AbsDimension x="128" y="22"/>
-                </Size>
+            <Button parentKey="playModeButton" name="$parentPlayModeButton" inherits="UIPanelButtonTemplate">
+                <Size x="128" y="22"/>
                 <Anchors>
-                    <Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOMRIGHT">
-                        <Offset>
-                            <AbsDimension x="-24" y="24"/>
-                        </Offset>
-                    </Anchor>
+                    <Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOMRIGHT" x="-24" y="24"/>
                 </Anchors>
                 <Scripts>
-                    <OnLoad>
-                        _G[self:GetName().."Text"]:SetText(NEEDTOKNOW.UIPANEL_PLAYMODE);
-                    </OnLoad>
                     <OnClick>
-                        NeedToKnow.LockToggle(true);
+                        NeedToKnow.LockToggle(true)
                     </OnClick>
                     <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(NEEDTOKNOW.UIPANEL_PLAYMODE_TOOLTIP, nil, nil, nil, nil, 1);
+                        GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+                        GameTooltip:SetText(NEEDTOKNOW.UIPANEL_PLAYMODE_TOOLTIP, nil, nil, nil, nil, 1)
                     </OnEnter>
                     <OnLeave function="GameTooltip_Hide"/>
                 </Scripts>
-                <NormalFont style="GameFontNormalSmall"/>
-                <HighlightFont style="GameFontHighlightSmall"/>
             </Button>
         </Frames>
     </Frame>
@@ -456,7 +287,7 @@
                 </Anchors>
             </Frame>
             <!-- 
-            Not sure this is working properly in retail, and can't test right now, so just removing
+            NephMakes: Not sure this is working properly in retail, and can't test right now, so just removing
 			<Frame name="$parentBackdrop" inherits="BackdropTemplate">
 				<KeyValues>
 					<KeyValue key="backdropInfo" value="BACKDROP_SLIDER_8_8" type="global" />

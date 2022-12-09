@@ -2,41 +2,30 @@
 
 local addonName, addonTable = ...
 
-
--- ------------------------
 -- Declare global variables
--- ------------------------
-
 NeedToKnow = {}
 
 -- Deprecated:
 NEEDTOKNOW = {}
-NeedToKnowLoader = {}    -- Used by NeedToKnow.lua
+NeedToKnowLoader = {}
 NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
 
--- ----------
--- Namespaces
--- ----------
-
+-- Define namespaces
 NeedToKnow.ExecutiveFrame = CreateFrame("Frame", "NeedToKnow_ExecutiveFrame")
-
-NeedToKnow.Bar = {}
 NeedToKnow.BarGroup = {}
 NeedToKnow.ResizeButton = {}
-
+NeedToKnow.Bar = {}
 NeedToKnow.FindAura = {}
 NeedToKnow.Cooldown = {}
-
 NeedToKnow.BarMenu = {}
 NeedToKnow.Dialog = {}
 
+NeedToKnow.OptionsPanel = {}
+-- NeedToKnow.OptionsPanel = CreateFrame()
 
--- ---------------------
--- Addon-wide parameters
--- ---------------------
-
+-- Addon version (defined in .toc)
 NEEDTOKNOW.VERSION = GetAddOnMetadata(addonName, "Version")
--- to update version, change the .toc 
+
 
 -- Default settings
 NEEDTOKNOW.BAR_DEFAULTS = {
@@ -109,11 +98,7 @@ NEEDTOKNOW.DEFAULTS = {
 }
 
 
--- -------------------
--- SharedMedia support
--- -------------------
-
--- LibSharedMedia library
+-- LibSharedMedia library support
 NeedToKnow.LSM = LibStub("LibSharedMedia-3.0", true)
 local barTextures = {
 	["Aluminum"]   = [[Interface\Addons\NeedToKnow\Textures\Aluminum.tga]],
@@ -136,10 +121,7 @@ for k, v in pairs(barTextures) do
 end
 
 
--- ---------------------
 -- Kitjan's addon locals
--- ---------------------
-
 -- Used by Executive Frame:
 addonTable.m_last_cast = {}
 addonTable.m_last_cast_head = {}

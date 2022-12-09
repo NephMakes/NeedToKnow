@@ -26,6 +26,7 @@ Cooldown.lua
 Blink.lua
 BossFight.lua
 NeedToKnow_Options.lua
+OptionsPanel.lua
 BarMenu.lua
 Dialog.lua
 ImportExport.lua
