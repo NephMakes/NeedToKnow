@@ -4,9 +4,13 @@ local addonName, addonTable = ...
 
 -- Declare global variables
 NeedToKnow = {}
+NeedToKnow.version = GetAddOnMetadata(addonName, "Version")
+
+
 
 -- Deprecated:
-NEEDTOKNOW = {}
+NEEDTOKNOW = {} -- Deprecated
+NEEDTOKNOW.VERSION = GetAddOnMetadata(addonName, "Version")
 NeedToKnowLoader = {}
 NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
 
@@ -14,6 +18,7 @@ NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
 NeedToKnow.ExecutiveFrame = CreateFrame("Frame", "NeedToKnow_ExecutiveFrame")
 NeedToKnow.BarGroup = {}
 NeedToKnow.ResizeButton = {}
+
 NeedToKnow.Bar = {}
 NeedToKnow.FindAura = {}
 NeedToKnow.Cooldown = {}
@@ -21,10 +26,6 @@ NeedToKnow.BarMenu = {}
 NeedToKnow.Dialog = {}
 
 NeedToKnow.OptionsPanel = {}
--- NeedToKnow.OptionsPanel = CreateFrame()
-
--- Addon version (defined in .toc)
-NEEDTOKNOW.VERSION = GetAddOnMetadata(addonName, "Version")
 
 
 -- Default settings

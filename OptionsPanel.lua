@@ -1,8 +1,7 @@
-﻿-- Interface options panel (main)
+﻿--[[ Interface options panel (Main) ]]--
 
 -- local addonName, addonTable = ...
--- local OptionsPanel = NeedToKnow.OptionsPanel
-local OptionsPanel = NeedToKnowOptions  -- Deprecated
+local OptionsPanel = NeedToKnow.OptionsPanel
 local String = NeedToKnow.String
 
 local NeedToKnow_OldProfile
@@ -20,30 +19,26 @@ function OptionsPanel:UIPanel_OnLoad()
 	self.cancel = NeedToKnowOptions.Cancel
 	InterfaceOptions_AddCategory(self)
 
-	-- Panel text
+	-- Mixin(self, OptionsPanel)  -- Inherit OptionsPanel methods
+
+	OptionsPanel.SetPanelText(self)
+	-- OptionsPanel:SetPanelFunctions()
+end
+
+function OptionsPanel:SetPanelText()
 	self.subText1:SetText(NEEDTOKNOW.UIPANEL_SUBTEXT1)
 	self.version:SetText(NEEDTOKNOW.VERSION)
 	self.numberBarsLabel:SetText(NEEDTOKNOW.UIPANEL_NUMBERBARS)
-	self.numberBarsLabel:SetWidth(50)
 	self.fixedDurationLabel:SetText(NEEDTOKNOW.UIPANEL_FIXEDDURATION)
-	self.fixedDurationLabel:SetWidth(50)
 	self.configModeButton.Text:SetText(NEEDTOKNOW.UIPANEL_CONFIGMODE)
 	self.playModeButton.Text:SetText(NEEDTOKNOW.UIPANEL_PLAYMODE)
-
-	-- Group options
-	self.group = {}
 	for groupID = 1, MAX_GROUPS do
-		self.group[groupID] = self["group"..groupID]
-		local groupWidget = self.group[groupID]
-		if groupID == 1 then
-			groupWidget:SetPoint("TOPLEFT", self.subText1, "BOTTOMLEFT", 8, -40)
-		else
-			groupWidget:SetPoint("TOPLEFT", self.group[groupID-1], "BOTTOMLEFT", 0, -8)
-		end
+		local groupOptions = self["group"..groupID]
+		groupOptions.enableButton.Text:SetText(NEEDTOKNOW.UIPANEL_BARGROUP..groupID)
 	end
-	-- self.testWidget = CreateFrame("Frame", "NeedToKnow_TestWidget", self, "NeedToKnow_GroupOptionsTemplate", 4)
-	-- self.testWidget:SetPoint("TOPLEFT", self.group[3], "BOTTOMLEFT", 32, -32)
-	-- Frame needs to be named for SetPoint to work properly (why?)
+end
+
+function OptionsPanel:SetPanelFunctions()
 end
 
 function OptionsPanel:UIPanel_OnShow()
@@ -59,7 +54,7 @@ function OptionsPanel:UIPanel_Update()
 		OptionsPanel.GroupEnableButton_Update(groupID)
 		OptionsPanel.NumberbarsWidget_Update(groupID)
 		local groupSettings = NeedToKnow:GetGroupSettings(groupID)
-		self.group[groupID].fixedDurationBox:SetText(groupSettings.FixedDuration or "")
+		self["group"..groupID].fixedDurationBox:SetText(groupSettings.FixedDuration or "")
     end
 end
 
@@ -73,12 +68,11 @@ function OptionsPanel:Cancel()
 end
 
 
-
 --[[ Group options ]]--
 
 function OptionsPanel.GroupEnableButton_Update(groupID)
 	local panel = _G["InterfaceOptionsNeedToKnowPanel"]
-	local button = panel.group[groupID].enableButton
+	local button = panel["group"..groupID].enableButton
 	button:SetChecked(NeedToKnow:GetGroupSettings(groupID).Enabled)
 end
 
@@ -98,7 +92,7 @@ end
 
 function OptionsPanel.NumberbarsWidget_Update(groupID)
 	local panel = _G["InterfaceOptionsNeedToKnowPanel"]
-	local widget = panel.group[groupID].numberBarsWidget
+	local widget = panel["group"..groupID].numberBarsWidget
 	local numberBars = NeedToKnow:GetGroupSettings(groupID).NumberBars
 	widget.text:SetText(numberBars)
 	widget.leftButton:Enable()
