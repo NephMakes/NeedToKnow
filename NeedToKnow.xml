@@ -4,30 +4,17 @@
     <!-- These .xml files must be loaded last in .toc -->
 
 	<Frame name="NeedToKnow_GroupTemplate" virtual="true">
-		<Size>
-			<AbsDimension x="1" y="1"/>
-		</Size>
-		<Layers>
-			<Layer level="BACKGROUND">
-				<Texture setAllPoints="true">
-					<Color r="0" g="0" b="0" a="0"/>
-				</Texture>
-			</Layer>
-		</Layers>
+		<Size x="1" y="1"/>
 		<Frames>
-			<Button name="$parentResizeButton" parentKey="ResizeButton">
-				<Size>
-					<AbsDimension x="20" y="20"/>
-				</Size>
+			<Button parentKey="ResizeButton" name="$parentResizeButton">
+				<Size x="20" y="20"/>
 				<Anchors>
-					<Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOMRIGHT"/>
+					<Anchor point="BOTTOMRIGHT"/>
 				</Anchors>
 				<Layers>
 					<Layer level="BACKGROUND">
-						<Texture name="$parentTexture" parentKey="Texture" file="Interface\AddOns\NeedToKnow\Textures\Resize">
-							<Size>
-								<AbsDimension x="10" y="10"/>
-							</Size>
+						<Texture parentKey="Texture" name="$parentTexture" file="Interface\AddOns\NeedToKnow\Textures\Resize">
+							<Size x="10" y="10"/>
 						</Texture>
 					</Layer>
 				</Layers>
@@ -46,99 +33,59 @@
 	</Frame>
 
     <Frame name="NeedToKnow_BarTemplate" toplevel="true" enableMouse="true" virtual="true">
-        <Size>
-            <AbsDimension x="271" y="18"/>
-        </Size>
+        <Size x="271" y="18"/>
         <Layers>
             <Layer level="BACKGROUND">
-                <Texture name="$parentBackground" parentKey="Background" setAllPoints="true">
-                    <Color r="1" g="1" b="1" a="1"/>
-                    <Size>
-                        <AbsDimension x="277" y="24"/>
-                    </Size>
+                <Texture parentKey="Background" name="$parentBackground" setAllPoints="true">
+                    <Color r="0" g="0" b="0" a="1"/>
+                    <Size x="277" y="24"/>
                     <Anchors>
-                        <Anchor point="CENTER">
-                            <Offset>
-                                <AbsDimension x="0" y="0"/>
-                            </Offset>
-                        </Anchor>
+                        <Anchor point="CENTER"/>
                     </Anchors>
                 </Texture>
             </Layer>
             <Layer level="BORDER">
-                <Texture name="$parentTexture" parentKey="Texture">
+                <Texture parentKey="Texture" name="$parentTexture">
                     <Anchors>
-                        <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
-                            <Offset>
-                                <AbsDimension x="0" y="-0"/>
-                            </Offset>
-                        </Anchor>
-                        <Anchor point="BOTTOM" relativeTo="$parent" relativePoint="BOTTOM">
-                            <Offset>
-                                <AbsDimension x="-0" y="0"/>
-                            </Offset>
-                        </Anchor>
+                        <Anchor point="TOPLEFT"/>
+                        <Anchor point="BOTTOM"/>
                     </Anchors>
                 </Texture>
-                <Texture name="$parentTexture2" parentKey="Texture2">
+                <Texture parentKey="Texture2" name="$parentTexture2">
                 	<!-- Used for user-determined max duration -->
                     <Anchors>
-                        <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
-                            <Offset>
-                                <AbsDimension x="0" y="-0"/>
-                            </Offset>
-                        </Anchor>
-                        <Anchor point="BOTTOM" relativeTo="$parent" relativePoint="BOTTOM">
-                            <Offset>
-                                <AbsDimension x="-0" y="0"/>
-                            </Offset>
-                        </Anchor>
+                        <Anchor point="TOPLEFT"/>
+                        <Anchor point="BOTTOM"/>
                     </Anchors>
                 </Texture>
             </Layer>
             <Layer level="ARTWORK">
-                <Texture name="$parentIcon" parentKey="Icon">
+                <Texture parentKey="Icon" name="$parentIcon">
                     <Anchors>
-                        <Anchor point="RIGHT" relativeTo="$parent" relativePoint="LEFT">
-                        </Anchor>
+                        <Anchor point="RIGHT" relativeTo="$parent" relativePoint="LEFT"/>
                     </Anchors>
                 </Texture>
-                <Texture name="$parentCastTime" parentKey="CastTime" alphaMode="BLEND">
+                <Texture parentKey="CastTime" name="$parentCastTime" alphaMode="BLEND">
                     <Anchors>
-                        <Anchor point="LEFT" relativeTo="$parent" relativePoint="LEFT">
-                        </Anchor>
+                        <Anchor point="LEFT"/>
                     </Anchors>
                 </Texture>
             </Layer>
             <Layer level="OVERLAY">
-                <FontString name="$parentText" parentKey="Text" inherits="GameFontHighlight" justifyH="LEFT">
-                    <Size>
-                        <AbsDimension x="160" y="16"/>
-                    </Size>
+                <FontString parentKey="Text" name="$parentText" inherits="GameFontHighlight" justifyH="LEFT">
+                    <Size x="160" y="16"/>
                     <Anchors>
-                        <Anchor point="LEFT">
-                            <Offset>
-                                <AbsDimension x="10" y="0"/>
-                            </Offset>
-                        </Anchor>
+                        <Anchor point="LEFT" x="10"/>
                     </Anchors>
                 </FontString>
-                <FontString name="$parentTime" parentKey="Time" inherits="GameFontHighlight" justifyH="RIGHT">
-                    <Size>
-                        <AbsDimension x="60" y="16"/>
-                    </Size>
+                <FontString parentKey="Time" name="$parentTime" inherits="GameFontHighlight" justifyH="RIGHT">
+                    <Size x="60" y="16"/>
                     <Anchors>
-                        <Anchor point="RIGHT" relativeTo="$parent" relativePoint="RIGHT">
-                            <Offset>
-                                <AbsDimension x="-10" y="0"/>
-                            </Offset>
-                        </Anchor>
+                        <Anchor point="RIGHT" x="-10"/>
                     </Anchors>
                 </FontString>
-                <Texture name="$parentSpark" parentKey="Spark" file="Interface\CastingBar\UI-CastingBar-Spark" alphaMode="ADD">
-                    <Size>
-                        <AbsDimension x="32" y="60"/>
-                    </Size>
+                <Texture parentKey="Spark" name="$parentSpark" file="Interface\CastingBar\UI-CastingBar-Spark" alphaMode="ADD">
+                    <Size x="32" y="60"/>
                     <Anchors>
                         <Anchor point="CENTER" relativeTo="$parent" relativePoint="RIGHT"/>
                     </Anchors>
@@ -149,38 +96,22 @@
 
     <Frame name="NeedToKnow_Group1" inherits="NeedToKnow_GroupTemplate" toplevel="true" movable="true" parent="UIParent" id="1">
         <Anchors>
-            <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
-                <Offset>
-                    <AbsDimension x="100" y="-200"/>
-                </Offset>
-            </Anchor>
+            <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT" x="100" y="-200"/>
         </Anchors>
     </Frame>
     <Frame name="NeedToKnow_Group2" inherits="NeedToKnow_GroupTemplate" toplevel="true" movable="true" parent="UIParent" id="2">
         <Anchors>
-            <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
-                <Offset>
-                    <AbsDimension x="100" y="-300"/>
-                </Offset>
-            </Anchor>
+            <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT" x="100" y="-300"/>
         </Anchors>
     </Frame>
     <Frame name="NeedToKnow_Group3" inherits="NeedToKnow_GroupTemplate" toplevel="true" movable="true" parent="UIParent" id="3">
         <Anchors>
-            <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
-                <Offset>
-                    <AbsDimension x="100" y="-400"/>
-                </Offset>
-            </Anchor>
+            <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT" x="100" y="-400"/>
         </Anchors>
     </Frame>
     <Frame name="NeedToKnow_Group4" inherits="NeedToKnow_GroupTemplate" toplevel="true" movable="true" parent="UIParent" id="4">
         <Anchors>
-            <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
-                <Offset>
-                    <AbsDimension x="100" y="-500"/>
-                </Offset>
-            </Anchor>
+            <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT" x="100" y="-500"/>
         </Anchors>
     </Frame>
 
