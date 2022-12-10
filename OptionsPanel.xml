@@ -1,10 +1,10 @@
 ﻿<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\..\..\Blizza~1\FrameXML\UI.xsd">
 
-	<!-- Must be loaded after OptionsPanel.lua -->
+	<!-- Load before OptionsPanel.lua -->
 
     <Frame name="NeedToKnow_GroupOptionsTemplate" virtual="true">
-        <Size x="128" y="26" />
+        <Size x="128" y="26"/>
         <Frames>
             <CheckButton parentKey="enableButton" name="$parentEnableButton" inherits="InterfaceOptionsCheckButtonTemplate">
                 <Anchors>
@@ -12,13 +12,6 @@
                 </Anchors>
                 <HitRectInsets left="0" right="-60" top="0" bottom="0"/>
                 <Scripts>
-                    <OnClick>
-                        NeedToKnow.OptionsPanel.GroupEnableButton_OnClick(self)
-                    </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
-                        GameTooltip:SetText(NEEDTOKNOW.UIPANEL_TOOLTIP_ENABLEGROUP, nil, nil, nil, nil, 1)
-                    </OnEnter>
                     <OnLeave function="GameTooltip_Hide"/>
                 </Scripts>
             </CheckButton>
@@ -42,11 +35,6 @@
                         <Anchors>
                             <Anchor point="RIGHT" relativeTo="$parent" relativePoint="CENTER" x="-8" y="0"/>
                         </Anchors>
-                        <Scripts>
-                            <OnClick>
-                                NeedToKnow.OptionsPanel.NumberbarsButton_OnClick(self, -1)
-                            </OnClick>
-                        </Scripts>
                         <NormalTexture file="Interface\Buttons\UI-SpellbookIcon-PrevPage-Up"/>
                         <PushedTexture file="Interface\Buttons\UI-SpellbookIcon-PrevPage-Down"/>
                         <DisabledTexture file="Interface\Buttons\UI-SpellbookIcon-PrevPage-Disabled"/>
@@ -57,11 +45,6 @@
                         <Anchors>
                             <Anchor point="LEFT" relativeTo="$parent" relativePoint="CENTER" x="8" y="0"/>
                         </Anchors>
-                        <Scripts>
-                            <OnClick>
-                                NeedToKnow.OptionsPanel.NumberbarsButton_OnClick(self, 1)
-                            </OnClick>
-                        </Scripts>
                         <NormalTexture file="Interface\Buttons\UI-SpellbookIcon-NextPage-Up"/>
                         <PushedTexture file="Interface\Buttons\UI-SpellbookIcon-NextPage-Down"/>
                         <DisabledTexture file="Interface\Buttons\UI-SpellbookIcon-NextPage-Disabled"/>
@@ -75,15 +58,8 @@
                     <Anchor point="CENTER" relativeTo="$parentNumberbarsWidget" relativePoint="RIGHT" x="40" y="0"/>
                 </Anchors>
                 <Scripts>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
-                        GameTooltip:SetText(NEEDTOKNOW.UIPANEL_TOOLTIP_FIXEDDURATION, nil, nil, nil, nil, 1)
-                    </OnEnter>
                     <OnLeave function="GameTooltip_Hide"/>
                     <OnEnterPressed function="EditBox_ClearFocus"/>
-                    <OnTextChanged>
-                        NeedToKnow.OptionsPanel.FixedDurationEditBox_OnTextChanged(self)
-                    </OnTextChanged>
                 </Scripts>
             </EditBox>
         </Frames>
@@ -92,14 +68,14 @@
     <Frame name="InterfaceOptionsNeedToKnowPanel" hidden="true">
         <Layers>
             <Layer level="ARTWORK">
-                <FontString parentKey="title" name="$parentTitle" text="NeedToKnow" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="TOP">
+                <FontString parentKey="title" name="$parentTitle" text="NeedToKnow" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="BOTTOM">
                     <Anchors>
                         <Anchor point="TOPLEFT" x="16" y="-16"/>
                     </Anchors>
                 </FontString>
-                <FontString parentKey="version" name="$parentVersion" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="TOP">
+                <FontString parentKey="version" name="$parentVersion" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="BOTTOM">
                     <Anchors>
-                        <Anchor point="LEFT" relativeTo="$parentTitle" relativePoint="RIGHT" x="4" y="-0"/>
+                        <Anchor point="BOTTOMLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMRIGHT" x="5" y="0"/>
                     </Anchors>
                 </FontString>
                 <FontString parentKey="subText1" name="$parentSubText1" inherits="GameFontHighlightSmall" nonspacewrap="true" maxLines="3" justifyH="LEFT" justifyV="TOP">
@@ -123,14 +99,6 @@
                 </FontString>
             </Layer>
         </Layers>
-        <Scripts>
-            <OnLoad>
-                NeedToKnow.OptionsPanel.UIPanel_OnLoad(self)
-            </OnLoad>
-            <OnShow>
-                NeedToKnow.OptionsPanel.UIPanel_OnShow(self)
-            </OnShow>
-        </Scripts>
         <Frames>
             <Frame parentKey="group1" name="$parentGroup1" inherits="NeedToKnow_GroupOptionsTemplate" id="1">
                 <Anchors>
@@ -158,13 +126,6 @@
                     <Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOMLEFT" x="24" y="24"/>
                 </Anchors>
                 <Scripts>
-                    <OnClick>
-                        NeedToKnow.LockToggle(false)
-                    </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
-                        GameTooltip:SetText(NEEDTOKNOW.UIPANEL_CONFIGMODE_TOOLTIP, nil, nil, nil, nil, 1)
-                    </OnEnter>
                     <OnLeave function="GameTooltip_Hide"/>
                 </Scripts>
             </Button>
@@ -174,13 +135,6 @@
                     <Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOMRIGHT" x="-24" y="24"/>
                 </Anchors>
                 <Scripts>
-                    <OnClick>
-                        NeedToKnow.LockToggle(true)
-                    </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
-                        GameTooltip:SetText(NEEDTOKNOW.UIPANEL_PLAYMODE_TOOLTIP, nil, nil, nil, nil, 1)
-                    </OnEnter>
                     <OnLeave function="GameTooltip_Hide"/>
                 </Scripts>
             </Button>

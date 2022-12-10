@@ -158,7 +158,8 @@ function NeedToKnow.ChangeProfile(profile_key)
         
         -- Update the bars and options panel (if it's open)
         NeedToKnow.Update()
-        NeedToKnow.OptionsPanel.UIPanel_Update()
+        -- NeedToKnow.OptionsPanel.UIPanel_Update()
+        _G["InterfaceOptionsNeedToKnowPanel"]:Update()  -- Temporary
     elseif not NeedToKnow_Profiles[profile_key] then
         print("NeedToKnow profile",profile_key,"does not exist!") -- LOCME!
     end

@@ -25,7 +25,6 @@ NeedToKnow.Cooldown = {}
 NeedToKnow.BarMenu = {}
 NeedToKnow.Dialog = {}
 
-NeedToKnow.OptionsPanel = {}
 
 
 -- Default settings

@@ -1,98 +1,96 @@
-﻿--[[ Interface options panel (Main) ]]--
+﻿-- Interface options panel (Main)
+-- Load after OptionsPanel.xml
 
--- local addonName, addonTable = ...
+local addonName, addonTable = ...
+NeedToKnow.OptionsPanel = _G["InterfaceOptionsNeedToKnowPanel"]
 local OptionsPanel = NeedToKnow.OptionsPanel
 local String = NeedToKnow.String
-
-local NeedToKnow_OldProfile
-local NeedToKnow_OldSettings
 
 local MAX_GROUPS = 4
 local MAX_BARS_PER_GROUP = 12
 
 
---[[ Panel functions ]]--
+function NeedToKnow:GetOptionsPanel()
+	return _G["InterfaceOptionsNeedToKnowPanel"]
+end
 
-function OptionsPanel:UIPanel_OnLoad()
-	self.name = "NeedToKnow"
+function NeedToKnow:ShowOptionsPanel()
+end
+
+function OptionsPanel:OnLoad()
+	self.groups = {}
+	for groupID = 1, MAX_GROUPS do
+		self.groups[groupID] = self["group"..groupID]
+	end
+	self:SetPanelText()
+	self:SetPanelScripts()
+
+	self.name = addonName
 	self.default = NeedToKnow.ResetCharacter
-	self.cancel = NeedToKnowOptions.Cancel
+	self.cancel = self.Cancel
 	InterfaceOptions_AddCategory(self)
-
-	-- Mixin(self, OptionsPanel)  -- Inherit OptionsPanel methods
-
-	OptionsPanel.SetPanelText(self)
-	-- OptionsPanel:SetPanelFunctions()
 end
 
 function OptionsPanel:SetPanelText()
+	self.version:SetText("v"..NeedToKnow.version)
 	self.subText1:SetText(NEEDTOKNOW.UIPANEL_SUBTEXT1)
-	self.version:SetText(NEEDTOKNOW.VERSION)
 	self.numberBarsLabel:SetText(NEEDTOKNOW.UIPANEL_NUMBERBARS)
 	self.fixedDurationLabel:SetText(NEEDTOKNOW.UIPANEL_FIXEDDURATION)
-	self.configModeButton.Text:SetText(NEEDTOKNOW.UIPANEL_CONFIGMODE)
-	self.playModeButton.Text:SetText(NEEDTOKNOW.UIPANEL_PLAYMODE)
-	for groupID = 1, MAX_GROUPS do
-		local groupOptions = self["group"..groupID]
-		groupOptions.enableButton.Text:SetText(NEEDTOKNOW.UIPANEL_BARGROUP..groupID)
+
+	for groupID, group in ipairs(self.groups) do
+		group.enableButton.Text:SetText(NEEDTOKNOW.UIPANEL_BARGROUP..groupID)
+		group.enableButton.tooltipText = NEEDTOKNOW.UIPANEL_TOOLTIP_ENABLEGROUP
+		group.fixedDurationBox.tooltipText = NEEDTOKNOW.UIPANEL_TOOLTIP_FIXEDDURATION
 	end
+
+	self.configModeButton.Text:SetText(NEEDTOKNOW.UIPANEL_CONFIGMODE)
+	self.configModeButton.tooltipText = NEEDTOKNOW.UIPANEL_CONFIGMODE_TOOLTIP
+	self.playModeButton.Text:SetText(NEEDTOKNOW.UIPANEL_PLAYMODE)
+	self.playModeButton.tooltipText = NEEDTOKNOW.UIPANEL_PLAYMODE_TOOLTIP
 end
 
-function OptionsPanel:SetPanelFunctions()
+function OptionsPanel:SetPanelScripts()
+	self:SetScript("OnShow", self.OnShow)
+
+	for groupID, group in ipairs(self.groups) do
+		group.enableButton:SetScript("OnEnter", self.OnWidgetEnter)
+		group.enableButton:SetScript("OnClick", self.OnGroupEnableButtonClick)
+		group.numberBarsWidget.leftButton:SetScript("OnClick", self.OnNumberBarsLeftButtonClick)
+		group.numberBarsWidget.rightButton:SetScript("OnClick", self.OnNumberBarsRightButtonClick)
+		group.fixedDurationBox:SetScript("OnEnter", self.OnWidgetEnter)
+		group.fixedDurationBox:SetScript("OnTextChanged", self.OnFixedDurationBoxTextChanged)
+	end
+
+	self.configModeButton:SetScript("OnEnter", self.OnWidgetEnter)
+	self.configModeButton:SetScript("OnClick", self.OnConfigModeButtonClick)
+	self.playModeButton:SetScript("OnEnter", self.OnWidgetEnter)
+	self.playModeButton:SetScript("OnClick", self.OnPlayModeButtonClick)
 end
 
-function OptionsPanel:UIPanel_OnShow()
-    NeedToKnow_OldProfile = NeedToKnow:GetProfileSettings()
-    NeedToKnow_OldSettings = CopyTable(NeedToKnow:GetProfileSettings())
-    OptionsPanel.UIPanel_Update(self)
+function OptionsPanel:OnShow()
+	self.oldProfile = NeedToKnow:GetProfileSettings()
+	self.oldSettings = CopyTable(NeedToKnow:GetProfileSettings())
+	self:Update()
 end
 
-function OptionsPanel:UIPanel_Update()
-	self = self or _G["InterfaceOptionsNeedToKnowPanel"]
+function OptionsPanel:Update()
+	-- Called by OptionsPanel:OnShow(), NeedToKnow.ChangeProfile()
 	if not self:IsVisible() then return end
-	for groupID = 1, MAX_GROUPS do
-		OptionsPanel.GroupEnableButton_Update(groupID)
-		OptionsPanel.NumberbarsWidget_Update(groupID)
+	for groupID, group in ipairs(self.groups) do
+		self:UpdateGroupEnableButton(groupID)
+		self:UpdateNumberBarsWidget(groupID)
 		local groupSettings = NeedToKnow:GetGroupSettings(groupID)
-		self["group"..groupID].fixedDurationBox:SetText(groupSettings.FixedDuration or "")
+		group.fixedDurationBox:SetText(groupSettings.FixedDuration or "")
     end
 end
 
-function OptionsPanel:Cancel()
-    -- Can't copy the table here since ProfileSettings needs to point to the right place in
-    -- NeedToKnow_Globals.Profiles or in NeedToKnow_CharSettings.Profiles
-	-- FIXME: This is only restoring a small fraction of the total settings.
-    NeedToKnow.RestoreTableFromCopy(NeedToKnow_OldProfile, NeedToKnow_OldSettings)
-    -- FIXME: Close context menu if it's open; it may be referring to bar that doesn't exist
-    NeedToKnow:Update()
-end
-
-
---[[ Group options ]]--
-
-function OptionsPanel.GroupEnableButton_Update(groupID)
-	local panel = _G["InterfaceOptionsNeedToKnowPanel"]
-	local button = panel["group"..groupID].enableButton
+function OptionsPanel:UpdateGroupEnableButton(groupID)
+	local button = self.groups[groupID].enableButton
 	button:SetChecked(NeedToKnow:GetGroupSettings(groupID).Enabled)
 end
 
-function OptionsPanel.GroupEnableButton_OnClick(self)
-	local groupID = self:GetParent():GetID()
-	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
-	if self:GetChecked() then
-		if groupID > NeedToKnow.ProfileSettings.nGroups then
-			NeedToKnow.ProfileSettings.nGroups = groupID
-		end
-		groupSettings.Enabled = true
-	else
-		groupSettings.Enabled = false
-	end
-	NeedToKnow.Update()
-end
-
-function OptionsPanel.NumberbarsWidget_Update(groupID)
-	local panel = _G["InterfaceOptionsNeedToKnowPanel"]
-	local widget = panel["group"..groupID].numberBarsWidget
+function OptionsPanel:UpdateNumberBarsWidget(groupID)
+	local widget = self.groups[groupID].numberBarsWidget
 	local numberBars = NeedToKnow:GetGroupSettings(groupID).NumberBars
 	widget.text:SetText(numberBars)
 	widget.leftButton:Enable()
@@ -104,10 +102,39 @@ function OptionsPanel.NumberbarsWidget_Update(groupID)
 	end
 end
 
-function OptionsPanel.NumberbarsButton_OnClick(self, increment)
-	local groupID = self:GetParent():GetParent():GetID()
-	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
+function OptionsPanel:OnWidgetEnter()
+	-- Called with self = widget
+	GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+	GameTooltip:SetText(self.tooltipText, nil, nil, nil, nil, 1)
+end
 
+function OptionsPanel:OnGroupEnableButtonClick()
+	-- Called with self = button
+	local groupID = self:GetParent():GetID()
+	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
+	if self:GetChecked() then
+		if groupID > NeedToKnow.ProfileSettings.nGroups then
+			NeedToKnow.ProfileSettings.nGroups = groupID
+		end
+		groupSettings.Enabled = true
+	else
+		groupSettings.Enabled = false
+	end
+	NeedToKnow:Update()
+end
+
+function OptionsPanel:OnNumberBarsLeftButtonClick()
+	-- Called with self = button
+	OptionsPanel:AddBars(self:GetParent():GetParent():GetID(), -1)
+end
+
+function OptionsPanel:OnNumberBarsRightButtonClick()
+	-- Called with self = button
+	OptionsPanel:AddBars(self:GetParent():GetParent():GetID(), 1)
+end
+
+function OptionsPanel:AddBars(groupID, increment)
+	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
 	local oldNumber = groupSettings.NumberBars
 	if oldNumber == 1 and increment < 0 then 
 		return
@@ -115,15 +142,14 @@ function OptionsPanel.NumberbarsButton_OnClick(self, increment)
 		return
 	end
 	groupSettings.NumberBars = oldNumber + increment
-
 	NeedToKnow:UpdateBarGroup(groupID)
-	OptionsPanel.NumberbarsWidget_Update(groupID)
+	OptionsPanel:UpdateNumberBarsWidget(groupID)
 end
 
-function OptionsPanel.FixedDurationEditBox_OnTextChanged(self)
+function OptionsPanel:OnFixedDurationBoxTextChanged()
+	-- Called with self = editBox
 	local text = self:GetText()
-	local groupID = self:GetParent():GetID()
-	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
+	local groupSettings = NeedToKnow:GetGroupSettings(self:GetParent():GetID())
 	if text == "" then
 		groupSettings.FixedDuration = nil
 	else
@@ -132,5 +158,23 @@ function OptionsPanel.FixedDurationEditBox_OnTextChanged(self)
 	NeedToKnow:Update()
 end
 
+function OptionsPanel:OnConfigModeButtonClick()
+	NeedToKnow.LockToggle(false)
+end
 
+function OptionsPanel:OnPlayModeButtonClick()
+	NeedToKnow.LockToggle(true)
+end
 
+function OptionsPanel:Cancel()
+	-- Kitjan: Can't copy the table here since ProfileSettings needs to point to the right place in
+	-- NeedToKnow_Globals.Profiles or in NeedToKnow_CharSettings.Profiles
+	-- Kitjan: FIXME: This is only restoring a small fraction of the total settings.
+	NeedToKnow.RestoreTableFromCopy(self.oldProfile, self.oldSettings)
+	-- Kitjan: FIXME: Close context menu if it's open; it may be referring to bar that doesn't exist
+	NeedToKnow:Update()
+end
+
+do
+	OptionsPanel:OnLoad()
+end
