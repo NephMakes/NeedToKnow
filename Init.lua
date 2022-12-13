@@ -9,7 +9,7 @@ NeedToKnow.version = GetAddOnMetadata(addonName, "Version")
 
 
 -- Deprecated:
-NEEDTOKNOW = {} -- Deprecated
+NEEDTOKNOW = {}
 NEEDTOKNOW.VERSION = GetAddOnMetadata(addonName, "Version")
 NeedToKnowLoader = {}
 NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
@@ -91,8 +91,8 @@ NEEDTOKNOW.CHARACTER_DEFAULTS = {
     Profiles    = {},
 }
 NEEDTOKNOW.DEFAULTS = {
-    Version     = NEEDTOKNOW.VERSION,
-    OldVersion  = NEEDTOKNOW.VERSION,
+    Version     = NeedToKnow.version,
+    OldVersion  = NeedToKnow.version,
     Profiles    = {},
     Chars       = {},
 }

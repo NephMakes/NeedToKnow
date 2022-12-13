@@ -8,15 +8,66 @@
 local String = NeedToKnow.String
 
 
---[[ Functions ]]--
+-- Get objects
+
+function NeedToKnow:GetBarGroup(groupID)
+	return _G["NeedToKnow_Group"..groupID]
+end
+
+function NeedToKnow:GetGroup(groupID)
+	return NeedToKnow:GetBarGroup(groupID)
+end
+
+function NeedToKnow:GetBar(groupID, barID)
+	return _G["NeedToKnow_Group"..groupID.."Bar"..barID]
+end
+
+function NeedToKnow:GetOptionsPanel()
+	return _G["InterfaceOptionsNeedToKnowPanel"]
+end
+
+
+-- Get settings
+
+function NeedToKnow:GetProfileSettings()
+	return NeedToKnow.ProfileSettings
+end
+
+function NeedToKnow:GetGroupSettings(groupID)
+	return NeedToKnow.ProfileSettings.Groups[groupID]
+end
+
+function NeedToKnow:GetBarSettings(groupID, barID)
+	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
+	return groupSettings.Bars[barID]
+end
+
+
+-- Update
 
 function NeedToKnow:Update()
-	if UnitExists("player") and NeedToKnow.ProfileSettings then
-		for groupID = 1, NeedToKnow.ProfileSettings.nGroups do
-			NeedToKnow:GetBarGroup(groupID):Update()
+	if UnitExists("player") then
+		for groupID = 1, NeedToKnow.MAX_BARGROUPS do
+			NeedToKnow:UpdateBarGroup(groupID)
 		end
 	end
 end
+
+function NeedToKnow:UpdateBarGroup(groupID)
+	NeedToKnow:GetBarGroup(groupID):Update()
+end
+
+function NeedToKnow:UpdateGroup(groupID)
+	 NeedToKnow:UpdateBarGroup(groupID)
+end
+
+function NeedToKnow:UpdateBar(groupID, barID)
+	-- Called by BarMenu functions
+	NeedToKnow:GetBar(groupID, barID):Update()
+end
+
+
+-- Lock/unlock
 
 function NeedToKnow.Show(showAddon)
 	for groupID = 1, NeedToKnow.ProfileSettings.nGroups do
@@ -31,45 +82,8 @@ function NeedToKnow.Show(showAddon)
 	NeedToKnow.IsVisible = showAddon
 end
 
-function NeedToKnow:GetProfileSettings()
-	return NeedToKnow.ProfileSettings
-end
 
-function NeedToKnow:GetBarGroup(groupID)
-	return _G["NeedToKnow_Group"..groupID]
-end
-
-function NeedToKnow:GetGroup(groupID)
-	return NeedToKnow:GetBarGroup(groupID)
-end
-
-function NeedToKnow:GetBar(groupID, barID)
-	return _G["NeedToKnow_Group"..groupID.."Bar"..barID]
-end
-
-function NeedToKnow:GetGroupSettings(groupID)
-	return NeedToKnow.ProfileSettings.Groups[groupID]
-end
-
-function NeedToKnow:GetBarSettings(groupID, barID)
-	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
-	return groupSettings.Bars[barID]
-end
-
-function NeedToKnow:UpdateBarGroup(groupID)
-	local group = NeedToKnow:GetBarGroup(groupID)
-	group:Update()
-end
-
-function NeedToKnow:UpdateGroup(groupID)
-	 NeedToKnow:UpdateBarGroup(groupID)
-end
-
-function NeedToKnow:UpdateBar(groupID, barID)
-	-- Called by BarMenu functions
-	local bar = NeedToKnow:GetBar(groupID, barID)
-	bar:Update()
-end
+-- Text
 
 function NeedToKnow:GetPrettyName(barSettings)
 	-- Called by Bar:SetUnlockedText() and BarMenu_Initialize (indirectly)

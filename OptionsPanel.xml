@@ -18,7 +18,7 @@
 			<Frame parentKey="numberBarsWidget" name="$parentNumberbarsWidget">
 				<Size x="64" y="32"/>
 				<Anchors>
-					<Anchor point="CENTER" relativeTo="$parent" relativePoint="LEFT" x="125" y="0"/>
+					<Anchor point="CENTER" relativeTo="$parent" relativePoint="LEFT" x="140"/>
 				</Anchors>
 				<Layers>
 					<Layer level="BACKGROUND">
@@ -33,7 +33,7 @@
 					<Button parentKey="leftButton" name="$parentLeftButton">
 						<Size x="20" y="20"/>
 						<Anchors>
-							<Anchor point="RIGHT" relativeTo="$parent" relativePoint="CENTER" x="-8" y="0"/>
+							<Anchor point="RIGHT" relativeTo="$parent" relativePoint="CENTER" x="-8"/>
 						</Anchors>
 						<NormalTexture file="Interface\Buttons\UI-SpellbookIcon-PrevPage-Up"/>
 						<PushedTexture file="Interface\Buttons\UI-SpellbookIcon-PrevPage-Down"/>
@@ -43,7 +43,7 @@
 					<Button parentKey="rightButton" name="$parentRightButton">
 						<Size x="20" y="20"/>
 						<Anchors>
-							<Anchor point="LEFT" relativeTo="$parent" relativePoint="CENTER" x="8" y="0"/>
+							<Anchor point="LEFT" relativeTo="$parent" relativePoint="CENTER" x="8"/>
 						</Anchors>
 						<NormalTexture file="Interface\Buttons\UI-SpellbookIcon-NextPage-Up"/>
 						<PushedTexture file="Interface\Buttons\UI-SpellbookIcon-NextPage-Down"/>
@@ -55,7 +55,7 @@
 			<EditBox parentKey="fixedDurationBox" name="$parentFixedDurationBox" inherits="InputBoxTemplate" numeric="true" letters="3" autoFocus="false">
 				<Size x="30" y="20"/>
 				<Anchors>
-					<Anchor point="CENTER" relativeTo="$parentNumberbarsWidget" relativePoint="RIGHT" x="40" y="0"/>
+					<Anchor point="CENTER" relativeTo="$parentNumberbarsWidget" x="63"/>
 				</Anchors>
 				<Scripts>
 					<OnLeave function="GameTooltip_Hide"/>
@@ -75,26 +75,26 @@
 				</FontString>
 				<FontString parentKey="version" name="$parentVersion" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="BOTTOM">
 					<Anchors>
-						<Anchor point="BOTTOMLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMRIGHT" x="5" y="0"/>
+						<Anchor point="BOTTOMLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMRIGHT" x="5"/>
 					</Anchors>
 				</FontString>
 				<FontString parentKey="subText1" name="$parentSubText1" inherits="GameFontHighlightSmall" nonspacewrap="true" maxLines="3" justifyH="LEFT" justifyV="TOP">
 					<Size x="0" y="24"/>
 					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
-						<Anchor point="RIGHT" x="-24" y="0"/>
+						<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT" y="-8"/>
+						<Anchor point="RIGHT" x="-24"/>
 					</Anchors>
 				</FontString>
 				<FontString parentKey="numberBarsLabel" name="$parentNumberbarsLabel" inherits="GameFontNormalSmall">
 					<Size x="50"/>
 					<Anchors>
-						<Anchor point="BOTTOM" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="133" y="-28"/>
+						<Anchor point="BOTTOM" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="140" y="-28"/>
 					</Anchors>
 				</FontString>
 				<FontString parentKey="fixedDurationLabel" name="$parentFixedDurationLabel" inherits="GameFontNormalSmall">
 					<Size x="50"/>
                     <Anchors>
-						<Anchor point="BOTTOM" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="203" y="-28"/>
+						<Anchor point="BOTTOM" relativeTo="$parentNumberbarsLabel" x="61"/>
 					</Anchors>
 				</FontString>
 			</Layer>
@@ -102,7 +102,7 @@
 		<Frames>
 			<Frame parentKey="group1" name="$parentGroup1" inherits="NeedToKnow_GroupOptionsTemplate" id="1">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="8" y="-40"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="0" y="-40"/>
 				</Anchors>
 			</Frame>
 			<Frame parentKey="group2" name="$parentGroup2" inherits="NeedToKnow_GroupOptionsTemplate" id="2">
@@ -123,7 +123,7 @@
 			<Button parentKey="configModeButton" name="$parentConfigModeButton" inherits="UIPanelButtonTemplate">
 				<Size x="128" y="22"/>
 				<Anchors>
-					<Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOMLEFT" x="24" y="24"/>
+					<Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOM" x="-12" y="24"/>
 				</Anchors>
 				<Scripts>
 					<OnLeave function="GameTooltip_Hide"/>
@@ -132,7 +132,7 @@
 			<Button parentKey="playModeButton" name="$parentPlayModeButton" inherits="UIPanelButtonTemplate">
 				<Size x="128" y="22"/>
 				<Anchors>
-					<Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOMRIGHT" x="-24" y="24"/>
+					<Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOM" x="12" y="24"/>
 				</Anchors>
 				<Scripts>
 					<OnLeave function="GameTooltip_Hide"/>

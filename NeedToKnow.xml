@@ -1,35 +1,23 @@
 ﻿<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\..\..\Blizza~1\FrameXML\UI.xsd">
 
-    <!-- These .xml files must be loaded last in .toc -->
-
 	<Frame name="NeedToKnow_GroupTemplate" virtual="true">
 		<Size x="1" y="1"/>
 		<Frames>
-			<Button parentKey="ResizeButton" name="$parentResizeButton">
+			<Button parentKey="resizeButton" name="$parentResizeButton">
 				<Size x="20" y="20"/>
 				<Anchors>
 					<Anchor point="BOTTOMRIGHT"/>
 				</Anchors>
 				<Layers>
 					<Layer level="BACKGROUND">
-						<Texture parentKey="Texture" name="$parentTexture" file="Interface\AddOns\NeedToKnow\Textures\Resize">
+						<Texture parentKey="texture" name="$parentTexture" file="Interface\AddOns\NeedToKnow\Textures\Resize">
 							<Size x="10" y="10"/>
 						</Texture>
 					</Layer>
 				</Layers>
-				<Scripts>
-					<OnLoad>
-						NeedToKnow.ResizeButton.OnLoad(self)
-					</OnLoad>
-				</Scripts>
 			</Button>
 		</Frames>
-		<Scripts>
-			<OnLoad>
-				NeedToKnow.BarGroup.OnLoad(self)
-			</OnLoad>
-		</Scripts>
 	</Frame>
 
     <Frame name="NeedToKnow_BarTemplate" toplevel="true" enableMouse="true" virtual="true">
@@ -52,7 +40,7 @@
                     </Anchors>
                 </Texture>
                 <Texture parentKey="Texture2" name="$parentTexture2">
-                	<!-- Used for user-determined max duration -->
+                	<!-- For user-determined max duration -->
                     <Anchors>
                         <Anchor point="TOPLEFT"/>
                         <Anchor point="BOTTOM"/>
@@ -92,27 +80,6 @@
                 </Texture>
             </Layer>
         </Layers>
-    </Frame>
-
-    <Frame name="NeedToKnow_Group1" inherits="NeedToKnow_GroupTemplate" toplevel="true" movable="true" parent="UIParent" id="1">
-        <Anchors>
-            <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT" x="100" y="-200"/>
-        </Anchors>
-    </Frame>
-    <Frame name="NeedToKnow_Group2" inherits="NeedToKnow_GroupTemplate" toplevel="true" movable="true" parent="UIParent" id="2">
-        <Anchors>
-            <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT" x="100" y="-300"/>
-        </Anchors>
-    </Frame>
-    <Frame name="NeedToKnow_Group3" inherits="NeedToKnow_GroupTemplate" toplevel="true" movable="true" parent="UIParent" id="3">
-        <Anchors>
-            <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT" x="100" y="-400"/>
-        </Anchors>
-    </Frame>
-    <Frame name="NeedToKnow_Group4" inherits="NeedToKnow_GroupTemplate" toplevel="true" movable="true" parent="UIParent" id="4">
-        <Anchors>
-            <Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT" x="100" y="-500"/>
-        </Anchors>
     </Frame>
 
 </Ui>

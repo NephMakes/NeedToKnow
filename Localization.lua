@@ -11,7 +11,7 @@ Localize.enUS = {
 	BAR_TOOLTIP2 = "Right click bars to set up. More options in Blizzard interface options menu. Type /needtoknow to lock and enable.",
 	RESIZE_TOOLTIP = "Click and drag to change size",
 
-	-- BarMenu
+	-- Bar right-click menu
 	ENABLE = ENABLE,  -- "Enable" 
 	ENABLE_BAR = "Enable bar",
 	COLOR = COLOR,  -- "Color"
@@ -80,7 +80,7 @@ Localize.enUS = {
 	BLINK_OUT_OF_COMBAT = "Blink out of combat", 
 	BLINK_ONLY_BOSS = "Blink only for boss fights", 
 
-	-- Dialog
+	-- Input dialog boxes
 	DIALOG_HELPFUL = "Enter buff name", 
 	DIALOG_HARMFUL = "Enter debuff name", 
 	DIALOG_CASTCD = "Enter spell, item, or ability name", 
@@ -111,6 +111,18 @@ Localize.enUS = {
 	DIALOG_SUBTEXT_IMPORT_EXPORT = "Clear text to clear settings", 
 
 	-- Options panel
+	OPTIONS_PANEL_SUBTEXT = "These options let you modify NeedToKnow timer bars", 
+	BAR_GROUP = "Bar group", 
+	GROUP = "Group", 
+	ENABLE_GROUP_TOOLTIP = "Show and enable this bar group", 
+	NUMBER_BARS = "Number of bars", 
+	MAX_BAR_TIME = "Max bar time", 
+	MAX_BAR_TIME_TOOLTIP = "Time in seconds when full (so bars move at same speed). Leave blank for no fixed time.", 
+	EDIT_MODE = "Edit mode", 
+	EDIT_MODE_TOOLTIP = "Unlock bars to set what they time", 
+	PLAY_MODE = "Play mode", 
+	PLAY_MODE_TOOLTIP = "Lock and activate bars", 
+
 	-- Appearance panel
 	-- Profile panel
 	-- Slash commands

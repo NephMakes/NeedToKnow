@@ -7,12 +7,8 @@ local OptionsPanel = NeedToKnow.OptionsPanel
 local String = NeedToKnow.String
 
 local MAX_GROUPS = 4
-local MAX_BARS_PER_GROUP = 12
+local MAX_BARS_PER_GROUP = 9
 
-
-function NeedToKnow:GetOptionsPanel()
-	return _G["InterfaceOptionsNeedToKnowPanel"]
-end
 
 function NeedToKnow:ShowOptionsPanel()
 end
@@ -33,20 +29,20 @@ end
 
 function OptionsPanel:SetPanelText()
 	self.version:SetText("v"..NeedToKnow.version)
-	self.subText1:SetText(NEEDTOKNOW.UIPANEL_SUBTEXT1)
-	self.numberBarsLabel:SetText(NEEDTOKNOW.UIPANEL_NUMBERBARS)
-	self.fixedDurationLabel:SetText(NEEDTOKNOW.UIPANEL_FIXEDDURATION)
+	self.subText1:SetText(String.OPTIONS_PANEL_SUBTEXT)
+	self.numberBarsLabel:SetText(String.NUMBER_BARS)
+	self.fixedDurationLabel:SetText(String.MAX_BAR_TIME)
 
 	for groupID, group in ipairs(self.groups) do
-		group.enableButton.Text:SetText(NEEDTOKNOW.UIPANEL_BARGROUP..groupID)
-		group.enableButton.tooltipText = NEEDTOKNOW.UIPANEL_TOOLTIP_ENABLEGROUP
-		group.fixedDurationBox.tooltipText = NEEDTOKNOW.UIPANEL_TOOLTIP_FIXEDDURATION
+		group.enableButton.Text:SetText(String.BAR_GROUP.." "..groupID)
+		group.enableButton.tooltipText = String.ENABLE_GROUP_TOOLTIP
+		group.fixedDurationBox.tooltipText = String.MAX_BAR_TIME_TOOLTIP
 	end
 
-	self.configModeButton.Text:SetText(NEEDTOKNOW.UIPANEL_CONFIGMODE)
-	self.configModeButton.tooltipText = NEEDTOKNOW.UIPANEL_CONFIGMODE_TOOLTIP
-	self.playModeButton.Text:SetText(NEEDTOKNOW.UIPANEL_PLAYMODE)
-	self.playModeButton.tooltipText = NEEDTOKNOW.UIPANEL_PLAYMODE_TOOLTIP
+	self.configModeButton.Text:SetText(String.EDIT_MODE)
+	self.configModeButton.tooltipText = String.EDIT_MODE_TOOLTIP
+	self.playModeButton.Text:SetText(String.PLAY_MODE)
+	self.playModeButton.tooltipText = String.PLAY_MODE_TOOLTIP
 end
 
 function OptionsPanel:SetPanelScripts()
@@ -71,6 +67,9 @@ function OptionsPanel:OnShow()
 	self.oldProfile = NeedToKnow:GetProfileSettings()
 	self.oldSettings = CopyTable(NeedToKnow:GetProfileSettings())
 	self:Update()
+	-- if locked then
+	-- configModeButton
+	-- playModeButton
 end
 
 function OptionsPanel:Update()
@@ -159,11 +158,17 @@ function OptionsPanel:OnFixedDurationBoxTextChanged()
 end
 
 function OptionsPanel:OnConfigModeButtonClick()
+	-- Called with self = button
 	NeedToKnow.LockToggle(false)
+--	self:Disable()
+--	self:GetParent().playModeButton:Enable()
 end
 
 function OptionsPanel:OnPlayModeButtonClick()
+	-- Called with self = button
 	NeedToKnow.LockToggle(true)
+--	self:Disable()
+--	self:GetParent().configModeButton:Enable()
 end
 
 function OptionsPanel:Cancel()

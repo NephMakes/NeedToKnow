@@ -5,37 +5,49 @@ local ResizeButton = NeedToKnow.ResizeButton
 local Bar = NeedToKnow.Bar
 local String = NeedToKnow.String
 
--- ---------
--- Bar Group
--- ---------
+NeedToKnow.MAX_BARGROUPS = 4
+
+
+--[[ BarGroup ]]--
+
+function BarGroup:New(groupID)
+	local group = CreateFrame("Frame", "NeedToKnow_Group"..groupID, UIParent, "NeedToKnow_GroupTemplate")
+	group:SetID(groupID)
+	Mixin(group, BarGroup)
+	group:OnLoad()
+	return group
+end
 
 function BarGroup:OnLoad()
-	-- Called by NeedToKnow_GroupTemplate
-	Mixin(self, BarGroup) -- Inherit BarGroup methods
-	self.bar = {} -- Table of bar frames
+	self:SetMovable(true)
+	Mixin(self.resizeButton, ResizeButton)
+	self.resizeButton:OnLoad()
+	self.bars = {} -- Table for bar frames
 end
 
 function BarGroup:Update()
 	-- Called by NeedToKnow:Update()
 
 	local groupID = self:GetID()
+	-- self.settings = 
 	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
 	local bar
 
+	-- Update bars in use
 	for barID = 1, groupSettings.NumberBars do
 		if not groupSettings.Bars[barID] then
 			groupSettings.Bars[barID] = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
 		end
 
-		if self.bar[barID] then
-			bar = self.bar[barID]
+		if self.bars[barID] then
+			bar = self.bars[barID]
 		else
 			bar = Bar:New(self, barID)
-			self.bar[barID] = bar
+			self.bars[barID] = bar
 		end
 		bar:SetWidth(groupSettings.Width)
 		if barID > 1 then
-			bar:SetPoint("TOP", self.bar[barID-1], "BOTTOM", 0, -NeedToKnow.ProfileSettings.BarSpacing)
+			bar:SetPoint("TOP", self.bars[barID-1], "BOTTOM", 0, -NeedToKnow.ProfileSettings.BarSpacing)
 		else
 			bar:SetPoint("TOPLEFT")
 		end
@@ -46,18 +58,18 @@ function BarGroup:Update()
 		end
 	end
 
-	local resizeButton = self.ResizeButton
-	resizeButton:SetPoint("BOTTOMRIGHT", bar, "BOTTOMRIGHT", 8, -8)
+	-- Resize button on bottom-most bar in use
+	self.resizeButton:SetPoint("BOTTOMRIGHT", bar, "BOTTOMRIGHT", 8, -8)
 	if NeedToKnow.CharSettings["Locked"] then
-		resizeButton:Hide()
+		self.resizeButton:Hide()
 	else
-		resizeButton:Show()
+		self.resizeButton:Show()
 	end
 
 	-- Hide and disable unused bars
 	local barID = groupSettings.NumberBars + 1
 	while true do
-		bar = self.bar[barID]
+		bar = self.bars[barID]
 		if bar then
 			bar:Hide()
 			bar:Inactivate()
@@ -67,10 +79,7 @@ function BarGroup:Update()
 		end
 	end
 
-	if groupSettings.Position then
-		-- Early in loading process (before PLAYER_LOGIN) might not know position yet
-		self:SetPosition(groupSettings.Position, groupSettings.Scale)
-	end
+	self:SetPosition(groupSettings.Position, groupSettings.Scale)
 
 	if NeedToKnow.IsVisible and groupSettings.Enabled then
 		self:Show()
@@ -87,9 +96,7 @@ function BarGroup:SetPosition(position, scale)
 end
 
 function BarGroup:SetBarWidth(width)
-	groupID = self:GetID()
-	for barID = 1, NeedToKnow.ProfileSettings.Groups[groupID]["NumberBars"] do
-		local bar = self.bar[barID]
+	for barID, bar in ipairs(self.bars) do
 		bar:SetWidth(width)
 		bar.Text:SetWidth(width - 60)
 		bar:SetBackgroundSize(bar.settings.show_icon)
@@ -97,23 +104,22 @@ function BarGroup:SetBarWidth(width)
 end
 
 function BarGroup:SavePosition()
-	local groupID = self:GetID()
 	local point, _, relativePoint, xOfs, yOfs = self:GetPoint()
-	NeedToKnow.ProfileSettings.Groups[groupID]["Position"] = {point, relativePoint, xOfs, yOfs}
-	NeedToKnow.ProfileSettings.Groups[groupID]["Scale"] = self:GetScale()
+	local groupSettings = NeedToKnow:GetGroupSettings(self:GetID())
+	groupSettings.Position = {point, relativePoint, xOfs, yOfs}
+	groupSettings.Scale = self:GetScale()
 end
 
 function BarGroup:SaveBarWidth()
-	NeedToKnow.ProfileSettings.Groups[self:GetID()]["Width"] = self.bar[1]:GetWidth()
+	local groupSettings = NeedToKnow:GetGroupSettings(self:GetID())
+	groupSettings.Width = self.bars[1]:GetWidth()
 end
 
 
--- -------------
--- Resize Button
--- -------------
+--[[ ResizeButton ]]--
 
 function ResizeButton:OnLoad()
-	self.Texture:SetVertexColor(0.6, 0.6, 0.6)
+	self.texture:SetVertexColor(0.6, 0.6, 0.6)
 	self:SetScript("OnEnter", ResizeButton.OnEnter)
 	self:SetScript("OnLeave", ResizeButton.OnLeave)
 	self:SetScript("OnMouseDown", ResizeButton.OnMouseDown)
@@ -123,26 +129,24 @@ end
 function ResizeButton:OnEnter()
 	local tooltip = _G["GameTooltip"]
 	GameTooltip_SetDefaultAnchor(tooltip, self)
-	-- tooltip:AddLine(NEEDTOKNOW.RESIZE_TOOLTIP, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
 	tooltip:AddLine(String.RESIZE_TOOLTIP, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
 	tooltip:Show()
-	self.Texture:SetVertexColor(1, 1, 1)
+	self.texture:SetVertexColor(1, 1, 1)
 end
 
 function ResizeButton:OnLeave()
 	GameTooltip:Hide()
-	self.Texture:SetVertexColor(0.6, 0.6, 0.6)
+	self.texture:SetVertexColor(0.6, 0.6, 0.6)
 end
 
 function ResizeButton:OnMouseDown()
 	local group = self:GetParent()
-	group.oldX = group:GetLeft()
-	group.oldY = group:GetTop()
+	group.oldX, group.oldY = group:GetLeft(), group:GetTop()
 	group.oldScale = group:GetScale()
 	group:ClearAllPoints()
 	group:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", group.oldX, group.oldY)
 	self.oldCursorX, self.oldCursorY = GetCursorPosition(UIParent)
-	self.oldWidth = group.bar[1]:GetWidth()
+	self.oldWidth = group.bars[1]:GetWidth()
 	self:SetScript("OnUpdate", ResizeButton.OnUpdate)
 end
 
@@ -163,7 +167,7 @@ function ResizeButton:OnUpdate()
 	local newScale = max(0.25, newYScale)
 
 	-- Clamp scale so bars are integer pixels tall
-	local barHeight = group.bar[1]:GetHeight()
+	local barHeight = group.bars[1]:GetHeight()
 	local newHeight = newScale * barHeight
 	newHeight = math.floor(newHeight + 0.0002) -- small addition so won't shrink on click
 	newScale = newHeight / barHeight  

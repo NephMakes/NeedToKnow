@@ -2,8 +2,7 @@
 
 local addonName, addonTable = ...
 local ExecutiveFrame = NeedToKnow.ExecutiveFrame
-
-local MAX_BARGROUPS = 4
+local BarGroup = NeedToKnow.BarGroup
 
 local GetSpec = _G.GetSpecialization or _G.GetActiveTalentGroup  -- Retail or Classic
 local GetTime = GetTime
@@ -37,9 +36,10 @@ function ExecutiveFrame:ADDON_LOADED(addon)
 		SLASH_NEEDTOKNOW1 = "/needtoknow"
 		SLASH_NEEDTOKNOW2 = "/ntk"
 
-		self.BarGroup = {}
-		for groupID = 1, MAX_BARGROUPS do
-			self.BarGroup[groupID] = _G["NeedToKnow_Group"..groupID]
+		-- Make bar groups
+		self.barGroups = {}
+		for groupID = 1, NeedToKnow.MAX_BARGROUPS do
+			self.barGroups[groupID] = BarGroup:New(groupID)
 		end
 
 		NeedToKnow.totem_drops = {} -- array 1-4 of precise times totems appeared
@@ -53,21 +53,24 @@ end
 
 function ExecutiveFrame:PLAYER_LOGIN()
 	NeedToKnowLoader.SafeUpgrade()
-	self:PLAYER_TALENT_UPDATE()
 
-	self:RegisterEvent("PLAYER_TALENT_UPDATE")
-	self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 	local _, className = UnitClass("player")
 	if className == "DEATHKNIGHT" and WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
 		NeedToKnow.isClassicDeathKnight = true
-		-- So we can filter rune cooldowns out of ability cooldowns
+			-- To filter rune cooldowns out of ability cooldowns
+	elseif className == "SHAMAN" then
+		NeedToKnow.isShaman = true
+			-- For totem bar type in BarMenu
 	end
+	self:RegisterEvent("PLAYER_TALENT_UPDATE")
+	self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+	self:PLAYER_TALENT_UPDATE()
+
 	NeedToKnow.guidPlayer = UnitGUID("player")
-
-	NeedToKnow:Update()
-
 	self:RegisterEvent("GROUP_ROSTER_UPDATE")
 	self:RefreshRaidMemberNames()
+
+	NeedToKnow:Update()
 
 	self:UnregisterEvent("PLAYER_LOGIN")
 	self:UnregisterEvent("ADDON_LOADED")
