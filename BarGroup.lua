@@ -23,6 +23,7 @@ function BarGroup:OnLoad()
 	self:SetMovable(true)
 	self:SetSize(1, 1)
 	self.resizeButton = ResizeButton:New(self)
+	-- self.settings = NeedToKnow:GetGroupSettings(self:GetID())
 	self.bars = {}
 end
 
@@ -30,57 +31,48 @@ function BarGroup:Update()
 	-- Called by NeedToKnow:Update()
 
 	local groupID = self:GetID()
-	-- self.settings = 
+	-- self.settings = NeedToKnow:GetGroupSettings(groupID)
 	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
-	local bar
+	local numberBars = groupSettings.NumberBars
 
-	-- Make and update bars
-	for barID = 1, groupSettings.NumberBars do
-		if not groupSettings.Bars[barID] then
-			groupSettings.Bars[barID] = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
+	-- Make and/or update bars
+	for barID = 1, numberBars do
+		if not self.bars[barID] then
+			self.bars[barID] = Bar:New(self, barID)
 		end
+		local bar = self.bars[barID]
 
-		if self.bars[barID] then
-			bar = self.bars[barID]
-		else
-			bar = Bar:New(self, barID)
-			self.bars[barID] = bar
-		end
 		bar:SetWidth(groupSettings.Width)
 		if barID > 1 then
 			bar:SetPoint("TOP", self.bars[barID-1], "BOTTOM", 0, -NeedToKnow.ProfileSettings.BarSpacing)
 		else
-			bar:SetPoint("TOPLEFT")
+			bar:SetPoint("LEFT")
 		end
 
+		if not groupSettings.Bars[barID] then
+			groupSettings.Bars[barID] = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
+		end
 		bar:Update()
+
 		if not groupSettings.Enabled then
 			bar:Inactivate()
 		end
 	end
+	for barID, bar in ipairs(self.bars) do
+		if barID > numberBars then
+			bar:Hide()
+			bar:Inactivate()
+		end
+	end
 
-	self.resizeButton:SetPoint("CENTER", bar, "BOTTOMRIGHT")
+	self.resizeButton:SetPoint("CENTER", self.bars[numberBars], "BOTTOMRIGHT")
 	if NeedToKnow.CharSettings["Locked"] then
 		self.resizeButton:Hide()
 	else
 		self.resizeButton:Show()
 	end
 
-	-- Hide and disable unused bars
-	local barID = groupSettings.NumberBars + 1
-	while true do
-		bar = self.bars[barID]
-		if bar then
-			bar:Hide()
-			bar:Inactivate()
-			barID = barID + 1
-		else
-			break
-		end
-	end
-
 	self:SetPosition(groupSettings.Position, groupSettings.Scale)
-
 	if NeedToKnow.IsVisible and groupSettings.Enabled then
 		self:Show()
 	else

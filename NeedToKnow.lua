@@ -50,6 +50,11 @@ function NeedToKnow:Update()
 		for groupID = 1, NeedToKnow.MAX_BARGROUPS do
 			NeedToKnow:UpdateBarGroup(groupID)
 		end
+		--[[
+		for groupID, group in ipairs(self.barGroups) do
+			group:Update()
+		end
+		]]--
 	end
 end
 

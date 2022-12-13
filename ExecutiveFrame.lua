@@ -37,8 +37,10 @@ function ExecutiveFrame:ADDON_LOADED(addon)
 
 		-- Make bar groups
 		self.barGroups = {}
+		-- NeedToKnow.barGroups = {}
 		for groupID = 1, NeedToKnow.MAX_BARGROUPS do
 			self.barGroups[groupID] = NeedToKnow.BarGroup:New(groupID)
+			-- NeedToKnow.barGroups[groupID] = NeedToKnow.BarGroup:New(groupID)
 		end
 
 		NeedToKnow.totem_drops = {} -- array 1-4 of precise times totems appeared
