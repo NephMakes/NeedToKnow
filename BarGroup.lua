@@ -11,7 +11,8 @@ NeedToKnow.MAX_BARGROUPS = 4
 --[[ BarGroup ]]--
 
 function BarGroup:New(groupID)
-	local group = CreateFrame("Frame", "NeedToKnow_Group"..groupID, UIParent, "NeedToKnow_GroupTemplate")
+	-- Called by ExecutiveFrame:ADDON_LOADED()
+	local group = CreateFrame("Frame", "NeedToKnow_Group"..groupID, UIParent)
 	group:SetID(groupID)
 	Mixin(group, BarGroup)
 	group:OnLoad()
@@ -20,9 +21,9 @@ end
 
 function BarGroup:OnLoad()
 	self:SetMovable(true)
-	Mixin(self.resizeButton, ResizeButton)
-	self.resizeButton:OnLoad()
-	self.bars = {} -- Table for bar frames
+	self:SetSize(1, 1)
+	self.resizeButton = ResizeButton:New(self)
+	self.bars = {}
 end
 
 function BarGroup:Update()
@@ -33,7 +34,7 @@ function BarGroup:Update()
 	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
 	local bar
 
-	-- Update bars in use
+	-- Make and update bars
 	for barID = 1, groupSettings.NumberBars do
 		if not groupSettings.Bars[barID] then
 			groupSettings.Bars[barID] = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
@@ -58,8 +59,7 @@ function BarGroup:Update()
 		end
 	end
 
-	-- Resize button on bottom-most bar in use
-	self.resizeButton:SetPoint("BOTTOMRIGHT", bar, "BOTTOMRIGHT", 8, -8)
+	self.resizeButton:SetPoint("CENTER", bar, "BOTTOMRIGHT")
 	if NeedToKnow.CharSettings["Locked"] then
 		self.resizeButton:Hide()
 	else
@@ -118,12 +118,23 @@ end
 
 --[[ ResizeButton ]]--
 
+function ResizeButton:New(barGroup)
+	local button = CreateFrame("Button", barGroup:GetName().."ResizeButton", barGroup)
+	Mixin(button, ResizeButton)
+	button:OnLoad()
+	return button
+end
+
 function ResizeButton:OnLoad()
+	self:SetSize(20, 20)
+	self.texture = self:CreateTexture(self:GetName().."Texture", "OVERLAY")
+	self.texture:SetTexture("Interface\\AddOns\\NeedToKnow\\Textures\\Resize")
+	self.texture:SetAllPoints()
 	self.texture:SetVertexColor(0.6, 0.6, 0.6)
-	self:SetScript("OnEnter", ResizeButton.OnEnter)
-	self:SetScript("OnLeave", ResizeButton.OnLeave)
-	self:SetScript("OnMouseDown", ResizeButton.OnMouseDown)
-	self:SetScript("OnMouseUp", ResizeButton.OnMouseUp)
+	self:SetScript("OnEnter", self.OnEnter)
+	self:SetScript("OnLeave", self.OnLeave)
+	self:SetScript("OnMouseDown", self.OnMouseDown)
+	self:SetScript("OnMouseUp", self.OnMouseUp)
 end
 
 function ResizeButton:OnEnter()

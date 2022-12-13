@@ -2,7 +2,6 @@
 
 local addonName, addonTable = ...
 local ExecutiveFrame = NeedToKnow.ExecutiveFrame
-local BarGroup = NeedToKnow.BarGroup
 
 local GetSpec = _G.GetSpecialization or _G.GetActiveTalentGroup  -- Retail or Classic
 local GetTime = GetTime
@@ -39,7 +38,7 @@ function ExecutiveFrame:ADDON_LOADED(addon)
 		-- Make bar groups
 		self.barGroups = {}
 		for groupID = 1, NeedToKnow.MAX_BARGROUPS do
-			self.barGroups[groupID] = BarGroup:New(groupID)
+			self.barGroups[groupID] = NeedToKnow.BarGroup:New(groupID)
 		end
 
 		NeedToKnow.totem_drops = {} -- array 1-4 of precise times totems appeared
