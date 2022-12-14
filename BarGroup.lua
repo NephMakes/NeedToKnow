@@ -23,7 +23,6 @@ function BarGroup:OnLoad()
 	self:SetMovable(true)
 	self:SetSize(1, 1)
 	self.resizeButton = ResizeButton:New(self)
-	-- self.settings = NeedToKnow:GetGroupSettings(self:GetID())
 	self.bars = {}
 end
 
@@ -35,7 +34,7 @@ function BarGroup:Update()
 	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
 	local numberBars = groupSettings.NumberBars
 
-	-- Make and/or update bars
+	-- Update bars
 	for barID = 1, numberBars do
 		if not self.bars[barID] then
 			self.bars[barID] = Bar:New(self, barID)
@@ -58,6 +57,8 @@ function BarGroup:Update()
 			bar:Inactivate()
 		end
 	end
+
+	-- Hide and disable unused bars
 	for barID, bar in ipairs(self.bars) do
 		if barID > numberBars then
 			bar:Hide()
@@ -66,14 +67,14 @@ function BarGroup:Update()
 	end
 
 	self.resizeButton:SetPoint("CENTER", self.bars[numberBars], "BOTTOMRIGHT")
-	if NeedToKnow.CharSettings["Locked"] then
+	if NeedToKnow.isLocked then
 		self.resizeButton:Hide()
 	else
 		self.resizeButton:Show()
 	end
 
 	self:SetPosition(groupSettings.Position, groupSettings.Scale)
-	if NeedToKnow.IsVisible and groupSettings.Enabled then
+	if groupSettings.Enabled then
 		self:Show()
 	else
 		self:Hide()

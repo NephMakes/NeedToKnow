@@ -159,16 +159,16 @@ end
 
 function OptionsPanel:OnConfigModeButtonClick()
 	-- Called with self = button
-	NeedToKnow.LockToggle(false)
---	self:Disable()
---	self:GetParent().playModeButton:Enable()
+	NeedToKnow:Unlock()
+	--	self:Disable()
+	--	self:GetParent().playModeButton:Enable()
 end
 
 function OptionsPanel:OnPlayModeButtonClick()
 	-- Called with self = button
-	NeedToKnow.LockToggle(true)
---	self:Disable()
---	self:GetParent().configModeButton:Enable()
+	NeedToKnow:Lock()
+	--	self:Disable()
+	--	self:GetParent().configModeButton:Enable()
 end
 
 function OptionsPanel:Cancel()

@@ -27,7 +27,7 @@ ExecutiveFrame:RegisterEvent("PLAYER_LOGIN")
 
 function ExecutiveFrame:ADDON_LOADED(addon)
 	if addon == addonName then
-		if not NeedToKnow.IsVisible then
+		if not NeedToKnow.IsVisible then  -- Deprecated
 			NeedToKnow.IsVisible = true
 		end
 
@@ -57,11 +57,9 @@ function ExecutiveFrame:PLAYER_LOGIN()
 
 	local _, className = UnitClass("player")
 	if className == "DEATHKNIGHT" and WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
-		NeedToKnow.isClassicDeathKnight = true
-			-- To filter rune cooldowns out of ability cooldowns
+		NeedToKnow.isClassicDeathKnight = true  -- To filter rune cooldowns out of ability cooldowns
 	elseif className == "SHAMAN" then
-		NeedToKnow.isShaman = true
-			-- For totem bar type in BarMenu
+		NeedToKnow.isShaman = true  -- For totem bar type in BarMenu
 	end
 	self:RegisterEvent("PLAYER_TALENT_UPDATE")
 	self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
@@ -71,6 +69,7 @@ function ExecutiveFrame:PLAYER_LOGIN()
 	self:RegisterEvent("GROUP_ROSTER_UPDATE")
 	self:RefreshRaidMemberNames()
 
+	NeedToKnow.isLocked = NeedToKnow:GetCharacterSettings().Locked
 	NeedToKnow:Update()
 
 	self:UnregisterEvent("PLAYER_LOGIN")

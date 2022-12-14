@@ -8,7 +8,7 @@
 local String = NeedToKnow.String
 
 
--- Get objects
+--[[ Get objects ]]--
 
 function NeedToKnow:GetBarGroup(groupID)
 	return _G["NeedToKnow_Group"..groupID]
@@ -27,10 +27,16 @@ function NeedToKnow:GetOptionsPanel()
 end
 
 
--- Get settings
+--[[ Get settings ]]--
+
+function NeedToKnow:GetCharacterSettings()
+	return NeedToKnow.CharSettings
+	-- TO DO: Return SavedVariables object
+end
 
 function NeedToKnow:GetProfileSettings()
 	return NeedToKnow.ProfileSettings
+	-- TO DO: Return SavedVariables object
 end
 
 function NeedToKnow:GetGroupSettings(groupID)
@@ -43,7 +49,7 @@ function NeedToKnow:GetBarSettings(groupID, barID)
 end
 
 
--- Update
+--[[ Update ]]--
 
 function NeedToKnow:Update()
 	if UnitExists("player") then
@@ -72,8 +78,32 @@ function NeedToKnow:UpdateBar(groupID, barID)
 end
 
 
--- Lock/unlock
+--[[ Lock/unlock ]]--
 
+function NeedToKnow:Lock()
+	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
+	NeedToKnow:GetCharacterSettings().Locked = true
+	NeedToKnow.isLocked = true
+	NeedToKnow.last_cast = {}  -- Deprecated
+	NeedToKnow:Update()
+end
+
+function NeedToKnow:Unlock()
+	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
+	NeedToKnow:GetCharacterSettings().Locked = false
+	NeedToKnow.isLocked = nil
+	NeedToKnow:Update()
+end
+
+function NeedToKnow:ToggleLockUnlock()
+	if NeedToKnow.isLocked then
+		NeedToKnow:Unlock()
+	else
+		NeedToKnow:Lock()
+	end
+end
+
+-- Deprecated
 function NeedToKnow.Show(showAddon)
 	for groupID = 1, NeedToKnow.ProfileSettings.nGroups do
 		local group = NeedToKnow:GetBarGroup(groupID)
@@ -87,8 +117,28 @@ function NeedToKnow.Show(showAddon)
 	NeedToKnow.IsVisible = showAddon
 end
 
+-- Deprecated
+function NeedToKnow.LockToggle(bLock)
+	if bLock == nil then 
+		if NeedToKnow.CharSettings["Locked"] then
+			bLock = false
+		else
+			bLock = true
+		end
+	end
 
--- Text
+	NeedToKnow.Show(true)
+	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
+
+	if NeedToKnow.CharSettings["Locked"] ~= bLock then
+		NeedToKnow.CharSettings["Locked"] = bLock
+		NeedToKnow.last_cast = {}
+		NeedToKnow.Update()
+	end
+end
+
+
+--[[ Text ]]--
 
 function NeedToKnow:GetPrettyName(barSettings)
 	-- Called by Bar:SetUnlockedText() and BarMenu_Initialize (indirectly)

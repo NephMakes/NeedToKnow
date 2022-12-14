@@ -10,8 +10,6 @@ local GetActiveTalentGroup = _G.GetActiveSpecGroup
 local LSM = LibStub("LibSharedMedia-3.0", true);
 local textureList = LSM:List("statusbar");
 local fontList = LSM:List("font");
-local NeedToKnow_OldProfile = nil;
-local NeedToKnow_OldSettings = nil;
 
 function NeedToKnow.FindProfileByName(profName)
     local key
@@ -23,61 +21,40 @@ function NeedToKnow.FindProfileByName(profName)
 end
 
 function NeedToKnow.SlashCommand(cmd)
-    local args = {}
-    for arg in cmd:gmatch("(%S+)") do
-        table.insert(args, arg)
-    end
+	local args = {}
+	for arg in cmd:gmatch("(%S+)") do
+		table.insert(args, arg)
+	end
 
-    cmd = args[1]
-    table.remove(args,1)
-    
-    if not cmd then
-        NeedToKnow.LockToggle();
-    elseif ( cmd == NEEDTOKNOW.CMD_RESET ) then
-        NeedToKnow.Reset();
-    elseif ( cmd == NEEDTOKNOW.CMD_SHOW ) then
-        NeedToKnow.Show(true);
-    elseif ( cmd == NEEDTOKNOW.CMD_HIDE ) then
-        NeedToKnow.Show(false);
-    elseif ( cmd == NEEDTOKNOW.CMD_PROFILE ) then
-        if args[1] then
-            local profileName = table.concat(args, " ")
-            local key = NeedToKnow.FindProfileByName( profileName )
-            if key then
-                NeedToKnow.ChangeProfile(key)
-                NeedToKnowOptions.UIPanel_Profile_Update()
-            else
-                print("Could not find a profile named '",profileName,"'");
-            end
-        else
-            local spec = GetActiveTalentGroup()
-            local profile = NeedToKnow.CharSettings.Specs[spec]
-            print("Current NeedToKnow profile is \""..profile.."\"") -- LOCME!
-        end
-    else
-        print("Unknown NeedToKnow command",cmd)
-    end    
-end
+	cmd = args[1]
+	table.remove(args, 1)
 
-function NeedToKnow.LockToggle(bLock)
-	-- To do: Clean up this convoluted bullshit
-
-	if bLock == nil then 
-		if NeedToKnow.CharSettings["Locked"] then
-			bLock = false
+	if not cmd then
+		NeedToKnow:ToggleLockUnlock()
+	elseif ( cmd == NEEDTOKNOW.CMD_RESET ) then
+		NeedToKnow.Reset();
+--    elseif ( cmd == NEEDTOKNOW.CMD_SHOW ) then
+--        NeedToKnow.Show(true);
+--    elseif ( cmd == NEEDTOKNOW.CMD_HIDE ) then
+--        NeedToKnow.Show(false);
+	elseif ( cmd == NEEDTOKNOW.CMD_PROFILE ) then
+		if args[1] then
+			local profileName = table.concat(args, " ")
+			local key = NeedToKnow.FindProfileByName( profileName )
+			if key then
+				NeedToKnow.ChangeProfile(key)
+				NeedToKnowOptions.UIPanel_Profile_Update()
+			else
+				print("Could not find a profile named '", profileName, "'");
+			end
 		else
-			bLock = true
+			local spec = GetActiveTalentGroup()
+			local profile = NeedToKnow.CharSettings.Specs[spec]
+			print("Current NeedToKnow profile is \""..profile.."\"") -- LOCME!
 		end
-	end
-
-	NeedToKnow.Show(true)
-	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
-
-	if NeedToKnow.CharSettings["Locked"] ~= bLock then
-		NeedToKnow.CharSettings["Locked"] = bLock
-		NeedToKnow.last_cast = {}
-		NeedToKnow.Update()
-	end
+	else
+		print("Unknown NeedToKnow command", cmd)
+	end    
 end
 
 
