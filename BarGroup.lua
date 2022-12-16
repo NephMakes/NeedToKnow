@@ -33,20 +33,30 @@ function BarGroup:Update()
 	-- self.settings = NeedToKnow:GetGroupSettings(groupID)
 	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
 	local numberBars = groupSettings.NumberBars
+	local groupDirection = groupSettings.direction
 
-	-- Update bars
 	for barID = 1, numberBars do
 		if not self.bars[barID] then
 			self.bars[barID] = Bar:New(self, barID)
 		end
 		local bar = self.bars[barID]
 
-		bar:SetWidth(groupSettings.Width)
-		if barID > 1 then
-			bar:SetPoint("TOP", self.bars[barID-1], "BOTTOM", 0, -NeedToKnow.ProfileSettings.BarSpacing)
+		local barSpacing = NeedToKnow.ProfileSettings.BarSpacing
+		bar:ClearAllPoints()
+		if groupDirection == "up" then
+			if barID == 1 then
+				bar:SetPoint("BOTTOMLEFT")
+			else
+				bar:SetPoint("BOTTOM", self.bars[barID-1], "TOP", 0, barSpacing)
+			end
 		else
-			bar:SetPoint("LEFT")
+			if barID == 1 then
+				bar:SetPoint("TOPLEFT")
+			else
+				bar:SetPoint("TOP", self.bars[barID-1], "BOTTOM", 0, -barSpacing)
+			end
 		end
+		bar:SetWidth(groupSettings.Width)
 
 		if not groupSettings.Bars[barID] then
 			groupSettings.Bars[barID] = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
@@ -66,7 +76,14 @@ function BarGroup:Update()
 		end
 	end
 
-	self.resizeButton:SetPoint("CENTER", self.bars[numberBars], "BOTTOMRIGHT")
+	local resizeButton = self.resizeButton
+	if groupDirection == "up" then
+		resizeButton:SetPoint("CENTER", self.bars[numberBars], "TOPRIGHT")
+		resizeButton.texture:SetRotation(math.pi / 2)
+	else
+		resizeButton:SetPoint("CENTER", self.bars[numberBars], "BOTTOMRIGHT")
+		resizeButton.texture:SetRotation(0)
+	end
 	if NeedToKnow.isLocked then
 		self.resizeButton:Hide()
 	else

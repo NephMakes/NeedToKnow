@@ -33,10 +33,6 @@ function NeedToKnow.SlashCommand(cmd)
 		NeedToKnow:ToggleLockUnlock()
 	elseif ( cmd == NEEDTOKNOW.CMD_RESET ) then
 		NeedToKnow.Reset();
---    elseif ( cmd == NEEDTOKNOW.CMD_SHOW ) then
---        NeedToKnow.Show(true);
---    elseif ( cmd == NEEDTOKNOW.CMD_HIDE ) then
---        NeedToKnow.Show(false);
 	elseif ( cmd == NEEDTOKNOW.CMD_PROFILE ) then
 		if args[1] then
 			local profileName = table.concat(args, " ")

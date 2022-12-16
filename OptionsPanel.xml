@@ -18,7 +18,7 @@
 			<Frame parentKey="numberBarsWidget" name="$parentNumberbarsWidget">
 				<Size x="64" y="32"/>
 				<Anchors>
-					<Anchor point="CENTER" relativeTo="$parent" relativePoint="LEFT" x="140"/>
+					<Anchor point="CENTER" relativeTo="$parent" relativePoint="LEFT" x="144"/>
 				</Anchors>
 				<Layers>
 					<Layer level="BACKGROUND">
@@ -52,10 +52,48 @@
 					</Button>
 				</Frames>
 			</Frame>
+			<Frame parentKey="directionWidget" name="$parentDirectionWidget">
+				<Size x="64" y="32"/>
+				<Anchors>
+					<Anchor point="CENTER" relativeTo="$parentNumberbarsWidget" x="72"/>
+				</Anchors>
+				<Frames>
+					<Button parentKey="upButton" name="$parentUpButton">
+						<Size x="34" y="34"/>
+						<HitRectInsets>
+							<AbsInset left="6" right="6" top="7" bottom="7"/>
+						</HitRectInsets>
+						<Anchors>
+							<Anchor point="RIGHT" relativeTo="$parent" relativePoint="CENTER" x="5"/>
+						</Anchors>
+						<NormalTexture file="Interface\MainMenuBar\UI-MainMenu-ScrollUpButton-Up"/>
+						<PushedTexture file="Interface\MainMenuBar\UI-MainMenu-ScrollUpButton-Down"/>
+						<HighlightTexture file="Interface\Buttons\UI-Common-MouseHilight" alphaMode="ADD"/>
+						<Scripts>
+							<OnLeave function="GameTooltip_Hide"/>
+						</Scripts>
+					</Button>
+					<Button parentKey="downButton" name="$parentDownButton">
+						<Size x="34" y="34"/>
+						<HitRectInsets>
+							<AbsInset left="6" right="6" top="7" bottom="7"/>
+						</HitRectInsets>
+						<Anchors>
+							<Anchor point="LEFT" relativeTo="$parent" relativePoint="CENTER" x="-5"/>
+						</Anchors>
+						<NormalTexture file="Interface\MainMenuBar\UI-MainMenu-ScrollDownButton-Up"/>
+						<PushedTexture file="Interface\MainMenuBar\UI-MainMenu-ScrollDownButton-Down"/>
+						<HighlightTexture file="Interface\Buttons\UI-Common-MouseHilight" alphaMode="ADD"/>
+						<Scripts>
+							<OnLeave function="GameTooltip_Hide"/>
+						</Scripts>
+					</Button>
+				</Frames>
+			</Frame>
 			<EditBox parentKey="fixedDurationBox" name="$parentFixedDurationBox" inherits="InputBoxTemplate" numeric="true" letters="3" autoFocus="false">
 				<Size x="30" y="20"/>
 				<Anchors>
-					<Anchor point="CENTER" relativeTo="$parentNumberbarsWidget" x="63"/>
+					<Anchor point="CENTER" relativeTo="$parentDirectionWidget" x="70" y="1"/>
 				</Anchors>
 				<Scripts>
 					<OnLeave function="GameTooltip_Hide"/>
@@ -88,13 +126,19 @@
 				<FontString parentKey="numberBarsLabel" name="$parentNumberbarsLabel" inherits="GameFontNormalSmall">
 					<Size x="50"/>
 					<Anchors>
-						<Anchor point="BOTTOM" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="140" y="-28"/>
+						<Anchor point="BOTTOM" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="144" y="-28"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="directionLabel" name="$parentDirectionLabel" inherits="GameFontNormalSmall">
+					<Size x="50"/>
+					<Anchors>
+						<Anchor point="BOTTOM" relativeTo="$parentNumberbarsLabel" x="72"/>
 					</Anchors>
 				</FontString>
 				<FontString parentKey="fixedDurationLabel" name="$parentFixedDurationLabel" inherits="GameFontNormalSmall">
 					<Size x="50"/>
                     <Anchors>
-						<Anchor point="BOTTOM" relativeTo="$parentNumberbarsLabel" x="61"/>
+						<Anchor point="BOTTOM" relativeTo="$parentDirectionLabel" x="67"/>
 					</Anchors>
 				</FontString>
 			</Layer>

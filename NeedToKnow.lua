@@ -103,40 +103,6 @@ function NeedToKnow:ToggleLockUnlock()
 	end
 end
 
--- Deprecated
-function NeedToKnow.Show(showAddon)
-	for groupID = 1, NeedToKnow.ProfileSettings.nGroups do
-		local group = NeedToKnow:GetBarGroup(groupID)
-		local groupSettings = NeedToKnow:GetGroupSettings(groupID)
-		if showAddon and groupSettings.Enabled then
-			group:Show()
-		else
-			group:Hide()
-		end
-	end
-	NeedToKnow.IsVisible = showAddon
-end
-
--- Deprecated
-function NeedToKnow.LockToggle(bLock)
-	if bLock == nil then 
-		if NeedToKnow.CharSettings["Locked"] then
-			bLock = false
-		else
-			bLock = true
-		end
-	end
-
-	NeedToKnow.Show(true)
-	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
-
-	if NeedToKnow.CharSettings["Locked"] ~= bLock then
-		NeedToKnow.CharSettings["Locked"] = bLock
-		NeedToKnow.last_cast = {}
-		NeedToKnow.Update()
-	end
-end
-
 
 --[[ Text ]]--
 

@@ -27,10 +27,6 @@ ExecutiveFrame:RegisterEvent("PLAYER_LOGIN")
 
 function ExecutiveFrame:ADDON_LOADED(addon)
 	if addon == addonName then
-		if not NeedToKnow.IsVisible then  -- Deprecated
-			NeedToKnow.IsVisible = true
-		end
-
 		SlashCmdList["NEEDTOKNOW"] = NeedToKnow.SlashCommand
 		SLASH_NEEDTOKNOW1 = "/needtoknow"
 		SLASH_NEEDTOKNOW2 = "/ntk"

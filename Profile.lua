@@ -2,8 +2,7 @@
 
 local addonName, addonTable = ...
 
-local g_GetActiveTalentGroup = _G.GetSpecialization or _G.GetActiveTalentGroup
-	-- Retail or Classic
+local GetSpec = GetSpecialization or GetActiveTalentGroup  -- Retail or Classic
 
 function NeedToKnow.RemoveDefaultValues(t, def, k)
   if not k then k = "" end
@@ -40,8 +39,8 @@ function NeedToKnow.RemoveDefaultValues(t, def, k)
 end
 
 function NeedToKnow.CompressProfile(profileSettings)
-    -- Remove unused bars/groups
-    for iG,vG in ipairs(profileSettings["Groups"]) do
+	-- Compress saved variables by removing unused bars/groups and default settings
+    for iG, vG in ipairs(profileSettings["Groups"]) do
         if iG > profileSettings.nGroups then
             profileSettings["Groups"][iG] = nil
         elseif vG.NumberBars then
@@ -52,7 +51,7 @@ function NeedToKnow.CompressProfile(profileSettings)
             end
         end
     end
-    NeedToKnow.RemoveDefaultValues(profileSettings, NEEDTOKNOW.PROFILE_DEFAULTS);
+    NeedToKnow.RemoveDefaultValues(profileSettings, NEEDTOKNOW.PROFILE_DEFAULTS)
 end
 
 -- DEBUG: remove k, it's just for debugging
@@ -89,6 +88,8 @@ function NeedToKnow.AddDefaultsToTable(t, def, k)
 end
 
 function NeedToKnow.UncompressProfile(profileSettings)
+	-- Uncompress profile by filling in missing settings from defaults
+
     -- Make sure the arrays have the right number of elements so that
     -- AddDefaultsToTable will find them and fill them in
     if profileSettings.nGroups then
@@ -100,7 +101,7 @@ function NeedToKnow.UncompressProfile(profileSettings)
         end
     end
     if profileSettings.Groups then
-        for i,g in ipairs(profileSettings.Groups) do
+        for i, g in ipairs(profileSettings.Groups) do
             if g.NumberBars then
                 if not g.Bars then
                     g.Bars = {}
@@ -110,58 +111,47 @@ function NeedToKnow.UncompressProfile(profileSettings)
                 end
             end
         end
-    end
-        
+    end    
     NeedToKnow.AddDefaultsToTable(profileSettings, NEEDTOKNOW.PROFILE_DEFAULTS)
-    
     profileSettings.bUncompressed = true
 end
 
 function NeedToKnow.ChangeProfile(profile_key)
-    if NeedToKnow_Profiles[profile_key] and
-       NeedToKnow.ProfileSettings ~= NeedToKnow_Profiles[profile_key] then
-        -- Compress the old profile by removing defaults
-        if NeedToKnow.ProfileSettings and NeedToKnow.ProfileSettings.bUncompressed then
-            NeedToKnow.CompressProfile(NeedToKnow.ProfileSettings)
-        end
+	if NeedToKnow_Profiles[profile_key] and
+		 NeedToKnow_Profiles[profile_key] ~= NeedToKnow.ProfileSettings
+	then
+		-- Compress old profile by removing defaults
+		if NeedToKnow.ProfileSettings and NeedToKnow.ProfileSettings.bUncompressed then
+			NeedToKnow.CompressProfile(NeedToKnow.ProfileSettings)
+		end
 
-        -- Switch to the new profile
-        NeedToKnow.ProfileSettings = NeedToKnow_Profiles[profile_key]
-		local spec = g_GetActiveTalentGroup()
-        NeedToKnow.CharSettings.Specs[spec] = profile_key
+		-- Switch to new profile
+		NeedToKnow.ProfileSettings = NeedToKnow_Profiles[profile_key]
+		local spec = GetSpec()
+		NeedToKnow.CharSettings.Specs[spec] = profile_key
 
-        -- fill in any missing defaults
-        NeedToKnow.UncompressProfile(NeedToKnow.ProfileSettings)
-        -- FIXME: We currently display 4 groups in the options UI, not nGroups
-        -- FIXME: We don't handle nGroups changing (showing/hiding groups based on nGroups changing)
-        -- Forcing 4 groups for now
-        NeedToKnow.ProfileSettings.nGroups = 4
-        for groupID = 1,4 do
-            if ( nil == NeedToKnow.ProfileSettings.Groups[groupID] ) then
-                NeedToKnow.ProfileSettings.Groups[groupID] = CopyTable( NEEDTOKNOW.GROUP_DEFAULTS )
-                local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
-                groupSettings.Enabled = false;
-                groupSettings.Position[4] = -100 - (groupID-1) * 100
-            end
-        end
+		-- Add missing settings from defaults
+		NeedToKnow.UncompressProfile(NeedToKnow.ProfileSettings)
 
-        -- Hide any groups not in use
-        local iGroup = NeedToKnow.ProfileSettings.nGroups + 1
-        while true do
-            local group = _G["NeedToKnow_Group"..iGroup]
-            if not group then
-                break
-            end
-            group:Hide()
-            iGroup = iGroup + 1
-        end
-        
-        -- Update the bars and options panel (if it's open)
-        NeedToKnow.Update()
+		-- FIXME: We currently display 4 groups in the options UI, not nGroups
+		-- FIXME: We don't handle nGroups changing (showing/hiding groups based on nGroups changing)
+		-- Forcing 4 groups for now
+		NeedToKnow.ProfileSettings.nGroups = 4
+		for groupID = 1, 4 do
+			if not NeedToKnow.ProfileSettings.Groups[groupID] then
+				NeedToKnow.ProfileSettings.Groups[groupID] = CopyTable(NEEDTOKNOW.GROUP_DEFAULTS)
+				local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
+				groupSettings.Enabled = false
+				groupSettings.Position[4] = -100 - (groupID-1) * 100
+			end
+		end
+
+		-- Update bars and options panel
+		NeedToKnow:Update()
 		NeedToKnow:GetOptionsPanel():Update()
-    elseif not NeedToKnow_Profiles[profile_key] then
-        print("NeedToKnow profile",profile_key,"does not exist!") -- LOCME!
-    end
+	else
+		print("NeedToKnow profile", profile_key, "does not exist!") -- LOCME!
+	end
 end
 
 function NeedToKnowLoader.Reset(bResetCharacter)
@@ -418,7 +408,7 @@ function NeedToKnowLoader.SafeUpgrade()
         NeedToKnow_Globals.NextProfile = maxKey + 1
     end
 
-    local spec = g_GetActiveTalentGroup()
+    local spec = GetSpec()
     local curKey = NeedToKnow.CharSettings.Specs[spec]
     if ( curKey and not NeedToKnow_Profiles[curKey] ) then
         print("Current profile (" .. curKey .. ") has been deleted!");
