@@ -27,74 +27,68 @@ function BarGroup:OnLoad()
 end
 
 function BarGroup:Update()
-	-- Called by NeedToKnow:Update()
+	-- Called by NeedToKnow:Update(), NeedToKnow:UpdateBarGroup()
+	self.settings = NeedToKnow:GetGroupSettings(self:GetID())
 
-	local groupID = self:GetID()
-	-- self.settings = NeedToKnow:GetGroupSettings(groupID)
-	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
-	local numberBars = groupSettings.NumberBars
-	local groupDirection = groupSettings.direction
+	if not self.settings.Enabled then
+		self:Hide()
+		for barID, bar in ipairs(self.bars) do
+			bar:Inactivate()
+		end
+		return
+	else
+		self:Show()
+		self:SetPosition(self.settings.Position, self.settings.Scale)
+		self.resizeButton:Update()
+	end
 
+	-- Make missing bars
+	local numberBars = self.settings.NumberBars
 	for barID = 1, numberBars do
 		if not self.bars[barID] then
 			self.bars[barID] = Bar:New(self, barID)
 		end
-		local bar = self.bars[barID]
-
-		local barSpacing = NeedToKnow.ProfileSettings.BarSpacing
-		bar:ClearAllPoints()
-		if groupDirection == "up" then
-			if barID == 1 then
-				bar:SetPoint("BOTTOMLEFT")
-			else
-				bar:SetPoint("BOTTOM", self.bars[barID-1], "TOP", 0, barSpacing)
-			end
-		else
-			if barID == 1 then
-				bar:SetPoint("TOPLEFT")
-			else
-				bar:SetPoint("TOP", self.bars[barID-1], "BOTTOM", 0, -barSpacing)
-			end
-		end
-		bar:SetWidth(groupSettings.Width)
-
-		if not groupSettings.Bars[barID] then
-			groupSettings.Bars[barID] = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
-		end
-		bar:Update()
-
-		if not groupSettings.Enabled then
-			bar:Inactivate()
+		if not self.settings.Bars[barID] then
+			self.settings.Bars[barID] = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
 		end
 	end
 
-	-- Hide and disable unused bars
+	-- Update bars
 	for barID, bar in ipairs(self.bars) do
 		if barID > numberBars then
 			bar:Hide()
 			bar:Inactivate()
+		else
+			bar:SetWidth(self.settings.Width)
+			bar:Update()
 		end
 	end
+	self:UpdateBarPosition()
+end
 
-	local resizeButton = self.resizeButton
-	if groupDirection == "up" then
-		resizeButton:SetPoint("CENTER", self.bars[numberBars], "TOPRIGHT")
-		resizeButton.texture:SetRotation(math.pi / 2)
-	else
-		resizeButton:SetPoint("CENTER", self.bars[numberBars], "BOTTOMRIGHT")
-		resizeButton.texture:SetRotation(0)
-	end
-	if NeedToKnow.isLocked then
-		self.resizeButton:Hide()
-	else
-		self.resizeButton:Show()
-	end
-
-	self:SetPosition(groupSettings.Position, groupSettings.Scale)
-	if groupSettings.Enabled then
-		self:Show()
-	else
-		self:Hide()
+function BarGroup:UpdateBarPosition()
+	-- Called by BarGroup:Update(), Bar:CheckAura()
+	local bar, previousBar
+	local barSpacing = NeedToKnow.ProfileSettings.BarSpacing
+	for barID = 1, self.settings.NumberBars do
+		bar = self.bars[barID]
+		if not self.settings.condenseGroup or (self.settings.condenseGroup and bar:IsVisible()) then
+			bar:ClearAllPoints()
+			if self.settings.direction == "up" then
+				if not previousBar then
+					bar:SetPoint("BOTTOMLEFT")
+				else
+					bar:SetPoint("BOTTOM", previousBar, "TOP", 0, barSpacing)
+				end
+			else
+				if not previousBar then
+					bar:SetPoint("TOPLEFT")
+				else
+					bar:SetPoint("TOP", previousBar, "BOTTOM", 0, -barSpacing)
+				end
+			end
+			previousBar = bar
+		end
 	end
 end
 
@@ -145,6 +139,23 @@ function ResizeButton:OnLoad()
 	self:SetScript("OnLeave", self.OnLeave)
 	self:SetScript("OnMouseDown", self.OnMouseDown)
 	self:SetScript("OnMouseUp", self.OnMouseUp)
+end
+
+function ResizeButton:Update()
+	if NeedToKnow.isLocked then
+		self:Hide()
+	else
+		self:Show()
+		local group = self:GetParent()
+		local numberBars = group.settings.NumberBars
+		if group.settings.direction == "up" then
+			self:SetPoint("CENTER", group.bars[numberBars], "TOPRIGHT")
+			self.texture:SetRotation(math.pi/2)
+		else
+			self:SetPoint("CENTER", group.bars[numberBars], "BOTTOMRIGHT")
+			self.texture:SetRotation(0)
+		end
+	end
 end
 
 function ResizeButton:OnEnter()

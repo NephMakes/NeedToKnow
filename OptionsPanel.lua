@@ -36,6 +36,7 @@ function OptionsPanel:SetPanelText()
 
 	self.numberBarsLabel:SetText(String.NUMBER_BARS)
 	self.directionLabel:SetText("Group direction")
+	self.condenseGroupLabel:SetText("Condense group")
 	self.fixedDurationLabel:SetText(String.MAX_BAR_TIME)
 
 	for groupID, group in ipairs(self.groups) do
@@ -43,6 +44,7 @@ function OptionsPanel:SetPanelText()
 		group.enableButton.tooltipText = String.ENABLE_GROUP_TOOLTIP
 		group.directionWidget.upButton.tooltipText = "Group grows up"
 		group.directionWidget.downButton.tooltipText = "Group grows down"
+		group.condenseGroupButton.tooltipText = "Move bars to fill gaps"
 		group.fixedDurationBox.tooltipText = String.MAX_BAR_TIME_TOOLTIP
 	end
 
@@ -66,6 +68,9 @@ function OptionsPanel:SetPanelScripts()
 		group.directionWidget.upButton:SetScript("OnClick", self.OnDirectionUpClick)
 		group.directionWidget.downButton:SetScript("OnEnter", self.OnWidgetEnter)
 		group.directionWidget.downButton:SetScript("OnClick", self.OnDirectionDownClick)
+
+		group.condenseGroupButton:SetScript("OnEnter", self.OnWidgetEnter)
+		group.condenseGroupButton:SetScript("OnClick", self.OnCondenseGroupButtonClick)
 
 		group.fixedDurationBox:SetScript("OnEnter", self.OnWidgetEnter)
 		group.fixedDurationBox:SetScript("OnTextChanged", self.OnFixedDurationBoxTextChanged)
@@ -91,6 +96,7 @@ function OptionsPanel:Update()
 		self:UpdateGroupEnableButton(groupID)
 		self:UpdateNumberBarsWidget(groupID)
 		self:UpdateDirectionWidget(groupID, groupSettings)
+		self:UpdateCondenseGroupButton(groupID)
 		group.fixedDurationBox:SetText(groupSettings.FixedDuration or "")
 	end
 	-- self:UpdateEditPlayModeButtons()
@@ -213,13 +219,9 @@ function OptionsPanel:UpdateDirectionWidget(groupID, groupSettings)
 	local upButton = widget.upButton
 	local downButton = widget.downButton
 	if groupSettings.direction == "up" then
-		-- upButton:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollUp-Up")
-		-- downButton:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Disabled")
 		upButton:SetNormalTexture("Interface\\MainMenuBar\\UI-MainMenu-ScrollUpButton-Up")
 		downButton:SetNormalTexture("Interface\\MainMenuBar\\UI-MainMenu-ScrollDownButton-Disabled")
 	else
-		-- upButton:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollUp-Disabled")
-		-- downButton:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up")
 		upButton:SetNormalTexture("Interface\\MainMenuBar\\UI-MainMenu-ScrollUpButton-Disabled")
 		downButton:SetNormalTexture("Interface\\MainMenuBar\\UI-MainMenu-ScrollDownButton-Up")
 	end
@@ -243,6 +245,26 @@ function OptionsPanel:OnDirectionDownClick()
 	groupSettings.direction = "down"
 	NeedToKnow:UpdateBarGroup(groupID)
 	OptionsPanel:UpdateDirectionWidget(groupID, groupSettings)
+end
+
+
+--[[ Condense group button ]]--
+
+function OptionsPanel:UpdateCondenseGroupButton(groupID)
+	local button = self.groups[groupID].condenseGroupButton
+	button:SetChecked(NeedToKnow:GetGroupSettings(groupID).condenseGroup)
+end
+
+function OptionsPanel:OnCondenseGroupButtonClick()
+	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
+	local groupID = self:GetParent():GetID()
+	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
+	if self:GetChecked() then
+		groupSettings.condenseGroup = true
+	else
+		groupSettings.condenseGroup = false
+	end
+	NeedToKnow:UpdateBarGroup(groupID)
 end
 
 

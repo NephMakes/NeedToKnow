@@ -48,7 +48,7 @@ function Bar:Update()
 		self.fixedDuration = nil
 	end
 
-	if NeedToKnow.CharSettings["Locked"] then
+	if NeedToKnow.isLocked then
 		if self.settings.Enabled and groupSettings.Enabled then
 			self:EnableMouse(false)  -- Click through
 			self:Activate()
@@ -260,7 +260,7 @@ function Bar:Inactivate()
 		"PLAYER_REGEN_DISABLED", 
 		"PLAYER_REGEN_ENABLED", 
 	}
-	for k, event in pairs(eventList) do
+	for i, event in pairs(eventList) do
 		self:UnregisterEvent(event)
 	end
 	self["PLAYER_SPELLCAST_SUCCEEDED"] = nil  -- Fake event called by ExecutiveFrame
@@ -297,6 +297,15 @@ function Bar:ACTIONBAR_UPDATE_COOLDOWN()
 	self:CheckAura()
 end
 
+local auraEvents = {
+    SPELL_AURA_APPLIED = true,
+    SPELL_AURA_REMOVED = true,
+    SPELL_AURA_APPLIED_DOSE = true,
+    SPELL_AURA_REMOVED_DOSE = true,
+    SPELL_AURA_REFRESH = true,
+    SPELL_AURA_BROKEN = true,
+    SPELL_AURA_BROKEN_SPELL = true
+}
 function Bar:COMBAT_LOG_EVENT_UNFILTERED(unit, ...)
 	-- To monitor target of target
 	local _, event, _, _, _, _, _, targetGUID, _, _, _, spellID, spellName = CombatLogGetCurrentEventInfo()
@@ -312,15 +321,6 @@ function Bar:COMBAT_LOG_EVENT_UNFILTERED(unit, ...)
 		end
 	end 
 end
-local auraEvents = {
-    SPELL_AURA_APPLIED = true,
-    SPELL_AURA_REMOVED = true,
-    SPELL_AURA_APPLIED_DOSE = true,
-    SPELL_AURA_REMOVED_DOSE = true,
-    SPELL_AURA_REFRESH = true,
-    SPELL_AURA_BROKEN = true,
-    SPELL_AURA_BROKEN_SPELL = true
-}
 
 function Bar:PLAYER_FOCUS_CHANGED(unit, ...)
 	self:CheckAura()
@@ -336,11 +336,12 @@ end
 
 function Bar:PLAYER_SPELLCAST_SUCCEEDED(unit, ...)
 	-- Fake event called by ExecutiveFrame to monitor last raid recipient
-	local spellName, spellID, target = select(1,...)
-	local i, entry
+	-- local spellName, spellID, target = select(1,...)
+	local spellName, spellID = select(1, ...)
+	-- local i, entry
 	for i, entry in ipairs(self.spells) do
 		if entry.id == spellID or entry.name == spellName then
-			self.unit = target or "unknown"
+			-- self.unit = target or "unknown"
 			-- print("Updating", self:GetName(), "since it was recast on", self.unit)
 			self:CheckAura()
 			break
@@ -431,7 +432,6 @@ m_scratch.bar_entry = {
 
 function Bar:CheckAura()
 	-- Called by many functions
-
     local settings = self.settings
 
     local unitExists
@@ -449,6 +449,7 @@ function Bar:CheckAura()
     if unitExists then
         all_stacks = m_scratch.all_stacks
         self:ResetScratchStacks(all_stacks)
+
         -- Call helper function for each spell in list
         for idx, entry in ipairs(self.spells) do
             self.fnCheck(self, entry, all_stacks)  -- fnCheck assigned by Bar:Update()
@@ -461,11 +462,11 @@ function Bar:CheckAura()
     if all_stacks and all_stacks.total > 0 then
         idxName = all_stacks.min.idxName
         buffName = all_stacks.min.buffName
-        caster = all_stacks.min.caster
         duration = all_stacks.max.duration
         expirationTime = all_stacks.min.expirationTime
-        iconPath = all_stacks.min.iconPath
         count = all_stacks.total
+        iconPath = all_stacks.min.iconPath
+        caster = all_stacks.min.caster
     end
 
     -- Cancel work done above if reset spell encountered
@@ -479,8 +480,7 @@ function Bar:CheckAura()
         -- Keep track of when the reset auras were last applied to the player
         for idx, resetSpell in ipairs(self.reset_spells) do
             -- Relies on BUFFCD setting target to player. onlyMine will work either way. 
-            local resetDuration, _, _, resetExpiration
-				= FindAura.FindSingle(self, resetSpell, buff_stacks)
+            local resetDuration, _, _, resetExpiration = FindAura.FindSingle(self, resetSpell, buff_stacks)
             local tStart
             if buff_stacks.total > 0 then
                if 0 == buff_stacks.max.duration then 
@@ -510,7 +510,7 @@ function Bar:CheckAura()
         -- Handle duration increases
 	    -- To do: Factor this out into its own function
         local extended
-        if (settings.bDetectExtends) then
+        if settings.bDetectExtends then
             local curStart = expirationTime - duration
             local guidTarget = UnitGUID(self.unit)
             local r = m_last_guid[buffName] 
@@ -551,7 +551,7 @@ function Bar:CheckAura()
         self.idxName = idxName
         self.buffName = buffName
         self.iconPath = iconPath
-        if ( all_stacks and all_stacks.max.expirationTime ~= expirationTime ) then
+        if all_stacks and all_stacks.max.expirationTime ~= expirationTime then
             self.max_expirationTime = all_stacks.max.expirationTime
         else
             self.max_expirationTime = nil
@@ -564,9 +564,9 @@ function Bar:CheckAura()
 		self:UpdateBarText(self.settings, count, extended, all_stacks)
         self:Show()
 	else
-		if (settings.bDetectExtends and self.buffName) then
+		if settings.bDetectExtends and self.buffName then
 			local r = m_last_guid[self.buffName]
-			if ( r ) then
+			if r then
 				local guidTarget = UnitGUID(self.unit)
 				if guidTarget then
 					r[guidTarget] = nil
@@ -584,6 +584,13 @@ function Bar:CheckAura()
 			self.isBlinking = false
 			self:Hide()
 		end
+	end
+
+	-- Condense group
+	local barGroup = self:GetParent()
+	if barGroup.settings.condenseGroup and (self.isVisible ~= self:IsVisible()) then
+		barGroup:UpdateBarPosition()
+		self.isVisible = self:IsVisible()
 	end
 end
 
@@ -639,7 +646,9 @@ end
 function FindAura:FindSpellUsable(spellEntry, allStacks)
 	-- For watching reactive spells and abilities
 	local spell = spellEntry.name or spellEntry.id
-	if not spell then return end
+	if not spell then 
+		return
+	end
 	local spellName, _, icon = GetSpellInfo(spell)
 	if spellName then
 		local isUsable, notEnoughMana = IsUsableSpell(spellName)

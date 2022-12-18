@@ -6,13 +6,11 @@ local addonName, addonTable = ...
 NeedToKnow = {}
 NeedToKnow.version = GetAddOnMetadata(addonName, "Version")
 
-
-
 -- Deprecated:
 NEEDTOKNOW = {}
 NEEDTOKNOW.VERSION = GetAddOnMetadata(addonName, "Version")
-NeedToKnowLoader = {}
-NeedToKnowOptions = {}   -- Used by NeedToKnow_Options.lua
+NeedToKnowLoader = {}  -- Used by Profile.lua
+NeedToKnowOptions = {}  -- Used by NeedToKnow_Options.lua
 
 -- Define namespaces
 NeedToKnow.ExecutiveFrame = CreateFrame("Frame", "NeedToKnow_ExecutiveFrame")
@@ -24,7 +22,6 @@ NeedToKnow.FindAura = {}
 NeedToKnow.Cooldown = {}
 NeedToKnow.BarMenu = {}
 NeedToKnow.Dialog = {}
-
 
 
 -- Default settings
@@ -71,6 +68,7 @@ NEEDTOKNOW.GROUP_DEFAULTS = {
     Scale = 1,
     Width = 270,
     direction = "down", 
+    condenseGroup = false, 
     FixedDuration = 0, 
     Bars = {NEEDTOKNOW.BAR_DEFAULTS, NEEDTOKNOW.BAR_DEFAULTS, NEEDTOKNOW.BAR_DEFAULTS},
 }
