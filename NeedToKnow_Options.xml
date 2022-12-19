@@ -315,27 +315,34 @@
                     <AbsDimension x="128" y="22"/>
                 </Size>
                 <Anchors>
+<!-- 
                     <Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOMLEFT">
                         <Offset>
                             <AbsDimension x="24" y="24"/>
                         </Offset>
                     </Anchor>
+ -->
+					<Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOM" x="-12" y="24"/>
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        _G[self:GetName().."Text"]:SetText(NEEDTOKNOW.UIPANEL_CONFIGMODE);
+                        -- _G[self:GetName().."Text"]:SetText(NEEDTOKNOW.UIPANEL_CONFIGMODE);
+                        _G[self:GetName().."Text"]:SetText(NeedToKnow.String.EDIT_MODE)
                     </OnLoad>
                     <OnClick>
                         NeedToKnow:Unlock()
                     </OnClick>
                     <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(NEEDTOKNOW.UIPANEL_CONFIGMODE_TOOLTIP, nil, nil, nil, nil, 1);
+                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+                        -- GameTooltip:SetText(NEEDTOKNOW.UIPANEL_CONFIGMODE_TOOLTIP, nil, nil, nil, nil, 1);
+                        GameTooltip:SetText(NeedToKnow.String.EDIT_MODE_TOOLTIP, nil, nil, nil, nil, 1)
                     </OnEnter>
                     <OnLeave function="GameTooltip_Hide"/>
                 </Scripts>
+<!-- 
                 <NormalFont style="GameFontNormalSmall"/>
                 <HighlightFont style="GameFontHighlightSmall"/>
+ -->
             </Button>
 
             <Button name="$parentPlayModeButton" inherits="UIPanelButtonTemplate">
@@ -343,11 +350,14 @@
                     <AbsDimension x="128" y="22"/>
                 </Size>
                 <Anchors>
+<!-- 
                     <Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOMRIGHT">
                         <Offset>
                             <AbsDimension x="-24" y="24"/>
                         </Offset>
                     </Anchor>
+ -->
+					<Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOM" x="12" y="24"/>
                 </Anchors>
                 <Scripts>
                     <OnLoad>
@@ -362,8 +372,10 @@
                     </OnEnter>
                     <OnLeave function="GameTooltip_Hide"/>
                 </Scripts>
+<!-- 
                 <NormalFont style="GameFontNormalSmall"/>
                 <HighlightFont style="GameFontHighlightSmall"/>
+ -->
             </Button>
 
             <Frame name="$parentTextures" inherits="NeedToKnowScrollFrameTemplate" parentKey="Textures">

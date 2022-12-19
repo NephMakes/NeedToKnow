@@ -10,8 +10,7 @@ local MAX_GROUPS = 4
 local MAX_BARS_PER_GROUP = 9
 
 
-function NeedToKnow:ShowOptionsPanel()
-end
+-- function NeedToKnow:ShowOptionsPanel() end
 
 
 --[[ Options panel ]]--
@@ -31,25 +30,26 @@ function OptionsPanel:OnLoad()
 end
 
 function OptionsPanel:SetPanelText()
-	self.version:SetText("v"..NeedToKnow.version)
+	self.title:SetText(addonName.." v"..NeedToKnow.version)
+	-- self.version:SetText("v"..NeedToKnow.version)
 	self.subText1:SetText(String.OPTIONS_PANEL_SUBTEXT)
 
 	self.numberBarsLabel:SetText(String.NUMBER_BARS)
-	self.directionLabel:SetText("Group direction")
-	self.condenseGroupLabel:SetText("Condense group")
+	self.directionLabel:SetText(String.GROUP_DIRECTION)
+	self.condenseGroupLabel:SetText(String.CONDENSE_GROUP)
 	self.fixedDurationLabel:SetText(String.MAX_BAR_TIME)
 
 	for groupID, group in ipairs(self.groups) do
 		group.enableButton.Text:SetText(String.BAR_GROUP.." "..groupID)
 		group.enableButton.tooltipText = String.ENABLE_GROUP_TOOLTIP
-		group.directionWidget.upButton.tooltipText = "Group grows up"
-		group.directionWidget.downButton.tooltipText = "Group grows down"
-		group.condenseGroupButton.tooltipText = "Move bars to fill gaps"
+		group.directionWidget.upButton.tooltipText = String.GROUP_GROWS_UP
+		group.directionWidget.downButton.tooltipText = String.GROUP_GROWS_DOWN
+		group.condenseGroupButton.tooltipText = String.MOVE_BARS
 		group.fixedDurationBox.tooltipText = String.MAX_BAR_TIME_TOOLTIP
 	end
 
-	self.configModeButton.Text:SetText(String.EDIT_MODE)
-	self.configModeButton.tooltipText = String.EDIT_MODE_TOOLTIP
+	self.editModeButton.Text:SetText(String.EDIT_MODE)
+	self.editModeButton.tooltipText = String.EDIT_MODE_TOOLTIP
 	self.playModeButton.Text:SetText(String.PLAY_MODE)
 	self.playModeButton.tooltipText = String.PLAY_MODE_TOOLTIP
 end
@@ -60,24 +60,20 @@ function OptionsPanel:SetPanelScripts()
 	for groupID, group in ipairs(self.groups) do
 		group.enableButton:SetScript("OnEnter", self.OnWidgetEnter)
 		group.enableButton:SetScript("OnClick", self.OnGroupEnableButtonClick)
-
 		group.numberBarsWidget.leftButton:SetScript("OnClick", self.OnNumberBarsLeftButtonClick)
 		group.numberBarsWidget.rightButton:SetScript("OnClick", self.OnNumberBarsRightButtonClick)
-
 		group.directionWidget.upButton:SetScript("OnEnter", self.OnWidgetEnter)
 		group.directionWidget.upButton:SetScript("OnClick", self.OnDirectionUpClick)
 		group.directionWidget.downButton:SetScript("OnEnter", self.OnWidgetEnter)
 		group.directionWidget.downButton:SetScript("OnClick", self.OnDirectionDownClick)
-
 		group.condenseGroupButton:SetScript("OnEnter", self.OnWidgetEnter)
 		group.condenseGroupButton:SetScript("OnClick", self.OnCondenseGroupButtonClick)
-
 		group.fixedDurationBox:SetScript("OnEnter", self.OnWidgetEnter)
 		group.fixedDurationBox:SetScript("OnTextChanged", self.OnFixedDurationBoxTextChanged)
 	end
 
-	self.configModeButton:SetScript("OnEnter", self.OnWidgetEnter)
-	self.configModeButton:SetScript("OnClick", self.OnConfigModeButtonClick)
+	self.editModeButton:SetScript("OnEnter", self.OnWidgetEnter)
+	self.editModeButton:SetScript("OnClick", self.OnConfigModeButtonClick)
 	self.playModeButton:SetScript("OnEnter", self.OnWidgetEnter)
 	self.playModeButton:SetScript("OnClick", self.OnPlayModeButtonClick)
 end
@@ -93,11 +89,11 @@ function OptionsPanel:Update()
 	if not self:IsVisible() then return end
 	for groupID, group in ipairs(self.groups) do
 		local groupSettings = NeedToKnow:GetGroupSettings(groupID)
-		self:UpdateGroupEnableButton(groupID)
-		self:UpdateNumberBarsWidget(groupID)
+		self:UpdateGroupEnableButton(groupID, groupSettings)
+		self:UpdateNumberBarsWidget(groupID, groupSettings)
 		self:UpdateDirectionWidget(groupID, groupSettings)
-		self:UpdateCondenseGroupButton(groupID)
-		group.fixedDurationBox:SetText(groupSettings.FixedDuration or "")
+		self:UpdateCondenseGroupButton(groupID, groupSettings)
+		self:UpdateFixedDurationBox(groupID, groupSettings)
 	end
 	-- self:UpdateEditPlayModeButtons()
 end
@@ -120,25 +116,27 @@ function OptionsPanel:OnPlayModeButtonClick()
 	-- OptionsPanel:UpdateEditPlayModeButtons()
 end
 
+--[[
 function OptionsPanel:UpdateEditPlayModeButtons()
 	local playModeButton = self.playModeButton
-	local configModeButton = self.configModeButton
+	local editModeButton = self.editModeButton
 	if NeedToKnow.isLocked then
-		configModeButton.Left:SetTexture("Interface\\Buttons\\UI-Panel-Button-Disabled")
-		configModeButton.Middle:SetTexture("Interface\\Buttons\\UI-Panel-Button-Disabled")
-		configModeButton.Right:SetTexture("Interface\\Buttons\\UI-Panel-Button-Disabled")
+		editModeButton.Left:SetTexture("Interface\\Buttons\\UI-Panel-Button-Disabled")
+		editModeButton.Middle:SetTexture("Interface\\Buttons\\UI-Panel-Button-Disabled")
+		editModeButton.Right:SetTexture("Interface\\Buttons\\UI-Panel-Button-Disabled")
 		playModeButton.Left:SetTexture("Interface\\Buttons\\UI-Panel-Button-Up")
 		playModeButton.Middle:SetTexture("Interface\\Buttons\\UI-Panel-Button-Up")
 		playModeButton.Right:SetTexture("Interface\\Buttons\\UI-Panel-Button-Up")
 	else
-		configModeButton.Left:SetTexture("Interface\\Buttons\\UI-Panel-Button-Up")
-		configModeButton.Middle:SetTexture("Interface\\Buttons\\UI-Panel-Button-Up")
-		configModeButton.Right:SetTexture("Interface\\Buttons\\UI-Panel-Button-Up")
+		editModeButton.Left:SetTexture("Interface\\Buttons\\UI-Panel-Button-Up")
+		editModeButton.Middle:SetTexture("Interface\\Buttons\\UI-Panel-Button-Up")
+		editModeButton.Right:SetTexture("Interface\\Buttons\\UI-Panel-Button-Up")
 		playModeButton.Left:SetTexture("Interface\\Buttons\\UI-Panel-Button-Disabled")
 		playModeButton.Middle:SetTexture("Interface\\Buttons\\UI-Panel-Button-Disabled")
 		playModeButton.Right:SetTexture("Interface\\Buttons\\UI-Panel-Button-Disabled")
 	end
 end
+]]--
 
 function OptionsPanel:Cancel()
 	-- Kitjan: Can't copy the table here since ProfileSettings needs to point to the right place in
@@ -152,9 +150,9 @@ end
 
 --[[ Enable group button ]]--
 
-function OptionsPanel:UpdateGroupEnableButton(groupID)
+function OptionsPanel:UpdateGroupEnableButton(groupID, groupSettings)
 	local button = self.groups[groupID].enableButton
-	button:SetChecked(NeedToKnow:GetGroupSettings(groupID).Enabled)
+	button:SetChecked(groupSettings.Enabled)
 end
 
 function OptionsPanel:OnGroupEnableButtonClick()
@@ -173,9 +171,9 @@ end
 
 --[[ Number bars widget ]]--
 
-function OptionsPanel:UpdateNumberBarsWidget(groupID)
+function OptionsPanel:UpdateNumberBarsWidget(groupID, groupSettings)
 	local widget = self.groups[groupID].numberBarsWidget
-	local numberBars = NeedToKnow:GetGroupSettings(groupID).NumberBars
+	local numberBars = groupSettings.NumberBars
 	widget.text:SetText(numberBars)
 	widget.leftButton:Enable()
 	widget.rightButton:Enable()
@@ -216,14 +214,12 @@ end
 
 function OptionsPanel:UpdateDirectionWidget(groupID, groupSettings)
 	local widget = self.groups[groupID].directionWidget
-	local upButton = widget.upButton
-	local downButton = widget.downButton
 	if groupSettings.direction == "up" then
-		upButton:SetNormalTexture("Interface\\MainMenuBar\\UI-MainMenu-ScrollUpButton-Up")
-		downButton:SetNormalTexture("Interface\\MainMenuBar\\UI-MainMenu-ScrollDownButton-Disabled")
+		widget.upButton:SetNormalTexture("Interface\\MainMenuBar\\UI-MainMenu-ScrollUpButton-Up")
+		widget.downButton:SetNormalTexture("Interface\\MainMenuBar\\UI-MainMenu-ScrollDownButton-Disabled")
 	else
-		upButton:SetNormalTexture("Interface\\MainMenuBar\\UI-MainMenu-ScrollUpButton-Disabled")
-		downButton:SetNormalTexture("Interface\\MainMenuBar\\UI-MainMenu-ScrollDownButton-Up")
+		widget.upButton:SetNormalTexture("Interface\\MainMenuBar\\UI-MainMenu-ScrollUpButton-Disabled")
+		widget.downButton:SetNormalTexture("Interface\\MainMenuBar\\UI-MainMenu-ScrollDownButton-Up")
 	end
 end
 
@@ -231,38 +227,39 @@ function OptionsPanel:OnDirectionUpClick()
 	-- Called with self = button
 	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
 	local groupID = self:GetParent():GetParent():GetID()
-	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
-	groupSettings.direction = "up"
+	local settings = NeedToKnow:GetGroupSettings(groupID)
+	settings.direction = "up"
 	NeedToKnow:UpdateBarGroup(groupID)
-	OptionsPanel:UpdateDirectionWidget(groupID, groupSettings)
+	OptionsPanel:UpdateDirectionWidget(groupID, settings)
 end
 
 function OptionsPanel:OnDirectionDownClick()
 	-- Called with self = button
 	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
 	local groupID = self:GetParent():GetParent():GetID()
-	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
-	groupSettings.direction = "down"
+	local settings = NeedToKnow:GetGroupSettings(groupID)
+	settings.direction = "down"
 	NeedToKnow:UpdateBarGroup(groupID)
-	OptionsPanel:UpdateDirectionWidget(groupID, groupSettings)
+	OptionsPanel:UpdateDirectionWidget(groupID, settings)
 end
 
 
 --[[ Condense group button ]]--
 
-function OptionsPanel:UpdateCondenseGroupButton(groupID)
+function OptionsPanel:UpdateCondenseGroupButton(groupID, groupSettings)
 	local button = self.groups[groupID].condenseGroupButton
-	button:SetChecked(NeedToKnow:GetGroupSettings(groupID).condenseGroup)
+	local value = groupSettings.condenseGroup
+	button:SetChecked(value)
 end
 
 function OptionsPanel:OnCondenseGroupButtonClick()
 	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
 	local groupID = self:GetParent():GetID()
-	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
+	local settings = NeedToKnow:GetGroupSettings(groupID)
 	if self:GetChecked() then
-		groupSettings.condenseGroup = true
+		settings.condenseGroup = true
 	else
-		groupSettings.condenseGroup = false
+		settings.condenseGroup = false
 	end
 	NeedToKnow:UpdateBarGroup(groupID)
 end
@@ -270,16 +267,27 @@ end
 
 --[[ Fixed duration box ]]--
 
+function OptionsPanel:UpdateFixedDurationBox(groupID, groupSettings)
+	local editBox = self.groups[groupID].fixedDurationBox
+	local value = groupSettings.FixedDuration
+	if value and tonumber(value) > 0 then
+		editBox:SetText(value)
+	else
+		editBox:SetText("")
+	end
+end
+
 function OptionsPanel:OnFixedDurationBoxTextChanged()
 	-- Called with self = editBox
 	local text = self:GetText()
-	local groupSettings = NeedToKnow:GetGroupSettings(self:GetParent():GetID())
+	local groupID = self:GetParent():GetID()
+	local settings = NeedToKnow:GetGroupSettings(groupID)
 	if text == "" then
-		groupSettings.FixedDuration = nil
+		settings.FixedDuration = nil
 	else
-		groupSettings.FixedDuration = tonumber(text)
+		settings.FixedDuration = tonumber(text)
 	end
-	NeedToKnow:Update()
+	NeedToKnow:UpdateBarGroup(groupID)
 end
 
 

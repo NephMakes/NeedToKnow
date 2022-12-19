@@ -208,7 +208,7 @@ function ExecutiveFrame:COMBAT_LOG_EVENT_UNFILTERED()
 
     local tod, event, hideCaster, guidCaster, sourceName, sourceFlags, sourceRaidFlags, guidTarget, nameTarget, _, _, spellid, spell = CombatLogGetCurrentEventInfo()
 
-    -- the time that's passed in appears to be time of day, not game time like everything else.
+    -- Time passed appears to be time of day, not game time like everything else
     local time = GetTime() 
 
     -- TODO: Is checking r.state sufficient or must event be checked instead?
@@ -241,7 +241,7 @@ function ExecutiveFrame:COMBAT_LOG_EVENT_UNFILTERED()
                     rByGuid = { time=time, dur=0, expiry=0 }
                     rBySpell[guidTarget] = rByGuid
                 else
-                    rByGuid.time= time
+                    rByGuid.time = time
                     rByGuid.dur = 0
                     rByGuid.expiry = 0
                 end

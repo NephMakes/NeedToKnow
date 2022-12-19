@@ -11,7 +11,6 @@ local GetSpellInfo = GetSpellInfo
 local SecondsToTimeAbbrev = SecondsToTimeAbbrev
 
 -- Deprecated: 
-local m_last_guid = addonTable.m_last_guid
 local UPDATE_INTERVAL = 0.025  -- Make this an addon-wide variable?
 
 

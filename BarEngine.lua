@@ -202,24 +202,7 @@ function Bar:Activate()
 	end
 
 	if settings.bDetectExtends then
-		local idx, entry
-		for idx, entry in ipairs(self.spells) do
-			local spellName
-			if entry.id then
-				spellName = GetSpellInfo(entry.id)
-			else
-				spellName = entry.name
-			end
-			if spellName then
-				local r = m_last_guid[spellName]
-				if not r then
-					m_last_guid[spellName] = { time=0, dur=0, expiry=0 }
-				end
-			else
-				print("Warning! NeedToKnow could not get name for ", entry.id)
-			end
-		end
-		NeedToKnow.RegisterSpellcastSent()
+		self:RegisterExtendedTime()
 	end
 
 	if settings.blink_enabled then
@@ -231,6 +214,26 @@ function Bar:Activate()
 			self:RegisterBossFight()
 		end
 	end
+end
+
+function Bar:RegisterExtendedTime()
+	for idx, entry in ipairs(self.spells) do
+		local spellName
+		if entry.id then
+			spellName = GetSpellInfo(entry.id)
+		else
+			spellName = entry.name
+		end
+		if spellName then
+			local r = m_last_guid[spellName]
+			if not r then
+				m_last_guid[spellName] = {time = 0, dur = 0, expiry = 0}
+			end
+		else
+			print("Warning! NeedToKnow could not get name for ", entry.id)
+		end
+	end
+	NeedToKnow.RegisterSpellcastSent()
 end
 
 function Bar:RegisterCombatLog()
@@ -507,75 +510,38 @@ function Bar:CheckAura()
 	    -- There's an aura or cooldown this bar is watching. Set it up
         duration = tonumber(duration)
 
-        -- Handle duration increases
-	    -- To do: Factor this out into its own function
-        local extended
-        if settings.bDetectExtends then
-            local curStart = expirationTime - duration
-            local guidTarget = UnitGUID(self.unit)
-            local r = m_last_guid[buffName] 
-            
-            if ( not r[guidTarget] ) then 
-            	-- Should only happen from /reload or /ntk while the aura is active
-                -- Kitjan: This went off for me, but I don't know a repro yet.  I suspect it has to do with bear/cat switching
-                --trace("WARNING! allocating guid slot for ", buffName, "on", guidTarget, "due to UNIT_AURA");
-                r[guidTarget] = { time=curStart, dur=duration, expiry=expirationTime }
-            else
-                r = r[guidTarget]
-                local oldExpiry = r.expiry
-                -- Kitjan: This went off for me, but I don't know a repro yet.  I suspect it has to do with bear/cat switching
-                --if ( oldExpiry > 0 and oldExpiry < curStart ) then
-                    --trace("WARNING! stale entry for ",buffName,"on",guidTarget,curStart-r.time,curStart-oldExpiry)
-                --end
-
-                if ( oldExpiry < curStart ) then
-                    r.time = curStart
-                    r.dur = duration 
-                    r.expiry= expirationTime
-                else
-                    r.expiry = expirationTime
-                    extended = expirationTime - (r.time + r.dur)
-                    if extended > 1 then
-                        duration = r.dur 
-                    else
-                        extended = nil
-                    end
-                end
-            end
-        end
-
-        --bar.duration = tonumber(bar.fixedDuration) or duration
-        self.duration = duration
-
-        self.expirationTime = expirationTime
-        self.idxName = idxName
-        self.buffName = buffName
-        self.iconPath = iconPath
-        if all_stacks and all_stacks.max.expirationTime ~= expirationTime then
-            self.max_expirationTime = all_stacks.max.expirationTime
-        else
-            self.max_expirationTime = nil
-        end
-
-        -- Mark bar as not blinking first because 
-        -- UpdateAppearance() calls OnUpdate which checks bar.isBlinking
-        self.isBlinking = false
-        self:UpdateAppearance()
-		self:UpdateBarText(self.settings, count, extended, all_stacks)
-        self:Show()
-	else
-		if settings.bDetectExtends and self.buffName then
-			local r = m_last_guid[self.buffName]
-			if r then
-				local guidTarget = UnitGUID(self.unit)
-				if guidTarget then
-					r[guidTarget] = nil
-				end
-			end
+		local extended
+		if settings.bDetectExtends then
+			extended, duration = self:GetExtendedTime(buffName, duration, expirationTime, self.unit)
 		end
+
+		-- bar.duration = tonumber(bar.fixedDuration) or duration
+		self.duration = duration
+		self.expirationTime = expirationTime
+		self.idxName = idxName
+		self.buffName = buffName
+		self.iconPath = iconPath
+
+		if all_stacks and all_stacks.max.expirationTime ~= expirationTime then
+			self.max_expirationTime = all_stacks.max.expirationTime
+		else
+			self.max_expirationTime = nil
+		end
+
+		-- Mark bar as not blinking first because 
+		-- UpdateAppearance() calls OnUpdate which checks bar.isBlinking
+		self.isBlinking = false
+		self:UpdateAppearance()
+		self:UpdateBarText(self.settings, count, extended, all_stacks)
+		self:Show()
+	else
 		self.buffName = nil
 		self.duration = nil
 		self.expirationTime = nil
+
+		if settings.bDetectExtends and self.buffName then
+			self:ClearExtendedTime()
+		end
 
 		if self:ShouldBlink(settings, unitExists) then
 			self:Blink(settings)
@@ -591,6 +557,52 @@ function Bar:CheckAura()
 	if barGroup.settings.condenseGroup and (self.isVisible ~= self:IsVisible()) then
 		barGroup:UpdateBarPosition()
 		self.isVisible = self:IsVisible()
+	end
+end
+
+function Bar:GetExtendedTime(auraName, duration, expirationTime, unit)
+	local extended
+	local curStart = expirationTime - duration
+	local guidTarget = UnitGUID(unit)
+	local r = m_last_guid[auraName]
+            
+	if not r[guidTarget] then 
+		-- Should only happen from /reload or /ntk while the aura is active
+		-- Kitjan: This went off for me, but I don't know a repro yet.  I suspect it has to do with bear/cat switching
+		--trace("WARNING! allocating guid slot for ", buffName, "on", guidTarget, "due to UNIT_AURA");
+		r[guidTarget] = {time = curStart, dur = duration, expiry = expirationTime}
+	else
+		r = r[guidTarget]
+		local oldExpiry = r.expiry
+		-- Kitjan: This went off for me, but I don't know a repro yet.  I suspect it has to do with bear/cat switching
+		--if ( oldExpiry > 0 and oldExpiry < curStart ) then
+			--trace("WARNING! stale entry for ",buffName,"on",guidTarget,curStart-r.time,curStart-oldExpiry)
+		--end
+
+		if oldExpiry < curStart then
+			r.time = curStart
+			r.dur = duration
+			r.expiry = expirationTime
+		else
+			r.expiry = expirationTime
+			extended = expirationTime - (r.time + r.dur)
+			if extended > 1 then
+				duration = r.dur 
+			else
+				extended = nil
+			end
+		end
+	end
+	return extended, duration
+end
+
+function Bar:ClearExtendedTime()
+	local r = m_last_guid[self.buffName]
+	if r then
+		local guidTarget = UnitGUID(self.unit)
+		if guidTarget then
+			r[guidTarget] = nil
+		end
 	end
 end
 

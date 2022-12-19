@@ -116,8 +116,13 @@ Localize.enUS = {
 	GROUP = "Group", 
 	ENABLE_GROUP_TOOLTIP = "Show and enable this bar group", 
 	NUMBER_BARS = "Number of bars", 
+	GROUP_DIRECTION = "Group direction", 
+	GROUP_GROWS_UP = "Group grows up", 
+	GROUP_GROWS_DOWN = "Group grows down", 
+	CONDENSE_GROUP = "Condense group", 
+	MOVE_BARS = "Move bars to fill gaps", 
 	MAX_BAR_TIME = "Max bar time", 
-	MAX_BAR_TIME_TOOLTIP = "Time in seconds when full (so bars move at same speed). Leave blank for no fixed time.", 
+	MAX_BAR_TIME_TOOLTIP = "Set time in seconds when full so bars move at same speed. Leave blank for no fixed time.", 
 	EDIT_MODE = "Edit mode", 
 	EDIT_MODE_TOOLTIP = "Unlock bars to set what they time", 
 	PLAY_MODE = "Play mode", 
@@ -150,6 +155,10 @@ Localize.deDE = {
 	CLEAR_SETTINGS = "Einstellungen löschen",
 	DIALOG_HELPFUL = "Name des Buffs/Debuffs für diesen Balken angeben", 
 	DIALOG_HARMFUL = "Name des Buffs/Debuffs für diesen Balken angeben", 
+	OPTIONS_PANEL_SUBTEXT = "Diese Einstellungen ändern die Anzahl und die Gruppierung der Balken", 
+	BAR_GROUP = "Gruppe", 
+	ENABLE_GROUP_TOOLTIP = "Diese Gruppierung aktivieren und anzeigen", 
+	NUMBER_BARS = "Anzahl der Balken", 
 }
 setmetatable(Localize.deDE, {__index = Localize.enUS})  -- Take missing strings from enUS
 
@@ -176,6 +185,11 @@ Localize.koKR = {
 	CLEAR_SETTINGS = "�설정 초기화",
 	DIALOG_HELPFUL = "바? �표시할 버프 ?�는 디버프? �?�름? �입력하세요", 
 	DIALOG_HARMFUL = "바? �표시할 버프 ?�는 디버프? �?�름? �입력하세요", 
+	BAR_GROUP = "그룹", 
+	ENABLE_GROUP_TOOLTIP = "? �그룹? �바를 표시/사용합니다", 
+	NUMBER_BARS = "바 갯수", 
+	EDIT_MODE = "풀림", 
+	PLAY_MODE = "�잠금", 
  }
 setmetatable(Localize.koKR, {__index = Localize.enUS})  -- Take missing strings from enUS
 
@@ -202,6 +216,13 @@ Localize.ruRU = {
 	CLEAR_SETTINGS = "Очистить настройки",
 	DIALOG_HELPFUL = "Введите название баффа/дебаффа для слежения", 
 	DIALOG_HARMFUL = "Введите название баффа/дебаффа для слежения", 
+	BAR_GROUP = "Группа", 
+	ENABLE_GROUP_TOOLTIP = "Показать и включить эту группу полос", 
+	NUMBER_BARS = "Количество полос", 
+	MAX_BAR_TIME = "Максимальное время на полосе", 
+	MAX_BAR_TIME_TOOLTIP = "Указать максимальное время пробега полосы в секундах. Оставить пустым для динамического времени для каждой полойы (полное время = длительность баффа/дебаффа).", 
+	EDIT_MODE = "Разблокировать", 
+	PLAY_MODE = "Заблокировать", 
 }
 setmetatable(Localize.ruRU, {__index = Localize.enUS})  -- Take missing strings from enUS
 
@@ -227,6 +248,13 @@ Localize.zhCN = {
 	CLEAR_SETTINGS = "清除设置",
 	DIALOG_HELPFUL = "输入在这个计时条内计时的Buff或Debuff的精确名字", 
 	DIALOG_HARMFUL = "输入在这个计时条内计时的Buff或Debuff的精确名字", 
+	BAR_GROUP = "分组", 
+	ENABLE_GROUP_TOOLTIP = "显示并启用这个分组的计时条", 
+	NUMBER_BARS = "计时条数量", 
+	MAX_BAR_TIME = "计时条最大持续时间", 
+	MAX_BAR_TIME_TOOLTIP = "设置这个分组计时条的最大长度 (按秒数).  留空为每个计时条设置不同的数值.", 
+	EDIT_MODE = "解锁", 
+	PLAY_MODE = "锁定", 
 }
 setmetatable(Localize.zhCN, {__index = Localize.enUS})  -- Take missing strings from enUS
 
@@ -252,6 +280,13 @@ Localize.zhTW = {
 	CLEAR_SETTINGS = "清除設置",
 	DIALOG_HELPFUL = "輸入在這個計時條內計時的Buff或Debuff的精確名字", 
 	DIALOG_HARMFUL = "輸入在這個計時條內計時的Buff或Debuff的精確名字", 
+	BAR_GROUP = "分組", 
+	ENABLE_GROUP_TOOLTIP = "顯示並啟用這個分組的計時條", 
+	NUMBER_BARS = "計時條數量", 
+	MAX_BAR_TIME = "計時條最大持續時間", 
+	MAX_BAR_TIME_TOOLTIP = "設置這個分組計時條的最大長度 (按秒數).  留空為每個計時條設置不同的數值.", 
+	EDIT_MODE = "解鎖", 
+	PLAY_MODE = "鎖定", 
 }
 setmetatable(Localize.zhTW, {__index = Localize.enUS})  -- Take missing strings from enUS
 

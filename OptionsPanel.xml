@@ -10,7 +10,7 @@
 				<Anchors>
 					<Anchor point="LEFT"/>
 				</Anchors>
-				<HitRectInsets left="0" right="-60" top="0" bottom="0"/>
+				<HitRectInsets right="-60"/>
 				<Scripts>
 					<OnLeave function="GameTooltip_Hide"/>
 				</Scripts>
@@ -94,6 +94,7 @@
 				<Anchors>
 					<Anchor point="CENTER" relativeTo="$parentDirectionWidget" x="66"/>
 				</Anchors>
+				<HitRectInsets right="0"/>
 				<Scripts>
 					<OnLeave function="GameTooltip_Hide"/>
 				</Scripts>
@@ -119,11 +120,13 @@
 						<Anchor point="TOPLEFT" x="16" y="-16"/>
 					</Anchors>
 				</FontString>
+<!-- 
 				<FontString parentKey="version" name="$parentVersion" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="BOTTOM">
 					<Anchors>
 						<Anchor point="BOTTOMLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMRIGHT" x="5"/>
 					</Anchors>
 				</FontString>
+ -->
 				<FontString parentKey="subText1" name="$parentSubText1" inherits="GameFontHighlightSmall" nonspacewrap="true" maxLines="3" justifyH="LEFT" justifyV="TOP">
 					<Size x="0" y="24"/>
 					<Anchors>
@@ -178,7 +181,7 @@
 					<Anchor point="TOPLEFT" relativeTo="$parentGroup3" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
 				</Anchors>
 			</Frame>
-			<Button parentKey="configModeButton" name="$parentConfigModeButton" inherits="UIPanelButtonTemplate">
+			<Button parentKey="editModeButton" name="$parentEditModeButton" inherits="UIPanelButtonTemplate">
 				<Size x="128" y="22"/>
 				<Anchors>
 					<Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOM" x="-12" y="24"/>
