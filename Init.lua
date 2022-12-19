@@ -121,12 +121,10 @@ end
 
 
 -- Kitjan's addon locals
+NeedToKnow.m_last_guid = {}  -- For ExtendedTime
 -- Used by Executive Frame:
 addonTable.m_last_cast = {}
 addonTable.m_last_cast_head = {}
 addonTable.m_last_cast_tail = {}
-addonTable.m_last_guid = {}
-addonTable.m_bInCombat = {}
-addonTable.m_bCombatWithBoss = {}
 
 

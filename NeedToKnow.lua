@@ -11,7 +11,7 @@ local String = NeedToKnow.String
 --[[ Get objects ]]--
 
 function NeedToKnow:GetBarGroup(groupID)
-	return _G["NeedToKnow_Group"..groupID]
+	return self.barGroups[groupID]
 end
 
 function NeedToKnow:GetGroup(groupID)
@@ -53,19 +53,15 @@ end
 
 function NeedToKnow:Update()
 	if UnitExists("player") then
-		for groupID = 1, NeedToKnow.MAX_BARGROUPS do
-			NeedToKnow:UpdateBarGroup(groupID)
-		end
-		--[[
 		for groupID, group in ipairs(self.barGroups) do
 			group:Update()
 		end
-		]]--
 	end
 end
 
 function NeedToKnow:UpdateBarGroup(groupID)
-	NeedToKnow:GetBarGroup(groupID):Update()
+	-- NeedToKnow:GetBarGroup(groupID):Update()
+	self.barGroups[groupID]:Update()
 end
 
 function NeedToKnow:UpdateGroup(groupID)

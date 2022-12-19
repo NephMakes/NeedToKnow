@@ -20,7 +20,7 @@ local UnitExists = UnitExists
 local UnitGUID = UnitGUID
 
 -- Deprecated: 
-local m_last_guid = addonTable.m_last_guid  -- For detect extends
+local m_last_guid = NeedToKnow.m_last_guid  -- For detect extends
 
 
 -- ---------
@@ -535,13 +535,12 @@ function Bar:CheckAura()
 		self:UpdateBarText(self.settings, count, extended, all_stacks)
 		self:Show()
 	else
-		self.buffName = nil
-		self.duration = nil
-		self.expirationTime = nil
-
 		if settings.bDetectExtends and self.buffName then
 			self:ClearExtendedTime()
 		end
+		self.buffName = nil
+		self.duration = nil
+		self.expirationTime = nil
 
 		if self:ShouldBlink(settings, unitExists) then
 			self:Blink(settings)

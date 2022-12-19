@@ -6,11 +6,11 @@ local ExecutiveFrame = NeedToKnow.ExecutiveFrame
 local GetSpec = _G.GetSpecialization or _G.GetActiveTalentGroup  -- Retail or Classic
 local GetTime = GetTime
 
--- Spellcast tracking
+-- Spellcast tracking (deprecated)
 local m_last_cast      = addonTable.m_last_cast
 local m_last_cast_head = addonTable.m_last_cast_head
 local m_last_cast_tail = addonTable.m_last_cast_tail
-local m_last_guid      = addonTable.m_last_guid
+local m_last_guid = NeedToKnow.m_last_guid
 
 
 --[[ ExecutiveFrame functions ]]--
@@ -27,16 +27,10 @@ ExecutiveFrame:RegisterEvent("PLAYER_LOGIN")
 
 function ExecutiveFrame:ADDON_LOADED(addon)
 	if addon == addonName then
-		SlashCmdList["NEEDTOKNOW"] = NeedToKnow.SlashCommand
-		SLASH_NEEDTOKNOW1 = "/needtoknow"
-		SLASH_NEEDTOKNOW2 = "/ntk"
-
 		-- Make bar groups
-		self.barGroups = {}
-		-- NeedToKnow.barGroups = {}
+		NeedToKnow.barGroups = {}
 		for groupID = 1, NeedToKnow.MAX_BARGROUPS do
-			self.barGroups[groupID] = NeedToKnow.BarGroup:New(groupID)
-			-- NeedToKnow.barGroups[groupID] = NeedToKnow.BarGroup:New(groupID)
+			NeedToKnow.barGroups[groupID] = NeedToKnow.BarGroup:New(groupID)
 		end
 
 		NeedToKnow.totem_drops = {} -- array 1-4 of precise times totems appeared
@@ -44,7 +38,11 @@ function ExecutiveFrame:ADDON_LOADED(addon)
 		m_last_cast = {} -- [n] = { spell, target, serial }
 		m_last_cast_head = 1
 		m_last_cast_tail = 1
-		m_last_guid = {} -- [spell][guidTarget] = { time, dur, expiry }
+		NeedToKnow.m_last_guid = {}  -- [spell][guidTarget] = {startTime, duration, expirationTime}
+
+		SlashCmdList["NEEDTOKNOW"] = NeedToKnow.SlashCommand
+		SLASH_NEEDTOKNOW1 = "/needtoknow"
+		SLASH_NEEDTOKNOW2 = "/ntk"
 	end
 end
 
