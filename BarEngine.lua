@@ -1,6 +1,6 @@
 -- Bar tracking behavior
 
-local _, addonTable = ...
+-- local _, addonTable = ...
 
 local Bar = NeedToKnow.Bar
 local FindAura = NeedToKnow.FindAura
@@ -92,6 +92,7 @@ function Bar:UpdateSpells()
 	end
 
 	-- Process list of reset spells for internal cooldowns
+	-- TO DO: add check for settings.BuffOrDebuff == "BUFFCD"
 	if settings.buffcd_reset_spells and settings.buffcd_reset_spells ~= "" then
 		self.reset_spells = {}
 		self.reset_start = {}
@@ -435,77 +436,79 @@ m_scratch.bar_entry = {
 
 function Bar:CheckAura()
 	-- Called by many functions
-    local settings = self.settings
+	local settings = self.settings
 
-    local unitExists
-    if settings.Unit == "player" then
-        unitExists = true
-    elseif settings.Unit == "lastraid" then
-        unitExists = self.unit and UnitExists(self.unit)
-    else
-        unitExists = UnitExists(settings.Unit)
-    end
-    
-    -- Determine if bar should show anything
-    local all_stacks       
-    local idxName, duration, buffName, count, expirationTime, iconPath, caster
-    if unitExists then
-        all_stacks = m_scratch.all_stacks
-        self:ResetScratchStacks(all_stacks)
+	local unitExists
+	if settings.Unit == "player" then
+		unitExists = true
+	elseif settings.Unit == "lastraid" then
+		unitExists = self.unit and UnitExists(self.unit)
+	else
+		unitExists = UnitExists(settings.Unit)
+	end
 
-        -- Call helper function for each spell in list
-        for idx, entry in ipairs(self.spells) do
-            self.fnCheck(self, entry, all_stacks)  -- fnCheck assigned by Bar:Update()
-            if all_stacks.total > 0 and not settings.show_all_stacks then
-                idxName = idx
-                break
-            end
-        end
-    end
-    if all_stacks and all_stacks.total > 0 then
-        idxName = all_stacks.min.idxName
-        buffName = all_stacks.min.buffName
-        duration = all_stacks.max.duration
-        expirationTime = all_stacks.min.expirationTime
-        count = all_stacks.total
-        iconPath = all_stacks.min.iconPath
-        caster = all_stacks.min.caster
-    end
+	-- Determine if bar should show anything
+	local all_stacks       
+	local idxName, duration, buffName, count, expirationTime, iconPath, caster
+	if unitExists then
+		all_stacks = m_scratch.all_stacks
+		self:ResetScratchStacks(all_stacks)
 
-    -- Cancel work done above if reset spell encountered
-    -- reset_spells only set for BUFFCD
-    -- To do: Factor this out into its own function 
-    if self.reset_spells then
-        local maxStart = 0
-        local tNow = GetTime()
-        local buff_stacks = m_scratch.buff_stacks
-        self:ResetScratchStacks(buff_stacks)
-        -- Keep track of when the reset auras were last applied to the player
-        for idx, resetSpell in ipairs(self.reset_spells) do
-            -- Relies on BUFFCD setting target to player. onlyMine will work either way. 
-            local resetDuration, _, _, resetExpiration = FindAura.FindSingle(self, resetSpell, buff_stacks)
-            local tStart
-            if buff_stacks.total > 0 then
-               if 0 == buff_stacks.max.duration then 
-                   tStart = self.reset_start[idx]
-                   if 0 == tStart then
-                       tStart = tNow
-                   end
-               else
-                   tStart = buff_stacks.max.expirationTime - buff_stacks.max.duration
-               end
-               self.reset_start[idx] = tStart
-               
-               if tStart > maxStart then maxStart = tStart end
-            else
-               self.reset_start[idx] = 0
-            end
-        end
-        if duration and maxStart > expirationTime - duration then
-            duration = nil
-        end
-    end
-    
+		-- Call helper function for each spell in list
+		for idx, entry in ipairs(self.spells) do
+			self.fnCheck(self, entry, all_stacks)  -- fnCheck assigned by Bar:Update()
+			if all_stacks.total > 0 and not settings.show_all_stacks then
+				idxName = idx
+				break
+			end
+		end
+	end
+	if all_stacks and all_stacks.total > 0 then
+		idxName = all_stacks.min.idxName
+		buffName = all_stacks.min.buffName
+		duration = all_stacks.max.duration
+		expirationTime = all_stacks.min.expirationTime
+		count = all_stacks.total
+		iconPath = all_stacks.min.iconPath
+		caster = all_stacks.min.caster
+	end
+
+	-- Cancel work done above if reset spell encountered.  reset_spells only set for BUFFCD. 
+	if self.reset_spells then
+		local maxStart = 0
+		local tNow = GetTime()
+		local buff_stacks = m_scratch.buff_stacks
+		self:ResetScratchStacks(buff_stacks)
+		-- Keep track of when the reset auras were last applied to the player
+		for idx, resetSpell in ipairs(self.reset_spells) do
+			-- Relies on BUFFCD setting target to player. onlyMine will work either way. 
+			local resetDuration, _, _, resetExpiration = FindAura.FindSingle(self, resetSpell, buff_stacks)
+			local tStart
+			if buff_stacks.total > 0 then
+			   if 0 == buff_stacks.max.duration then 
+				   tStart = self.reset_start[idx]
+				   if 0 == tStart then
+					   tStart = tNow
+				   end
+			   else
+				   tStart = buff_stacks.max.expirationTime - buff_stacks.max.duration
+			   end
+			   self.reset_start[idx] = tStart
+		   
+			   if tStart > maxStart then maxStart = tStart end
+			else
+			   self.reset_start[idx] = 0
+			end
+		end
+		if duration and maxStart > expirationTime - duration then
+			duration = nil
+		end
+	end
+	-- TO DO: 
+    -- if settings.BuffOrDebuff == "BUFFCD" and self.reset_spells and duration then
+		-- duration = self:GetProcReset(duration, expirationTime)
+	-- end
+
     if duration then
 	    -- There's an aura or cooldown this bar is watching. Set it up
         duration = tonumber(duration)
@@ -528,9 +531,7 @@ function Bar:CheckAura()
 			self.max_expirationTime = nil
 		end
 
-		-- Mark bar as not blinking first because 
-		-- UpdateAppearance() calls OnUpdate which checks bar.isBlinking
-		self.isBlinking = false
+		self.isBlinking = false  -- Because UpdateAppearance() calls OnUpdate which checks bar.isBlinking
 		self:UpdateAppearance()
 		self:UpdateBarText(self.settings, count, extended, all_stacks)
 		self:Show()
@@ -557,6 +558,39 @@ function Bar:CheckAura()
 		barGroup:UpdateBarPosition()
 		self.isVisible = self:IsVisible()
 	end
+end
+
+function Bar:GetProcReset(duration, expirationTime)
+	local maxStart = 0
+	local tNow = GetTime()
+	local buff_stacks = m_scratch.buff_stacks
+	self:ResetScratchStacks(buff_stacks)
+
+	-- Keep track of when the reset auras were last applied to the player
+	for idx, resetSpell in ipairs(self.reset_spells) do
+		-- Relies on BUFFCD setting target to player. onlyMine will work either way. 
+		local resetDuration, _, _, resetExpiration = FindAura.FindSingle(self, resetSpell, buff_stacks)
+		local tStart
+		if buff_stacks.total > 0 then
+		   if 0 == buff_stacks.max.duration then 
+			   tStart = self.reset_start[idx]
+			   if 0 == tStart then
+				   tStart = tNow
+			   end
+		   else
+			   tStart = buff_stacks.max.expirationTime - buff_stacks.max.duration
+		   end
+		   self.reset_start[idx] = tStart
+	   
+		   if tStart > maxStart then maxStart = tStart end
+		else
+		   self.reset_start[idx] = 0
+		end
+	end
+	if duration and maxStart > expirationTime - duration then
+		duration = nil
+	end
+	return duration
 end
 
 function Bar:GetExtendedTime(auraName, duration, expirationTime, unit)
@@ -942,10 +976,10 @@ function Bar:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, e
 end
 
 function Bar:ResetScratchStacks(auraStacks)
-    auraStacks.total = 0;
-    auraStacks.total_ttn[1] = 0;
-    auraStacks.total_ttn[2] = 0;
-    auraStacks.total_ttn[3] = 0;
+	auraStacks.total = 0
+	auraStacks.total_ttn[1] = 0
+	auraStacks.total_ttn[2] = 0
+	auraStacks.total_ttn[3] = 0
 end
 
 

@@ -114,7 +114,7 @@ function Bar:SetBackgroundSize(showIcon)
 	local background = self.Background
 	local barPadding = NeedToKnow.ProfileSettings["BarPadding"]
 
-	local bgWidth = self:GetWidth() + 2*barPadding
+	local bgWidth = self:GetWidth() + 2 * barPadding
 	if showIcon then
 		bgWidth = bgWidth + self:GetHeight() + barPadding
 	end

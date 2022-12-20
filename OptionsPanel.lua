@@ -206,7 +206,7 @@ function OptionsPanel:AddBars(groupID, increment)
 	end
 	groupSettings.NumberBars = oldNumber + increment
 	NeedToKnow:UpdateBarGroup(groupID)
-	OptionsPanel:UpdateNumberBarsWidget(groupID)
+	OptionsPanel:UpdateNumberBarsWidget(groupID, groupSettings)
 end
 
 
