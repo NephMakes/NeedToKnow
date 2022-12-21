@@ -454,7 +454,7 @@ function Bar:CheckAura()
 		all_stacks = m_scratch.all_stacks
 		self:ResetScratchStacks(all_stacks)
 
-		-- Call helper function for each spell in list
+		-- Call helper function for each spell in list until first found
 		for idx, entry in ipairs(self.spells) do
 			self.fnCheck(self, entry, all_stacks)  -- fnCheck assigned by Bar:Update()
 			if all_stacks.total > 0 and not settings.show_all_stacks then

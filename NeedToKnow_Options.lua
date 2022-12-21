@@ -416,13 +416,13 @@ end
 
 function NeedToKnowOptions.OnClickTextureItem(self)
     NeedToKnow.ProfileSettings["BarTexture"] = self.text:GetText()
-    NeedToKnow.Update()
+    NeedToKnow:Update()
     NeedToKnowOptions.UIPanel_Appearance_Update()
 end
 
 function NeedToKnowOptions.OnClickFontItem(self)
     NeedToKnow.ProfileSettings["BarFont"] = self.text:GetText()
-    NeedToKnow.Update()
+    NeedToKnow:Update()
     NeedToKnowOptions.UIPanel_Appearance_Update()
 end
 
@@ -447,14 +447,14 @@ function NeedToKnowOptions.SetColor()
     NeedToKnow.ProfileSettings[variable][1] = r;
     NeedToKnow.ProfileSettings[variable][2] = g;
     NeedToKnow.ProfileSettings[variable][3] = b;
-    NeedToKnow.Update();
+    NeedToKnow:Update();
     NeedToKnowOptions.UIPanel_Appearance_Update();
 end
 
 function NeedToKnowOptions.SetOpacity()
     local variable = ColorPickerFrame.extraInfo;
     NeedToKnow.ProfileSettings[variable][4] = 1 - OpacitySliderFrame:GetValue();
-    NeedToKnow.Update();
+    NeedToKnow:Update();
     NeedToKnowOptions.UIPanel_Appearance_Update();
 end
 
@@ -462,7 +462,7 @@ function NeedToKnowOptions.CancelColor(previousValues)
     if ( previousValues ) then
         local variable = ColorPickerFrame.extraInfo;
         NeedToKnow.ProfileSettings[variable] = {previousValues.r, previousValues.g, previousValues.b, previousValues.opacity};
-        NeedToKnow.Update();
+        NeedToKnow:Update();
         NeedToKnowOptions.UIPanel_Appearance_Update();
     end
 end

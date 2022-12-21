@@ -53,7 +53,7 @@ end
 
 function NeedToKnow:Update()
 	if UnitExists("player") then
-		for groupID, group in ipairs(self.barGroups) do
+		for groupID, group in ipairs(NeedToKnow.barGroups) do
 			group:Update()
 		end
 	end
