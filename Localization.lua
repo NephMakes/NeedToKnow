@@ -107,7 +107,7 @@ Localize.enUS = {
 	DIALOG_SUBTEXT_CAST_TIME_SPELL = "Leave blank to show cast time for spell with buff or debuff name", 
 	DIALOG_SUBTEXT_CAST_TIME_ADD = "Leave blank to add no time", 
 	DIALOG_SUBTEXT_BLINK_TEXT = "Clear text to stop replacing", 
-	DIALOG_SUBTEXT_REPLACE_TEXT = "Clear text to stop replacing", 
+	DIALOG_SUBTEXT_REPLACE_TEXT = "To individually replace names, enter text in order separated by commas. Clear text to stop replacing", 
 	DIALOG_SUBTEXT_IMPORT_EXPORT = "Clear text to clear settings", 
 
 	-- Options panel
