@@ -411,7 +411,7 @@ m_scratch.all_stacks = {
 		expirationTime = 0, 
 	},
 	total = 0,
-	total_ttn = { 0, 0, 0 }
+--	total_ttn = { 0, 0, 0 }
 }
 m_scratch.buff_stacks = {
 	min = {
@@ -426,7 +426,7 @@ m_scratch.buff_stacks = {
 		expirationTime = 0, 
 	},
 	total = 0,
-	total_ttn = { 0, 0, 0 }
+--	total_ttn = { 0, 0, 0 }
 }
 m_scratch.bar_entry = {
 	idxName = 0,
@@ -963,23 +963,23 @@ function Bar:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, e
 			allStacks.max.expirationTime = expirationTime
 		end 
 		allStacks.total = allStacks.total + count
-		if value1 and type(value1) == "number" then
-			allStacks.total_ttn[1] = allStacks.total_ttn[1] + value1
-			if value2 and type(value2) == "number" then
-				allStacks.total_ttn[2] = allStacks.total_ttn[2] + value2
-			end
-			if value3 and type(value3) == "number" then
-				allStacks.total_ttn[3] = allStacks.total_ttn[3] + value3
-			end
-		end
+--		if value1 and type(value1) == "number" then
+--			allStacks.total_ttn[1] = allStacks.total_ttn[1] + value1
+--			if value2 and type(value2) == "number" then
+--				allStacks.total_ttn[2] = allStacks.total_ttn[2] + value2
+--			end
+--			if value3 and type(value3) == "number" then
+--				allStacks.total_ttn[3] = allStacks.total_ttn[3] + value3
+--			end
+--		end
 	end
 end
 
 function Bar:ResetScratchStacks(auraStacks)
 	auraStacks.total = 0
-	auraStacks.total_ttn[1] = 0
-	auraStacks.total_ttn[2] = 0
-	auraStacks.total_ttn[3] = 0
+--	auraStacks.total_ttn[1] = 0
+--	auraStacks.total_ttn[2] = 0
+--	auraStacks.total_ttn[3] = 0
 end
 
 

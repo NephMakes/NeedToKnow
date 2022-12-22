@@ -110,12 +110,12 @@ SubMenu.show = {
 	{value = "show_icon", itemType = "boolean", menuText = String.SHOW_ICON},
 }
 SubMenu.textOptions = {
-	{value = "show_text_user", itemType = "dialog", dialogType = "text", showCheck = true, menuText = String.REPLACE_BAR_TEXT},
-	{value = "show_mypip", itemType = "boolean", menuText = String.SHOW_MYPIP},
 	{value = "bDetectExtends", itemType = "boolean", menuText = String.SHOW_TIME_ADDED}, 
-	{value = "show_ttn1", itemType = "boolean", menuText = String.SHOW_TTN1},
-	{value = "show_ttn2", itemType = "boolean", menuText = String.SHOW_TTN2},
-	{value = "show_ttn3", itemType = "boolean", menuText = String.SHOW_TTN3},
+	{value = "show_text_user", itemType = "dialog", dialogType = "text", showCheck = true, menuText = String.REPLACE_BAR_TEXT},
+	-- {value = "show_mypip", itemType = "boolean", menuText = String.SHOW_MYPIP},
+	-- {value = "show_ttn1", itemType = "boolean", menuText = String.SHOW_TTN1},
+	-- {value = "show_ttn2", itemType = "boolean", menuText = String.SHOW_TTN2},
+	-- {value = "show_ttn3", itemType = "boolean", menuText = String.SHOW_TTN3},
 }
 SubMenu.TimeFormat = {
 	{value = "Fmt_SingleUnit", itemType = "varValue", menuText = String.TIME_SINGLE_UNIT},

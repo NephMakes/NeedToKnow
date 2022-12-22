@@ -212,179 +212,6 @@ function Bar:SetValue(barTexture, value, value0)
 end
 
 
--- --------
--- Bar text
--- --------
-
-function Bar:UpdateBarText(barSettings, count, extended, buff_stacks)
-	-- Called by Bar:CheckAura() if duration found
-
-	local settings = barSettings or self.settings
-	local text = ""
-
-	if settings.show_mypip then
-		text = text .. "* "  -- Shouldn't this be checking if it's player's aura?
-	end
-
-	local name = ""
-	if settings.show_text then
-		name = self.buffName
-		if settings.show_text_user ~= "" then
-			local idx = self.idxName
-			if idx > #self.spell_names then 
-				idx = #self.spell_names
-			end
-			name = self.spell_names[idx]
-		end
-	end
-	if not settings.show_count then
-		count = 1
-	end
-	local to_append = self:ComputeText(name, count, extended, buff_stacks)
-	if to_append and to_append ~= "" then
-		text = text .. to_append
-	end
-
-	if ( settings.append_cd 
-		and (settings.BuffOrDebuff == "CASTCD" 
-		or settings.BuffOrDebuff == "BUFFCD"
-		or settings.BuffOrDebuff == "EQUIPSLOT" ) ) 
-	then
-		text = text .. " CD"
-	elseif settings.append_usable and settings.BuffOrDebuff == "USABLE" then
-		text = text .. " Usable"
-	end
-
-	self.text:SetText(text)
-end
-
-function Bar:ComputeText(buffName, count, extended, buff_stacks)
-	-- Called by Bar:UpdateBarText()
-	local text = buffName
-	if count > 1 then
-		text = buffName.."  ["..count.."]"
-	end
-	if self.settings.show_ttn1 and buff_stacks.total_ttn[1] > 0 then
-		text = text.." ("..buff_stacks.total_ttn[1]..")"
-	end
-	if self.settings.show_ttn2 and buff_stacks.total_ttn[2] > 0 then
-		text = text.." ("..buff_stacks.total_ttn[2]..")"
-	end
-	if self.settings.show_ttn3 and buff_stacks.total_ttn[3] > 0 then
-		text = text.." ("..buff_stacks.total_ttn[3]..")"
-	end
-	if extended and extended > 1 then
-		text = text..string.format(" + %.0fs", extended)
-	end
-	return text
-end
-
-function Bar:SetUnlockedText(barSettings)
-	-- Called by Bar:Unlock()
-	local settings = barSettings or self.settings
-	local text = ""
-	if settings.show_mypip then
-		text = text .. "* "
-	end
-	if settings.show_text then
-		if settings.show_text_user ~= "" then
-			text = settings.show_text_user
-		else
-			text = text .. NeedToKnow:GetPrettyName(settings)
-		end
-		if ( settings.append_cd and (
-			settings.BuffOrDebuff == "CASTCD"
-			or settings.BuffOrDebuff == "BUFFCD"
-			or settings.BuffOrDebuff == "EQUIPSLOT" 
-			) 
-		) 
-		then
-			text = text .. " CD"
-		elseif settings.append_usable and settings.BuffOrDebuff == "USABLE" then
-			text = text .. " Usable"
-		end
-		if settings.bDetectExtends == true then
-			text = text .. " + 3s"
-		end
-	end
-	self.Text:SetText(text)
-end
-
-function Bar:FormatTimeSingle(duration)
-    return string.format(SecondsToTimeAbbrev(duration))
-end
-
-function Bar:FormatTimeTwoUnits(duration)
-	if duration < 6040 then
-		local minutes = floor(duration / 60)
-		local seconds = floor(duration - minutes * 60)
-		return string.format("%02d:%02d", minutes, seconds)
-	else
-		return self:FormatTimeSingle(duration)
-	end
-end
-
-function Bar:FormatTimeDecimal(duration)
-	return string.format("%0.1f", duration)
-end
-
-
--- ---------
--- Cast time
--- ---------
-
--- Note: Kitjan's VCT = "Visual Cast Time"
-
-function Bar:UpdateCastTime()
-	-- Called by Bar:ConfigureVisible()
-	-- Called by Bar:OnUpdate() if CastTime used, so make sure it's efficent
-	-- Does GetSpellInfo() actually factor in haste etc?
-
-	local castWidth = 0
-	local barDuration = self.fixedDuration or self.duration
-	if barDuration then
-		local barWidth = self:GetWidth()
-		local castDuration = self:GetCastTimeDuration()
-		castWidth = barWidth * castDuration / barDuration
-		if castWidth > barWidth then
-			castWidth = barWidth
-		end
-	end
-
-	if castWidth > 1 then
-		self.CastTime:SetWidth(castWidth)
-		self.CastTime:Show()
-	else
-		self.CastTime:Hide()
-	end
-end
-
-function Bar:GetCastTimeDuration()
-	-- Called by Bar:UpdateCastTime()
-	-- Which is called by Bar:OnUpdate() if CastTime used, so make sure it's efficent
-
-	local castDuration = 0
-
-	local spell = self.settings.vct_spell
-	if not spell or spell == "" then
-		spell = self.buffName
-	end
-	local _, _, _, castTime = GetSpellInfo(spell)
-	if castTime then
-		castDuration = castTime / 1000
-		self.vct_refresh = true
-	else
-		self.vct_refresh = false
-	end
-
-	if self.settings.vct_extra then
-		castDuration = castDuration + self.settings.vct_extra
-	end
-
-	return castDuration
-end
-
-
 -- ----------
 -- Bar config
 -- ----------
@@ -461,3 +288,61 @@ function Bar:OnMouseUp(button)
 		NeedToKnow.BarMenu:ShowMenu(self)
 	end
 end
+
+
+-- ---------
+-- Cast time
+-- ---------
+
+-- Note: Kitjan's VCT = "Visual Cast Time"
+
+function Bar:UpdateCastTime()
+	-- Called by Bar:ConfigureVisible()
+	-- Called by Bar:OnUpdate() if CastTime used, so make sure it's efficent
+	-- Does GetSpellInfo() actually factor in haste etc?
+
+	local castWidth = 0
+	local barDuration = self.fixedDuration or self.duration
+	if barDuration then
+		local barWidth = self:GetWidth()
+		local castDuration = self:GetCastTimeDuration()
+		castWidth = barWidth * castDuration / barDuration
+		if castWidth > barWidth then
+			castWidth = barWidth
+		end
+	end
+
+	if castWidth > 1 then
+		self.CastTime:SetWidth(castWidth)
+		self.CastTime:Show()
+	else
+		self.CastTime:Hide()
+	end
+end
+
+function Bar:GetCastTimeDuration()
+	-- Called by Bar:UpdateCastTime()
+	-- Which is called by Bar:OnUpdate() if CastTime used, so make sure it's efficent
+
+	local castDuration = 0
+
+	local spell = self.settings.vct_spell
+	if not spell or spell == "" then
+		spell = self.buffName
+	end
+	local _, _, _, castTime = GetSpellInfo(spell)
+	if castTime then
+		castDuration = castTime / 1000
+		self.vct_refresh = true
+	else
+		self.vct_refresh = false
+	end
+
+	if self.settings.vct_extra then
+		castDuration = castDuration + self.settings.vct_extra
+	end
+
+	return castDuration
+end
+
+
