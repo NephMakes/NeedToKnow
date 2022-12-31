@@ -2,14 +2,7 @@
 
 local trace = print
 
-NEEDTOKNOW.MAXBARSPACING = 24;
-NEEDTOKNOW.MAXBARPADDING = 12;
-
 local GetActiveTalentGroup = _G.GetActiveSpecGroup
-
-local LSM = LibStub("LibSharedMedia-3.0", true);
-local textureList = LSM:List("statusbar");
-local fontList = LSM:List("font");
 
 function NeedToKnow.FindProfileByName(profName)
     local key
@@ -54,117 +47,12 @@ function NeedToKnow.SlashCommand(cmd)
 end
 
 
-
 -- -----------------------------------
--- INTERFACE OPTIONS PANEL: APPEARANCE
+-- INTERFACE OPTIONS PANEL: PROFILE
 -- -----------------------------------
 
 NeedToKnowOptions.DefaultSelectedColor =   { 0.1, 0.6, 0.8, 1 }
 NeedToKnowOptions.DefaultNormalColor = { 0.7, 0.7, 0.7, 0 }
-
-function NeedToKnowOptions.UIPanel_Appearance_OnLoad(self)
-    self.name = NEEDTOKNOW.UIPANEL_APPEARANCE;
-    self.parent = "NeedToKnow"
-    self.default = NeedToKnow.ResetCharacter
-    self.cancel = NeedToKnowOptions.Cancel
-    -- need different way to handle cancel?  users might open appearance panel without opening main panel
-    InterfaceOptions_AddCategory(self)
-    
-    local panelName = self:GetName()
-    _G[panelName.."Version"]:SetText(NEEDTOKNOW.VERSION)
-    _G[panelName.."SubText1"]:SetText(NEEDTOKNOW.UIPANEL_APPEARANCE_SUBTEXT1)
-
-    self.Textures.fnClick = NeedToKnowOptions.OnClickTextureItem
-    self.Textures.configure = function(i, btn, label) 
-        btn.Bg:SetTexture(NeedToKnow.LSM:Fetch("statusbar",label))
-    end
-    self.Textures.List.update = NeedToKnowOptions.UpdateBarTextureDropDown
-    self.Textures.normal_color =  { 0.7, 0.7, 0.7, 1 }
-
-    self.Fonts.fnClick = NeedToKnowOptions.OnClickFontItem
-    self.Fonts.configure = function(i, btn, label) 
-        local fontPath = NeedToKnow.LSM:Fetch("font",label)
-        btn.text:SetFont(fontPath, 12)
-        btn.Bg:SetTexture(NeedToKnow.LSM:Fetch("statusbar","Minimalist"))
-    end
-    self.Fonts.List.update = NeedToKnowOptions.UpdateBarFontDropDown
-
-    _G[panelName.."TexturesTitle"]:SetText("Texture:") -- LOCME
-    _G[panelName.."FontsTitle"]:SetText("Font:") -- LOCME
-
-end
-
-function NeedToKnowOptions.UIPanel_Appearance_OnShow(self)
-    NeedToKnowOptions.UIPanel_Appearance_Update();
-
-    -- todo: Cache this? Update needs it to
-    local idxCurrent = 1
-    for i = 1, #textureList do
-        if NeedToKnow.ProfileSettings["BarTexture"] == textureList[i] then
-            idxCurrent = i
-            break;
-        end
-    end
-    local idxScroll = idxCurrent - 3
-    if idxScroll < 0 then
-        idxScroll = 0
-    end
-    self.Textures.List.scrollBar:SetValue(idxScroll * self.Textures.List.buttonHeight+0.1)
-    HybridScrollFrame_OnMouseWheel(self.Textures.List, 1, 0.1);
-
-    for i = 1, #fontList do
-        if NeedToKnow.ProfileSettings["BarFont"] == fontList[i] then
-            idxCurrent = i
-            break;
-        end
-    end
-    idxScroll = idxCurrent - 3
-    if idxScroll < 0 then
-        idxScroll = 0
-    end
-    self.Fonts.List.scrollBar:SetValue(idxScroll * self.Fonts.List.buttonHeight+0.1)
-    HybridScrollFrame_OnMouseWheel(self.Fonts.List, 1, 0.1);
-end
-
-function NeedToKnowOptions.UIPanel_Appearance_Update()
-    local panelName = "InterfaceOptionsNeedToKnowAppearancePanel";
-    local panel = _G[panelName]
-    if not panel or not panel:IsVisible() then return end
-    
-    local settings = NeedToKnow.ProfileSettings;
-    local barSpacingSlider = _G[panelName.."BarSpacingSlider"];
-    local barPaddingSlider = _G[panelName.."BarPaddingSlider"];
-    local fontSizeSlider = _G[panelName.."FontSizeSlider"];
-    local fontOutlineSlider = _G[panelName.."FontOutlineSlider"];
-
-    -- Mimic the behavior of the context menu, and force the alpha to one in the swatch
-    local r,g,b = unpack(settings.BkgdColor);
-    _G[panelName.."BackgroundColorButtonNormalTexture"]:SetVertexColor(r,g,b,1);
-
-    barSpacingSlider:SetMinMaxValues(0, NEEDTOKNOW.MAXBARSPACING);
-    barSpacingSlider:SetValue(settings.BarSpacing);
-    barSpacingSlider:SetValueStep(0.25);
-    barSpacingSlider:SetObeyStepOnDrag(true)
-    barPaddingSlider:SetMinMaxValues(0, NEEDTOKNOW.MAXBARPADDING);
-    barPaddingSlider:SetValue(settings.BarPadding);
-    barPaddingSlider:SetValueStep(0.25);
-    barPaddingSlider:SetObeyStepOnDrag(true)
-    fontSizeSlider:SetMinMaxValues(5,20);
-    fontSizeSlider:SetValue(settings.FontSize);
-    fontSizeSlider:SetValueStep(0.5);
-    fontSizeSlider:SetObeyStepOnDrag(true)
-    fontOutlineSlider:SetMinMaxValues(0,2);
-    fontOutlineSlider:SetValue(settings.FontOutline);
-    fontOutlineSlider:SetValueStep(1);
-    fontOutlineSlider:SetObeyStepOnDrag(true)
-
-    NeedToKnowOptions.UpdateBarTextureDropDown(_G[panelName.."Textures"]);
-    NeedToKnowOptions.UpdateBarFontDropDown(_G[panelName.."Fonts"]);
-end
-
--- -----------------------------------
--- INTERFACE OPTIONS PANEL: PROFILE
--- -----------------------------------
 
 function NeedToKnowOptions.UIPanel_Profile_OnLoad(self)
     self.name = NEEDTOKNOW.UIPANEL_PROFILE;
@@ -414,70 +302,6 @@ end
 
 -----
 
-function NeedToKnowOptions.OnClickTextureItem(self)
-    NeedToKnow.ProfileSettings["BarTexture"] = self.text:GetText()
-    NeedToKnow:Update()
-    NeedToKnowOptions.UIPanel_Appearance_Update()
-end
-
-function NeedToKnowOptions.OnClickFontItem(self)
-    NeedToKnow.ProfileSettings["BarFont"] = self.text:GetText()
-    NeedToKnow:Update()
-    NeedToKnowOptions.UIPanel_Appearance_Update()
-end
-
-function NeedToKnowOptions.ChooseColor(variable)
-    info = UIDropDownMenu_CreateInfo();
-    info.r, info.g, info.b, info.opacity = unpack(NeedToKnow.ProfileSettings[variable]);
-    info.opacity = 1 - info.opacity;
-    info.hasOpacity = true;
-    info.opacityFunc = NeedToKnowOptions.SetOpacity;
-    info.swatchFunc = NeedToKnowOptions.SetColor;
-    info.cancelFunc = NeedToKnowOptions.CancelColor;
-    info.extraInfo = variable;
-    -- Not sure if I should leave this state around or not.  It seems like the
-    -- correct strata to have it at anyway, so I'm going to leave it there for now
-    ColorPickerFrame:SetFrameStrata("FULLSCREEN_DIALOG");
-    OpenColorPicker(info);
-end
-
-function NeedToKnowOptions.SetColor()
-    local variable = ColorPickerFrame.extraInfo;
-    local r,g,b = ColorPickerFrame:GetColorRGB();
-    NeedToKnow.ProfileSettings[variable][1] = r;
-    NeedToKnow.ProfileSettings[variable][2] = g;
-    NeedToKnow.ProfileSettings[variable][3] = b;
-    NeedToKnow:Update();
-    NeedToKnowOptions.UIPanel_Appearance_Update();
-end
-
-function NeedToKnowOptions.SetOpacity()
-    local variable = ColorPickerFrame.extraInfo;
-    NeedToKnow.ProfileSettings[variable][4] = 1 - OpacitySliderFrame:GetValue();
-    NeedToKnow:Update();
-    NeedToKnowOptions.UIPanel_Appearance_Update();
-end
-
-function NeedToKnowOptions.CancelColor(previousValues)
-    if ( previousValues ) then
-        local variable = ColorPickerFrame.extraInfo;
-        NeedToKnow.ProfileSettings[variable] = {previousValues.r, previousValues.g, previousValues.b, previousValues.opacity};
-        NeedToKnow:Update();
-        NeedToKnowOptions.UIPanel_Appearance_Update();
-    end
-end
-
-function NeedToKnowOptions.UIPanel_Appearance_OnSizeChanged(self)
-    -- Despite my best efforts, the scroll bars insist on being outside the width of their
-    local mid = self:GetWidth()/2 --+ _G[self:GetName().."TexturesListScrollBar"]:GetWidth()
-    local textures = self.Textures
-    local leftTextures = textures:GetLeft()
-    if mid and mid > 0 and textures and leftTextures then
-        local ofs = leftTextures - self:GetLeft()
-        textures:SetWidth(mid - ofs)
-    end
-end
-
 function NeedToKnowOptions.OnScrollFrameSized(self)
     local old_value = self.scrollBar:GetValue();
     local scrollFrame = self:GetParent();
@@ -536,14 +360,5 @@ end
     --local fn = scrollPanel.Update
     --if fn then fn(scrollPanel) end
 --end
---
-function NeedToKnowOptions.UpdateBarTextureDropDown()
-    local scrollPanel = _G["InterfaceOptionsNeedToKnowAppearancePanelTextures"]
-    NeedToKnowOptions.UpdateScrollPanel(scrollPanel, textureList, NeedToKnow.ProfileSettings.BarTexture, NeedToKnow.ProfileSettings.BarTexture)
-end
 
-function NeedToKnowOptions.UpdateBarFontDropDown()
-    local scrollPanel = _G["InterfaceOptionsNeedToKnowAppearancePanelFonts"]
-    NeedToKnowOptions.UpdateScrollPanel(scrollPanel, fontList, nil, NeedToKnow.ProfileSettings.BarFont)
-end
 

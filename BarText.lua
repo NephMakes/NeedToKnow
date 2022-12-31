@@ -7,6 +7,15 @@ local Bar = NeedToKnow.Bar
 local SecondsToTimeAbbrev = SecondsToTimeAbbrev
 
 
+function Bar:UpdateReplacementText()
+	-- Called by Bar:UpdateSpells()
+	self.spell_names = {}
+	for shownName in self.settings.show_text_user:gmatch("([^,]+)") do
+		shownName = strtrim(shownName)
+		table.insert(self.spell_names, shownName)
+	end
+end
+
 function Bar:UpdateBarText(barSettings, count, extended)
 	-- Called by Bar:CheckAura() if duration found
 

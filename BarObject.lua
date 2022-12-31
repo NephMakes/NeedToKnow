@@ -106,13 +106,15 @@ function Bar:SetAppearance()
 	end
 
 	self:SetBackgroundSize(barSettings.show_icon)
-	self.Background:SetHeight(barHeight + 2 * settings.BarPadding)
+	local barPadding = PixelUtil.GetNearestPixelSize(settings.BarPadding, bar:GetEffectiveScale())
+	self.Background:SetHeight(barHeight + 2 * barPadding)
 	self.Background:SetVertexColor(unpack(settings.BkgdColor))
 end
 
 function Bar:SetBackgroundSize(showIcon)
 	local background = self.Background
-	local barPadding = NeedToKnow.ProfileSettings["BarPadding"]
+	local barPadding = NeedToKnow.ProfileSettings.BarPadding
+	barPadding = PixelUtil.GetNearestPixelSize(barPadding, bar:GetEffectiveScale())
 
 	local bgWidth = self:GetWidth() + 2 * barPadding
 	if showIcon then

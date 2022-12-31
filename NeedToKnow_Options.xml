@@ -14,28 +14,20 @@
                         <AbsDimension x="14" y="14"/>
                     </Size>
                     <Anchors>
-                        <Anchor point="CENTER">
-                            <Offset>
-                                <AbsDimension x="0" y="0"/>
-                            </Offset>
-                        </Anchor>
+                        <Anchor point="CENTER"/>
                     </Anchors>
                     <Color r="1.0" g="1.0" b="1.0"/>
                 </Texture>
             </Layer>
             <Layer level="ARTWORK">
-                <FontString name="$parentLabel" inherits="GameFontHighlight" justifyH="LEFT" justifyV="TOP">
+                <FontString parentKey="label" name="$parentLabel" inherits="GameFontHighlight" justifyH="LEFT" justifyV="TOP">
                     <Anchors>
-                        <Anchor point="LEFT" relativeTo="$parent" relativePoint="RIGHT">
-                            <Offset>
-                                <AbsDimension x="8" y="0"/>
-                            </Offset>
-                        </Anchor>
+                        <Anchor point="LEFT" relativeTo="$parent" relativePoint="RIGHT" x="8" y="0"/>
                     </Anchors>
                 </FontString>
             </Layer>
         </Layers>
-        <NormalTexture name="$parentNormalTexture" file="Interface\ChatFrame\ChatFrameColorSwatch"/>
+        <NormalTexture parentKey="normalTexture" name="$parentNormalTexture" file="Interface\ChatFrame\ChatFrameColorSwatch"/>
     </Button>
 
     <Button name="NeedToKnowScrollItemTemplate" virtual="true">
@@ -45,7 +37,7 @@
         </Anchors>
         <Layers>
             <Layer level="BACKGROUND" >
-                <Texture name="$parentBg" parentKey="Bg">
+                <Texture parentKey="Bg" name="$parentBg">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
@@ -61,7 +53,7 @@
                 </Texture>
             </Layer>
             <Layer level="BORDER">
-                <Texture name="$parentCheck" file="Interface\Buttons\UI-CheckBox-Check" parentKey="Check" hidden="true">
+                <Texture parentKey="Check" name="$parentCheck" file="Interface\Buttons\UI-CheckBox-Check" hidden="true">
                     <Size x="16" y="16"/>
                     <Anchors>
                         <Anchor point="LEFT">
@@ -73,15 +65,15 @@
         </Layers>
         <Scripts>
             <OnLoad>
-                --Bg.SetPoint("TOPLEFT",GetParent(),"TOPLEFT",1,-1);
-                --Bg.SetPoint("BOTTOMRIGHT",GetParent(),"BOTTOMRIGHT",-1,1);
+                -- Bg.SetPoint("TOPLEFT",GetParent(),"TOPLEFT",1,-1);
+                -- Bg.SetPoint("BOTTOMRIGHT",GetParent(),"BOTTOMRIGHT",-1,1);
             </OnLoad>
             <OnClick>
                 local panel = self:GetParent():GetParent():GetParent()
                 panel.fnClick(self)
             </OnClick>
         </Scripts>
-        <ButtonText name="$parentTitleText" inherits="GameFontNormalSmallLeft" justifyH="LEFT" parentKey="text">
+        <ButtonText parentKey="text" name="$parentTitleText" inherits="GameFontNormalSmallLeft" justifyH="LEFT">
             <Anchors>
                 <Anchor point="LEFT" relativeTo="$parentCheck" relativePoint="RIGHT" x="3" y="0"/>
                 <Anchor point="RIGHT" x="-3" y="0"/>
@@ -93,7 +85,7 @@
     <Frame name="NeedToKnowScrollFrameTemplate" virtual="true">
         <Layers>
             <Layer level="BACKGROUND">
-                <FontString name="$parentTitle" text="ScrollBar" inherits="GameFontNormalSmall" justifyH="LEFT" justifyV="TOP">
+                <FontString parentKey="title" name="$parentTitle" text="ScrollBar" inherits="GameFontNormalSmall" justifyH="LEFT" justifyV="TOP">
                     <Anchors>
                         <Anchor point="TOPLEFT"/>
                     </Anchors>
@@ -116,7 +108,7 @@
                 </Anchors>
             </Frame>
             <!-- 
-            NephMakes: Not sure this is working properly in retail, and can't test right now, so just removing
+            Neph: Not sure this is working properly in retail, and can't test right now, so just removing
 			<Frame name="$parentBackdrop" inherits="BackdropTemplate">
 				<KeyValues>
 					<KeyValue key="backdropInfo" value="BACKDROP_SLIDER_8_8" type="global" />
@@ -162,234 +154,97 @@
     </Frame>
 
     <Frame name="InterfaceOptionsNeedToKnowAppearancePanel" hidden="true">
-        <Layers>
-            <Layer level="ARTWORK">
-                <FontString name="$parentTitle" text="NeedToKnow" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="TOP">
-                    <Anchors>
-                        <Anchor point="TOPLEFT">
-                            <Offset>
-                                <AbsDimension x="16" y="-16"/>
-                            </Offset>
-                        </Anchor>
-                    </Anchors>
-                </FontString>
-                <FontString name="$parentVersion" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="TOP">
-                    <Anchors>
-                        <Anchor point="LEFT" relativeTo="$parentTitle" relativePoint="RIGHT">
-                            <Offset>
-                                <AbsDimension x="4" y="-0"/>
-                            </Offset>
-                        </Anchor>
-                    </Anchors>
-                </FontString>
-                <FontString name="$parentSubText1" inherits="GameFontHighlightSmall" nonspacewrap="true" maxLines="3" justifyH="LEFT" justifyV="TOP">
-                    <Size>
-                        <AbsDimension y="24" x="0"/>
-                    </Size>
-                    <Anchors>
-                        <Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT">
-                            <Offset>
-                                <AbsDimension x="0" y="-8"/>
-                            </Offset>
-                        </Anchor>
-                        <Anchor point="RIGHT">
-                            <Offset>
-                                <AbsDimension x="-24" y="0"/>
-                            </Offset>
-                        </Anchor>
-                    </Anchors>
-                </FontString>
-            </Layer>
-        </Layers>
-        <Scripts>
-            <OnLoad>
-                NeedToKnowOptions.UIPanel_Appearance_OnLoad(self)
-            </OnLoad>
-            <OnShow>
-                NeedToKnowOptions.UIPanel_Appearance_OnShow(self);
-            </OnShow>
-            <OnHide>
-            </OnHide>
-            <OnSizeChanged>
-                NeedToKnowOptions.UIPanel_Appearance_OnSizeChanged(self)
-            </OnSizeChanged>
-        </Scripts>
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString parentKey="title" name="$parentTitle" text="NeedToKnow" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="TOP">
+					<Anchors>
+						<Anchor point="TOPLEFT" x="16" y="-16"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="version" name="$parentVersion" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="TOP">
+					<Anchors>
+						<Anchor point="LEFT" relativeTo="$parentTitle" relativePoint="RIGHT" x="4" y="-0"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="subText" name="$parentSubText1" inherits="GameFontHighlightSmall" nonspacewrap="true" maxLines="3" justifyH="LEFT" justifyV="TOP">
+					<Size>
+						<AbsDimension y="24" x="0"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
+						<Anchor point="RIGHT" x="-24" y="0"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnLoad>
+				NeedToKnow.AppearancePanel.OnLoad(self)
+			</OnLoad>
+		</Scripts>
         <Frames>
-            <Button name="$parentBackgroundColorButton" inherits="NeedToKnow_ColorButtonTemplate">
-                <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT">
-                        <Offset>
-                            <AbsDimension x="16" y="-16"/>
-                        </Offset>
-                    </Anchor>
-                </Anchors>
-                <Scripts>
-                    <OnLoad>
-                        _G[self:GetName().."Label"]:SetText(NEEDTOKNOW.UIPANEL_BACKGROUNDCOLOR);
-                        self:RegisterForClicks("LeftButtonUp");
-                    </OnLoad>
-                    <OnClick>
-                        NeedToKnowOptions.ChooseColor("BkgdColor");
-                    </OnClick>
-                </Scripts>
-            </Button>
-
-            <Slider name="$parentBarSpacingSlider" inherits="OptionsSliderTemplate">
-                <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="$parentBackgroundColorButton" relativePoint="BOTTOMLEFT">
-                        <Offset>
-                            <AbsDimension x="0" y="-32"/>
-                        </Offset>
-                    </Anchor>
-                </Anchors>
-                <Scripts>
-                    <OnValueChanged>
-                        NeedToKnow.ProfileSettings["BarSpacing"] = value;
-                        _G[self:GetName().."Text"]:SetText(NEEDTOKNOW.UIPANEL_BARSPACING..": "..value);
-                        NeedToKnow.Update();
-                    </OnValueChanged>
-                </Scripts>
-            </Slider>
-
-            <Slider name="$parentBarPaddingSlider" inherits="OptionsSliderTemplate">
-                <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="$parentBarSpacingSlider" relativePoint="TOPRIGHT">
-                        <Offset>
-                            <AbsDimension x="20" y="0" />
-                        </Offset>
-                    </Anchor>
-                </Anchors>
-                <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOMLEFT">
-                        <Offset>
-                            <AbsDimension x="0" y="-32"/>
-                        </Offset>
-                    </Anchor>
-                </Anchors>
-                <Scripts>
-                    <OnValueChanged>
-                        NeedToKnow.ProfileSettings["BarPadding"] = value;
-                        _G[self:GetName().."Text"]:SetText(NEEDTOKNOW.UIPANEL_BARPADDING..": "..value);
-                        NeedToKnow.Update();
-                    </OnValueChanged>
-                </Scripts>
-            </Slider>
-
-            <Slider name="$parentFontSizeSlider" inherits="OptionsSliderTemplate">
-                <Anchors>
-                    <Anchor point="TOP" relativeTo="$parentBackgroundColorButton" />
-                    <Anchor point="LEFT" relativeTo="$parentBarPaddingSlider" />
-                </Anchors>
-                <Scripts>
-                    <OnValueChanged>
-                        NeedToKnow.ProfileSettings["FontSize"] = value;
-                        _G[self:GetName().."Text"]:SetText("Font Size: "..value); -- FIXME: LOCALIZATION
-                        NeedToKnow.Update();
-                    </OnValueChanged>
-                </Scripts>
-            </Slider>
-
-          <Slider name="$parentFontOutlineSlider" inherits="OptionsSliderTemplate">
-            <Anchors>
-              <Anchor point="TOPLEFT" relativeTo="$parentFontSizeSlider" relativePoint="TOPRIGHT">
-                <Offset>
-                  <AbsDimension x="24"/>
-                </Offset>
-              </Anchor>
-            </Anchors>
-            <Scripts>
-              <OnValueChanged>
-                NeedToKnow.ProfileSettings["FontOutline"] = value;
-                local str;
-                if     value == 0 then str = "None"    -- FIXME: Localization
-                elseif value == 1 then str = "Normal"  -- FIXME: Localization
-                else   str = "Heavy" end
-                _G[self:GetName().."Text"]:SetText("Font Outline: "..str); -- FIXME: LOCALIZATION
-                NeedToKnow.Update();
-              </OnValueChanged>
-            </Scripts>
-          </Slider>
-
-            <Button name="$parentConfigModeButton" inherits="UIPanelButtonTemplate">
+			<Button parentKey="backgroundColorButton" name="$parentBackgroundColorButton" inherits="NeedToKnow_ColorButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="16" y="-16"/>
+				</Anchors>
+			</Button>
+			<Slider parentKey="barSpacingSlider" name="$parentBarSpacingSlider" inherits="OptionsSliderTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentBackgroundColorButton" relativePoint="BOTTOMLEFT" x="0" y="-32"/>
+				</Anchors>
+			</Slider>
+			<Slider parentKey="barPaddingSlider" name="$parentBarPaddingSlider" inherits="OptionsSliderTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentBarSpacingSlider" relativePoint="TOPRIGHT" x="20" y="0"/>
+				</Anchors>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOMLEFT" x="0" y="-32"/>
+				</Anchors>
+			</Slider>
+			<Slider parentKey="fontSizeSlider" name="$parentFontSizeSlider" inherits="OptionsSliderTemplate">
+				<Anchors>
+					<Anchor point="TOP" relativeTo="$parentBackgroundColorButton"/>
+					<Anchor point="LEFT" relativeTo="$parentBarPaddingSlider"/>
+				</Anchors>
+			</Slider>
+			<Slider parentKey="fontOutlineSlider" name="$parentFontOutlineSlider" inherits="OptionsSliderTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentFontSizeSlider" relativePoint="TOPRIGHT" x="24"/>
+				</Anchors>
+			</Slider>
+            <Button parentkey="editModeButton" name="$parentEditModeButton" inherits="UIPanelButtonTemplate">
                 <Size>
                     <AbsDimension x="128" y="22"/>
                 </Size>
                 <Anchors>
-<!-- 
-                    <Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOMLEFT">
-                        <Offset>
-                            <AbsDimension x="24" y="24"/>
-                        </Offset>
-                    </Anchor>
- -->
 					<Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOM" x="-12" y="24"/>
                 </Anchors>
                 <Scripts>
-                    <OnLoad>
-                        -- _G[self:GetName().."Text"]:SetText(NEEDTOKNOW.UIPANEL_CONFIGMODE);
-                        _G[self:GetName().."Text"]:SetText(NeedToKnow.String.EDIT_MODE)
-                    </OnLoad>
-                    <OnClick>
-                        NeedToKnow:Unlock()
-                    </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-                        -- GameTooltip:SetText(NEEDTOKNOW.UIPANEL_CONFIGMODE_TOOLTIP, nil, nil, nil, nil, 1);
-                        GameTooltip:SetText(NeedToKnow.String.EDIT_MODE_TOOLTIP, nil, nil, nil, nil, 1)
-                    </OnEnter>
                     <OnLeave function="GameTooltip_Hide"/>
                 </Scripts>
-<!-- 
-                <NormalFont style="GameFontNormalSmall"/>
-                <HighlightFont style="GameFontHighlightSmall"/>
- -->
             </Button>
-
-            <Button name="$parentPlayModeButton" inherits="UIPanelButtonTemplate">
+            <Button parentkey="playModeButton" name="$parentPlayModeButton" inherits="UIPanelButtonTemplate">
                 <Size>
                     <AbsDimension x="128" y="22"/>
                 </Size>
                 <Anchors>
-<!-- 
-                    <Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOMRIGHT">
-                        <Offset>
-                            <AbsDimension x="-24" y="24"/>
-                        </Offset>
-                    </Anchor>
- -->
 					<Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOM" x="12" y="24"/>
                 </Anchors>
                 <Scripts>
-                    <OnLoad>
-                        _G[self:GetName().."Text"]:SetText(NEEDTOKNOW.UIPANEL_PLAYMODE);
-                    </OnLoad>
-                    <OnClick>
-                        NeedToKnow:Lock()
-                    </OnClick>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-                        GameTooltip:SetText(NEEDTOKNOW.UIPANEL_PLAYMODE_TOOLTIP, nil, nil, nil, nil, 1);
-                    </OnEnter>
-                    <OnLeave function="GameTooltip_Hide"/>
+                   <OnLeave function="GameTooltip_Hide"/>
                 </Scripts>
-<!-- 
-                <NormalFont style="GameFontNormalSmall"/>
-                <HighlightFont style="GameFontHighlightSmall"/>
- -->
             </Button>
-
-            <Frame name="$parentTextures" inherits="NeedToKnowScrollFrameTemplate" parentKey="Textures">
+            <Frame parentKey="Textures" name="$parentTextures" inherits="NeedToKnowScrollFrameTemplate">
                 <Anchors>
                     <Anchor point="TOP" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOM" y="-20"/>
                     <Anchor point="LEFT" relativePoint="LEFT" x="14"/>
-                    <Anchor point="BOTTOM" relativeTo="$parentConfigModeButton" relativePoint="TOP" y="10"/>
+                    <Anchor point="BOTTOM" relativeTo="$parentEditModeButton" relativePoint="TOP" y="10"/>
                 </Anchors>
             </Frame>
-
-            <Frame name="$parentFonts" inherits="NeedToKnowScrollFrameTemplate" parentKey="Fonts">
+            <Frame parentKey="Fonts" name="$parentFonts" inherits="NeedToKnowScrollFrameTemplate">
                 <Anchors>
                     <Anchor point="TOPLEFT" relativeTo="$parentTextures" relativePoint="TOPRIGHT" x="10"/>
-                    <Anchor point="BOTTOM" relativeTo="$parentConfigModeButton" relativePoint="TOP" y="10"/>
+                    <Anchor point="BOTTOM" relativeTo="$parentEditModeButton" relativePoint="TOP" y="10"/>
                     <Anchor point="RIGHT" x ="-10"/>
                 </Anchors>
             </Frame>

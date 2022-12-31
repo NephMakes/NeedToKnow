@@ -90,6 +90,7 @@ function Bar:UpdateSpells()
 		shownName = strtrim(shownName)
 		table.insert(self.spell_names, shownName)
 	end
+	-- self:UpdateReplacementText()  -- TO DO
 
 	-- Process list of reset spells for internal cooldowns
 	-- TO DO: add check for settings.BuffOrDebuff == "BUFFCD"

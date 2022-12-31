@@ -69,7 +69,10 @@ end
 function BarGroup:UpdateBarPosition()
 	-- Called by BarGroup:Update(), Bar:CheckAura()
 	local bar, previousBar
-	local barSpacing = NeedToKnow.ProfileSettings.BarSpacing
+	-- local barSpacing = NeedToKnow.ProfileSettings.BarSpacing
+	local barSpacing = PixelUtil.GetNearestPixelSize(
+		NeedToKnow.ProfileSettings.BarSpacing, self:GetEffectiveScale()
+	)
 	for barID = 1, self.settings.NumberBars do
 		bar = self.bars[barID]
 		if not self.settings.condenseGroup or (self.settings.condenseGroup and bar:IsVisible()) then
@@ -95,13 +98,15 @@ end
 function BarGroup:SetPosition(position, scale)
 	local point, relativePoint, xOfs, yOfs = unpack(position)
 	self:ClearAllPoints()
-	self:SetPoint(point, UIParent, relativePoint, xOfs, yOfs)
+	-- self:SetPoint(point, UIParent, relativePoint, xOfs, yOfs)
+	PixelUtil.SetPoint(self, point, UIParent, relativePoint, xOfs, yOfs)
 	self:SetScale(scale)
 end
 
 function BarGroup:SetBarWidth(width)
 	for barID, bar in ipairs(self.bars) do
-		bar:SetWidth(width)
+		-- bar:SetWidth(width)
+		PixelUtil.SetWidth(bar, width)
 		bar.Text:SetWidth(width - 60)
 		bar:SetBackgroundSize(bar.settings.show_icon)
 	end

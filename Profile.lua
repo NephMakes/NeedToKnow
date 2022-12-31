@@ -2,7 +2,7 @@
 
 local addonName, addonTable = ...
 
-local GetSpec = GetSpecialization or GetActiveTalentGroup  -- Retail or Classic
+local GetSpec = _G.GetSpecialization or _G.GetActiveTalentGroup  -- Retail or Classic
 
 function NeedToKnow.RemoveDefaultValues(t, def, k)
   if not k then k = "" end
@@ -150,7 +150,8 @@ function NeedToKnow.ChangeProfile(profile_key)
 		NeedToKnow:Update()
 		NeedToKnow:GetOptionsPanel():Update()
 	else
-		print("NeedToKnow profile", profile_key, "does not exist!") -- LOCME!
+		-- print("NeedToKnow profile", profile_key, "does not exist!")
+		-- Triggering sometimes when addon appears to be working fine. Why?
 	end
 end
 
