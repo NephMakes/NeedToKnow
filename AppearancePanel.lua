@@ -6,6 +6,9 @@ local AppearancePanel = NeedToKnow.AppearancePanel  -- Temporary. Will be panel 
 local OptionsPanel = NeedToKnow.OptionsPanel
 local String = NeedToKnow.String
 
+NeedToKnow.OptionSlider = {}
+local OptionSlider = NeedToKnow.OptionSlider
+
 NEEDTOKNOW.MAXBARSPACING = 24
 NEEDTOKNOW.MAXBARPADDING = 12
 
@@ -17,8 +20,8 @@ local fontList = LSM:List("font")
 --[[ Appearance panel ]]--
 
 function AppearancePanel:OnLoad()
-	AppearancePanel.SetText(self)
 	AppearancePanel.SetScripts(self)
+	AppearancePanel.SetText(self)
 
 	self.name = NEEDTOKNOW.UIPANEL_APPEARANCE
 	self.parent = "NeedToKnow"
@@ -26,21 +29,6 @@ function AppearancePanel:OnLoad()
 	self.cancel = NeedToKnowOptions.Cancel
 	-- need different way to handle cancel?  users might open appearance panel without opening main panel
 	InterfaceOptions_AddCategory(self)
-end
-
-function AppearancePanel:SetText()
-	self.version:SetText(NeedToKnow.version)
-	self.subText:SetText(String.OPTIONS_PANEL_SUBTEXT)
-
-	self.backgroundColorButton.label:SetText(NEEDTOKNOW.UIPANEL_BACKGROUNDCOLOR)
-
-	self.Textures.title:SetText("Texture:")
-	self.Fonts.title:SetText("Font:")
-
-	self.editModeButton.Text:SetText(NeedToKnow.String.EDIT_MODE)
-	self.editModeButton.tooltipText = String.EDIT_MODE_TOOLTIP
-	self.playModeButton.Text:SetText(NeedToKnow.String.PLAY_MODE)
-	self.playModeButton.tooltipText = String.PLAY_MODE_TOOLTIP
 end
 
 function AppearancePanel:SetScripts()
@@ -51,25 +39,26 @@ function AppearancePanel:SetScripts()
 	self.backgroundColorButton.variable = "BkgdColor"
 	self.backgroundColorButton:RegisterForClicks("LeftButtonUp")
 
-	self.barSpacingSlider:SetScript("OnValueChanged", AppearancePanel.OnBarSpacingChanged)
+	self.barSpacingSlider.variable = "BarSpacing"
 	self.barSpacingSlider:SetMinMaxValues(0, NEEDTOKNOW.MAXBARSPACING)
 	self.barSpacingSlider:SetValueStep(0.5)
-	self.barSpacingSlider:SetObeyStepOnDrag(true)
 
-	self.barPaddingSlider:SetScript("OnValueChanged", AppearancePanel.OnBarPaddingChanged)
+	self.barPaddingSlider.variable = "BarPadding"
 	self.barPaddingSlider:SetMinMaxValues(0, NEEDTOKNOW.MAXBARPADDING)
 	self.barPaddingSlider:SetValueStep(0.5)
-	self.barPaddingSlider:SetObeyStepOnDrag(true)
 
-	self.fontSizeSlider:SetScript("OnValueChanged", AppearancePanel.OnFontSizeChanged)
+	self.fontSizeSlider.variable = "FontSize"
 	self.fontSizeSlider:SetMinMaxValues(5, 20)
 	self.fontSizeSlider:SetValueStep(0.5)
-	self.fontSizeSlider:SetObeyStepOnDrag(true)
 
 	self.fontOutlineSlider:SetScript("OnValueChanged", AppearancePanel.OnFontOutlineChanged)
 	self.fontOutlineSlider:SetMinMaxValues(0, 2)
 	self.fontOutlineSlider:SetValueStep(1)
 	self.fontOutlineSlider:SetObeyStepOnDrag(true)
+
+	for _, slider in pairs(self.sliders) do
+		OptionSlider.OnLoad(slider)
+	end
 
 	self.Textures.fnClick = AppearancePanel.OnClickTextureItem
 	self.Textures.configure = function(i, btn, label) 
@@ -90,6 +79,25 @@ function AppearancePanel:SetScripts()
 	self.editModeButton:SetScript("OnClick", OptionsPanel.OnConfigModeButtonClick)
 	self.playModeButton:SetScript("OnEnter", OptionsPanel.OnWidgetEnter)
 	self.playModeButton:SetScript("OnClick", OptionsPanel.OnPlayModeButtonClick)
+end
+
+function AppearancePanel:SetText()
+	self.version:SetText(NeedToKnow.version)
+	self.subText:SetText(String.OPTIONS_PANEL_SUBTEXT)
+
+	self.backgroundColorButton.label:SetText(NEEDTOKNOW.UIPANEL_BACKGROUNDCOLOR)
+
+	self.barSpacingSlider.label:SetText("Bar spacing")
+	self.barPaddingSlider.label:SetText("Bar padding")
+	self.fontSizeSlider.label:SetText("Font size")
+
+	self.Textures.title:SetText("Texture:")
+	self.Fonts.title:SetText("Font:")
+
+	self.editModeButton.Text:SetText(NeedToKnow.String.EDIT_MODE)
+	self.editModeButton.tooltipText = String.EDIT_MODE_TOOLTIP
+	self.playModeButton.Text:SetText(NeedToKnow.String.PLAY_MODE)
+	self.playModeButton.tooltipText = String.PLAY_MODE_TOOLTIP
 end
 
 function AppearancePanel:OnShow()
@@ -134,13 +142,15 @@ function AppearancePanel:Update()
 	local r, g, b = unpack(settings.BkgdColor)
 	self.backgroundColorButton.normalTexture:SetVertexColor(r, g, b, 1)
 
-	self.barSpacingSlider:SetValue(settings.BarSpacing)
-	self.barPaddingSlider:SetValue(settings.BarPadding)
 	self.fontSizeSlider:SetValue(settings.FontSize)
 	self.fontOutlineSlider:SetValue(settings.FontOutline)
 
+	for _, slider in pairs(self.sliders) do
+		slider:Update()
+	end
+
 	AppearancePanel.UpdateBarTextureDropDown()
-	AppearancePanel.UpdateBarFontDropDown()  -- Deprecated
+	AppearancePanel.UpdateBarFontDropDown()
 	-- AppearancePanel.UpdateBarFontMenu(self)
 end
 
@@ -253,28 +263,7 @@ function AppearancePanel.CancelColor(previousValues)
 end
 
 
---[[ Sliders ]]--
-
-function AppearancePanel:OnBarSpacingChanged(value)
-	-- Called with self = slider
-	NeedToKnow.ProfileSettings["BarSpacing"] = value
-	self.Text:SetText(NEEDTOKNOW.UIPANEL_BARSPACING..": "..value)
-	NeedToKnow:Update()
-end
-
-function AppearancePanel:OnBarPaddingChanged(value)
-	-- Called with self = slider
-	NeedToKnow.ProfileSettings["BarPadding"] = value
-	self.Text:SetText(NEEDTOKNOW.UIPANEL_BARPADDING..": "..value)
-	NeedToKnow:Update()
-end
-
-function AppearancePanel:OnFontSizeChanged(value)
-	-- Called with self = slider
-	NeedToKnow.ProfileSettings["FontSize"] = value
-	self.Text:SetText("Font Size: "..value)
-	NeedToKnow:Update()
-end
+--[[ Font outline ]]--
 
 function AppearancePanel:OnFontOutlineChanged(value)
 	-- Called with self = slider
@@ -290,3 +279,63 @@ function AppearancePanel:OnFontOutlineChanged(value)
 	self.Text:SetText("Font Outline: "..str)
 	NeedToKnow:Update()
 end
+
+
+--[[ Sliders ]]--
+
+function OptionSlider:OnLoad()
+	self.Update = OptionSlider.Update
+	self:SetScript("OnValueChanged", OptionSlider.OnValueChanged)
+	self.editBox:SetScript("OnTextChanged", OptionSlider.OnEditBoxTextChanged)
+	self.editBox:SetScript("OnEnterPressed", EditBox_ClearFocus)
+	self.editBox:SetScript("OnEscapePressed", OptionSlider.OnEditBoxEscapePressed)
+	self.editBox:SetScript("OnEditFocusLost", OptionSlider.OnEditBoxFocusLost)
+end
+
+function OptionSlider:Update()
+	local value = NeedToKnow.ProfileSettings[self.variable]
+	self:SetValue(value)
+	self.editBox:SetText(value)
+	self.editBox.oldValue = value
+end
+
+function OptionSlider:OnValueChanged(value, isUserInput)
+	if isUserInput then
+		NeedToKnow.ProfileSettings[self.variable] = value
+		NeedToKnow:Update()
+		self.editBox:SetText(value)
+		self.editBox.oldValue = value
+	end
+end
+
+function OptionSlider:OnEditBoxTextChanged(isUserInput)
+	-- Called with self = editBox
+	local value = tonumber(self:GetText())
+	if value and isUserInput then
+		NeedToKnow.ProfileSettings[self:GetParent().variable] = value
+		NeedToKnow:Update()
+		self:GetParent():SetValue(value)
+	end
+end
+
+function OptionSlider:OnEditBoxEscapePressed()
+	-- Called with self = editBox
+	if self.oldValue then
+		NeedToKnow.ProfileSettings[self:GetParent().variable] = self.oldValue
+		self:GetParent():SetValue(self.oldValue)
+		NeedToKnow:Update()
+	end
+	EditBox_ClearFocus(self)
+end
+
+function OptionSlider:OnEditBoxFocusLost(value)
+	-- Called with self = editBox
+	local value = tonumber(self:GetText())
+	if value then
+		self.oldValue = value
+	elseif self.oldValue then
+		self:SetText(self.oldValue)
+	end
+	EditBox_ClearHighlight(self)
+end
+

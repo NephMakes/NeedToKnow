@@ -153,7 +153,7 @@
         </Layers>
     </Frame>
 
-    <Frame name="InterfaceOptionsNeedToKnowAppearancePanel" hidden="true">
+	<Frame name="InterfaceOptionsNeedToKnowAppearancePanel" hidden="true">
 		<Layers>
 			<Layer level="ARTWORK">
 				<FontString parentKey="title" name="$parentTitle" text="NeedToKnow" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="TOP">
@@ -182,36 +182,34 @@
 				NeedToKnow.AppearancePanel.OnLoad(self)
 			</OnLoad>
 		</Scripts>
-        <Frames>
+		<Frames>
 			<Button parentKey="backgroundColorButton" name="$parentBackgroundColorButton" inherits="NeedToKnow_ColorButtonTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="16" y="-16"/>
 				</Anchors>
 			</Button>
-			<Slider parentKey="barSpacingSlider" name="$parentBarSpacingSlider" inherits="OptionsSliderTemplate">
+			<Slider parentKey="fontOutlineSlider" name="$parentFontOutlineSlider" inherits="OptionsSliderTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="$parentBackgroundColorButton" relativePoint="BOTTOMLEFT" x="0" y="-32"/>
 				</Anchors>
 			</Slider>
-			<Slider parentKey="barPaddingSlider" name="$parentBarPaddingSlider" inherits="OptionsSliderTemplate">
+
+			<Slider parentKey="barSpacingSlider" name="$parentBarSpacingSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentBarSpacingSlider" relativePoint="TOPRIGHT" x="20" y="0"/>
-				</Anchors>
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOMLEFT" x="0" y="-32"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="96" y="-120"/>
 				</Anchors>
 			</Slider>
-			<Slider parentKey="fontSizeSlider" name="$parentFontSizeSlider" inherits="OptionsSliderTemplate">
+			<Slider parentKey="barPaddingSlider" name="$parentBarPaddingSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parentBackgroundColorButton"/>
-					<Anchor point="LEFT" relativeTo="$parentBarPaddingSlider"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOMLEFT" y="-12"/>
 				</Anchors>
 			</Slider>
-			<Slider parentKey="fontOutlineSlider" name="$parentFontOutlineSlider" inherits="OptionsSliderTemplate">
+			<Slider parentKey="fontSizeSlider" name="$parentFontSizeSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentFontSizeSlider" relativePoint="TOPRIGHT" x="24"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentBarPaddingSlider" relativePoint="BOTTOMLEFT" y="-12"/>
 				</Anchors>
 			</Slider>
+
 <!-- 
 			<Frame parentKey="barFontMenu" name="$parentBarFontMenu" inherits="UIDropDownMenuTemplate" enableMouse="true">
 				<Anchors>
@@ -219,54 +217,44 @@
 				</Anchors>
 			</Frame>
  -->
-			<Slider parentKey="testSlider1" name="$parentTestSlider1" inherits="NeedToKnowSliderTemplate">
+			<Button parentkey="editModeButton" name="$parentEditModeButton" inherits="UIPanelButtonTemplate">
+				<Size>
+					<AbsDimension x="128" y="22"/>
+				</Size>
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="96" y="-120"/>
-				</Anchors>
-			</Slider>
-			<Slider parentKey="testSlider2" name="$parentTestSlider2" inherits="NeedToKnowSliderTemplate">
-				<Anchors>
-					<Anchor point="TOPRIGHT" relativeTo="$parentSubText1" relativePoint="BOTTOMRIGHT" x="-35" y="-120"/>
-				</Anchors>
-			</Slider>
-            <Button parentkey="editModeButton" name="$parentEditModeButton" inherits="UIPanelButtonTemplate">
-                <Size>
-                    <AbsDimension x="128" y="22"/>
-                </Size>
-                <Anchors>
 					<Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOM" x="-12" y="24"/>
-                </Anchors>
-                <Scripts>
-                    <OnLeave function="GameTooltip_Hide"/>
-                </Scripts>
-            </Button>
-            <Button parentkey="playModeButton" name="$parentPlayModeButton" inherits="UIPanelButtonTemplate">
-                <Size>
-                    <AbsDimension x="128" y="22"/>
-                </Size>
-                <Anchors>
+				</Anchors>
+				<Scripts>
+					<OnLeave function="GameTooltip_Hide"/>
+				</Scripts>
+			</Button>
+			<Button parentkey="playModeButton" name="$parentPlayModeButton" inherits="UIPanelButtonTemplate">
+				<Size>
+					<AbsDimension x="128" y="22"/>
+				</Size>
+				<Anchors>
 					<Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOM" x="12" y="24"/>
-                </Anchors>
-                <Scripts>
-                   <OnLeave function="GameTooltip_Hide"/>
-                </Scripts>
-            </Button>
-            <Frame parentKey="Textures" name="$parentTextures" inherits="NeedToKnowScrollFrameTemplate">
-                <Anchors>
-                    <Anchor point="TOP" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOM" y="-180"/>
-                    <Anchor point="LEFT" relativePoint="LEFT" x="14"/>
-                    <Anchor point="BOTTOM" relativeTo="$parentEditModeButton" relativePoint="TOP" y="10"/>
-                </Anchors>
-            </Frame>
-            <Frame parentKey="Fonts" name="$parentFonts" inherits="NeedToKnowScrollFrameTemplate">
-                <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="$parentTextures" relativePoint="TOPRIGHT" x="10"/>
-                    <Anchor point="BOTTOM" relativeTo="$parentEditModeButton" relativePoint="TOP" y="10"/>
-                    <Anchor point="RIGHT" x ="-10"/>
-                </Anchors>
-            </Frame>
-        </Frames>
-    </Frame>
+				</Anchors>
+				<Scripts>
+				   <OnLeave function="GameTooltip_Hide"/>
+				</Scripts>
+			</Button>
+			<Frame parentKey="Textures" name="$parentTextures" inherits="NeedToKnowScrollFrameTemplate">
+				<Anchors>
+					<Anchor point="TOP" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOM" y="-180"/>
+					<Anchor point="LEFT" relativePoint="LEFT" x="14"/>
+					<Anchor point="BOTTOM" relativeTo="$parentEditModeButton" relativePoint="TOP" y="10"/>
+				</Anchors>
+			</Frame>
+			<Frame parentKey="Fonts" name="$parentFonts" inherits="NeedToKnowScrollFrameTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentTextures" relativePoint="TOPRIGHT" x="10"/>
+					<Anchor point="BOTTOM" relativeTo="$parentEditModeButton" relativePoint="TOP" y="10"/>
+					<Anchor point="RIGHT" x="-10"/>
+				</Anchors>
+			</Frame>
+		</Frames>
+	</Frame>
 
     <Frame name="InterfaceOptionsNeedToKnowProfilePanel" hidden="true">
         <Layers>

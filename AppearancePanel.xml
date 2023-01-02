@@ -16,22 +16,21 @@
 		</ThumbTexture>
 		<Layers>
 			<Layer level="ARTWORK">
-				<FontString parentKey="label" name="$parentLabel" inherits="GameFontHighlight" text="Bar padding">
+				<FontString parentKey="label" name="$parentLabel" inherits="GameFontHighlight" text="Slider label">
 					<Anchors>
-						<Anchor point="RIGHT" relativePoint="LEFT" x="-8"/>
+						<Anchor point="LEFT" x="-96"/>
 					</Anchors>
 				</FontString>
 			</Layer>
 		</Layers>
 		<Frames>
-			<EditBox parentKey="editBox" name="$parentEditBox" inherits="InputBoxTemplate" letters="3" autoFocus="false">
-				<Size x="25" y="20"/>
+			<EditBox parentKey="editBox" name="$parentEditBox" inherits="InputBoxTemplate" letters="4" autoFocus="false">
+				<Size x="30" y="20"/>
 				<Anchors>
 					<Anchor point="LEFT" relativePoint="RIGHT" x="12" y="1"/>
 				</Anchors>
 				<Scripts>
 					<OnLeave function="GameTooltip_Hide"/>
-					<!-- <OnEnterPressed function="EditBox_ClearFocus"/> -->
 				</Scripts>
 			</EditBox>
 		</Frames>
