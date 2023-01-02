@@ -1,5 +1,5 @@
 ﻿-- Interface options panel: Appearance
--- Load OptionsPanel.lua before this file
+-- Load after OptionsPanel.lua, ApperancePanel.xml
 
 -- local addonName, addonTable = ...
 local AppearancePanel = NeedToKnow.AppearancePanel  -- Temporary. Will be panel frame. 
@@ -140,7 +140,8 @@ function AppearancePanel:Update()
 	self.fontOutlineSlider:SetValue(settings.FontOutline)
 
 	AppearancePanel.UpdateBarTextureDropDown()
-	AppearancePanel.UpdateBarFontDropDown()
+	AppearancePanel.UpdateBarFontDropDown()  -- Deprecated
+	-- AppearancePanel.UpdateBarFontMenu(self)
 end
 
 function AppearancePanel:OnSizeChanged()
@@ -181,6 +182,30 @@ function AppearancePanel.OnClickFontItem(self)
 	NeedToKnow:Update()
 	AppearancePanel:Update()
 end
+
+function AppearancePanel:UpdateBarFontMenu()
+	local menu = self.barFontMenu
+	UIDropDownMenu_SetWidth(menu, 180)
+	UIDropDownMenu_Initialize(menu, AppearancePanel.MakeBarFontMenu)
+end
+
+function AppearancePanel:MakeBarFontMenu()
+	-- Called with self = menu
+	local info = {}
+	local listFrame = _G["DropDownList1"]
+	local exampleFont = CreateFont("NeedToKnow_BarFontExample")
+	local button
+	for _, fontName in ipairs(fontList) do
+		info.text = fontName
+		info.checked = (NeedToKnow.ProfileSettings["BarFont"] == fontName)
+		-- exampleFont:SetFont(NeedToKnow.LSM:Fetch("font", fontName), 12)
+		-- info.fontObject = exampleFont
+		button = UIDropDownMenu_AddButton(info)
+		-- local buttonText = _G[button:GetName().."NormalText"]
+		-- buttonText:SetFont(NeedToKnow.LSM:Fetch("font", fontName), 12)
+	end
+end
+
 
 
 --[[ Background color ]]--

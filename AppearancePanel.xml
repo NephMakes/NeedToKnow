@@ -1,6 +1,40 @@
 ﻿<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\..\..\Blizza~1\FrameXML\UI.xsd">
 
-	<!-- Load AppearancePanel.lua after this file -->
+	<!-- Load before AppearancePanel.lua -->
+
+	<Slider name="NeedToKnowSliderTemplate" orientation="HORIZONTAL" minValue="0" maxValue="1" defaultValue="0.5" obeyStepOnDrag="true" enableMouse="true" inherits="BackdropTemplate" virtual="true">
+		<Size x="144" y="17"/>
+		<KeyValues>
+			<KeyValue key="backdropInfo" value="BACKDROP_SLIDER_8_8" type="global"/>
+		</KeyValues>
+		<HitRectInsets>
+			<AbsInset left="0" right="0" top="-10" bottom="-10"/>
+		</HitRectInsets>
+		<ThumbTexture parentKey="Thumb" name="$parentThumb" file="Interface\Buttons\UI-SliderBar-Button-Horizontal">
+			<Size x="32" y="32"/>
+		</ThumbTexture>
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString parentKey="label" name="$parentLabel" inherits="GameFontHighlight" text="Bar padding">
+					<Anchors>
+						<Anchor point="RIGHT" relativePoint="LEFT" x="-8"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<EditBox parentKey="editBox" name="$parentEditBox" inherits="InputBoxTemplate" letters="3" autoFocus="false">
+				<Size x="25" y="20"/>
+				<Anchors>
+					<Anchor point="LEFT" relativePoint="RIGHT" x="12" y="1"/>
+				</Anchors>
+				<Scripts>
+					<OnLeave function="GameTooltip_Hide"/>
+					<!-- <OnEnterPressed function="EditBox_ClearFocus"/> -->
+				</Scripts>
+			</EditBox>
+		</Frames>
+	</Slider>
 
 </Ui>

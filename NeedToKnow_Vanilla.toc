@@ -29,6 +29,7 @@ BossFight.lua
 NeedToKnow_Options.lua
 OptionsPanel.xml
 OptionsPanel.lua
+AppearancePanel.xml
 AppearancePanel.lua
 BarMenu.lua
 Dialog.lua

@@ -212,6 +212,23 @@
 					<Anchor point="TOPLEFT" relativeTo="$parentFontSizeSlider" relativePoint="TOPRIGHT" x="24"/>
 				</Anchors>
 			</Slider>
+<!-- 
+			<Frame parentKey="barFontMenu" name="$parentBarFontMenu" inherits="UIDropDownMenuTemplate" enableMouse="true">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentBarPaddingSlider" relativePoint="RIGHT" x="24"/>
+				</Anchors>
+			</Frame>
+ -->
+			<Slider parentKey="testSlider1" name="$parentTestSlider1" inherits="NeedToKnowSliderTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="96" y="-120"/>
+				</Anchors>
+			</Slider>
+			<Slider parentKey="testSlider2" name="$parentTestSlider2" inherits="NeedToKnowSliderTemplate">
+				<Anchors>
+					<Anchor point="TOPRIGHT" relativeTo="$parentSubText1" relativePoint="BOTTOMRIGHT" x="-35" y="-120"/>
+				</Anchors>
+			</Slider>
             <Button parentkey="editModeButton" name="$parentEditModeButton" inherits="UIPanelButtonTemplate">
                 <Size>
                     <AbsDimension x="128" y="22"/>
@@ -236,7 +253,7 @@
             </Button>
             <Frame parentKey="Textures" name="$parentTextures" inherits="NeedToKnowScrollFrameTemplate">
                 <Anchors>
-                    <Anchor point="TOP" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOM" y="-20"/>
+                    <Anchor point="TOP" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOM" y="-180"/>
                     <Anchor point="LEFT" relativePoint="LEFT" x="14"/>
                     <Anchor point="BOTTOM" relativeTo="$parentEditModeButton" relativePoint="TOP" y="10"/>
                 </Anchors>
