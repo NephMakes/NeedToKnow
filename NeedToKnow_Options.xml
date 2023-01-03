@@ -3,6 +3,7 @@
 
     <!-- These .xml files must be loaded last in .toc -->
 
+	<!--
     <Button name="NeedToKnow_ColorButtonTemplate" virtual="true">
         <Size>
             <AbsDimension x="16" y="16"/>
@@ -29,6 +30,7 @@
         </Layers>
         <NormalTexture parentKey="normalTexture" name="$parentNormalTexture" file="Interface\ChatFrame\ChatFrameColorSwatch"/>
     </Button>
+    -->
 
     <Button name="NeedToKnowScrollItemTemplate" virtual="true">
         <Size x="169" y="22"/>
