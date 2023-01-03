@@ -9,8 +9,8 @@ local String = NeedToKnow.String
 NeedToKnow.OptionSlider = {}
 local OptionSlider = NeedToKnow.OptionSlider
 
-NEEDTOKNOW.MAXBARSPACING = 24
-NEEDTOKNOW.MAXBARPADDING = 12
+--NEEDTOKNOW.MAXBARSPACING = 24
+--NEEDTOKNOW.MAXBARPADDING = 12
 
 local LSM = LibStub("LibSharedMedia-3.0", true)
 local textureList = LSM:List("statusbar")
@@ -35,26 +35,21 @@ function AppearancePanel:SetScripts()
 	self:SetScript("OnShow", AppearancePanel.OnShow)
 	self:SetScript("OnSizeChanged", AppearancePanel.OnSizeChanged)
 
-	self.backgroundColorButton:SetScript("OnClick", AppearancePanel.ChooseColor)
 	self.backgroundColorButton.variable = "BkgdColor"
+	self.backgroundColorButton:SetScript("OnClick", AppearancePanel.ChooseColor)
 	self.backgroundColorButton:RegisterForClicks("LeftButtonUp")
 
 	self.barSpacingSlider.variable = "BarSpacing"
-	self.barSpacingSlider:SetMinMaxValues(0, NEEDTOKNOW.MAXBARSPACING)
+	self.barSpacingSlider:SetMinMaxValues(0, 24)
 	self.barSpacingSlider:SetValueStep(0.5)
 
 	self.barPaddingSlider.variable = "BarPadding"
-	self.barPaddingSlider:SetMinMaxValues(0, NEEDTOKNOW.MAXBARPADDING)
+	self.barPaddingSlider:SetMinMaxValues(0, 12)
 	self.barPaddingSlider:SetValueStep(0.5)
 
 	self.fontSizeSlider.variable = "FontSize"
 	self.fontSizeSlider:SetMinMaxValues(5, 20)
 	self.fontSizeSlider:SetValueStep(0.5)
-
-	self.fontOutlineSlider:SetScript("OnValueChanged", AppearancePanel.OnFontOutlineChanged)
-	self.fontOutlineSlider:SetMinMaxValues(0, 2)
-	self.fontOutlineSlider:SetValueStep(1)
-	self.fontOutlineSlider:SetObeyStepOnDrag(true)
 
 	for _, slider in pairs(self.sliders) do
 		OptionSlider.OnLoad(slider)
@@ -90,6 +85,7 @@ function AppearancePanel:SetText()
 	self.barSpacingSlider.label:SetText("Bar spacing")
 	self.barPaddingSlider.label:SetText("Bar padding")
 	self.fontSizeSlider.label:SetText("Font size")
+	self.fontOutlineMenu.label:SetText("Font outline")
 
 	self.Textures.title:SetText("Texture:")
 	self.Fonts.title:SetText("Font:")
@@ -142,12 +138,10 @@ function AppearancePanel:Update()
 	local r, g, b = unpack(settings.BkgdColor)
 	self.backgroundColorButton.normalTexture:SetVertexColor(r, g, b, 1)
 
-	self.fontSizeSlider:SetValue(settings.FontSize)
-	self.fontOutlineSlider:SetValue(settings.FontOutline)
-
 	for _, slider in pairs(self.sliders) do
 		slider:Update()
 	end
+	AppearancePanel.UpdateFontOutlineMenu(self)
 
 	AppearancePanel.UpdateBarTextureDropDown()
 	AppearancePanel.UpdateBarFontDropDown()
@@ -193,6 +187,7 @@ function AppearancePanel.OnClickFontItem(self)
 	AppearancePanel:Update()
 end
 
+--[[
 function AppearancePanel:UpdateBarFontMenu()
 	local menu = self.barFontMenu
 	UIDropDownMenu_SetWidth(menu, 180)
@@ -215,10 +210,10 @@ function AppearancePanel:MakeBarFontMenu()
 		-- buttonText:SetFont(NeedToKnow.LSM:Fetch("font", fontName), 12)
 	end
 end
+]]--
 
 
-
---[[ Background color ]]--
+--[[ Color buttons ]]--
 
 function AppearancePanel:ChooseColor()
 	local variable = self.variable
@@ -265,20 +260,48 @@ end
 
 --[[ Font outline ]]--
 
-function AppearancePanel:OnFontOutlineChanged(value)
-	-- Called with self = slider
-	NeedToKnow.ProfileSettings["FontOutline"] = value
-	local str
-	if value == 0 then
-		str = "None"
-	elseif value == 1 then
-		str = "Normal"
-	else
-		str = "Heavy"
+local fontOutlineMenuContents = {
+	{text = "None", arg1 = 0}, 
+	{text = "Thin", arg1 = 1}, 
+	{text = "Thick", arg1 = 2}, 
+}
+
+function AppearancePanel:UpdateFontOutlineMenu()
+	local menu = self.fontOutlineMenu
+	UIDropDownMenu_Initialize(menu, AppearancePanel.MakeFontOutlineMenu)
+
+	-- Show current setting
+	local setting = NeedToKnow.ProfileSettings.FontOutline
+	for i, entry in ipairs(fontOutlineMenuContents) do
+		if entry.arg1 == setting then
+			UIDropDownMenu_SetText(menu, entry.text)
+			break
+		end
 	end
-	self.Text:SetText("Font Outline: "..str)
-	NeedToKnow:Update()
 end
+
+function AppearancePanel:MakeFontOutlineMenu()
+	-- Called with self = menu
+	local info = {}
+	local setting = NeedToKnow.ProfileSettings.FontOutline
+	info.func = AppearancePanel.OnFontOutlineMenuClick
+	for i, entry in ipairs(fontOutlineMenuContents) do
+		info.text = entry.text
+		info.arg1 = entry.arg1
+		info.arg2 = entry.text
+		info.checked = (entry.arg1 == setting)
+		UIDropDownMenu_AddButton(info)
+	end
+end
+
+function AppearancePanel:OnFontOutlineMenuClick(arg1, arg2)
+	-- called with self = DropDownList button
+	NeedToKnow.ProfileSettings.FontOutline = arg1
+	NeedToKnow:Update()
+	local panel = _G["InterfaceOptionsNeedToKnowAppearancePanel"]
+	UIDropDownMenu_SetText(panel.fontOutlineMenu, arg2)
+end
+
 
 
 --[[ Sliders ]]--
@@ -302,9 +325,9 @@ end
 function OptionSlider:OnValueChanged(value, isUserInput)
 	if isUserInput then
 		NeedToKnow.ProfileSettings[self.variable] = value
-		NeedToKnow:Update()
 		self.editBox:SetText(value)
 		self.editBox.oldValue = value
+		NeedToKnow:Update()
 	end
 end
 
@@ -313,8 +336,8 @@ function OptionSlider:OnEditBoxTextChanged(isUserInput)
 	local value = tonumber(self:GetText())
 	if value and isUserInput then
 		NeedToKnow.ProfileSettings[self:GetParent().variable] = value
-		NeedToKnow:Update()
 		self:GetParent():SetValue(value)
+		NeedToKnow:Update()
 	end
 end
 

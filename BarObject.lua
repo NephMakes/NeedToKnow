@@ -109,6 +109,7 @@ function Bar:SetAppearance()
 	local barPadding = PixelUtil.GetNearestPixelSize(settings.BarPadding, bar:GetEffectiveScale())
 	self.Background:SetHeight(barHeight + 2 * barPadding)
 	self.Background:SetVertexColor(unpack(settings.BkgdColor))
+	-- print(unpack(settings.BkgdColor))
 end
 
 function Bar:SetBackgroundSize(showIcon)

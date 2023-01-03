@@ -183,40 +183,44 @@
 			</OnLoad>
 		</Scripts>
 		<Frames>
-			<Button parentKey="backgroundColorButton" name="$parentBackgroundColorButton" inherits="NeedToKnow_ColorButtonTemplate">
+			<Button parentKey="backgroundColorButton" name="$parentBackgroundColorButton" inherits="NeedToKnowColorButtonTemplate">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="16" y="-16"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="0" y="-48"/>
+					<!-- <Anchor point="TOPRIGHT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="120" y="-48"/> -->
 				</Anchors>
 			</Button>
-			<Slider parentKey="fontOutlineSlider" name="$parentFontOutlineSlider" inherits="OptionsSliderTemplate">
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentBackgroundColorButton" relativePoint="BOTTOMLEFT" x="0" y="-32"/>
-				</Anchors>
-			</Slider>
-
 			<Slider parentKey="barSpacingSlider" name="$parentBarSpacingSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="96" y="-120"/>
+					<!-- <Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="96" y="-96"/> -->
+					<Anchor point="TOPLEFT" relativeTo="$parentBackgroundColorButton" relativePoint="BOTTOMLEFT" x="96" y="-16"/>
 				</Anchors>
 			</Slider>
 			<Slider parentKey="barPaddingSlider" name="$parentBarPaddingSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOMLEFT" y="-12"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOMLEFT" y="-16"/>
 				</Anchors>
 			</Slider>
 			<Slider parentKey="fontSizeSlider" name="$parentFontSizeSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentBarPaddingSlider" relativePoint="BOTTOMLEFT" y="-12"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentBarPaddingSlider" relativePoint="BOTTOMLEFT" y="-16"/>
+					<!-- <Anchor point="TOPRIGHT" relativeTo="$parentSubText1" relativePoint="BOTTOMRIGHT" x="-36" y="-96"/> -->
 				</Anchors>
 			</Slider>
-
-<!-- 
-			<Frame parentKey="barFontMenu" name="$parentBarFontMenu" inherits="UIDropDownMenuTemplate" enableMouse="true">
+			<Frame parentKey="fontOutlineMenu" name="$parentFontOutlineMenu" inherits="UIDropDownMenuTemplate" enableMouse="true">
 				<Anchors>
-					<Anchor point="LEFT" relativeTo="$parentBarPaddingSlider" relativePoint="RIGHT" x="24"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentFontSizeSlider" relativePoint="BOTTOMLEFT" x="36" y="-12"/>
 				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString parentKey="label" name="$parentLabel" inherits="GameFontHighlight" text="Menu label">
+							<Anchors>
+								<Anchor point="LEFT" x="-132" y="2"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
 			</Frame>
- -->
+
 			<Button parentkey="editModeButton" name="$parentEditModeButton" inherits="UIPanelButtonTemplate">
 				<Size>
 					<AbsDimension x="128" y="22"/>

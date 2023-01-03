@@ -135,25 +135,25 @@
 					</Anchors>
 				</FontString>
 				<FontString parentKey="numberBarsLabel" name="$parentNumberbarsLabel" inherits="GameFontNormalSmall">
-					<Size x="50"/>
+					<Size x="55"/>
 					<Anchors>
 						<Anchor point="BOTTOM" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="150" y="-28"/>
 					</Anchors>
 				</FontString>
 				<FontString parentKey="directionLabel" name="$parentDirectionLabel" inherits="GameFontNormalSmall">
-					<Size x="50"/>
+					<Size x="55"/>
 					<Anchors>
 						<Anchor point="BOTTOM" relativeTo="$parentNumberbarsLabel" x="70"/>
 					</Anchors>
 				</FontString>
 				<FontString parentKey="condenseGroupLabel" name="$parentCondenseGroupLabel" inherits="GameFontNormalSmall">
-					<Size x="50"/>
+					<Size x="55"/>
 					<Anchors>
 						<Anchor point="BOTTOM" relativeTo="$parentDirectionLabel" x="66"/>
 					</Anchors>
 				</FontString>
 				<FontString parentKey="fixedDurationLabel" name="$parentFixedDurationLabel" inherits="GameFontNormalSmall">
-					<Size x="50"/>
+					<Size x="55"/>
                     <Anchors>
 						<Anchor point="BOTTOM" relativeTo="$parentCondenseGroupLabel" x="66"/>
 					</Anchors>

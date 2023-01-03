@@ -36,4 +36,32 @@
 		</Frames>
 	</Slider>
 
+    <Button name="NeedToKnowColorButtonTemplate" virtual="true">
+        <Size>
+            <AbsDimension x="16" y="16"/>
+        </Size>
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture name="$parentSwatch">
+                    <Size>
+                        <AbsDimension x="16" y="16"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="CENTER"/>
+                    </Anchors>
+                    <Color r="1.0" g="1.0" b="1.0"/>
+                </Texture>
+            </Layer>
+            <Layer level="ARTWORK">
+                <FontString parentKey="label" name="$parentLabel" inherits="GameFontHighlight" justifyH="LEFT" justifyV="TOP" text="Button label">
+                    <Anchors>
+                        <Anchor point="LEFT" relativeTo="$parent" relativePoint="RIGHT" x="8"/>
+                        <!-- <Anchor point="LEFT" relativeTo="$parent" x="-120"/> -->
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <NormalTexture parentKey="normalTexture" name="$parentNormalTexture" file="Interface\ChatFrame\ChatFrameColorSwatch"/>
+    </Button>
+
 </Ui>
