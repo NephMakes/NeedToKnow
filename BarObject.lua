@@ -105,25 +105,23 @@ function Bar:SetAppearance()
 		castTime:Hide()
 	end
 
-	self:SetBackgroundSize(barSettings.show_icon)
-	local barPadding = PixelUtil.GetNearestPixelSize(settings.BarPadding, bar:GetEffectiveScale())
-	self.Background:SetHeight(barHeight + 2 * barPadding)
-	self.Background:SetVertexColor(unpack(settings.BkgdColor))
+	self:SetBackground()
 end
 
-function Bar:SetBackgroundSize(showIcon)
+function Bar:SetBackground()
 	local background = self.Background
-	local barPadding = NeedToKnow.ProfileSettings.BarPadding
-	barPadding = PixelUtil.GetNearestPixelSize(barPadding, bar:GetEffectiveScale())
-
-	local bgWidth = self:GetWidth() + 2 * barPadding
-	if showIcon then
-		bgWidth = bgWidth + self:GetHeight() + barPadding
-	end
-
+	local profileSettings = NeedToKnow.ProfileSettings
+	local barPadding = profileSettings.BarPadding
+	barPadding = PixelUtil.GetNearestPixelSize(barPadding, self:GetEffectiveScale())
 	background:ClearAllPoints()
 	background:SetPoint("RIGHT", barPadding, 0)
-	background:SetWidth(bgWidth)
+	local width, height = self:GetWidth(), self:GetHeight()
+	if self.settings.show_icon then
+		width = width + height + barPadding
+	end
+	background:SetWidth(width + 2 * barPadding)
+	background:SetHeight(height + 2 * barPadding)
+	background:SetVertexColor(unpack(profileSettings.BkgdColor))
 end
 
 
