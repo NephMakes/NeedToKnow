@@ -163,11 +163,6 @@
 						<Anchor point="TOPLEFT" x="16" y="-16"/>
 					</Anchors>
 				</FontString>
-				<FontString parentKey="version" name="$parentVersion" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="TOP">
-					<Anchors>
-						<Anchor point="LEFT" relativeTo="$parentTitle" relativePoint="RIGHT" x="4" y="-0"/>
-					</Anchors>
-				</FontString>
 				<FontString parentKey="subText" name="$parentSubText1" inherits="GameFontHighlightSmall" nonspacewrap="true" maxLines="3" justifyH="LEFT" justifyV="TOP">
 					<Size>
 						<AbsDimension y="24" x="0"/>
@@ -187,13 +182,11 @@
 		<Frames>
 			<Button parentKey="backgroundColorButton" name="$parentBackgroundColorButton" inherits="NeedToKnowColorButtonTemplate">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="0" y="-48"/>
-					<!-- <Anchor point="TOPRIGHT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="120" y="-48"/> -->
+					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="2" y="-24"/>
 				</Anchors>
 			</Button>
 			<Slider parentKey="barSpacingSlider" name="$parentBarSpacingSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
 				<Anchors>
-					<!-- <Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="96" y="-96"/> -->
 					<Anchor point="TOPLEFT" relativeTo="$parentBackgroundColorButton" relativePoint="BOTTOMLEFT" x="96" y="-16"/>
 				</Anchors>
 			</Slider>
@@ -205,7 +198,6 @@
 			<Slider parentKey="fontSizeSlider" name="$parentFontSizeSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="$parentBarPaddingSlider" relativePoint="BOTTOMLEFT" y="-16"/>
-					<!-- <Anchor point="TOPRIGHT" relativeTo="$parentSubText1" relativePoint="BOTTOMRIGHT" x="-36" y="-96"/> -->
 				</Anchors>
 			</Slider>
 			<Frame parentKey="fontOutlineMenu" name="$parentFontOutlineMenu" inherits="UIDropDownMenuTemplate" enableMouse="true">
@@ -247,7 +239,8 @@
 			</Button>
 			<Frame parentKey="Textures" name="$parentTextures" inherits="NeedToKnowScrollFrameTemplate">
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOM" y="-180"/>
+					<!-- <Anchor point="TOP" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOM" y="-180"/> -->
+					<Anchor point="TOP" relativeTo="$parentFontOutlineMenu" relativePoint="BOTTOM" y="-24"/>
 					<Anchor point="LEFT" relativePoint="LEFT" x="14"/>
 					<Anchor point="BOTTOM" relativeTo="$parentEditModeButton" relativePoint="TOP" y="10"/>
 				</Anchors>

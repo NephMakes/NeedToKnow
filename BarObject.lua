@@ -108,6 +108,22 @@ function Bar:SetAppearance()
 	self:SetBackground()
 end
 
+function Bar:SetBackgroundSize(showIcon)
+	-- Called by Bar:SetAppearance(), Bar:UpdateAppearance()
+	local background = self.Background
+	local barPadding = NeedToKnow.ProfileSettings.BarPadding
+	barPadding = PixelUtil.GetNearestPixelSize(barPadding, bar:GetEffectiveScale())
+
+	local bgWidth = self:GetWidth() + 2 * barPadding
+	if showIcon then
+		bgWidth = bgWidth + self:GetHeight() + barPadding
+	end
+
+	background:ClearAllPoints()
+	background:SetPoint("RIGHT", barPadding, 0)
+	background:SetWidth(bgWidth)
+end
+
 function Bar:SetBackground()
 	local background = self.Background
 	local profileSettings = NeedToKnow.ProfileSettings

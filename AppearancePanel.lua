@@ -1,7 +1,7 @@
 ﻿-- Interface options panel: Appearance
 -- Load after OptionsPanel.lua, ApperancePanel.xml
 
--- local addonName, addonTable = ...
+local addonName, addonTable = ...
 local AppearancePanel = NeedToKnow.AppearancePanel  -- Temporary. Will be panel frame. 
 local OptionsPanel = NeedToKnow.OptionsPanel
 local String = NeedToKnow.String
@@ -74,13 +74,14 @@ function AppearancePanel:SetScripts()
 end
 
 function AppearancePanel:SetText()
-	self.version:SetText(NeedToKnow.version)
+	self.title:SetText(addonName.." v"..NeedToKnow.version)
+	-- self.version:SetText(NeedToKnow.version)
 	self.subText:SetText(String.OPTIONS_PANEL_SUBTEXT)
 
 	self.backgroundColorButton.label:SetText(NEEDTOKNOW.UIPANEL_BACKGROUNDCOLOR)
 
 	self.barSpacingSlider.label:SetText("Bar spacing")
-	self.barPaddingSlider.label:SetText("Bar padding")
+	self.barPaddingSlider.label:SetText("Border size")
 	self.fontSizeSlider.label:SetText("Font size")
 	self.fontOutlineMenu.label:SetText("Font outline")
 

@@ -31,7 +31,6 @@ end
 
 function OptionsPanel:SetPanelText()
 	self.title:SetText(addonName.." v"..NeedToKnow.version)
-	-- self.version:SetText("v"..NeedToKnow.version)
 	self.subText1:SetText(String.OPTIONS_PANEL_SUBTEXT)
 
 	self.numberBarsLabel:SetText(String.NUMBER_BARS)

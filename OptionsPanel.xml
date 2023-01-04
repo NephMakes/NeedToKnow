@@ -120,13 +120,6 @@
 						<Anchor point="TOPLEFT" x="16" y="-16"/>
 					</Anchors>
 				</FontString>
-<!-- 
-				<FontString parentKey="version" name="$parentVersion" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="BOTTOM">
-					<Anchors>
-						<Anchor point="BOTTOMLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMRIGHT" x="5"/>
-					</Anchors>
-				</FontString>
- -->
 				<FontString parentKey="subText1" name="$parentSubText1" inherits="GameFontHighlightSmall" nonspacewrap="true" maxLines="3" justifyH="LEFT" justifyV="TOP">
 					<Size x="0" y="24"/>
 					<Anchors>

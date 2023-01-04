@@ -151,7 +151,7 @@ function NeedToKnow.ChangeProfile(profile_key)
 		NeedToKnow:GetOptionsPanel():Update()
 	else
 		-- print("NeedToKnow profile", profile_key, "does not exist!")
-		-- Triggering sometimes when addon appears to be working fine. Why?
+		-- Neph: This is triggering sometimes when addon appears to be working fine. Why?
 	end
 end
 
