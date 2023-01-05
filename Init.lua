@@ -11,7 +11,6 @@ NEEDTOKNOW = {}
 NEEDTOKNOW.VERSION = GetAddOnMetadata(addonName, "Version")
 NeedToKnowLoader = {}  -- Used by Profile.lua
 NeedToKnowOptions = {}  -- Used by NeedToKnow_Options.lua
-NeedToKnow.AppearancePanel = {}
 
 -- Define namespaces
 NeedToKnow.ExecutiveFrame = CreateFrame("Frame", "NeedToKnow_ExecutiveFrame")

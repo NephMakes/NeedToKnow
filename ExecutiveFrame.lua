@@ -24,6 +24,7 @@ end
 ExecutiveFrame:SetScript("OnEvent", ExecutiveFrame.OnEvent)
 ExecutiveFrame:RegisterEvent("ADDON_LOADED")
 ExecutiveFrame:RegisterEvent("PLAYER_LOGIN")
+-- ExecutiveFrame:RegisterEvent("PLAYER_ENTERING_WORLD")  -- Might be better indicator that spec info available
 
 function ExecutiveFrame:ADDON_LOADED(addon)
 	if addon == addonName then

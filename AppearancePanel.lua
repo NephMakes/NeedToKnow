@@ -2,12 +2,15 @@
 -- Load after OptionsPanel.lua, ApperancePanel.xml
 
 local addonName, addonTable = ...
-local AppearancePanel = NeedToKnow.AppearancePanel  -- Temporary. Will be panel frame. 
+NeedToKnow.AppearancePanel = _G["InterfaceOptionsNeedToKnowAppearancePanel"]
+local AppearancePanel = NeedToKnow.AppearancePanel
 local OptionsPanel = NeedToKnow.OptionsPanel
 local String = NeedToKnow.String
 
 NeedToKnow.OptionSlider = {}
+NeedToKnow.ScrollFrame = {}
 local OptionSlider = NeedToKnow.OptionSlider
+local ScrollFrame = NeedToKnow.ScrollFrame
 
 local LSM = LibStub("LibSharedMedia-3.0", true)
 local textureList = LSM:List("statusbar")
@@ -17,8 +20,10 @@ local fontList = LSM:List("font")
 --[[ Appearance panel ]]--
 
 function AppearancePanel:OnLoad()
-	AppearancePanel.SetScripts(self)
-	AppearancePanel.SetText(self)
+	-- AppearancePanel.SetScripts(self)
+	-- AppearancePanel.SetText(self)
+	self:SetScripts()
+	self:SetText()
 
 	self.name = NEEDTOKNOW.UIPANEL_APPEARANCE
 	self.parent = "NeedToKnow"
@@ -29,11 +34,11 @@ function AppearancePanel:OnLoad()
 end
 
 function AppearancePanel:SetScripts()
-	self:SetScript("OnShow", AppearancePanel.OnShow)
-	self:SetScript("OnSizeChanged", AppearancePanel.OnSizeChanged)
+	self:SetScript("OnShow", self.OnShow)
+	self:SetScript("OnSizeChanged", self.OnSizeChanged)
 
 	self.backgroundColorButton.variable = "BkgdColor"
-	self.backgroundColorButton:SetScript("OnClick", AppearancePanel.ChooseColor)
+	self.backgroundColorButton:SetScript("OnClick", self.ChooseColor)
 	self.backgroundColorButton:RegisterForClicks("LeftButtonUp")
 
 	self.barSpacingSlider.variable = "BarSpacing"
@@ -56,7 +61,8 @@ function AppearancePanel:SetScripts()
 	self.Textures.configure = function(i, btn, label) 
 		btn.Bg:SetTexture(NeedToKnow.LSM:Fetch("statusbar", label))
 	end
-	self.Textures.List.update = AppearancePanel.UpdateBarTextureDropDown
+	self.Textures.List:SetScript("OnSizeChanged", ScrollFrame.OnSizeChanged)
+	self.Textures.List.update = AppearancePanel.UpdateBarTextureScrollFrame
 	self.Textures.normal_color =  { 0.7, 0.7, 0.7, 1 }
 
 	self.Fonts.fnClick = AppearancePanel.OnClickFontItem
@@ -65,7 +71,8 @@ function AppearancePanel:SetScripts()
 		btn.text:SetFont(fontPath, 12)
 		btn.Bg:SetTexture(NeedToKnow.LSM:Fetch("statusbar", "Minimalist"))
 	end
-	self.Fonts.List.update = AppearancePanel.UpdateBarFontDropDown
+	self.Fonts.List:SetScript("OnSizeChanged", ScrollFrame.OnSizeChanged)
+	self.Fonts.List.update = AppearancePanel.UpdateBarFontScrollFrame
 
 	self.editModeButton:SetScript("OnEnter", OptionsPanel.OnWidgetEnter)
 	self.editModeButton:SetScript("OnClick", OptionsPanel.OnConfigModeButtonClick)
@@ -75,7 +82,6 @@ end
 
 function AppearancePanel:SetText()
 	self.title:SetText(addonName.." v"..NeedToKnow.version)
-	-- self.version:SetText(NeedToKnow.version)
 	self.subText:SetText(String.OPTIONS_PANEL_SUBTEXT)
 
 	self.backgroundColorButton.label:SetText(NEEDTOKNOW.UIPANEL_BACKGROUNDCOLOR)
@@ -95,7 +101,7 @@ function AppearancePanel:SetText()
 end
 
 function AppearancePanel:OnShow()
-	AppearancePanel:Update()
+	self:Update()
 
 	-- todo: Cache this? Update needs it to
 	local idxCurrent = 1
@@ -127,12 +133,11 @@ function AppearancePanel:OnShow()
 end
 
 function AppearancePanel:Update()
-	local self = _G["InterfaceOptionsNeedToKnowAppearancePanel"]
-	if not self or not self:IsVisible() then return end
-
+	-- local self = _G["InterfaceOptionsNeedToKnowAppearancePanel"]
+	-- if not self or not self:IsVisible() then return end
+	if not self:IsVisible() then return end
 	local settings = NeedToKnow.ProfileSettings
 
-	-- Mimic BarMenu behavior and force swatch alpha = 1
 	local r, g, b = unpack(settings.BkgdColor)
 	self.backgroundColorButton.normalTexture:SetVertexColor(r, g, b, 1)
 
@@ -140,9 +145,8 @@ function AppearancePanel:Update()
 		slider:Update()
 	end
 	AppearancePanel.UpdateFontOutlineMenu(self)
-
-	AppearancePanel.UpdateBarTextureDropDown()
-	AppearancePanel.UpdateBarFontDropDown()
+	AppearancePanel.UpdateBarTextureScrollFrame(self)
+	AppearancePanel.UpdateBarFontScrollFrame(self)
 	-- AppearancePanel.UpdateBarFontMenu(self)
 end
 
@@ -158,11 +162,21 @@ function AppearancePanel:OnSizeChanged()
 end
 
 
+--[[ Scroll frames ]]--
+
+function ScrollFrame:OnSizeChanged()
+    local old_value = self.scrollBar:GetValue();
+    HybridScrollFrame_CreateButtons(self, "NeedToKnowScrollItemTemplate")
+    local max_value = self.range or self:GetHeight()
+    self.scrollBar:SetValue(min(old_value, max_value))
+end
+
+
 --[[ Bar Texture ]]--
 
-function AppearancePanel.UpdateBarTextureDropDown()
-    local scrollPanel = _G["InterfaceOptionsNeedToKnowAppearancePanelTextures"]
-    NeedToKnowOptions.UpdateScrollPanel(scrollPanel, textureList, NeedToKnow.ProfileSettings.BarTexture, NeedToKnow.ProfileSettings.BarTexture)
+function AppearancePanel:UpdateBarTextureScrollFrame()
+	local scrollPanel = _G["InterfaceOptionsNeedToKnowAppearancePanelTextures"]
+	NeedToKnowOptions.UpdateScrollPanel(scrollPanel, textureList, NeedToKnow.ProfileSettings.BarTexture, NeedToKnow.ProfileSettings.BarTexture)
 end
 
 function AppearancePanel.OnClickTextureItem(self)
@@ -174,9 +188,9 @@ end
 
 --[[ Bar Font ]]--
 
-function AppearancePanel.UpdateBarFontDropDown()
-    local scrollPanel = _G["InterfaceOptionsNeedToKnowAppearancePanelFonts"]
-    NeedToKnowOptions.UpdateScrollPanel(scrollPanel, fontList, nil, NeedToKnow.ProfileSettings.BarFont)
+function AppearancePanel:UpdateBarFontScrollFrame()
+	local scrollPanel = _G["InterfaceOptionsNeedToKnowAppearancePanelFonts"]
+	NeedToKnowOptions.UpdateScrollPanel(scrollPanel, fontList, nil, NeedToKnow.ProfileSettings.BarFont)
 end
 
 function AppearancePanel.OnClickFontItem(self)
@@ -256,7 +270,7 @@ function AppearancePanel.CancelColor(previousValues)
 end
 
 
---[[ Font outline ]]--
+--[[ Font outline menu ]]--
 
 local fontOutlineMenuContents = {
 	{text = "None", arg1 = 0}, 
@@ -299,7 +313,6 @@ function AppearancePanel:OnFontOutlineMenuClick(arg1, arg2)
 	local panel = _G["InterfaceOptionsNeedToKnowAppearancePanel"]
 	UIDropDownMenu_SetText(panel.fontOutlineMenu, arg2)
 end
-
 
 
 --[[ Sliders ]]--
@@ -360,3 +373,7 @@ function OptionSlider:OnEditBoxFocusLost(value)
 	EditBox_ClearHighlight(self)
 end
 
+
+do
+	AppearancePanel:OnLoad()
+end

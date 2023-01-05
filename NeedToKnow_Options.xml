@@ -3,35 +3,6 @@
 
     <!-- These .xml files must be loaded last in .toc -->
 
-	<!--
-    <Button name="NeedToKnow_ColorButtonTemplate" virtual="true">
-        <Size>
-            <AbsDimension x="16" y="16"/>
-        </Size>
-        <Layers>
-            <Layer level="BACKGROUND">
-                <Texture name="$parentSwatch">
-                    <Size>
-                        <AbsDimension x="14" y="14"/>
-                    </Size>
-                    <Anchors>
-                        <Anchor point="CENTER"/>
-                    </Anchors>
-                    <Color r="1.0" g="1.0" b="1.0"/>
-                </Texture>
-            </Layer>
-            <Layer level="ARTWORK">
-                <FontString parentKey="label" name="$parentLabel" inherits="GameFontHighlight" justifyH="LEFT" justifyV="TOP">
-                    <Anchors>
-                        <Anchor point="LEFT" relativeTo="$parent" relativePoint="RIGHT" x="8" y="0"/>
-                    </Anchors>
-                </FontString>
-            </Layer>
-        </Layers>
-        <NormalTexture parentKey="normalTexture" name="$parentNormalTexture" file="Interface\ChatFrame\ChatFrameColorSwatch"/>
-    </Button>
-    -->
-
     <Button name="NeedToKnowScrollItemTemplate" virtual="true">
         <Size x="169" y="22"/>
         <Anchors>
@@ -41,16 +12,8 @@
             <Layer level="BACKGROUND" >
                 <Texture parentKey="Bg" name="$parentBg">
                     <Anchors>
-                        <Anchor point="TOPLEFT">
-                            <Offset>
-                                <AbsDimension x="1" y="-0.99"/>
-                            </Offset>
-                        </Anchor>
-                        <Anchor point="BOTTOMRIGHT">
-                            <Offset>
-                                <AbsDimension x="-1" y="0.99"/>
-                            </Offset>
-                        </Anchor>
+                        <Anchor point="TOPLEFT" x="1" y="-0.99"/>
+                        <Anchor point="BOTTOMRIGHT" x="-1" y="0.99"/>
                     </Anchors>
                 </Texture>
             </Layer>
@@ -58,18 +21,12 @@
                 <Texture parentKey="Check" name="$parentCheck" file="Interface\Buttons\UI-CheckBox-Check" hidden="true">
                     <Size x="16" y="16"/>
                     <Anchors>
-                        <Anchor point="LEFT">
-                            <Offset x="8" y="0"/>
-                        </Anchor>
+                        <Anchor point="LEFT" x="8"/>
                     </Anchors>
                 </Texture>
             </Layer>
         </Layers>
         <Scripts>
-            <OnLoad>
-                -- Bg.SetPoint("TOPLEFT",GetParent(),"TOPLEFT",1,-1);
-                -- Bg.SetPoint("BOTTOMRIGHT",GetParent(),"BOTTOMRIGHT",-1,1);
-            </OnLoad>
             <OnClick>
                 local panel = self:GetParent():GetParent():GetParent()
                 panel.fnClick(self)
@@ -84,77 +41,7 @@
         <HighlightTexture file="Interface\FriendsFrame\UI-FriendsFrame-HighlightBar-Blue" alphaMode="ADD"/>
     </Button>
 
-    <Frame name="NeedToKnowScrollFrameTemplate" virtual="true">
-        <Layers>
-            <Layer level="BACKGROUND">
-                <FontString parentKey="title" name="$parentTitle" text="ScrollBar" inherits="GameFontNormalSmall" justifyH="LEFT" justifyV="TOP">
-                    <Anchors>
-                        <Anchor point="TOPLEFT"/>
-                    </Anchors>
-                </FontString>
-                <FontString name="$parentValue" text="Value" inherits="GameFontHighlightSmall" justifyH="LEFT" justifyV="TOP">
-                    <Anchors>
-                        <Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="TOPRIGHT" x="4"/>
-                        <Anchor point="RIGHT"/>
-                        <!-- Wish I didn't have to explicitly set the bottom, but have it based on the font-->
-                        <Anchor point="BOTTOM" relativePoint="TOP" y="-14"/>
-                    </Anchors>
-                </FontString>
-            </Layer>
-        </Layers>
-        <Frames>
-            <Frame name="$parentFrame">
-                <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT" />
-                    <Anchor point="BOTTOMRIGHT" x="-24"/>
-                </Anchors>
-            </Frame>
-            <!-- 
-            Neph: Not sure this is working properly in retail, and can't test right now, so just removing
-			<Frame name="$parentBackdrop" inherits="BackdropTemplate">
-				<KeyValues>
-					<KeyValue key="backdropInfo" value="BACKDROP_SLIDER_8_8" type="global" />
-				</KeyValues>
-			</Frame>
-			-->
-            <ScrollFrame name="$parentList" inherits="HybridScrollFrameTemplate" parentKey="List">
-                <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="$parentFrame" x="3" y="-7" />
-                    <Anchor point="BOTTOMRIGHT" relativeTo="$parentFrame" x="-3" y="7"/>
-                </Anchors>
-                <Scripts>
-                	<!--
-                    <NotVerticalScroll>
-                        NeedToKnowOptions.OnScrollFrameScrolled(self)
-                    </NotVerticalScroll>
-                    -->
-                    <OnSizeChanged>
-                        NeedToKnowOptions.OnScrollFrameSized(self)
-                    </OnSizeChanged>
-                </Scripts>
-                <Frames>
-                    <Slider name="$parentScrollBar" inherits="HybridScrollBarTemplate" parentKey="scrollBar">
-                        <Anchors>
-                            <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="3" y="-13" />
-                        </Anchors>
-                    </Slider>
-                </Frames>
-            </ScrollFrame>
-        </Frames>
-    </Frame>
-
-    <Frame name="NeedToKnowScrollButtonTemplate" virtual="true">
-        <Layers>
-            <Layer name="ARTWORK">
-                <Texture file="Interface\ChatFrame\UI-ChatInputBorder-Left">
-                    <Size>
-                        <AbsDimension x="190" y="20"/>
-                    </Size>
-                </Texture>
-            </Layer>
-        </Layers>
-    </Frame>
-
+<!-- 
 	<Frame name="InterfaceOptionsNeedToKnowAppearancePanel" hidden="true">
 		<Layers>
 			<Layer level="ARTWORK">
@@ -182,7 +69,7 @@
 		<Frames>
 			<Button parentKey="backgroundColorButton" name="$parentBackgroundColorButton" inherits="NeedToKnowColorButtonTemplate">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="2" y="-24"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="2" y="-16"/>
 				</Anchors>
 			</Button>
 			<Slider parentKey="barSpacingSlider" name="$parentBarSpacingSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
@@ -214,7 +101,6 @@
 					</Layer>
 				</Layers>
 			</Frame>
-
 			<Button parentkey="editModeButton" name="$parentEditModeButton" inherits="UIPanelButtonTemplate">
 				<Size>
 					<AbsDimension x="128" y="22"/>
@@ -239,7 +125,7 @@
 			</Button>
 			<Frame parentKey="Textures" name="$parentTextures" inherits="NeedToKnowScrollFrameTemplate">
 				<Anchors>
-					<!-- <Anchor point="TOP" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOM" y="-180"/> -->
+					<!~~ <Anchor point="TOP" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOM" y="-180"/> ~~>
 					<Anchor point="TOP" relativeTo="$parentFontOutlineMenu" relativePoint="BOTTOM" y="-24"/>
 					<Anchor point="LEFT" relativePoint="LEFT" x="14"/>
 					<Anchor point="BOTTOM" relativeTo="$parentEditModeButton" relativePoint="TOP" y="10"/>
@@ -254,6 +140,7 @@
 			</Frame>
 		</Frames>
 	</Frame>
+ -->
 
     <Frame name="InterfaceOptionsNeedToKnowProfilePanel" hidden="true">
         <Layers>
@@ -476,7 +363,7 @@
                 <HighlightFont style="GameFontHighlightSmall"/>
             </Button>
 
-            <Frame name="$parentProfiles" inherits="NeedToKnowScrollFrameTemplate" parentKey="Profiles">
+            <Frame parentKey="Profiles" name="$parentProfiles" inherits="NeedToKnowScrollFrameTemplate">
                 <Anchors>
                     <Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" y="-16"/>
                     <Anchor point="BOTTOM" y="10"/>

@@ -69,6 +69,7 @@ function NeedToKnowOptions.UIPanel_Profile_OnLoad(self)
     self.Profiles.configure = function(i, btn, label) 
         btn.Bg:SetTexture(NeedToKnow.LSM:Fetch("statusbar","Minimalist"))
     end
+    self.Profiles.List:SetScript("OnSizeChanged", NeedToKnow.ScrollFrame.OnSizeChanged)
     self.Profiles.List.update = NeedToKnowOptions.UpdateProfileList
     self.Profiles.fnClick = function(self)
         local scrollPanel = self:GetParent():GetParent():GetParent()
@@ -302,18 +303,20 @@ end
 
 -----
 
+--[[
 function NeedToKnowOptions.OnScrollFrameSized(self)
     local old_value = self.scrollBar:GetValue();
     local scrollFrame = self:GetParent();
 
     HybridScrollFrame_CreateButtons(self, "NeedToKnowScrollItemTemplate")
-    --scrollFrame.Update(scrollFrame)
+    -- scrollFrame.Update(scrollFrame)
 
     local max_value = self.range or self:GetHeight()
     self.scrollBar:SetValue(min(old_value, max_value));
     -- Work around a bug in HybridScrollFrame; it can't scroll by whole items (wow 4.1)
-    --self.stepSize = self.buttons[1]:GetHeight()*.9
+    -- self.stepSize = self.buttons[1]:GetHeight()*.9
 end
+]]--
 
 function NeedToKnowOptions.UpdateScrollPanel(panel, list, selected, checked)
     local Value = _G[panel:GetName().."Value"]
