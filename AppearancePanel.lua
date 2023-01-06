@@ -3,14 +3,14 @@
 
 local addonName, addonTable = ...
 NeedToKnow.AppearancePanel = _G["InterfaceOptionsNeedToKnowAppearancePanel"]
-local AppearancePanel = NeedToKnow.AppearancePanel
-local OptionsPanel = NeedToKnow.OptionsPanel
-local String = NeedToKnow.String
-
 NeedToKnow.OptionSlider = {}
 NeedToKnow.ScrollFrame = {}
+local AppearancePanel = NeedToKnow.AppearancePanel
 local OptionSlider = NeedToKnow.OptionSlider
 local ScrollFrame = NeedToKnow.ScrollFrame
+
+local OptionsPanel = NeedToKnow.OptionsPanel
+local String = NeedToKnow.String
 
 local LSM = LibStub("LibSharedMedia-3.0", true)
 local textureList = LSM:List("statusbar")
@@ -20,8 +20,6 @@ local fontList = LSM:List("font")
 --[[ Appearance panel ]]--
 
 function AppearancePanel:OnLoad()
-	-- AppearancePanel.SetScripts(self)
-	-- AppearancePanel.SetText(self)
 	self:SetScripts()
 	self:SetText()
 
@@ -41,31 +39,35 @@ function AppearancePanel:SetScripts()
 	self.backgroundColorButton:SetScript("OnClick", self.ChooseColor)
 	self.backgroundColorButton:RegisterForClicks("LeftButtonUp")
 
+	-- Sliders
 	self.barSpacingSlider.variable = "BarSpacing"
 	self.barSpacingSlider:SetMinMaxValues(0, 24)
 	self.barSpacingSlider:SetValueStep(0.5)
-
 	self.barPaddingSlider.variable = "BarPadding"
 	self.barPaddingSlider:SetMinMaxValues(0, 12)
 	self.barPaddingSlider:SetValueStep(0.5)
-
 	self.fontSizeSlider.variable = "FontSize"
 	self.fontSizeSlider:SetMinMaxValues(5, 20)
 	self.fontSizeSlider:SetValueStep(0.5)
-
 	for _, slider in pairs(self.sliders) do
 		OptionSlider.OnLoad(slider)
 	end
 
-	self.Textures.fnClick = AppearancePanel.OnClickTextureItem
+	self.Textures.variable = "BarTexture"
+	-- self.Textures.itemList = textureList
+	self.Textures.itemList = LSM:List("statusbar")
+	self.Textures.fnClick = ScrollFrame.OnClickScrollItem
 	self.Textures.configure = function(i, btn, label) 
 		btn.Bg:SetTexture(NeedToKnow.LSM:Fetch("statusbar", label))
 	end
 	self.Textures.List:SetScript("OnSizeChanged", ScrollFrame.OnSizeChanged)
 	self.Textures.List.update = AppearancePanel.UpdateBarTextureScrollFrame
-	self.Textures.normal_color =  { 0.7, 0.7, 0.7, 1 }
+	self.Textures.normal_color =  {0.7, 0.7, 0.7, 1}
 
-	self.Fonts.fnClick = AppearancePanel.OnClickFontItem
+	self.Fonts.variable = "BarFont"
+	-- self.Fonts.itemList = fontList
+	self.Fonts.itemList = LSM:List("font")
+	self.Fonts.fnClick = ScrollFrame.OnClickScrollItem
 	self.Fonts.configure = function(i, btn, label) 
 		local fontPath = NeedToKnow.LSM:Fetch("font", label)
 		btn.text:SetFont(fontPath, 12)
@@ -91,8 +93,8 @@ function AppearancePanel:SetText()
 	self.fontSizeSlider.label:SetText("Font size")
 	self.fontOutlineMenu.label:SetText("Font outline")
 
-	self.Textures.title:SetText("Texture:")
-	self.Fonts.title:SetText("Font:")
+	self.Textures.title:SetText("Bar texture")
+	self.Fonts.title:SetText("Bar font")
 
 	self.editModeButton.Text:SetText(NeedToKnow.String.EDIT_MODE)
 	self.editModeButton.tooltipText = String.EDIT_MODE_TOOLTIP
@@ -103,38 +105,14 @@ end
 function AppearancePanel:OnShow()
 	self:Update()
 
-	-- todo: Cache this? Update needs it to
-	local idxCurrent = 1
-	for i = 1, #textureList do
-		if NeedToKnow.ProfileSettings["BarTexture"] == textureList[i] then
-			idxCurrent = i
-			break
-		end
-	end
-	local idxScroll = idxCurrent - 3
-	if idxScroll < 0 then
-		idxScroll = 0
-	end
-	self.Textures.List.scrollBar:SetValue(idxScroll * self.Textures.List.buttonHeight + 0.1)
-	HybridScrollFrame_OnMouseWheel(self.Textures.List, 1, 0.1)
-
-	for i = 1, #fontList do
-		if NeedToKnow.ProfileSettings["BarFont"] == fontList[i] then
-			idxCurrent = i
-			break
-		end
-	end
-	idxScroll = idxCurrent - 3
-	if idxScroll < 0 then
-		idxScroll = 0
-	end
-	self.Fonts.List.scrollBar:SetValue(idxScroll * self.Fonts.List.buttonHeight + 0.1)
-	HybridScrollFrame_OnMouseWheel(self.Fonts.List, 1, 0.1)
+	-- Kitjan: Cache this? Update needs it to
+	-- self:OnTextureScrollFrameShow()
+	-- self:OnBarFontScrollFrameShow()
+	ScrollFrame.OnShow(self.Textures)
+	ScrollFrame.OnShow(self.Fonts)
 end
 
 function AppearancePanel:Update()
-	-- local self = _G["InterfaceOptionsNeedToKnowAppearancePanel"]
-	-- if not self or not self:IsVisible() then return end
 	if not self:IsVisible() then return end
 	local settings = NeedToKnow.ProfileSettings
 
@@ -144,10 +122,10 @@ function AppearancePanel:Update()
 	for _, slider in pairs(self.sliders) do
 		slider:Update()
 	end
-	AppearancePanel.UpdateFontOutlineMenu(self)
-	AppearancePanel.UpdateBarTextureScrollFrame(self)
-	AppearancePanel.UpdateBarFontScrollFrame(self)
-	-- AppearancePanel.UpdateBarFontMenu(self)
+	self:UpdateFontOutlineMenu()
+
+	self:UpdateBarTextureScrollFrame()
+	self:UpdateBarFontScrollFrame()
 end
 
 function AppearancePanel:OnSizeChanged()
@@ -162,42 +140,97 @@ function AppearancePanel:OnSizeChanged()
 end
 
 
---[[ Scroll frames ]]--
+--[[ Scroll frames (BarTexture, BarFont) ]]--
+
+ScrollFrame.normalColor = {0.7, 0.7, 0.7, 0}
+ScrollFrame.selectedColor = {0.1, 0.6, 0.8, 1}
+
+function ScrollFrame:OnLoad()
+end
+
+function ScrollFrame:OnShow()
+	local scrollIndex = 1
+	for i = 1, #self.itemList do
+		if NeedToKnow.ProfileSettings[self.variable] == self.itemList[i] then
+			scrollIndex = i
+			break
+		end
+	end
+	scrollIndex = scrollIndex - 1
+	self.List.scrollBar:SetValue(scrollIndex * self.List.buttonHeight + 0.1)
+	HybridScrollFrame_OnMouseWheel(self.List, 1, 0.1)
+end
 
 function ScrollFrame:OnSizeChanged()
-    local old_value = self.scrollBar:GetValue();
+    local old_value = self.scrollBar:GetValue()
     HybridScrollFrame_CreateButtons(self, "NeedToKnowScrollItemTemplate")
+    -- local scrollFrame = self:GetParent()
+    -- scrollFrame.Update(scrollFrame)
     local max_value = self.range or self:GetHeight()
     self.scrollBar:SetValue(min(old_value, max_value))
 end
 
+-- function NeedToKnowOptions.OnScrollFrameScrolled(self)
+	-- local scrollPanel = self:GetParent()
+	-- local fn = scrollPanel.Update
+	-- if fn then fn(scrollPanel) end
+-- end
 
---[[ Bar Texture ]]--
+function ScrollFrame:Update(list, selected, checked)
+	local panelList = self.List
+	local buttons = self.List.buttons
+	HybridScrollFrame_Update(panelList, #(list) * buttons[1]:GetHeight(), panelList:GetHeight())
 
-function AppearancePanel:UpdateBarTextureScrollFrame()
-	local scrollPanel = _G["InterfaceOptionsNeedToKnowAppearancePanelTextures"]
-	NeedToKnowOptions.UpdateScrollPanel(scrollPanel, textureList, NeedToKnow.ProfileSettings.BarTexture, NeedToKnow.ProfileSettings.BarTexture)
+	local label
+	for i = 1, #buttons do
+		label = list[i + HybridScrollFrame_GetOffset(panelList)]
+		if label then
+			buttons[i]:Show()
+			buttons[i].text:SetText(label)
+
+			if label == checked then
+				buttons[i].Check:Show()
+			else
+				buttons[i].Check:Hide()
+			end
+			if label == selected then
+				local color = self.selected_color or ScrollFrame.selectedColor
+				buttons[i].Bg:SetVertexColor(unpack(color))
+			else
+				local color = self.normal_color or ScrollFrame.normalColor
+				buttons[i].Bg:SetVertexColor(unpack(color))
+			end
+
+			self.configure(i, buttons[i], label)
+		else
+			buttons[i]:Hide()
+		end
+	end
 end
 
-function AppearancePanel.OnClickTextureItem(self)
-	NeedToKnow.ProfileSettings["BarTexture"] = self.text:GetText()
+function ScrollFrame:OnClickScrollItem()
+	-- Called with self = scroll item
+	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
+	scrollFrame = self:GetParent():GetParent():GetParent()
+	NeedToKnow.ProfileSettings[scrollFrame.variable] = self.text:GetText()
 	NeedToKnow:Update()
 	AppearancePanel:Update()
+end
+
+function AppearancePanel:UpdateBarTextureScrollFrame()
+	local settings = NeedToKnow.ProfileSettings
+	local scrollFrame = AppearancePanel.Textures
+	ScrollFrame.Update(scrollFrame, scrollFrame.itemList, settings.BarTexture, settings.BarTexture)
+end
+
+function AppearancePanel:UpdateBarFontScrollFrame()
+	local settings = NeedToKnow.ProfileSettings
+	local scrollFrame = AppearancePanel.Fonts
+	ScrollFrame.Update(scrollFrame, scrollFrame.itemList, nil, settings.BarFont)
 end
 
 
 --[[ Bar Font ]]--
-
-function AppearancePanel:UpdateBarFontScrollFrame()
-	local scrollPanel = _G["InterfaceOptionsNeedToKnowAppearancePanelFonts"]
-	NeedToKnowOptions.UpdateScrollPanel(scrollPanel, fontList, nil, NeedToKnow.ProfileSettings.BarFont)
-end
-
-function AppearancePanel.OnClickFontItem(self)
-	NeedToKnow.ProfileSettings["BarFont"] = self.text:GetText()
-	NeedToKnow:Update()
-	AppearancePanel:Update()
-end
 
 --[[
 function AppearancePanel:UpdateBarFontMenu()
@@ -225,7 +258,7 @@ end
 ]]--
 
 
---[[ Color buttons ]]--
+--[[ Color buttons (background color) ]]--
 
 function AppearancePanel:ChooseColor()
 	local variable = self.variable
@@ -270,52 +303,7 @@ function AppearancePanel.CancelColor(previousValues)
 end
 
 
---[[ Font outline menu ]]--
-
-local fontOutlineMenuContents = {
-	{text = "None", arg1 = 0}, 
-	{text = "Thin", arg1 = 1}, 
-	{text = "Thick", arg1 = 2}, 
-}
-
-function AppearancePanel:UpdateFontOutlineMenu()
-	local menu = self.fontOutlineMenu
-	UIDropDownMenu_Initialize(menu, AppearancePanel.MakeFontOutlineMenu)
-
-	-- Show current setting
-	local setting = NeedToKnow.ProfileSettings.FontOutline
-	for i, entry in ipairs(fontOutlineMenuContents) do
-		if entry.arg1 == setting then
-			UIDropDownMenu_SetText(menu, entry.text)
-			break
-		end
-	end
-end
-
-function AppearancePanel:MakeFontOutlineMenu()
-	-- Called with self = menu
-	local info = {}
-	local setting = NeedToKnow.ProfileSettings.FontOutline
-	info.func = AppearancePanel.OnFontOutlineMenuClick
-	for i, entry in ipairs(fontOutlineMenuContents) do
-		info.text = entry.text
-		info.arg1 = entry.arg1
-		info.arg2 = entry.text
-		info.checked = (entry.arg1 == setting)
-		UIDropDownMenu_AddButton(info)
-	end
-end
-
-function AppearancePanel:OnFontOutlineMenuClick(arg1, arg2)
-	-- called with self = DropDownList button
-	NeedToKnow.ProfileSettings.FontOutline = arg1
-	NeedToKnow:Update()
-	local panel = _G["InterfaceOptionsNeedToKnowAppearancePanel"]
-	UIDropDownMenu_SetText(panel.fontOutlineMenu, arg2)
-end
-
-
---[[ Sliders ]]--
+--[[ Sliders (bar spacing, bar padding, font size) ]]--
 
 function OptionSlider:OnLoad()
 	self.Update = OptionSlider.Update
@@ -371,6 +359,52 @@ function OptionSlider:OnEditBoxFocusLost(value)
 		self:SetText(self.oldValue)
 	end
 	EditBox_ClearHighlight(self)
+end
+
+
+--[[ Font outline menu ]]--
+
+local fontOutlineMenuContents = {
+	{text = "None", arg1 = 0}, 
+	{text = "Thin", arg1 = 1}, 
+	{text = "Thick", arg1 = 2}, 
+}
+
+function AppearancePanel:UpdateFontOutlineMenu()
+	local menu = self.fontOutlineMenu
+	UIDropDownMenu_Initialize(menu, AppearancePanel.MakeFontOutlineMenu)
+
+	-- Show current setting
+	local setting = NeedToKnow.ProfileSettings.FontOutline
+	for i, entry in ipairs(fontOutlineMenuContents) do
+		if entry.arg1 == setting then
+			UIDropDownMenu_SetText(menu, entry.text)
+			break
+		end
+	end
+end
+
+function AppearancePanel:MakeFontOutlineMenu()
+	-- Called with self = menu
+	local info = {}
+	local setting = NeedToKnow.ProfileSettings.FontOutline
+	info.func = AppearancePanel.OnFontOutlineMenuClick
+	for i, entry in ipairs(fontOutlineMenuContents) do
+		info.text = entry.text
+		info.arg1 = entry.arg1
+		info.arg2 = entry.text
+		info.checked = (entry.arg1 == setting)
+		UIDropDownMenu_AddButton(info)
+	end
+end
+
+function AppearancePanel:OnFontOutlineMenuClick(arg1, arg2)
+	-- called with self = DropDownList button
+	NeedToKnow.ProfileSettings.FontOutline = arg1
+	NeedToKnow:Update()
+	local panel = _G["InterfaceOptionsNeedToKnowAppearancePanel"]
+	UIDropDownMenu_SetText(panel.fontOutlineMenu, arg2)
+	-- UIDropDownMenu_SetText(AppearancePanel.fontOutlineMenu, arg2)
 end
 
 

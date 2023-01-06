@@ -1,4 +1,6 @@
-﻿local addonName, addonTable = ...
+﻿-- Load after AppearancePanel.lua
+
+local addonName, addonTable = ...
 
 local trace = print
 
@@ -55,32 +57,33 @@ NeedToKnowOptions.DefaultSelectedColor =   { 0.1, 0.6, 0.8, 1 }
 NeedToKnowOptions.DefaultNormalColor = { 0.7, 0.7, 0.7, 0 }
 
 function NeedToKnowOptions.UIPanel_Profile_OnLoad(self)
-    self.name = NEEDTOKNOW.UIPANEL_PROFILE;
-    self.parent = "NeedToKnow";
-    self.default = NeedToKnow.ResetCharacter;
-    ---- self.cancel = NeedToKnow.Cancel;
-    ---- need different way to handle cancel?  users might open appearance panel without opening main panel
-    InterfaceOptions_AddCategory(self);
+	self.name = NEEDTOKNOW.UIPANEL_PROFILE;
+	self.parent = "NeedToKnow";
+	self.default = NeedToKnow.ResetCharacter;
+	---- self.cancel = NeedToKnow.Cancel;
+	---- need different way to handle cancel?  users might open appearance panel without opening main panel
+	InterfaceOptions_AddCategory(self);
 
-    local panelName = self:GetName();
-    _G[panelName.."Version"]:SetText(NEEDTOKNOW.VERSION);
-    _G[panelName.."SubText1"]:SetText(NEEDTOKNOW.UIPANEL_PROFILES_SUBTEXT1);
+	local panelName = self:GetName();
+	_G[panelName.."Version"]:SetText(NEEDTOKNOW.VERSION);
+	_G[panelName.."SubText1"]:SetText(NEEDTOKNOW.UIPANEL_PROFILES_SUBTEXT1);
 
-    self.Profiles.configure = function(i, btn, label) 
-        btn.Bg:SetTexture(NeedToKnow.LSM:Fetch("statusbar","Minimalist"))
-    end
-    self.Profiles.List:SetScript("OnSizeChanged", NeedToKnow.ScrollFrame.OnSizeChanged)
-    self.Profiles.List.update = NeedToKnowOptions.UpdateProfileList
-    self.Profiles.fnClick = function(self)
-        local scrollPanel = self:GetParent():GetParent():GetParent()
-        scrollPanel.curSel = self.text:GetText()
-        NeedToKnowOptions.UpdateProfileList()
-    end
+	-- Profiles scroll frame
+	self.Profiles.configure = function(i, btn, label) 
+		btn.Bg:SetTexture(NeedToKnow.LSM:Fetch("statusbar","Minimalist"))
+	end
+	self.Profiles.List:SetScript("OnSizeChanged", NeedToKnow.ScrollFrame.OnSizeChanged)
+	self.Profiles.List.update = NeedToKnowOptions.UpdateProfileList
+	self.Profiles.fnClick = function(self)
+		local scrollPanel = self:GetParent():GetParent():GetParent()
+		scrollPanel.curSel = self.text:GetText()
+		NeedToKnowOptions.UpdateProfileList()
+	end
 end
 
 function NeedToKnowOptions.UIPanel_Profile_OnShow(self)
-    NeedToKnowOptions.RebuildProfileList(self)
-    NeedToKnowOptions.UIPanel_Profile_Update();
+	NeedToKnowOptions.RebuildProfileList(self)
+	NeedToKnowOptions.UIPanel_Profile_Update()
 end
 
 function NeedToKnowOptions.UIPanel_Profile_Update()
@@ -303,65 +306,45 @@ end
 
 -----
 
---[[
-function NeedToKnowOptions.OnScrollFrameSized(self)
-    local old_value = self.scrollBar:GetValue();
-    local scrollFrame = self:GetParent();
-
-    HybridScrollFrame_CreateButtons(self, "NeedToKnowScrollItemTemplate")
-    -- scrollFrame.Update(scrollFrame)
-
-    local max_value = self.range or self:GetHeight()
-    self.scrollBar:SetValue(min(old_value, max_value));
-    -- Work around a bug in HybridScrollFrame; it can't scroll by whole items (wow 4.1)
-    -- self.stepSize = self.buttons[1]:GetHeight()*.9
-end
-]]--
-
 function NeedToKnowOptions.UpdateScrollPanel(panel, list, selected, checked)
-    local Value = _G[panel:GetName().."Value"]
-    Value:SetText(checked)
+	-- local Value = _G[panel:GetName().."Value"]
+	-- Value:SetText(checked)
 
-    local PanelList = panel.List
-    local buttons = PanelList.buttons
-    HybridScrollFrame_Update(PanelList, #(list) * buttons[1]:GetHeight() , PanelList:GetHeight())
+	local PanelList = panel.List
+	local buttons = PanelList.buttons
+	HybridScrollFrame_Update(PanelList, #(list) * buttons[1]:GetHeight() , PanelList:GetHeight())
 
-    local numButtons = #buttons;
-    local scrollOffset = HybridScrollFrame_GetOffset(PanelList);
-    local label;
-    for i = 1, numButtons do
-        local idx = i + scrollOffset
-        label = list[idx]
-        if ( label ) then
-            buttons[i]:Show();
-            buttons[i].text:SetText(label);
+	local numButtons = #buttons;
+	local scrollOffset = HybridScrollFrame_GetOffset(PanelList);
+	local label;
+	for i = 1, numButtons do
+		local idx = i + scrollOffset
+		label = list[idx]
+		if ( label ) then
+			buttons[i]:Show();
+			buttons[i].text:SetText(label);
 
-            if ( label == checked ) then
-                buttons[i].Check:Show();
-            else
-                buttons[i].Check:Hide();
-            end
-            if ( label == selected ) then
-                local color = panel.selected_color
-                if not color then color = NeedToKnowOptions.DefaultSelectedColor end
-                buttons[i].Bg:SetVertexColor(unpack(color));
-            else
-                local color = panel.normal_color
-                if not color then color = NeedToKnowOptions.DefaultNormalColor end
-                buttons[i].Bg:SetVertexColor(unpack(color));
-            end
+			if ( label == checked ) then
+				buttons[i].Check:Show();
+			else
+				buttons[i].Check:Hide();
+			end
+			if ( label == selected ) then
+				local color = panel.selected_color
+				if not color then color = NeedToKnowOptions.DefaultSelectedColor end
+				buttons[i].Bg:SetVertexColor(unpack(color));
+			else
+				local color = panel.normal_color
+				if not color then color = NeedToKnowOptions.DefaultNormalColor end
+				buttons[i].Bg:SetVertexColor(unpack(color));
+			end
 
-            panel.configure(i, buttons[i], label)
-        else
-            buttons[i]:Hide();
-        end
-    end
+			panel.configure(i, buttons[i], label)
+		else
+			buttons[i]:Hide();
+		end
+	end
 end
 
---function NeedToKnowOptions.OnScrollFrameScrolled(self)
-    --local scrollPanel = self:GetParent()
-    --local fn = scrollPanel.Update
-    --if fn then fn(scrollPanel) end
---end
 
 

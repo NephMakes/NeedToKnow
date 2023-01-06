@@ -3,43 +3,43 @@
 
     <!-- These .xml files must be loaded last in .toc -->
 
-    <Button name="NeedToKnowScrollItemTemplate" virtual="true">
-        <Size x="169" y="22"/>
-        <Anchors>
-            <Anchor point="RIGHT"/>
-        </Anchors>
-        <Layers>
-            <Layer level="BACKGROUND" >
-                <Texture parentKey="Bg" name="$parentBg">
-                    <Anchors>
-                        <Anchor point="TOPLEFT" x="1" y="-0.99"/>
-                        <Anchor point="BOTTOMRIGHT" x="-1" y="0.99"/>
-                    </Anchors>
-                </Texture>
-            </Layer>
-            <Layer level="BORDER">
-                <Texture parentKey="Check" name="$parentCheck" file="Interface\Buttons\UI-CheckBox-Check" hidden="true">
-                    <Size x="16" y="16"/>
-                    <Anchors>
-                        <Anchor point="LEFT" x="8"/>
-                    </Anchors>
-                </Texture>
-            </Layer>
-        </Layers>
-        <Scripts>
-            <OnClick>
-                local panel = self:GetParent():GetParent():GetParent()
-                panel.fnClick(self)
-            </OnClick>
-        </Scripts>
-        <ButtonText parentKey="text" name="$parentTitleText" inherits="GameFontNormalSmallLeft" justifyH="LEFT">
-            <Anchors>
-                <Anchor point="LEFT" relativeTo="$parentCheck" relativePoint="RIGHT" x="3" y="0"/>
-                <Anchor point="RIGHT" x="-3" y="0"/>
-            </Anchors>
-        </ButtonText>
-        <HighlightTexture file="Interface\FriendsFrame\UI-FriendsFrame-HighlightBar-Blue" alphaMode="ADD"/>
-    </Button>
+	<Button name="NeedToKnowScrollItemTemplate" virtual="true">
+		<Size x="169" y="22"/>
+		<Anchors>
+			<Anchor point="RIGHT"/>
+		</Anchors>
+		<Layers>
+			<Layer level="BACKGROUND" >
+				<Texture parentKey="Bg" name="$parentBg">
+					<Anchors>
+						<Anchor point="TOPLEFT" x="1" y="-0.99"/>
+						<Anchor point="BOTTOMRIGHT" x="-1" y="0.99"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="BORDER">
+				<Texture parentKey="Check" name="$parentCheck" file="Interface\Buttons\UI-CheckBox-Check" hidden="true">
+					<Size x="16" y="16"/>
+					<Anchors>
+						<Anchor point="LEFT" x="8"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnClick>
+				local panel = self:GetParent():GetParent():GetParent()
+				panel.fnClick(self)
+			</OnClick>
+		</Scripts>
+		<ButtonText parentKey="text" name="$parentTitleText" inherits="GameFontNormalSmallLeft" justifyH="LEFT">
+			<Anchors>
+				<Anchor point="LEFT" relativeTo="$parentCheck" relativePoint="RIGHT" x="3" y="0"/>
+				<Anchor point="RIGHT" x="-3" y="0"/>
+			</Anchors>
+		</ButtonText>
+		<HighlightTexture file="Interface\FriendsFrame\UI-FriendsFrame-HighlightBar-Blue" alphaMode="ADD"/>
+	</Button>
 
 <!-- 
 	<Frame name="InterfaceOptionsNeedToKnowAppearancePanel" hidden="true">
@@ -204,8 +204,8 @@
                     </OnEnter>
                     <OnLeave function="GameTooltip_Hide"/>
                 </Scripts>
-                <NormalFont style="GameFontNormalSmall"/>
-                <HighlightFont style="GameFontHighlightSmall"/>
+                <NormalFont style="GameFontNormal"/>
+                <HighlightFont style="GameFontHighlight"/>
             </Button>
 
             <Button name="$parentDeleteBtn" inherits="UIPanelButtonTemplate" parentKey="DeleteBtn">
@@ -228,8 +228,8 @@
                     </OnEnter>
                     <OnLeave function="GameTooltip_Hide"/>
                 </Scripts>
-                <NormalFont style="GameFontNormalSmall"/>
-                <HighlightFont style="GameFontHighlightSmall"/>
+                <NormalFont style="GameFontNormal"/>
+                <HighlightFont style="GameFontHighlight"/>
             </Button>
 
             <Button name="$parentPublicBtn" inherits="UIPanelButtonTemplate" parentKey="PublicBtn">
@@ -252,8 +252,8 @@
                     </OnEnter>
                     <OnLeave function="GameTooltip_Hide"/>
                 </Scripts>
-                <NormalFont style="GameFontNormalSmall"/>
-                <HighlightFont style="GameFontHighlightSmall"/>
+                <NormalFont style="GameFontNormal"/>
+                <HighlightFont style="GameFontHighlight"/>
             </Button>
 
             <Button name="$parentPrivateBtn" inherits="UIPanelButtonTemplate" parentKey="PrivateBtn">
@@ -276,8 +276,8 @@
                     </OnEnter>
                     <OnLeave function="GameTooltip_Hide"/>
                 </Scripts>
-                <NormalFont style="GameFontNormalSmall"/>
-                <HighlightFont style="GameFontHighlightSmall"/>
+                <NormalFont style="GameFontNormal"/>
+                <HighlightFont style="GameFontHighlight"/>
             </Button>
         </Frames>
         <Layers>
@@ -335,8 +335,8 @@
                     </OnEnter>
                     <OnLeave function="GameTooltip_Hide"/>
                 </Scripts>
-                <NormalFont style="GameFontNormalSmall"/>
-                <HighlightFont style="GameFontHighlightSmall"/>
+                <NormalFont style="GameFontNormal"/>
+                <HighlightFont style="GameFontHighlight"/>
             </Button>
 
             <Button name="$parentRenameBtn" inherits="UIPanelButtonTemplate" parentKey="RenameBtn">
@@ -359,15 +359,15 @@
                     </OnEnter>
                     <OnLeave function="GameTooltip_Hide"/>
                 </Scripts>
-                <NormalFont style="GameFontNormalSmall"/>
-                <HighlightFont style="GameFontHighlightSmall"/>
+                <NormalFont style="GameFontNormal"/>
+                <HighlightFont style="GameFontHighlight"/>
             </Button>
 
             <Frame parentKey="Profiles" name="$parentProfiles" inherits="NeedToKnowScrollFrameTemplate">
                 <Anchors>
                     <Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" y="-16"/>
                     <Anchor point="BOTTOM" y="10"/>
-                    <Anchor point="RIGHT" relativeTo="$parentSwitchToBtn"  relativePoint="LEFT" x ="-4"/>
+                    <Anchor point="RIGHT" relativeTo="$parentSwitchToBtn" relativePoint="LEFT" x ="-4"/>
                 </Anchors>
             </Frame>
         </Frames>
