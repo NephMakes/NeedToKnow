@@ -70,11 +70,13 @@ function NeedToKnowOptions.UIPanel_Profile_OnLoad(self)
 
 	-- Profiles scroll frame
 	self.Profiles.configure = function(i, btn, label) 
-		btn.Bg:SetTexture(NeedToKnow.LSM:Fetch("statusbar","Minimalist"))
+		-- btn.Bg:SetTexture(NeedToKnow.LSM:Fetch("statusbar","Minimalist"))
+		btn.Bg:SetTexture("Interface\\FriendsFrame\\UI-FriendsFrame-HighlightBar-Blue")
+		btn.Bg:SetBlendMode("ADD")
 	end
 	self.Profiles.List:SetScript("OnSizeChanged", NeedToKnow.ScrollFrame.OnSizeChanged)
 	self.Profiles.List.update = NeedToKnowOptions.UpdateProfileList
-	self.Profiles.fnClick = function(self)
+	self.Profiles.onClick = function(self)
 		local scrollPanel = self:GetParent():GetParent():GetParent()
 		scrollPanel.curSel = self.text:GetText()
 		NeedToKnowOptions.UpdateProfileList()

@@ -64,48 +64,88 @@
         <NormalTexture parentKey="normalTexture" name="$parentNormalTexture" file="Interface\ChatFrame\ChatFrameColorSwatch"/>
     </Button>
 
+	<Button name="NeedToKnowBarFontMenuButtonTemplate" inherits="UIDropDownCustomMenuEntryTemplate" virtual="true">
+		<Size x="180" y="16"/>
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture parentKey="check" name="$parentCheck" file="Interface\Common\UI-DropDownRadioChecks">
+					<Size x="16" y="16"/>
+					<Anchors>
+						<Anchor point="LEFT"/>
+					</Anchors>
+					<TexCoords left="0" right="0.5" top="0.5" bottom="1.0"/>
+				</Texture>
+				<Texture parentKey="uncheck" name="$parentUnCheck" file="Interface\Common\UI-DropDownRadioChecks">
+					<Size x="16" y="16"/>
+					<Anchors>
+						<Anchor point="LEFT"/>
+					</Anchors>
+					<TexCoords left="0.5" right="1.0" top="0.5" bottom="1.0"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<ButtonText parentKey="text" name="$parentText" inherits="GameFontNormalSmallLeft" justifyH="LEFT" text="Button text">
+			<Anchors>
+				<Anchor point="LEFT" relativeTo="$parentCheck" relativePoint="RIGHT" x="0" y="0"/>
+			</Anchors>
+		</ButtonText>
+		<NormalFont style="GameFontHighlightSmallLeft"/>
+		<HighlightFont style="GameFontHighlightSmallLeft"/>
+		<DisabledFont style="GameFontDisableSmallLeft"/>
+		<HighlightTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD"/>
+	</Button>
+
 	<Frame name="NeedToKnowScrollFrameTemplate" virtual="true">
 		<Layers>
 			<Layer level="BACKGROUND">
-				<!-- <FontString parentKey="title" name="$parentTitle" text="ScrollBar" inherits="GameFontNormalSmall" justifyH="LEFT" justifyV="TOP"> -->
-				<FontString parentKey="title" name="$parentTitle" text="ScrollBar" inherits="GameFontHighlight" justifyH="LEFT" justifyV="TOP">
+				<FontString parentKey="title" name="$parentTitle" text="ScrollFrame" inherits="GameFontHighlight" justifyH="LEFT" justifyV="TOP">
 					<Anchors>
 						<Anchor point="TOPLEFT"/>
 					</Anchors>
 				</FontString>
-<!-- 
-				<FontString parentKey="value" name="$parentValue" text="Value" inherits="GameFontHighlightSmall" justifyH="LEFT" justifyV="TOP">
-					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="TOPRIGHT" x="4"/>
-						<Anchor point="RIGHT"/>
-						<Anchor point="BOTTOM" relativePoint="TOP" y="-14"/>
-					</Anchors>
-				</FontString>
- -->
 			</Layer>
 		</Layers>
 		<Frames>
-			<Frame name="$parentFrame">
+			<ScrollFrame parentKey="List" name="$parentList" inherits="BasicHybridScrollFrameTemplate">					
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT"/>
-					<Anchor point="BOTTOMRIGHT" x="-24"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT" y="-6"/>
+					<Anchor point="BOTTOMRIGHT" x="-27"/>
 				</Anchors>
-			</Frame>
-			<ScrollFrame parentKey="List" name="$parentList" inherits="HybridScrollFrameTemplate">
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentFrame" x="0" y="-7" />
-					<Anchor point="BOTTOMRIGHT" relativeTo="$parentFrame" x="-3" y="7"/>
-				</Anchors>
-				<Frames>
-					<Slider parentKey="scrollBar" name="$parentScrollBar" inherits="HybridScrollBarTemplate">
-						<Anchors>
-							<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="3" y="-16"/>
-						</Anchors>
-					</Slider>
-				</Frames>
 			</ScrollFrame>
 		</Frames>
 	</Frame>
+
+	<Button name="NeedToKnowScrollItemTemplate" virtual="true">
+		<Size x="169" y="22"/>
+		<Anchors>
+			<Anchor point="RIGHT"/>
+		</Anchors>
+		<Layers>
+			<Layer level="BACKGROUND" >
+				<Texture parentKey="Bg" name="$parentBg">
+					<Anchors>
+						<Anchor point="TOPLEFT" x="1" y="-0.99"/>
+						<Anchor point="BOTTOMRIGHT" x="-1" y="0.99"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="BORDER">
+				<Texture parentKey="Check" name="$parentCheck" file="Interface\Buttons\UI-CheckBox-Check" hidden="true">
+					<Size x="16" y="16"/>
+					<Anchors>
+						<Anchor point="LEFT" x="8"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+		<ButtonText parentKey="text" name="$parentTitleText" inherits="GameFontNormalSmallLeft" justifyH="LEFT">
+			<Anchors>
+				<Anchor point="LEFT" relativeTo="$parentCheck" relativePoint="RIGHT" x="3" y="0"/>
+				<Anchor point="RIGHT" x="-3" y="0"/>
+			</Anchors>
+		</ButtonText>
+		<HighlightTexture file="Interface\FriendsFrame\UI-FriendsFrame-HighlightBar-Blue" alphaMode="ADD"/>
+	</Button>
 
 	<Frame name="InterfaceOptionsNeedToKnowAppearancePanel" hidden="true">
 		<Layers>
@@ -149,18 +189,34 @@
 			</Slider>
 			<Frame parentKey="fontOutlineMenu" name="$parentFontOutlineMenu" inherits="UIDropDownMenuTemplate" enableMouse="true">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentFontSizeSlider" relativePoint="BOTTOMLEFT" x="36" y="-12"/>
+					<!-- <Anchor point="TOPLEFT" relativeTo="$parentFontSizeSlider" relativePoint="BOTTOMLEFT" x="-16" y="-12"/> -->
+					<Anchor point="TOPRIGHT" relativeTo="$parentFontSizeSlider" relativePoint="BOTTOMRIGHT" x="60" y="-12"/>
 				</Anchors>
 				<Layers>
 					<Layer level="ARTWORK">
 						<FontString parentKey="label" name="$parentLabel" inherits="GameFontHighlight" text="Menu label">
 							<Anchors>
-								<Anchor point="LEFT" x="-132" y="2"/>
+								<Anchor point="LEFT" x="-154" y="2"/>
 							</Anchors>
 						</FontString>
 					</Layer>
 				</Layers>
 			</Frame>
+			<Frame parentKey="barFontMenu" name="$parentBarFontMenu" inherits="UIDropDownMenuTemplate" enableMouse="true">
+				<Anchors>
+					<Anchor point="TOPRIGHT" relativeTo="$parentFontOutlineMenu" relativePoint="BOTTOMRIGHT" x="0" y="-2"/>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString parentKey="label" name="$parentLabel" inherits="GameFontHighlight" text="Menu label">
+							<Anchors>
+								<Anchor point="LEFT" x="-70" y="2"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+			</Frame>
+
 			<Button parentkey="editModeButton" name="$parentEditModeButton" inherits="UIPanelButtonTemplate">
 				<Size>
 					<AbsDimension x="128" y="22"/>
@@ -185,19 +241,20 @@
 			</Button>
 			<Frame parentKey="Textures" name="$parentTextures" inherits="NeedToKnowScrollFrameTemplate">
 				<Anchors>
-					<!-- <Anchor point="TOP" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOM" y="-180"/> -->
-					<Anchor point="TOP" relativeTo="$parentFontOutlineMenu" relativePoint="BOTTOM" y="-24"/>
-					<Anchor point="LEFT" relativePoint="LEFT" x="14"/>
-					<Anchor point="BOTTOM" relativeTo="$parentEditModeButton" relativePoint="TOP" y="10"/>
+					<Anchor point="TOP" relativeTo="$parentBarFontMenu" relativePoint="BOTTOM" y="-24"/>
+					<Anchor point="LEFT" x="18"/>
+					<Anchor point="BOTTOM" relativeTo="$parentEditModeButton" relativePoint="TOP" y="20"/>
 				</Anchors>
 			</Frame>
+<!-- 
 			<Frame parentKey="Fonts" name="$parentFonts" inherits="NeedToKnowScrollFrameTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="$parentTextures" relativePoint="TOPRIGHT" x="10"/>
-					<Anchor point="BOTTOM" relativeTo="$parentEditModeButton" relativePoint="TOP" y="10"/>
 					<Anchor point="RIGHT" x="-10"/>
+					<Anchor point="BOTTOM" relativeTo="$parentEditModeButton" relativePoint="TOP" y="20"/>
 				</Anchors>
 			</Frame>
+ -->
 		</Frames>
 	</Frame>
 
