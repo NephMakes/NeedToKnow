@@ -33,7 +33,7 @@ end
 
 function AppearancePanel:SetScripts()
 	self:SetScript("OnShow", self.OnShow)
-	self:SetScript("OnSizeChanged", self.OnSizeChanged)
+	-- self:SetScript("OnSizeChanged", self.OnSizeChanged)
 
 	self.backgroundColorButton.variable = "BkgdColor"
 	self.backgroundColorButton:SetScript("OnClick", self.ChooseColor)
@@ -56,15 +56,15 @@ function AppearancePanel:SetScripts()
 	end
 
 	-- Bar texture
-	self.Textures.variable = "BarTexture"
-	self.Textures.itemList = LSM:List("statusbar")
-	self.Textures.List:SetScript("OnSizeChanged", ScrollFrame.OnSizeChanged)
-	self.Textures.List.update = AppearancePanel.UpdateBarTextureScrollFrame
-	self.Textures.updateButton = function(button, label) 
-		button.Bg:SetTexture(NeedToKnow.LSM:Fetch("statusbar", label))
-	end
-	self.Textures.normal_color = {0.7, 0.7, 0.7, 1}
-	self.Textures.onClick = AppearancePanel.OnClickScrollItem
+--	self.Textures.variable = "BarTexture"
+--	self.Textures.itemList = LSM:List("statusbar")
+--	self.Textures.List:SetScript("OnSizeChanged", ScrollFrame.OnSizeChanged)
+--	self.Textures.List.update = AppearancePanel.UpdateBarTextureScrollFrame
+--	self.Textures.updateButton = function(button, label) 
+--		button.Bg:SetTexture(NeedToKnow.LSM:Fetch("statusbar", label))
+--	end
+--	self.Textures.normal_color = {0.7, 0.7, 0.7, 1}
+--	self.Textures.onClick = AppearancePanel.OnClickScrollItem
 
 	-- Bar font
 --	self.Fonts.variable = "BarFont"
@@ -77,6 +77,7 @@ function AppearancePanel:SetScripts()
 --	self.Fonts.onClick = AppearancePanel.OnClickScrollItem
 
 	self:OnLoadBarFontMenu()
+	self:OnLoadBarTextureMenu()
 
 	self.editModeButton:SetScript("OnEnter", OptionsPanel.OnWidgetEnter)
 	self.editModeButton:SetScript("OnClick", OptionsPanel.OnConfigModeButtonClick)
@@ -95,8 +96,9 @@ function AppearancePanel:SetText()
 	self.fontSizeSlider.label:SetText("Font size")
 	self.fontOutlineMenu.label:SetText("Font outline")
 	self.barFontMenu.label:SetText("Font")
+	self.barTextureMenu.label:SetText("Bar texture")
 
-	self.Textures.title:SetText("Bar texture")
+	-- self.Textures.title:SetText("Bar texture")
 	-- self.Fonts.title:SetText("Bar font")
 
 	self.editModeButton.Text:SetText(NeedToKnow.String.EDIT_MODE)
@@ -108,8 +110,7 @@ end
 function AppearancePanel:OnShow()
 	self:Update()
 	-- Kitjan: Cache this? Update needs it to
-	ScrollFrame.OnShow(self.Textures)
-	-- ScrollFrame.OnShow(self.Fonts)
+	-- ScrollFrame.OnShow(self.Textures)
 end
 
 function AppearancePanel:Update()
@@ -122,11 +123,12 @@ function AppearancePanel:Update()
 	for _, slider in pairs(self.sliders) do
 		slider:Update()
 	end
+
 	self:UpdateFontOutlineMenu()
 	self:UpdateBarFontMenu()
+	self:UpdateBarTextureMenu()
 
-	self:UpdateBarTextureScrollFrame()
-	-- self:UpdateBarFontScrollFrame()
+	-- self:UpdateBarTextureScrollFrame()
 end
 
 function AppearancePanel:OnSizeChanged()
@@ -244,15 +246,73 @@ function AppearancePanel:OnClickScrollItem()
 end
 
 
---[[ Bar font menu ]]--
+--[[ Bar texture menu ]]--
 
-local barFontMenuContents = NeedToKnow.LSM:List("font")
+local selectedColor = {0.1, 0.6, 0.8, 1}  -- Blue
+-- local selectedColor = {1, 0.82, 0, 1}  -- NormalFont yellow
+local unselectedColor = {0.6, 0.6, 0.6, 1}
+
+function AppearancePanel:OnLoadBarTextureMenu()
+	local menu = self.barTextureMenu
+	UIDropDownMenu_SetWidth(menu, 174)
+	menu.Text:SetDrawLayer("OVERLAY")
+	menu.customButtons = {}
+	local button
+	for i, textureName in ipairs(NeedToKnow.LSM:List("statusbar")) do
+		menu.customButtons[i] = CreateFrame("Button", menu:GetName().."Button"..i, menu, "NeedToKnowBarTextureMenuButtonTemplate")
+		button = menu.customButtons[i]
+		button.text:SetText(textureName)
+		button.texture:SetTexture(NeedToKnow.LSM:Fetch("statusbar", textureName))
+		button:SetScript("OnClick", AppearancePanel.OnClickBarTextureMenuItem)
+	end
+end
+
+function AppearancePanel:UpdateBarTextureMenu()
+	local menu = self.barTextureMenu
+	UIDropDownMenu_Initialize(menu, AppearancePanel.MakeBarTextureMenu)
+	UIDropDownMenu_OnHide(DropDownList1)  -- So custom buttons don't show in other menus
+	local textureName = NeedToKnow.ProfileSettings.BarTexture
+	if textureName then
+		menu.Text:SetText(textureName)
+		menu.texture:SetTexture(NeedToKnow.LSM:Fetch("statusbar", textureName))
+		menu.texture:SetVertexColor(unpack(selectedColor))
+	end
+end
+
+function AppearancePanel:MakeBarTextureMenu()
+	-- Called with self = menu
+	local info = {}
+	local button
+	local currentTexture = NeedToKnow.ProfileSettings.BarTexture
+	for _, customButton in ipairs(self.customButtons) do
+		info.customFrame = customButton
+		button = UIDropDownMenu_AddButton(info)
+		customButton = button.customFrame
+		if currentTexture == customButton.text:GetText() then
+			customButton.texture:SetVertexColor(unpack(selectedColor))
+		else
+			customButton.texture:SetVertexColor(unpack(unselectedColor))
+		end
+	end
+end
+
+function AppearancePanel:OnClickBarTextureMenuItem()
+	-- Called with self = customButton
+	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
+	NeedToKnow.ProfileSettings.BarTexture = self.text:GetText()
+	AppearancePanel:Update()
+	NeedToKnow:Update()
+end
+
+
+--[[ Bar font menu ]]--
 
 function AppearancePanel:OnLoadBarFontMenu()
 	local menu = self.barFontMenu
-	menu.customButtons = {}
+	UIDropDownMenu_SetWidth(menu, 174)
+	menu.customButtons = {}  -- So we don't change other menus' fonts
 	local button
-	for i, fontName in ipairs(barFontMenuContents) do
+	for i, fontName in ipairs(NeedToKnow.LSM:List("font")) do
 		menu.customButtons[i] = CreateFrame("Button", menu:GetName().."Button"..i, menu, "NeedToKnowBarFontMenuButtonTemplate")
 		button = menu.customButtons[i]
 		button.text:SetText(fontName)
@@ -263,18 +323,12 @@ end
 
 function AppearancePanel:UpdateBarFontMenu()
 	local menu = self.barFontMenu
-	UIDropDownMenu_SetWidth(menu, 180)
 	UIDropDownMenu_Initialize(menu, AppearancePanel.MakeBarFontMenu)
 	UIDropDownMenu_OnHide(DropDownList1)  -- So custom buttons don't show in other menus
-
-	-- Show current setting
-	local setting = NeedToKnow.ProfileSettings.BarFont
-	for _, fontName in ipairs(barFontMenuContents) do
-		if fontName == setting then
-			UIDropDownMenu_SetText(menu, fontName)
-			menu.Text:SetFont(NeedToKnow.LSM:Fetch("font", fontName), 10)
-			break
-		end
+	local fontName = NeedToKnow.ProfileSettings.BarFont
+	if fontName then
+		menu.Text:SetText(fontName)
+		menu.Text:SetFont(NeedToKnow.LSM:Fetch("font", fontName), 10)
 	end
 end
 
@@ -282,12 +336,12 @@ function AppearancePanel:MakeBarFontMenu()
 	-- Called with self = menu
 	local info = {}
 	local button
-	local fontName = NeedToKnow.ProfileSettings.BarFont
-	for i, customButton in ipairs(self.customButtons) do
+	local currentFont = NeedToKnow.ProfileSettings.BarFont
+	for _, customButton in ipairs(self.customButtons) do
 		info.customFrame = customButton
 		button = UIDropDownMenu_AddButton(info)
 		customButton = button.customFrame
-		if fontName == customButton.text:GetText() then
+		if currentFont == customButton.text:GetText() then
 			customButton.check:Show()
 			customButton.uncheck:Hide()
 		else
@@ -450,10 +504,8 @@ end
 function AppearancePanel:OnFontOutlineMenuClick(arg1, arg2)
 	-- called with self = DropDownList button
 	NeedToKnow.ProfileSettings.FontOutline = arg1
-	NeedToKnow:Update()
-	-- local panel = _G["InterfaceOptionsNeedToKnowAppearancePanel"]
 	UIDropDownMenu_SetText(AppearancePanel.fontOutlineMenu, arg2)
-	-- UIDropDownMenu_SetText(AppearancePanel.fontOutlineMenu, arg2)
+	NeedToKnow:Update()
 end
 
 

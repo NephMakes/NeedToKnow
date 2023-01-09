@@ -90,8 +90,27 @@
 			</Anchors>
 		</ButtonText>
 		<NormalFont style="GameFontHighlightSmallLeft"/>
-		<HighlightFont style="GameFontHighlightSmallLeft"/>
-		<DisabledFont style="GameFontDisableSmallLeft"/>
+		<HighlightTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD"/>
+	</Button>
+
+	<Button name="NeedToKnowBarTextureMenuButtonTemplate" inherits="UIDropDownCustomMenuEntryTemplate" virtual="true">
+		<Size x="180" y="16"/>
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture parentKey="texture" name="$parentTexture" setAllPoints="true">
+					<Anchors>
+						<Anchor point="TOPLEFT" x="-4" y="-1"/>
+						<Anchor point="BOTTOMRIGHT" x="-5" y="1"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+		<ButtonText parentKey="text" name="$parentText" inherits="GameFontNormalSmallLeft" justifyH="LEFT" text="Button text">
+			<Anchors>
+				<Anchor point="LEFT"/>
+			</Anchors>
+		</ButtonText>
+		<NormalFont style="GameFontHighlightSmallLeft"/>
 		<HighlightTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD"/>
 	</Button>
 
@@ -179,17 +198,16 @@
 			</Slider>
 			<Slider parentKey="barPaddingSlider" name="$parentBarPaddingSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOMLEFT" y="-16"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOMLEFT" y="-17"/>
 				</Anchors>
 			</Slider>
 			<Slider parentKey="fontSizeSlider" name="$parentFontSizeSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentBarPaddingSlider" relativePoint="BOTTOMLEFT" y="-16"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentBarPaddingSlider" relativePoint="BOTTOMLEFT" y="-17"/>
 				</Anchors>
 			</Slider>
 			<Frame parentKey="fontOutlineMenu" name="$parentFontOutlineMenu" inherits="UIDropDownMenuTemplate" enableMouse="true">
 				<Anchors>
-					<!-- <Anchor point="TOPLEFT" relativeTo="$parentFontSizeSlider" relativePoint="BOTTOMLEFT" x="-16" y="-12"/> -->
 					<Anchor point="TOPRIGHT" relativeTo="$parentFontSizeSlider" relativePoint="BOTTOMRIGHT" x="60" y="-12"/>
 				</Anchors>
 				<Layers>
@@ -210,9 +228,34 @@
 					<Layer level="ARTWORK">
 						<FontString parentKey="label" name="$parentLabel" inherits="GameFontHighlight" text="Menu label">
 							<Anchors>
-								<Anchor point="LEFT" x="-70" y="2"/>
+								<Anchor point="LEFT" x="-76" y="2"/>
 							</Anchors>
 						</FontString>
+					</Layer>
+				</Layers>
+			</Frame>
+			<Frame parentKey="barTextureMenu" name="$parentBarTextureMenu" inherits="UIDropDownMenuTemplate" enableMouse="true">
+				<Anchors>
+					<Anchor point="TOPRIGHT" relativeTo="$parentBarFontMenu" relativePoint="BOTTOMRIGHT" x="0" y="-2"/>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString parentKey="label" name="$parentLabel" inherits="GameFontHighlight" text="Menu label">
+							<Anchors>
+								<Anchor point="LEFT" x="-76" y="2"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+					<Layer level="OVERLAY">
+						<Texture parentKey="texture" name="$parentTexture">
+							<Size>
+								<AbsDimension x="128" y="14"/>
+							</Size>
+							<Anchors>
+								<Anchor point="LEFT" relativeKey="$parent.Middle" x="-2" y="1"/>
+								<Anchor point="RIGHT" relativeKey="$parent.Middle" y="1"/>
+							</Anchors>
+						</Texture>
 					</Layer>
 				</Layers>
 			</Frame>
@@ -239,14 +282,14 @@
 				   <OnLeave function="GameTooltip_Hide"/>
 				</Scripts>
 			</Button>
+<!-- 
 			<Frame parentKey="Textures" name="$parentTextures" inherits="NeedToKnowScrollFrameTemplate">
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parentBarFontMenu" relativePoint="BOTTOM" y="-24"/>
+					<Anchor point="TOP" relativeTo="$parentBarTextureMenu" relativePoint="BOTTOM" y="-24"/>
 					<Anchor point="LEFT" x="18"/>
 					<Anchor point="BOTTOM" relativeTo="$parentEditModeButton" relativePoint="TOP" y="20"/>
 				</Anchors>
 			</Frame>
-<!-- 
 			<Frame parentKey="Fonts" name="$parentFonts" inherits="NeedToKnowScrollFrameTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="$parentTextures" relativePoint="TOPRIGHT" x="10"/>
