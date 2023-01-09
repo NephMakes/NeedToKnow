@@ -129,6 +129,20 @@ Localize.enUS = {
 	PLAY_MODE_TOOLTIP = "Lock and activate bars", 
 
 	-- Appearance panel
+	APPEARANCE = "Appearance", 
+	BAR_TEXTURE = "Bar texture", 
+	BORDER_COLOR = "Border color", 
+	BACKGROUND_COLOR = "Background color", 
+	BORDER_SIZE = "Border size", 
+	BAR_SPACING = "Bar spacing", 
+	FONT = "Font", 
+	FONT_OUTLINE = "Font outline", 
+	FONT_OUTLINE_NONE = "None", 
+	FONT_OUTLINE_THIN = "Thin", 
+	FONT_OUTLINE_THICK = "Thick", 
+	FONT_SIZE = "Font size", 
+	FONT_COLOR = "Font color", 
+
 	-- Profile panel
 	-- Slash commands
 }
