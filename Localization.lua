@@ -148,7 +148,7 @@ Localize.enUS = {
 }
 
 Localize.deDE = {
-	-- by sp00n and Fxfighter EU-Echsenkessel
+	-- Credits: sp00n, Fxfighter EU-Echsenkessel
 	BAR_TOOLTIP1 = "NeedToKnow", 
 	BAR_TOOLTIP2 = "Rechtsklick auf einen Balken für Einstellungen. Mehr Optionen sind im Blizzard Interface vorhanden. Zum Festsetzen und Aktivieren /needtoknow oder /ntk eingeben.",
 	RESIZE_TOOLTIP = "Klicken und ziehen, um die Größe zu ändern",
@@ -173,11 +173,12 @@ Localize.deDE = {
 	BAR_GROUP = "Gruppe", 
 	ENABLE_GROUP_TOOLTIP = "Diese Gruppierung aktivieren und anzeigen", 
 	NUMBER_BARS = "Anzahl der Balken", 
+	BAR_TEXTURE = "Balkentextur", 
 }
 setmetatable(Localize.deDE, {__index = Localize.enUS})  -- Take missing strings from enUS
 
 Localize.koKR = {
-	-- by metalchoir
+	-- Credits: metalchoir
 	BAR_TOOLTIP1 = "NeedToKnow",
 	BAR_TOOLTIP2 = "우?�릭: 메뉴 불러오기\n세부옵션? �기본 ?�터페?�스 설정?�서 가능\n/ntk 명령어로 잠근 후? �애드온 사용가능",
 	RESIZE_TOOLTIP = "드래그: ?�기 변경",
@@ -204,11 +205,15 @@ Localize.koKR = {
 	NUMBER_BARS = "바 갯수", 
 	EDIT_MODE = "풀림", 
 	PLAY_MODE = "�잠금", 
+	BAR_TEXTURE = "바 ?�스처", 
+	BACKGROUND_COLOR = "배경 색?", 
+	BORDER_SIZE = "배경 ?�기", 
+	BAR_SPACING = "바 간격", 
  }
 setmetatable(Localize.koKR, {__index = Localize.enUS})  -- Take missing strings from enUS
 
 Localize.ruRU = {
-	-- by Vlakarados
+	-- Credits: Vlakarados
 	BAR_TOOLTIP1 = "NeedToKnow",
 	BAR_TOOLTIP2 = "Клик правой кнопкой мыши по полосе для настройки. Больше настроек в Интерфейс / Модификации / NeedToKnow меню. Ввести /needtoknow или /ntk для блокировки и включения.",
 	RESIZE_TOOLTIP = "Кликнуть и тащить для изменения размера",
@@ -237,11 +242,15 @@ Localize.ruRU = {
 	MAX_BAR_TIME_TOOLTIP = "Указать максимальное время пробега полосы в секундах. Оставить пустым для динамического времени для каждой полойы (полное время = длительность баффа/дебаффа).", 
 	EDIT_MODE = "Разблокировать", 
 	PLAY_MODE = "Заблокировать", 
+	BAR_TEXTURE = "Текcтура полоc", 
+	BACKGROUND_COLOR = "Цвет фона", 
+	BORDER_SIZE = "Уплотнение полоc", 
+	BAR_SPACING = "Промежуток полоc", 
 }
 setmetatable(Localize.ruRU, {__index = Localize.enUS})  -- Take missing strings from enUS
 
 Localize.zhCN = {
-	-- by wowui.cn
+	-- Credits: wowui.cn
 	BAR_TOOLTIP1 = "NeedToKnow",
 	BAR_TOOLTIP2 = "右键点击计时条配置. 更多的选项在暴雪界面选项菜单里. 输入 /needtoknow 来锁定并启用.",
 	RESIZE_TOOLTIP = "点击和拖动来修改计时条尺寸",
@@ -269,11 +278,15 @@ Localize.zhCN = {
 	MAX_BAR_TIME_TOOLTIP = "设置这个分组计时条的最大长度 (按秒数).  留空为每个计时条设置不同的数值.", 
 	EDIT_MODE = "解锁", 
 	PLAY_MODE = "锁定", 
+	BAR_TEXTURE = "计时条材质", 
+	BACKGROUND_COLOR = "背景颜色", 
+	BORDER_SIZE = "计时条间距", 
+	BAR_SPACING = "计时条空距", 
 }
 setmetatable(Localize.zhCN, {__index = Localize.enUS})  -- Take missing strings from enUS
 
 Localize.zhTW = {
-	-- by wowui.cn
+	-- Credits: wowui.cn
 	BAR_TOOLTIP1 = "NeedToKnow",
 	BAR_TOOLTIP2 = "右鍵點擊計時條配置. 更多的選項在暴雪介面選項菜單裏. 輸入 /needtoknow 來鎖定並啟用.",
 	RESIZE_TOOLTIP = "點擊和拖動來修改計時條尺寸",
@@ -301,6 +314,10 @@ Localize.zhTW = {
 	MAX_BAR_TIME_TOOLTIP = "設置這個分組計時條的最大長度 (按秒數).  留空為每個計時條設置不同的數值.", 
 	EDIT_MODE = "解鎖", 
 	PLAY_MODE = "鎖定", 
+	BAR_TEXTURE = "計時條材質", 
+	BACKGROUND_COLOR = "背景顏色", 
+	BORDER_SIZE = "計時條間距", 
+	BAR_SPACING = "計時條空距", 
 }
 setmetatable(Localize.zhTW, {__index = Localize.enUS})  -- Take missing strings from enUS
 
