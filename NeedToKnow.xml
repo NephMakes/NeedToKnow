@@ -29,11 +29,6 @@
                 </Texture>
             </Layer>
             <Layer level="ARTWORK">
-                <Texture parentKey="Icon" name="$parentIcon">
-                    <Anchors>
-                        <Anchor point="RIGHT" relativeTo="$parent" relativePoint="LEFT"/>
-                    </Anchors>
-                </Texture>
                 <Texture parentKey="CastTime" name="$parentCastTime" alphaMode="BLEND">
                     <Anchors>
                         <Anchor point="LEFT"/>
@@ -61,6 +56,23 @@
                 </Texture>
             </Layer>
         </Layers>
+        <Frames>
+			<Frame parentKey="icon" name="$parentIcon">
+				<Anchors>
+					<Anchor point="RIGHT" relativePoint="LEFT"/>
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture parentKey="background" name="$parentBackground">
+							<Color r="1" g="1" b="1" a="1"/>
+						</Texture>
+					</Layer>
+					<Layer level="BORDER">
+						<Texture parentKey="texture" name="$parentTexture"/>
+					</Layer>
+				</Layers>
+			</Frame>
+        </Frames>
     </Frame>
 
 </Ui>

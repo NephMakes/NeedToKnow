@@ -39,7 +39,6 @@ function Bar:OnLoad()
 	-- Want to not need these eventually
     self.bar1 = self.Texture
     self.bar2 = self.Texture2
-	self.icon = self.Icon
 	self.spark = self.Spark
     self.text = self.Text
     self.time = self.Time
@@ -86,11 +85,15 @@ function Bar:SetAppearance()
 		self.FormatTime = self.FormatTimeSingle
 	end
 
-	local icon = self.Icon
+	local icon = self.icon
+	local borderSize = settings.BarPadding
 	if barSettings.show_icon then
 		icon:SetSize(barHeight, barHeight)
 		icon:ClearAllPoints()
 		icon:SetPoint("RIGHT", self, "LEFT", -settings.BarPadding, 0)
+		icon.background:SetPoint("TOPLEFT", icon, "TOPLEFT", -borderSize, borderSize)
+		icon.background:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", borderSize, -borderSize)
+		icon.background:SetVertexColor(unpack(settings.BkgdColor))
 		icon:Show()
 	else
 		icon:Hide()
@@ -108,22 +111,6 @@ function Bar:SetAppearance()
 	self:SetBackground()
 end
 
-function Bar:SetBackgroundSize(showIcon)
-	-- Called by Bar:SetAppearance(), Bar:UpdateAppearance()
-	local background = self.Background
-	local barPadding = NeedToKnow.ProfileSettings.BarPadding
-	barPadding = PixelUtil.GetNearestPixelSize(barPadding, bar:GetEffectiveScale())
-
-	local bgWidth = self:GetWidth() + 2 * barPadding
-	if showIcon then
-		bgWidth = bgWidth + self:GetHeight() + barPadding
-	end
-
-	background:ClearAllPoints()
-	background:SetPoint("RIGHT", barPadding, 0)
-	background:SetWidth(bgWidth)
-end
-
 function Bar:SetBackground()
 	local background = self.Background
 	local profileSettings = NeedToKnow.ProfileSettings
@@ -132,9 +119,6 @@ function Bar:SetBackground()
 	background:ClearAllPoints()
 	background:SetPoint("RIGHT", barPadding, 0)
 	local width, height = self:GetWidth(), self:GetHeight()
-	if self.settings.show_icon then
-		width = width + height + barPadding
-	end
 	background:SetWidth(width + 2 * barPadding)
 	background:SetHeight(height + 2 * barPadding)
 	background:SetVertexColor(unpack(profileSettings.BkgdColor))
@@ -151,14 +135,14 @@ function Bar:UpdateAppearance()
 
 	local barSettings = self.settings
 
-	local icon = self.Icon
+	local icon = self.icon
 	if barSettings.show_icon and self.iconPath then
-		icon:SetTexture(self.iconPath)  -- Icon can change if bar tracks multiple spells
+		-- Icon can change if bar tracks multiple spells
+		icon.texture:SetTexture(self.iconPath)
 		icon:Show()
-		self:SetBackgroundSize(true)
 	else
-		icon:Hide()  -- Blinking bars don't have an icon
-		self:SetBackgroundSize(false)
+		-- Blinking bars don't have an icon
+		icon:Hide()
 	end
 
 	local barColor = barSettings.BarColor  	-- Blinking changes bar color
@@ -241,7 +225,8 @@ function Bar:Unlock()
 
 	self.Spark:Hide()
 	self.Time:Hide()
-	self.Icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+	-- self.Icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+	self.icon.texture:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
 
 	local settings = self.settings
 
