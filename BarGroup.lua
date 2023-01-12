@@ -66,6 +66,21 @@ function BarGroup:Update()
 	self:UpdateBarPosition()
 end
 
+function BarGroup:SetPosition(position, scale)
+	self:ClearAllPoints()
+	self:SetScale(scale)
+	local point, relativePoint, xOfs, yOfs = unpack(position)
+	PixelUtil.SetPoint(self, point, UIParent, relativePoint, xOfs, yOfs)
+end
+
+function BarGroup:SetBarWidth(width)
+	for barID, bar in ipairs(self.bars) do
+		PixelUtil.SetWidth(bar, width)
+		bar:SetBorder()
+		bar.Text:SetWidth(width - 60)
+	end
+end
+
 function BarGroup:UpdateBarPosition()
 	-- Called by BarGroup:Update(), Bar:CheckAura()
 	local bar, previousBar
@@ -92,23 +107,6 @@ function BarGroup:UpdateBarPosition()
 			end
 			previousBar = bar
 		end
-	end
-end
-
-function BarGroup:SetPosition(position, scale)
-	local point, relativePoint, xOfs, yOfs = unpack(position)
-	self:ClearAllPoints()
-	-- self:SetPoint(point, UIParent, relativePoint, xOfs, yOfs)
-	PixelUtil.SetPoint(self, point, UIParent, relativePoint, xOfs, yOfs)
-	self:SetScale(scale)
-end
-
-function BarGroup:SetBarWidth(width)
-	for barID, bar in ipairs(self.bars) do
-		-- bar:SetWidth(width)
-		PixelUtil.SetWidth(bar, width)
-		bar.Text:SetWidth(width - 60)
-		bar:SetBackgroundSize(bar.settings.show_icon)
 	end
 end
 
@@ -187,13 +185,6 @@ function ResizeButton:OnMouseDown()
 	self:SetScript("OnUpdate", ResizeButton.OnUpdate)
 end
 
-function ResizeButton:OnMouseUp()
-	self:SetScript("OnUpdate", nil)
-	local group = self:GetParent()
-	group:SavePosition()
-	group:SaveBarWidth()
-end
-
 function ResizeButton:OnUpdate()
 	local uiScale = UIParent:GetScale()
 	local cursorX, cursorY = GetCursorPosition(UIParent)
@@ -221,6 +212,13 @@ function ResizeButton:OnUpdate()
 
 	group:SetPosition(newPosition, newScale)
 	group:SetBarWidth(newWidth)
+end
+
+function ResizeButton:OnMouseUp()
+	self:SetScript("OnUpdate", nil)
+	local group = self:GetParent()
+	group:SavePosition()
+	group:SaveBarWidth()
 end
 
 

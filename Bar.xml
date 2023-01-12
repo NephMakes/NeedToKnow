@@ -1,0 +1,127 @@
+﻿<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\..\..\Blizza~1\FrameXML\UI.xsd">
+
+	<Frame name="NeedToKnowBorderTemplate" setAllPoints="true" useParentLevel="true" virtual="true">
+		<Layers>
+			<Layer level="BACKGROUND" textureSubLevel="-8">
+				<!-- Left -->
+				<Texture parentKey="left" parentArray="textures">
+					<Size x="1"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativePoint="TOPLEFT" x="0" y="1"/>
+						<Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMLEFT" x="0" y="-1"/>
+					</Anchors>
+					<Color r="1" g="1" b="1" a="1"/>
+				</Texture>
+
+				<!-- Right -->
+				<Texture parentKey="right" parentArray="textures">
+					<Size x="1"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="0" y="1"/>
+						<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="0" y="-1"/>
+					</Anchors>
+					<Color r="1" g="1" b="1" a="1"/>
+				</Texture>
+
+				<!-- Top -->
+				<Texture parentKey="top" parentArray="textures">
+					<Size y="1"/>
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT"/>
+                        <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT"/>
+					</Anchors>
+					<Color r="1" g="1" b="1" a="1"/>
+				</Texture>
+
+				<!-- Bottom -->
+				<Texture parentKey="bottom" parentArray="textures">
+					<Size y="1"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT"/>
+						<Anchor point="TOPRIGHT" relativePoint="BOTTOMRIGHT"/>
+					</Anchors>
+					<Color r="1" g="1" b="1" a="1"/>
+				</Texture>
+			</Layer>
+		</Layers>
+	</Frame>
+
+	<Frame name="NeedToKnow_BarTemplate" toplevel="true" enableMouse="true" virtual="true">
+		<Size x="271" y="18"/>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="background" name="$parentBackground">
+					<Color r="1" g="1" b="1" a="1"/>
+				</Texture>
+			</Layer>
+			<Layer level="BORDER">
+				<Texture parentKey="Texture" name="$parentTexture">
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOM"/>
+					</Anchors>
+				</Texture>
+				<Texture parentKey="Texture2" name="$parentTexture2">
+					<!-- For user-determined max duration -->
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOM"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<Texture parentKey="CastTime" name="$parentCastTime" alphaMode="BLEND">
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMLEFT"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="OVERLAY">
+				<FontString parentKey="Text" name="$parentText" inherits="GameFontHighlight" justifyH="LEFT">
+					<Size x="160" y="16"/>
+					<Anchors>
+						<Anchor point="LEFT" x="10"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="Time" name="$parentTime" inherits="GameFontHighlight" justifyH="RIGHT">
+					<Size x="60" y="16"/>
+					<Anchors>
+						<Anchor point="RIGHT" x="-10"/>
+					</Anchors>
+				</FontString>
+				<Texture parentKey="Spark" name="$parentSpark" file="Interface\CastingBar\UI-CastingBar-Spark" alphaMode="ADD">
+					<Size x="32" y="60"/>
+					<Anchors>
+						<Anchor point="CENTER" relativeTo="$parent" relativePoint="RIGHT"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame parentKey="border" inherits="NeedToKnowBorderTemplate"/>
+			<Frame parentKey="icon" name="$parentIcon">
+				<Anchors>
+					<Anchor point="TOPRIGHT" relativePoint="TOPLEFT"/>
+					<Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMLEFT"/>
+				</Anchors>
+				<Size x="18"/>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture parentKey="background" name="$parentBackground">
+							<Color r="1" g="1" b="1" a="1"/>
+						</Texture>
+					</Layer>
+					<Layer level="BORDER">
+						<Texture parentKey="texture" name="$parentTexture"/>
+					</Layer>
+				</Layers>
+				<Frames>
+					<Frame parentKey="border" inherits="NeedToKnowBorderTemplate"/>
+				</Frames>
+			</Frame>
+		</Frames>
+	</Frame>
+
+</Ui>

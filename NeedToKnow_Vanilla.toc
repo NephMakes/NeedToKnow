@@ -2,7 +2,7 @@
 ## Title: NeedToKnow
 ## Author: NephMakes, lieandswell
 ## X-FormerAuthor: Kitjan
-## Version: 4.4.2
+## Version: 4.4.3
 ## Notes: Simple, effective timer bars
 ## X-Credits: Bilt, Fxfighter EU-Echsenkessel, metalchoir, sp00n, Vlakarados, wowui.cn
 ## X-Category: Buffs, Combat
@@ -20,6 +20,7 @@ NeedToKnow.lua
 ExecutiveFrame.lua
 Profile.lua
 BarGroup.lua
+Bar.xml
 BarObject.lua
 BarText.lua
 BarEngine.lua
@@ -34,5 +35,4 @@ AppearancePanel.lua
 BarMenu.lua
 Dialog.lua
 ImportExport.lua
-NeedToKnow.xml
 NeedToKnow_Options.xml

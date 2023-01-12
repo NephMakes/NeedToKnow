@@ -5,6 +5,9 @@ local addonName, addonTable = ...
 local Bar = NeedToKnow.Bar
 local String = NeedToKnow.String
 
+NeedToKnow.BarBorder = {}
+local BarBorder = NeedToKnow.BarBorder
+
 -- local versions of frequently-used functions
 local GetTime = GetTime
 local GetSpellInfo = GetSpellInfo
@@ -14,9 +17,7 @@ local SecondsToTimeAbbrev = SecondsToTimeAbbrev
 local UPDATE_INTERVAL = 0.025  -- Make this an addon-wide variable?
 
 
--- ---------
--- Bar setup
--- ---------
+--[[ Bar setup ]]--
 
 function Bar:New(group, barID)
 	-- Called by BarGroup:Update()
@@ -43,6 +44,9 @@ function Bar:OnLoad()
     self.text = self.Text
     self.time = self.Time
 	self.vct = self.CastTime
+
+	Mixin(self.border, BarBorder)
+	Mixin(self.icon.border, BarBorder)
 end
 
 function Bar:SetAppearance()
@@ -51,10 +55,12 @@ function Bar:SetAppearance()
 
 	local settings = NeedToKnow.ProfileSettings
 	local barSettings = self.settings
-	local barHeight = self:GetHeight()
 
 	self.Texture:SetTexture(NeedToKnow.LSM:Fetch("statusbar", settings.BarTexture))
 	self.Texture2:SetTexture(NeedToKnow.LSM:Fetch("statusbar", settings.BarTexture))
+	self:SetBorder()
+	self.background:SetVertexColor(unpack(settings.BkgdColor))
+	self.border:SetVertexColor(unpack(settings.BkgdColor))
 
 	local fontPath = NeedToKnow.LSM:Fetch("font", settings.BarFont)
 	if fontPath then
@@ -73,61 +79,77 @@ function Bar:SetAppearance()
 
 	local time = self.Time
 	if barSettings.show_time then
+		if barSettings.TimeFormat == "Fmt_TwoUnits" then
+			self.FormatTime = self.FormatTimeTwoUnits
+		elseif barSettings.TimeFormat == "Fmt_Float" then
+			self.FormatTime = self.FormatTimeDecimal
+		else
+			self.FormatTime = self.FormatTimeSingle
+		end
 		time:Show()
 	else
 		time:Hide()
 	end
-	if barSettings.TimeFormat == "Fmt_TwoUnits" then
-		self.FormatTime = self.FormatTimeTwoUnits
-	elseif barSettings.TimeFormat == "Fmt_Float" then
-		self.FormatTime = self.FormatTimeDecimal
-	else
-		self.FormatTime = self.FormatTimeSingle
-	end
 
 	local icon = self.icon
-	local borderSize = settings.BarPadding
 	if barSettings.show_icon then
-		icon:SetSize(barHeight, barHeight)
-		icon:ClearAllPoints()
-		icon:SetPoint("RIGHT", self, "LEFT", -settings.BarPadding, 0)
-		icon.background:SetPoint("TOPLEFT", icon, "TOPLEFT", -borderSize, borderSize)
-		icon.background:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", borderSize, -borderSize)
+		icon.border:SetVertexColor(unpack(settings.BkgdColor))
 		icon.background:SetVertexColor(unpack(settings.BkgdColor))
 		icon:Show()
 	else
 		icon:Hide()
 	end
 
-	local castTime = self.CastTime
 	if barSettings.vct_enabled then
 		local castColor = barSettings.vct_color
-		castTime:SetColorTexture(castColor.r, castColor.g, castColor.b, castColor.a)
-		castTime:SetHeight(barHeight)
+		self.CastTime:SetColorTexture(castColor.r, castColor.g, castColor.b, castColor.a)
 	else
-		castTime:Hide()
+		self.CastTime:Hide()
 	end
-
-	self:SetBackground()
 end
 
-function Bar:SetBackground()
-	local background = self.Background
-	local profileSettings = NeedToKnow.ProfileSettings
-	local barPadding = profileSettings.BarPadding
-	barPadding = PixelUtil.GetNearestPixelSize(barPadding, self:GetEffectiveScale())
-	background:ClearAllPoints()
-	background:SetPoint("RIGHT", barPadding, 0)
-	local width, height = self:GetWidth(), self:GetHeight()
-	background:SetWidth(width + 2 * barPadding)
-	background:SetHeight(height + 2 * barPadding)
-	background:SetVertexColor(unpack(profileSettings.BkgdColor))
+function Bar:SetBorder()
+	-- Called by Bar:SetAppearance(), BarGroup:SetBarWidth()
+	local borderSize = NeedToKnow.ProfileSettings.BarPadding
+	self.border:SetBorderSize(borderSize)
+	local icon = self.icon
+	PixelUtil.SetPoint(icon, "TOPRIGHT", self, "TOPLEFT", -borderSize, 0)
+	PixelUtil.SetPoint(icon, "BOTTOMRIGHT", self, "BOTTOMLEFT", -borderSize, 0)
+	PixelUtil.SetWidth(icon, self:GetHeight())
+	icon.border:SetBorderSize(borderSize)
+	icon.border.right:Hide()  -- For uniform border if alpha < 1
 end
 
 
--- ------------
--- Bar behavior
--- ------------
+--[[ Bar border ]]--
+
+function BarBorder:SetVertexColor(r, g, b, a)
+	for _, texture in ipairs(self.textures) do
+		texture:SetVertexColor(r, g, b, a)
+	end
+end
+
+function BarBorder:SetBorderSize(borderSize)
+	-- Set border size, clamped to whole pixels
+	PixelUtil.SetPoint(self.left, "TOPRIGHT", self, "TOPLEFT", 0, borderSize)
+	PixelUtil.SetPoint(self.left, "BOTTOMRIGHT", self, "BOTTOMLEFT", 0, -borderSize)
+	PixelUtil.SetWidth(self.left, borderSize)
+
+	PixelUtil.SetPoint(self.right, "TOPLEFT", self, "TOPRIGHT", 0, borderSize)
+	PixelUtil.SetPoint(self.right, "BOTTOMLEFT", self, "BOTTOMRIGHT", 0, -borderSize)
+	PixelUtil.SetWidth(self.right, borderSize)
+
+	PixelUtil.SetPoint(self.top, "BOTTOMLEFT", self, "TOPLEFT", 0, 0)
+	PixelUtil.SetPoint(self.top, "BOTTOMRIGHT", self, "TOPRIGHT", 0, 0)
+	PixelUtil.SetHeight(self.top, borderSize)
+
+	PixelUtil.SetPoint(self.bottom, "TOPLEFT", self, "BOTTOMLEFT", 0, 0)
+	PixelUtil.SetPoint(self.bottom, "TOPRIGHT", self, "BOTTOMRIGHT", 0, 0)
+	PixelUtil.SetHeight(self.bottom, borderSize)
+end
+
+
+--[[ Bar behavior ]]--
 
 function Bar:UpdateAppearance()
 	-- For bar elements that can change in combat
@@ -212,9 +234,7 @@ function Bar:SetValue(barTexture, value, value0)
 end
 
 
--- ----------
--- Bar config
--- ----------
+--[[ Bar config ]]--
 
 function Bar:Unlock()
 	-- Make bar configurable by player
@@ -291,9 +311,7 @@ function Bar:OnMouseUp(button)
 end
 
 
--- ---------
--- Cast time
--- ---------
+--[[ Cast time ]]--
 
 -- Note: Kitjan's VCT = "Visual Cast Time"
 
