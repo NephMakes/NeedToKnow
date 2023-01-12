@@ -58,9 +58,9 @@ function Bar:SetAppearance()
 
 	self.Texture:SetTexture(NeedToKnow.LSM:Fetch("statusbar", settings.BarTexture))
 	self.Texture2:SetTexture(NeedToKnow.LSM:Fetch("statusbar", settings.BarTexture))
-	self:SetBorder()
 	self.background:SetVertexColor(unpack(settings.BkgdColor))
 	self.border:SetVertexColor(unpack(settings.BkgdColor))
+	self:SetBorder()
 
 	local fontPath = NeedToKnow.LSM:Fetch("font", settings.BarFont)
 	if fontPath then
@@ -75,7 +75,7 @@ function Bar:SetAppearance()
 		self.Text:SetFont(fontPath, settings.FontSize, outline)
 		self.Time:SetFont(fontPath, settings.FontSize, outline)
 	end
-	self.Text:SetWidth(self:GetWidth() - 60)
+	-- self.Text:SetWidth(self:GetWidth() - 60)
 
 	local time = self.Time
 	if barSettings.show_time then

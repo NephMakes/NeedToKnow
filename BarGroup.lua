@@ -67,24 +67,23 @@ function BarGroup:Update()
 end
 
 function BarGroup:SetPosition(position, scale)
+	self:SetScale(scale)  -- Set scale before PixelUtil calls
 	self:ClearAllPoints()
-	self:SetScale(scale)
 	local point, relativePoint, xOfs, yOfs = unpack(position)
 	PixelUtil.SetPoint(self, point, UIParent, relativePoint, xOfs, yOfs)
 end
 
 function BarGroup:SetBarWidth(width)
-	for barID, bar in ipairs(self.bars) do
+	for _, bar in pairs(self.bars) do
 		PixelUtil.SetWidth(bar, width)
-		bar:SetBorder()
 		bar.Text:SetWidth(width - 60)
+		bar:SetBorder()
 	end
 end
 
 function BarGroup:UpdateBarPosition()
 	-- Called by BarGroup:Update(), Bar:CheckAura()
 	local bar, previousBar
-	-- local barSpacing = NeedToKnow.ProfileSettings.BarSpacing
 	local barSpacing = PixelUtil.GetNearestPixelSize(
 		NeedToKnow.ProfileSettings.BarSpacing, self:GetEffectiveScale()
 	)
@@ -187,28 +186,25 @@ end
 
 function ResizeButton:OnUpdate()
 	local uiScale = UIParent:GetScale()
-	local cursorX, cursorY = GetCursorPosition(UIParent)
 	local group = self:GetParent()
+	local oldScale = group.oldScale
+	local cursorX, cursorY = GetCursorPosition(UIParent)
 
-	-- Find new scale
-	local newYScale = group.oldScale * (cursorY/uiScale - group.oldY*group.oldScale) / (self.oldCursorY/uiScale - group.oldY*group.oldScale)
-	local newScale = max(0.25, newYScale)
-
-	-- Clamp scale so bars are integer pixels tall
+	-- Find new scale, clamped so bars are whole pixels tall
+	local newScale = oldScale * (cursorY/uiScale - group.oldY*oldScale) / (self.oldCursorY/uiScale - group.oldY*oldScale)
 	local barHeight = group.bars[1]:GetHeight()
-	local newHeight = newScale * barHeight
-	newHeight = math.floor(newHeight + 0.0002) -- small addition so won't shrink on click
-	newScale = newHeight / barHeight  
+	local newHeight = PixelUtil.GetNearestPixelSize(barHeight * newScale, newScale)
+	newScale = newHeight / barHeight
+	newScale = max(0.3, newScale)
 
 	-- Find new frame coords to keep same on-screen position
-	local newX = group.oldX * group.oldScale / newScale
-	local newY = group.oldY * group.oldScale / newScale
+	local newX = group.oldX * oldScale / newScale
+	local newY = group.oldY * oldScale / newScale
 	local newPosition = {"TOPLEFT", "BOTTOMLEFT", newX, newY}
 
 	-- Find new bar width
-	local newWidth = ((cursorX - self.oldCursorX)/uiScale + self.oldWidth*group.oldScale)/newScale
-	-- Clamp width so bars are integer pixels wide
-	newWidth = math.floor(max(50, newWidth) + 0.0002 ) -- small addition so won't shrink on click
+	local newWidth = ((cursorX - self.oldCursorX)/uiScale + self.oldWidth*oldScale) / newScale
+	newWidth = max(50, newWidth)
 
 	group:SetPosition(newPosition, newScale)
 	group:SetBarWidth(newWidth)
