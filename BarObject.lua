@@ -60,6 +60,7 @@ function Bar:SetAppearance()
 	self.Texture2:SetTexture(NeedToKnow.LSM:Fetch("statusbar", settings.BarTexture))
 	self.background:SetVertexColor(unpack(settings.BkgdColor))
 	self.border:SetVertexColor(unpack(settings.BkgdColor))
+	self.border:SetVertexColor(unpack(settings.BorderColor))
 	self:SetBorder()
 
 	local fontPath = NeedToKnow.LSM:Fetch("font", settings.BarFont)
@@ -74,8 +75,9 @@ function Bar:SetAppearance()
 		end
 		self.Text:SetFont(fontPath, settings.FontSize, outline)
 		self.Time:SetFont(fontPath, settings.FontSize, outline)
+		self.Text:SetTextColor(unpack(settings.FontColor))
+		self.Time:SetTextColor(unpack(settings.FontColor))
 	end
-	-- self.Text:SetWidth(self:GetWidth() - 60)
 
 	local time = self.Time
 	if barSettings.show_time then
@@ -159,23 +161,16 @@ function Bar:UpdateAppearance()
 
 	local icon = self.icon
 	if barSettings.show_icon and self.iconPath then
-		-- Icon can change if bar tracks multiple spells
-		icon.texture:SetTexture(self.iconPath)
+		icon.texture:SetTexture(self.iconPath)  -- Icon changes if bar tracks multiple spells
 		icon:Show()
 	else
-		-- Blinking bars don't have an icon
 		icon:Hide()
 	end
 
-	local barColor = barSettings.BarColor  	-- Blinking changes bar color
-	self.Texture:SetVertexColor(barColor.r, barColor.g, barColor.b)
-	self.Texture:SetAlpha(barColor.a)
-	self.Texture2:SetVertexColor(barColor.r, barColor.g, barColor.b)
-	self.Texture2:SetAlpha(barColor.a)
-		-- Texture2 getting shown for indefinite auras
+	local color = barSettings.BarColor  -- Blink changes bar color
+	self.Texture:SetVertexColor(color.r, color.g, color.b, color.a)
+	self.Texture2:SetVertexColor(color.r, color.g, color.b, color.a) -- Shown for indefinite auras. Bug?
 	if self.max_expirationTime and self.max_expirationTime ~= self.expirationTime then 
-		-- self.Texture2:SetVertexColor(barColor.r, barColor.g, barColor.b)
-		-- self.Texture2:SetAlpha(barColor.a)
 		self.Texture2:Show()
 	else
 		self.Texture2:Hide()
@@ -198,7 +193,7 @@ function Bar:UpdateAppearance()
 
 		self.Time:Show()
     else
-		-- Aura with indefinite duration
+		-- Aura has indefinite duration
 		self.max_value = 1
 		self:SetValue(self.Texture, 1)
 		self:SetValue(self.Texture2, 1)
@@ -242,11 +237,8 @@ function Bar:Unlock()
 
 	self:Show()
 	self:EnableMouse(true)
-
-	self.Spark:Hide()
 	self.Time:Hide()
-	-- self.Icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
-	self.icon.texture:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+	self.Spark:Hide()
 
 	local settings = self.settings
 
@@ -256,9 +248,8 @@ function Bar:Unlock()
 		self:SetAlpha(0.4)
 	end
 
-	local barColor = settings.BarColor
-	self.Texture:SetVertexColor(barColor.r, barColor.g, barColor.b)
-	self.Texture:SetAlpha(barColor.a)
+	local color = settings.BarColor
+	self.Texture:SetVertexColor(color.r, color.g, color.b, color.a)
 	self.Texture2:Hide()
 
 	self:SetUnlockedText(settings)

@@ -2,7 +2,7 @@
 ## Title: NeedToKnow
 ## Author: NephMakes, lieandswell
 ## X-FormerAuthor: Kitjan
-## Version: 4.4.3
+## Version: 4.5.0
 ## Notes: Simple, effective timer bars
 ## X-Credits: Bilt, Fxfighter EU-Echsenkessel, metalchoir, sp00n, Vlakarados, wowui.cn
 ## X-Category: Buffs, Combat

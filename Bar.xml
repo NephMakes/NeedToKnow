@@ -114,7 +114,7 @@
 						</Texture>
 					</Layer>
 					<Layer level="BORDER">
-						<Texture parentKey="texture" name="$parentTexture"/>
+						<Texture parentKey="texture" name="$parentTexture" file="Interface\Icons\INV_Misc_QuestionMark"/>
 					</Layer>
 				</Layers>
 				<Frames>

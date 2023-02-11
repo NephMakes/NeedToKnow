@@ -59,6 +59,7 @@ function AppearancePanel:SetText()
 	self.title:SetText(addonName.." v"..NeedToKnow.version)
 	self.subText:SetText(String.OPTIONS_PANEL_SUBTEXT)
 
+	self.barAppearanceTitle:SetText(String.BAR_APPEARANCE)
 	self.backgroundColorButton.label:SetText(String.BACKGROUND_COLOR)
 	self.barSpacingSlider.label:SetText(String.BAR_SPACING)
 	self.barPaddingSlider.label:SetText(String.BORDER_SIZE)

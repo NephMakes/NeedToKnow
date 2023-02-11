@@ -37,8 +37,7 @@ function Bar:Blink(barSettings)
 		self.Texture2:Hide()
 		self.Spark:Hide()
 		self.Time:Hide()
-		self.Icon:Hide()
-		self:SetBackgroundSize(false)  -- Update background for no icon
+		self.icon:Hide()
 		self.CastTime:Hide()
 
 		-- Bar text
@@ -55,7 +54,7 @@ end
 
 function Bar:UpdateBlink(elapsed)
 	-- Called by Bar:OnUpdate()
-	self.blinkPhase = self.blinkPhase + elapsed/0.75  -- elapsed/CYCLE_DURATION
+	self.blinkPhase = self.blinkPhase + elapsed/0.7  -- elapsed/CYCLE_DURATION
 	if self.blinkPhase >= 1 then
 		self.blinkPhase = self.blinkPhase%1  -- Keep decimal remainder
 	end

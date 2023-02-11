@@ -33,6 +33,7 @@ function OptionsPanel:SetPanelText()
 	self.title:SetText(addonName.." v"..NeedToKnow.version)
 	self.subText1:SetText(String.OPTIONS_PANEL_SUBTEXT)
 
+	self.barGroupsTitle:SetText(String.BAR_GROUPS)
 	self.numberBarsLabel:SetText(String.NUMBER_BARS)
 	self.directionLabel:SetText(String.GROUP_DIRECTION)
 	self.condenseGroupLabel:SetText(String.CONDENSE_GROUP)

@@ -183,14 +183,18 @@
 						<Anchor point="RIGHT" x="-24" y="0"/>
 					</Anchors>
 				</FontString>
+				<FontString parentKey="barAppearanceTitle" name="$parentBarAppearanceTitle" inherits="GameFontNormal" text="Bar appearance">
+					<Anchors>
+						<Anchor point="LEFT" relativeTo="$parentSubText" relativePoint="BOTTOMLEFT" x="0" y="-18"/>
+					</Anchors>
+				</FontString>
 			</Layer>
 		</Layers>
 		<Frames>
 			<Frame parentKey="barTextureMenu" name="$parentBarTextureMenu" inherits="UIDropDownMenuTemplate" enableMouse="true">
 				<Anchors>
-					<!-- <Anchor point="TOPRIGHT" relativeTo="$parentBarFontMenu" relativePoint="BOTTOMRIGHT" x="0" y="-2"/> -->
-					<Anchor point="TOP" relativeTo="$parentSubText" relativePoint="BOTTOM" y="-16"/>
-					<Anchor point="LEFT" x="94"/>
+					<Anchor point="TOP" relativeTo="$parentBarAppearanceTitle" relativePoint="BOTTOM" y="-14"/>
+					<Anchor point="LEFT" x="92"/>
 				</Anchors>
 				<Layers>
 					<Layer level="ARTWORK">
@@ -216,26 +220,27 @@
 			<Button parentKey="backgroundColorButton" name="$parentBackgroundColorButton" inherits="NeedToKnowColorButtonTemplate">
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parentBarTextureMenu" relativePoint="BOTTOM" y="-8"/>
-					<Anchor point="RIGHT" relativePoint="LEFT" x="298"/>
+					<Anchor point="RIGHT" relativePoint="LEFT" x="296"/>
 				</Anchors>
 			</Button>
 			<Slider parentKey="barPaddingSlider" name="$parentBarPaddingSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parentBackgroundColorButton" relativePoint="BOTTOM" y="-18"/>
-					<Anchor point="LEFT" x="114"/>
+					<Anchor point="LEFT" x="112"/>
 				</Anchors>
 			</Slider>
 			<Slider parentKey="barSpacingSlider" name="$parentBarSpacingSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parentBarPaddingSlider" relativePoint="BOTTOM" y="-18"/>
-					<Anchor point="LEFT" x="114"/>
+					<Anchor point="LEFT" x="112"/>
 				</Anchors>
 			</Slider>
 			<Frame parentKey="barFontMenu" name="$parentBarFontMenu" inherits="UIDropDownMenuTemplate" enableMouse="true">
 				<Anchors>
-					<!-- <Anchor point="TOPRIGHT" relativeTo="$parentFontOutlineMenu" relativePoint="BOTTOMRIGHT" x="0" y="-2"/> -->
-					<Anchor point="TOP" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOM" y="-12"/>
-					<Anchor point="LEFT" x="95"/>
+					<!-- <Anchor point="TOP" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOM" y="-12"/> -->
+					<!-- <Anchor point="LEFT" x="95"/> -->
+					<Anchor point="TOP" relativeTo="$parentBarAppearanceTitle" relativePoint="BOTTOM" y="-12"/>
+					<Anchor point="LEFT" x="400"/>
 				</Anchors>
 				<Layers>
 					<Layer level="ARTWORK">
@@ -250,7 +255,8 @@
 			<Frame parentKey="fontOutlineMenu" name="$parentFontOutlineMenu" inherits="UIDropDownMenuTemplate" enableMouse="true">
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parentBarFontMenu" relativePoint="BOTTOM" y="-4"/>
-					<Anchor point="LEFT" x="172"/>
+					<!-- <Anchor point="LEFT" x="172"/> -->
+					<Anchor point="LEFT" x="477"/>
 				</Anchors>
 				<Layers>
 					<Layer level="ARTWORK">
@@ -265,7 +271,8 @@
 			<Slider parentKey="fontSizeSlider" name="$parentFontSizeSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parentFontOutlineMenu" relativePoint="BOTTOM" y="-10"/>
-					<Anchor point="LEFT" x="114"/>
+					<!-- <Anchor point="LEFT" x="114"/> -->
+					<Anchor point="LEFT" x="419"/>
 				</Anchors>
 			</Slider>
 			<Button parentkey="editModeButton" name="$parentEditModeButton" inherits="UIPanelButtonTemplate">

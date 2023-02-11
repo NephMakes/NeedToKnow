@@ -127,25 +127,31 @@
 						<Anchor point="RIGHT" x="-24"/>
 					</Anchors>
 				</FontString>
-				<FontString parentKey="numberBarsLabel" name="$parentNumberbarsLabel" inherits="GameFontNormalSmall">
-					<Size x="55"/>
+				<FontString parentKey="barGroupsTitle" name="$parentBarGroupsTitle" inherits="GameFontNormal" text="Bar groups">
 					<Anchors>
-						<Anchor point="BOTTOM" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="150" y="-28"/>
+						<Anchor point="LEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="0" y="-18"/>
 					</Anchors>
 				</FontString>
-				<FontString parentKey="directionLabel" name="$parentDirectionLabel" inherits="GameFontNormalSmall">
+				<FontString parentKey="numberBarsLabel" name="$parentNumberbarsLabel" inherits="GameFontHighlightSmall">
+					<Size x="55"/>
+					<Anchors>
+						<!-- <Anchor point="BOTTOM" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="150" y="-28"/> -->
+						<Anchor point="BOTTOM" relativeTo="$parentBarGroupsTitle" relativePoint="BOTTOMLEFT" x="158" y="-10"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="directionLabel" name="$parentDirectionLabel" inherits="GameFontHighlightSmall">
 					<Size x="55"/>
 					<Anchors>
 						<Anchor point="BOTTOM" relativeTo="$parentNumberbarsLabel" x="70"/>
 					</Anchors>
 				</FontString>
-				<FontString parentKey="condenseGroupLabel" name="$parentCondenseGroupLabel" inherits="GameFontNormalSmall">
+				<FontString parentKey="condenseGroupLabel" name="$parentCondenseGroupLabel" inherits="GameFontHighlightSmall">
 					<Size x="55"/>
 					<Anchors>
 						<Anchor point="BOTTOM" relativeTo="$parentDirectionLabel" x="66"/>
 					</Anchors>
 				</FontString>
-				<FontString parentKey="fixedDurationLabel" name="$parentFixedDurationLabel" inherits="GameFontNormalSmall">
+				<FontString parentKey="fixedDurationLabel" name="$parentFixedDurationLabel" inherits="GameFontHighlightSmall">
 					<Size x="55"/>
                     <Anchors>
 						<Anchor point="BOTTOM" relativeTo="$parentCondenseGroupLabel" x="66"/>
@@ -156,7 +162,10 @@
 		<Frames>
 			<Frame parentKey="group1" name="$parentGroup1" inherits="NeedToKnow_GroupOptionsTemplate" id="1">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="0" y="-40"/>
+					<!-- <Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="0" y="-40"/> -->
+					<!-- <Anchor point="LEFT" x="16"/> -->
+					<Anchor point="TOP" relativeTo="$parentBarGroupsTitle" relativePoint="BOTTOM" y="-16"/>
+					<Anchor point="LEFT" x="24"/>
 				</Anchors>
 			</Frame>
 			<Frame parentKey="group2" name="$parentGroup2" inherits="NeedToKnow_GroupOptionsTemplate" id="2">

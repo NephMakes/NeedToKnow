@@ -112,6 +112,7 @@ Localize.enUS = {
 
 	-- Options panel
 	OPTIONS_PANEL_SUBTEXT = "These options let you modify NeedToKnow timer bars", 
+	BAR_GROUPS = "Bar groups", 
 	BAR_GROUP = "Bar group", 
 	GROUP = "Group", 
 	ENABLE_GROUP_TOOLTIP = "Show and enable this bar group", 
@@ -130,6 +131,7 @@ Localize.enUS = {
 
 	-- Appearance panel
 	APPEARANCE = "Appearance", 
+	BAR_APPEARANCE = "Bar appearance", 
 	BAR_TEXTURE = "Bar texture", 
 	BORDER_COLOR = "Border color", 
 	BACKGROUND_COLOR = "Background color", 
