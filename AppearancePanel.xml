@@ -73,7 +73,7 @@
             <Layer level="ARTWORK">
                 <FontString parentKey="label" name="$parentLabel" inherits="GameFontHighlight" justifyH="LEFT" justifyV="TOP" text="Button label">
                     <Anchors>
-                        <Anchor point="LEFT" x="-264"/> -->
+                        <Anchor point="LEFT" x="-264"/>
                     </Anchors>
                 </FontString>
             </Layer>
@@ -185,7 +185,7 @@
 				</FontString>
 				<FontString parentKey="barAppearanceTitle" name="$parentBarAppearanceTitle" inherits="GameFontNormal" text="Bar appearance">
 					<Anchors>
-						<Anchor point="LEFT" relativeTo="$parentSubText" relativePoint="BOTTOMLEFT" x="0" y="-18"/>
+						<Anchor point="LEFT" relativeTo="$parentSubText" relativePoint="BOTTOMLEFT" x="0" y="-22"/>
 					</Anchors>
 				</FontString>
 			</Layer>
@@ -217,15 +217,22 @@
 					</Layer>
 				</Layers>
 			</Frame>
-			<Button parentKey="backgroundColorButton" name="$parentBackgroundColorButton" inherits="NeedToKnowColorButtonTemplate">
+			<Button parentKey="backgroundColorButton" name="$parentBackgroundColorButton" inherits="NeedToKnowColorButtonTemplate" parentArray="colorButtons">
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parentBarTextureMenu" relativePoint="BOTTOM" y="-8"/>
 					<Anchor point="RIGHT" relativePoint="LEFT" x="296"/>
 				</Anchors>
 			</Button>
-			<Slider parentKey="barPaddingSlider" name="$parentBarPaddingSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
+			<Button parentKey="borderColorButton" name="$parentBorderColorButton" inherits="NeedToKnowColorButtonTemplate" parentArray="colorButtons">
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parentBackgroundColorButton" relativePoint="BOTTOM" y="-18"/>
+					<Anchor point="RIGHT" relativePoint="LEFT" x="296"/>
+				</Anchors>
+			</Button>
+			<Slider parentKey="barPaddingSlider" name="$parentBarPaddingSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
+				<Anchors>
+					<!-- <Anchor point="TOP" relativeTo="$parentBackgroundColorButton" relativePoint="BOTTOM" y="-18"/> -->
+					<Anchor point="TOP" relativeTo="$parentBorderColorButton" relativePoint="BOTTOM" y="-18"/>
 					<Anchor point="LEFT" x="112"/>
 				</Anchors>
 			</Slider>
@@ -268,10 +275,18 @@
 					</Layer>
 				</Layers>
 			</Frame>
+			<Button parentKey="fontColorButton" name="$parentFontColorButton" inherits="NeedToKnowColorButtonTemplate" parentArray="colorButtons">
+				<Anchors>
+					<Anchor point="TOP" relativeTo="$parentFontOutlineMenu" relativePoint="BOTTOM" y="-8"/>
+					<!-- <Anchor point="RIGHT" relativePoint="LEFT" x="296"/>-->
+					<Anchor point="RIGHT" relativePoint="LEFT" x="603"/>
+				</Anchors>
+			</Button>
 			<Slider parentKey="fontSizeSlider" name="$parentFontSizeSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parentFontOutlineMenu" relativePoint="BOTTOM" y="-10"/>
+					<!-- <Anchor point="TOP" relativeTo="$parentFontOutlineMenu" relativePoint="BOTTOM" y="-10"/> -->
 					<!-- <Anchor point="LEFT" x="114"/> -->
+					<Anchor point="TOP" relativeTo="$parentFontColorButton" relativePoint="BOTTOM" y="-18"/>
 					<Anchor point="LEFT" x="419"/>
 				</Anchors>
 			</Slider>

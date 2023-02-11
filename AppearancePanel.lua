@@ -27,23 +27,26 @@ end
 function AppearancePanel:SetScripts()
 	self:SetScript("OnShow", self.Update)
 
+	-- Drop down menus
 	self:OnLoadBarTextureMenu()
 	self:OnLoadBarFontMenu()
 
+	-- Color buttons
 	self.backgroundColorButton.variable = "BkgdColor"
-	self.backgroundColorButton:SetScript("OnClick", self.ChooseColor)
-	self.backgroundColorButton:RegisterForClicks("LeftButtonUp")
+	self.borderColorButton.variable = "BorderColor"
+	self.fontColorButton.variable = "FontColor"
+	for _, button in pairs(self.colorButtons) do
+		button:SetScript("OnClick", self.ChooseColor)
+		button:RegisterForClicks("LeftButtonUp")
+	end
 
+	-- Sliders
 	self.barPaddingSlider.variable = "BarPadding"
 	self.barPaddingSlider:SetMinMaxValues(0, 12)
-	-- self.barPaddingSlider:SetValueStep(0.5)
 	self.barSpacingSlider.variable = "BarSpacing"
 	self.barSpacingSlider:SetMinMaxValues(0, 24)
-	-- self.barSpacingSlider:SetValueStep(0.5)
 	self.fontSizeSlider.variable = "FontSize"
 	self.fontSizeSlider:SetMinMaxValues(5, 20)
-	-- self.fontSizeSlider:SetValueStep(0.5)
-
 	for _, slider in pairs(self.sliders) do
 		slider:SetValueStep(0.5)
 		OptionSlider.OnLoad(slider)
@@ -60,7 +63,11 @@ function AppearancePanel:SetText()
 	self.subText:SetText(String.OPTIONS_PANEL_SUBTEXT)
 
 	self.barAppearanceTitle:SetText(String.BAR_APPEARANCE)
+
 	self.backgroundColorButton.label:SetText(String.BACKGROUND_COLOR)
+	self.borderColorButton.label:SetText(String.BORDER_COLOR)
+	self.fontColorButton.label:SetText(String.FONT_COLOR)
+
 	self.barSpacingSlider.label:SetText(String.BAR_SPACING)
 	self.barPaddingSlider.label:SetText(String.BORDER_SIZE)
 	self.fontSizeSlider.label:SetText(String.FONT_SIZE)
@@ -76,14 +83,18 @@ end
 
 function AppearancePanel:Update()
 	if not self:IsVisible() then return end
+	local settings = NeedToKnow.ProfileSettings
 
 	self:UpdateBarTextureMenu()
 	self:UpdateBarFontMenu()
 	self:UpdateFontOutlineMenu()
 
 	-- local settings = NeedToKnow.ProfileSettings
-	local r, g, b = unpack(NeedToKnow.ProfileSettings.BkgdColor)
-	self.backgroundColorButton.normalTexture:SetVertexColor(r, g, b, 1)
+	-- local r, g, b = unpack(NeedToKnow.ProfileSettings.BkgdColor)
+	-- self.backgroundColorButton.normalTexture:SetVertexColor(r, g, b, 1)
+	self.backgroundColorButton.normalTexture:SetVertexColor(unpack(settings.BkgdColor))
+	self.borderColorButton.normalTexture:SetVertexColor(unpack(settings.BorderColor))
+	self.fontColorButton.normalTexture:SetVertexColor(unpack(settings.FontColor))
 
 	for _, slider in pairs(self.sliders) do
 		slider:Update()
@@ -287,7 +298,7 @@ end
 function AppearancePanel.CancelColor(previousValues)
 	if previousValues then
 		local variable = ColorPickerFrame.extraInfo
-		NeedToKnow.ProfileSettings[variable] = {previousValues.r, previousValues.g, previousValues.b, previousValues.opacity}
+		NeedToKnow.ProfileSettings[variable] = {previousValues.r, previousValues.g, previousValues.b, 1 - previousValues.opacity}
 		NeedToKnow:Update()
 		AppearancePanel:Update()
 	end

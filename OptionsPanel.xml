@@ -129,7 +129,7 @@
 				</FontString>
 				<FontString parentKey="barGroupsTitle" name="$parentBarGroupsTitle" inherits="GameFontNormal" text="Bar groups">
 					<Anchors>
-						<Anchor point="LEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="0" y="-18"/>
+						<Anchor point="LEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" x="0" y="-22"/>
 					</Anchors>
 				</FontString>
 				<FontString parentKey="numberBarsLabel" name="$parentNumberbarsLabel" inherits="GameFontHighlightSmall">
