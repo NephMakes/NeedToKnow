@@ -5,7 +5,7 @@ local Cooldown = NeedToKnow.Cooldown
 
 -- Local versions of global functions
 local GetSpellCooldown = GetSpellCooldown
-local GetItemCooldown = GetItemCooldown
+local GetItemCooldown = GetItemCooldown or C_Container.GetItemCooldown  -- Classic or Retail/WotLK
 local GetSpellCharges = GetSpellCharges
 
 
