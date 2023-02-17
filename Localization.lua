@@ -146,7 +146,10 @@ Localize.enUS = {
 	FONT_COLOR = "Font color", 
 
 	-- Profile panel
+
 	-- Slash commands
+	SLASH_RESET = "reset", 
+	SLASH_PROFILE = "profile", 
 }
 
 Localize.deDE = {
@@ -211,6 +214,7 @@ Localize.koKR = {
 	BACKGROUND_COLOR = "배경 색?", 
 	BORDER_SIZE = "배경 ?�기", 
 	BAR_SPACING = "바 간격", 
+	SLASH_RESET = "초기화", 
  }
 setmetatable(Localize.koKR, {__index = Localize.enUS})  -- Take missing strings from enUS
 
@@ -248,6 +252,7 @@ Localize.ruRU = {
 	BACKGROUND_COLOR = "Цвет фона", 
 	BORDER_SIZE = "Уплотнение полоc", 
 	BAR_SPACING = "Промежуток полоc", 
+	SLASH_RESET = "Сброс", 
 }
 setmetatable(Localize.ruRU, {__index = Localize.enUS})  -- Take missing strings from enUS
 
@@ -283,7 +288,8 @@ Localize.zhCN = {
 	BAR_TEXTURE = "计时条材质", 
 	BACKGROUND_COLOR = "背景颜色", 
 	BORDER_SIZE = "计时条间距", 
-	BAR_SPACING = "计时条空距", 
+	BAR_SPACING = "计时条空距",
+	SLASH_RESET = "重置", 
 }
 setmetatable(Localize.zhCN, {__index = Localize.enUS})  -- Take missing strings from enUS
 
@@ -319,7 +325,8 @@ Localize.zhTW = {
 	BAR_TEXTURE = "計時條材質", 
 	BACKGROUND_COLOR = "背景顏色", 
 	BORDER_SIZE = "計時條間距", 
-	BAR_SPACING = "計時條空距", 
+	BAR_SPACING = "計時條空距",
+	SLASH_RESET = "重置", 
 }
 setmetatable(Localize.zhTW, {__index = Localize.enUS})  -- Take missing strings from enUS
 

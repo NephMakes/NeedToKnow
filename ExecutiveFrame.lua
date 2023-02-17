@@ -41,9 +41,7 @@ function ExecutiveFrame:ADDON_LOADED(addon)
 		m_last_cast_tail = 1
 		NeedToKnow.m_last_guid = {}  -- [spell][guidTarget] = {startTime, duration, expirationTime}
 
-		SlashCmdList["NEEDTOKNOW"] = NeedToKnow.SlashCommand
-		SLASH_NEEDTOKNOW1 = "/needtoknow"
-		SLASH_NEEDTOKNOW2 = "/ntk"
+		NeedToKnow.AddSlashCommand()
 	end
 end
 

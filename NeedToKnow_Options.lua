@@ -4,52 +4,6 @@ local addonName, addonTable = ...
 NeedToKnow.ScrollFrame = {}
 local ScrollFrame = NeedToKnow.ScrollFrame
 
-local trace = print
-
-local GetActiveTalentGroup = _G.GetActiveSpecGroup or _G.GetActiveTalentGroup   -- Retail or Classic
-
-function NeedToKnow.FindProfileByName(profName)
-    local key
-    for k,t in pairs(NeedToKnow_Profiles) do
-        if t.name == profName then
-            return k
-        end
-    end
-end
-
-function NeedToKnow.SlashCommand(cmd)
-	local args = {}
-	for arg in cmd:gmatch("(%S+)") do
-		table.insert(args, arg)
-	end
-
-	cmd = args[1]
-	table.remove(args, 1)
-
-	if not cmd then
-		NeedToKnow:ToggleLockUnlock()
-	elseif ( cmd == NEEDTOKNOW.CMD_RESET ) then
-		NeedToKnow.Reset();
-	elseif ( cmd == NEEDTOKNOW.CMD_PROFILE ) then
-		if args[1] then
-			local profileName = table.concat(args, " ")
-			local key = NeedToKnow.FindProfileByName( profileName )
-			if key then
-				NeedToKnow.ChangeProfile(key)
-				NeedToKnowOptions.UIPanel_Profile_Update()
-			else
-				print("Could not find a profile named '", profileName, "'");
-			end
-		else
-			local spec = GetActiveTalentGroup()
-			local profile = NeedToKnow.CharSettings.Specs[spec]
-			print("Current NeedToKnow profile is \""..profile.."\"") -- LOCME!
-		end
-	else
-		print("Unknown NeedToKnow command", cmd)
-	end    
-end
-
 
 -- -----------------------------------
 -- INTERFACE OPTIONS PANEL: PROFILE
@@ -57,48 +11,6 @@ end
 
 NeedToKnowOptions.DefaultSelectedColor =   { 0.1, 0.6, 0.8, 1 }
 NeedToKnowOptions.DefaultNormalColor = { 0.7, 0.7, 0.7, 0 }
-
-function NeedToKnowOptions.UIPanel_Profile_OnLoad(self)
-	self.name = NEEDTOKNOW.UIPANEL_PROFILE;
-	self.parent = "NeedToKnow";
-	self.default = NeedToKnow.ResetCharacter;
-	---- self.cancel = NeedToKnow.Cancel;
-	---- need different way to handle cancel?  users might open appearance panel without opening main panel
-	InterfaceOptions_AddCategory(self);
-
-	local panelName = self:GetName();
-	_G[panelName.."Version"]:SetText(NEEDTOKNOW.VERSION);
-	_G[panelName.."SubText1"]:SetText(NEEDTOKNOW.UIPANEL_PROFILES_SUBTEXT1);
-
-	-- Profiles scroll frame
-	self.Profiles.configure = function(i, btn, label) 
-		-- btn.Bg:SetTexture(NeedToKnow.LSM:Fetch("statusbar","Minimalist"))
-		btn.Bg:SetTexture("Interface\\FriendsFrame\\UI-FriendsFrame-HighlightBar-Blue")
-		btn.Bg:SetBlendMode("ADD")
-	end
-	self.Profiles.List:SetScript("OnSizeChanged", NeedToKnow.ScrollFrame.OnSizeChanged)
-	self.Profiles.List.update = NeedToKnowOptions.UpdateProfileList
-	self.Profiles.onClick = function(self)
-		local scrollPanel = self:GetParent():GetParent():GetParent()
-		scrollPanel.curSel = self.text:GetText()
-		NeedToKnowOptions.UpdateProfileList()
-	end
-end
-
-function NeedToKnowOptions.UIPanel_Profile_OnShow(self)
-	NeedToKnowOptions.RebuildProfileList(self)
-	NeedToKnowOptions.UIPanel_Profile_Update()
-end
-
-function NeedToKnowOptions.UIPanel_Profile_Update()
-    local panelName = "InterfaceOptionsNeedToKnowProfilePanel";
-    local title
-	-- FIXME: Use GetSpecializationInfoForClassID(UnitClass("player"), GetSpecialization()) instead of primary
-    _G[panelName.."ProfilesTitle"]:SetText(NEEDTOKNOW.UIPANEL_CURRENTPRIMARY)
-    local self = _G[panelName]
-    if not self:IsVisible() then return end
-    NeedToKnowOptions.UpdateProfileList()
-end
 
 function NeedToKnowOptions.RebuildProfileList(profilePanel)
     local scrollPanel = profilePanel.Profiles
@@ -231,6 +143,7 @@ StaticPopupDialogs["NEEDTOKNOW.CONFIRMDLG"] = {
         end
     end
 };
+
 function NeedToKnowOptions.UIPanel_Profile_DeleteSelected(panel)
     local scrollPanel = panel.Profiles
     local curSel = scrollPanel.curSel

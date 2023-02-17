@@ -12,7 +12,7 @@ NEEDTOKNOW.VERSION = GetAddOnMetadata(addonName, "Version")
 NeedToKnowLoader = {}  -- Used by Profile.lua
 NeedToKnowOptions = {}  -- Used by NeedToKnow_Options.lua
 
--- Define namespaces
+-- Namespaces
 NeedToKnow.ExecutiveFrame = CreateFrame("Frame", "NeedToKnow_ExecutiveFrame")
 NeedToKnow.BarGroup = {}
 NeedToKnow.ResizeButton = {}
@@ -23,8 +23,33 @@ NeedToKnow.Cooldown = {}
 NeedToKnow.BarMenu = {}
 NeedToKnow.Dialog = {}
 
+NeedToKnow.ProfilePanel = {}  -- Temporary
 
--- Default settings
+
+--[[ Default settings ]]--
+
+NeedToKnow.DefaultSettings = {}
+local DefaultSettings = NeedToKnow.DefaultSettings
+
+DefaultSettings.bar = {}
+DefaultSettings.barGroup = {}
+DefaultSettings.profile = {}
+
+DefaultSettings.character = {
+    Specs = {},
+    Locked = false,
+    Profiles = {},
+}
+
+DefaultSettings.global = {
+    Version = NeedToKnow.version,
+    OldVersion = NeedToKnow.version,
+    Profiles = {},
+    Chars = {},
+}
+
+
+
 NEEDTOKNOW.BAR_DEFAULTS = {
     Enabled         = true,
     AuraName        = "",

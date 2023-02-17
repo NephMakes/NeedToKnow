@@ -2,11 +2,11 @@
 ## Title: NeedToKnow
 ## Author: NephMakes, lieandswell
 ## X-FormerAuthor: Kitjan
-## Version: 4.5.1
+## Version: 4.5.2
 ## Notes: Simple, effective timer bars
 ## X-Credits: Bilt, Fxfighter EU-Echsenkessel, metalchoir, sp00n, Vlakarados, wowui.cn
 ## X-Category: Buffs, Combat
-## OptionalDeps: LibStub,LibSharedMedia-3.0
+## OptionalDeps: LibStub, LibSharedMedia-3.0
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
 ## SavedVariablesPerCharacter: NeedToKnow_Settings, NeedToKnow_CharSettings
@@ -32,6 +32,8 @@ OptionsPanel.xml
 OptionsPanel.lua
 AppearancePanel.xml
 AppearancePanel.lua
+ProfilePanel.lua
+SlashCommand.lua
 BarMenu.lua
 Dialog.lua
 ImportExport.lua

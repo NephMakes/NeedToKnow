@@ -1,38 +1,50 @@
 ﻿-- Player and specialization settings
 
-local addonName, addonTable = ...
+-- local addonName, addonTable = ...
 
 local GetSpec = _G.GetSpecialization or _G.GetActiveTalentGroup  -- Retail or Classic
+
+
+--[[ Profile functions ]]--
+
+function NeedToKnow.FindProfileByName(name)
+	-- local key
+	for k, t in pairs(NeedToKnow_Profiles) do
+		if t.name == name then
+			return k
+		end
+	end
+end
 
 function NeedToKnow.RemoveDefaultValues(t, def, k)
   if not k then k = "" end
   if def == nil then
-    -- Some obsolete setting, or perhaps bUncompressed
-    return true
+	-- Some obsolete setting, or perhaps bUncompressed
+	return true
   end
   -- Never want to compress name since it's read from inactive profiles
   -- Note: k was just for debugging, so it's got a leading space as part
   -- of how the debugging string was built.  This mechanism should probably
   -- be revisited.
   if type(t) ~= "table" then
-    return ((k~=" name") and (t == def))
+	return ((k~=" name") and (t == def))
   end
-  
+
   if #t > 0 then
-    -- An array, like Groups or Bars. Compare each element against def[1]
-    for i,v in ipairs(t)do
-      local rhs = def[i]
-      if rhs == nil then rhs = def[1] end
-      if NeedToKnow.RemoveDefaultValues(v, rhs, k .. " " .. i) then
-        t[i] = nil
-      end
-    end
+	-- An array, like Groups or Bars. Compare each element against def[1]
+	for i,v in ipairs(t)do
+	  local rhs = def[i]
+	  if rhs == nil then rhs = def[1] end
+	  if NeedToKnow.RemoveDefaultValues(v, rhs, k .. " " .. i) then
+		t[i] = nil
+	  end
+	end
   else
-    for kT, vT in pairs(t) do
-      if NeedToKnow.RemoveDefaultValues(t[kT], def[kT], k .. " " .. kT) then
-        t[kT] = nil
-      end
-    end
+	for kT, vT in pairs(t) do
+	  if NeedToKnow.RemoveDefaultValues(t[kT], def[kT], k .. " " .. kT) then
+		t[kT] = nil
+	  end
+	end
   end
   local fn = pairs(t)
   return fn(t) == nil
@@ -155,14 +167,17 @@ function NeedToKnow.ChangeProfile(profile_key)
 	end
 end
 
-function NeedToKnowLoader.Reset(bResetCharacter)
-    NeedToKnow_Globals = CopyTable( NEEDTOKNOW.DEFAULTS )
-    if ( bResetCharacter == nil or bResetCharacter ) then
+function NeedToKnow.Reset(resetCharacter)
+	-- Reset global saved variables (NeedToKnow_Globals) to default settings
+	-- Called by NeedToKnow.SlashCommand()
+    NeedToKnow_Globals = CopyTable(NeedToKnow.DefaultSettings.global)
+    if resetCharacter or resetCharacter == nil then
         NeedToKnow.ResetCharacter()
     end
 end
 
 function NeedToKnow.ResetCharacter(bCreateSpecProfile)
+	-- Called by NeedToKnow.Reset(), NeedToKnowLoader.Reset(bResetCharacter), ...
 	local charKey = UnitName("player") .. ' - ' .. GetRealmName(); 
 	NeedToKnow_CharSettings = CopyTable(NEEDTOKNOW.CHARACTER_DEFAULTS)
 	NeedToKnow.CharSettings = NeedToKnow_CharSettings
@@ -225,6 +240,17 @@ function NeedToKnow.CreateProfile(settings, idxSpec, nameProfile)
     NeedToKnow_CharSettings.Profiles[keyProfile] = settings
     NeedToKnow_Profiles[keyProfile] = settings
     return keyProfile
+end
+
+
+--[[ NeedToKnowLoader ]]-- 
+
+function NeedToKnowLoader.Reset(bResetCharacter)
+	-- Called by NeedToKnowLoader.SafeUpgrade()
+    NeedToKnow_Globals = CopyTable( NEEDTOKNOW.DEFAULTS )
+    if ( bResetCharacter == nil or bResetCharacter ) then
+        NeedToKnow.ResetCharacter()
+    end
 end
 
 function NeedToKnowLoader.RoundSettings(t)
@@ -421,6 +447,9 @@ function NeedToKnowLoader.SafeUpgrade()
      -- TODO: check the required members for existence and delete any corrupted profiles
 end
 
+
+--[[ Utility functions ]]--
+
 function NeedToKnow.DeepCopy(object)
     if type(object) ~= "table" then
         return object
@@ -457,22 +486,22 @@ end
 ]]--
 
 function NeedToKnow.RestoreTableFromCopy(dest, source)
-    for key,value in pairs(source) do
-        if type(value) == "table" then
-           if dest[key] then
-               NeedToKnow.RestoreTableFromCopy(dest[key], value)
-           else
-               dest[key] = value
-           end
-        else
-            dest[key] = value
-        end
-    end
-    for key,value in pairs(dest) do
-        if source[key] == nil then
-            dest[key] = nil
-        end
-    end
+	for key,value in pairs(source) do
+		if type(value) == "table" then
+		   if dest[key] then
+				NeedToKnow.RestoreTableFromCopy(dest[key], value)
+		   else
+				dest[key] = value
+		   end
+		else
+			dest[key] = value
+		end
+	end
+	for key,value in pairs(dest) do
+		if source[key] == nil then
+			dest[key] = nil
+		end
+	end
 end
 
 
