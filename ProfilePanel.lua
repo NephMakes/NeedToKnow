@@ -2,21 +2,24 @@
 
 local addonName, addonTable = ...
 local ProfilePanel = NeedToKnow.ProfilePanel  -- Temporary
+local String = NeedToKnow.String
 
 function ProfilePanel:OnLoad()
 	Mixin(self, ProfilePanel)  -- Temporary
-
-	self:SetScript("OnShow", self.OnShow)
+	self:SetScripts()
+	self:SetText()
 
 	-- Register for Blizz Interface Options panel
-	self.name = NEEDTOKNOW.UIPANEL_PROFILE
+	self.name = String.PROFILE
 	self.parent = "NeedToKnow"
 	self.default = NeedToKnow.ResetCharacter
-	---- self.cancel = NeedToKnow.Cancel
-	---- need different way to handle cancel?  users might open appearance panel without opening main panel
+	-- self.cancel = NeedToKnow.Cancel
+	-- Need different way to handle cancel?  Might open appearance panel without opening main panel
 	InterfaceOptions_AddCategory(self)
+end
 
-	self:SetText()
+function ProfilePanel:SetScripts()
+	self:SetScript("OnShow", self.OnShow)
 
 	-- Profiles scroll frame
 	self.Profiles.configure = function(i, btn, label) 
@@ -34,13 +37,10 @@ function ProfilePanel:OnLoad()
 end
 
 function ProfilePanel:SetText()
-	local panelName = self:GetName()
-	_G[panelName.."Version"]:SetText(NEEDTOKNOW.VERSION)
-	_G[panelName.."SubText1"]:SetText(NEEDTOKNOW.UIPANEL_PROFILES_SUBTEXT1)
-	_G[panelName.."ProfilesTitle"]:SetText(NEEDTOKNOW.UIPANEL_CURRENTPRIMARY)
+	self.title:SetText(addonName.." v"..NeedToKnow.version)
+	self.subText:SetText(String.PROFILE_PANEL_SUBTEXT)
 
-	-- self.title:SetText(addonName.." v"..NeedToKnow.version)
-	-- self.subText:SetText(String.PROFILE_PANEL_SUBTEXT)
+	self.Profiles.title:SetText(String.PROFILES)
 end
 
 function ProfilePanel:OnShow()

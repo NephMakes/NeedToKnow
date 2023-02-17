@@ -16,6 +16,7 @@ function AppearancePanel:OnLoad()
 	self:SetScripts()
 	self:SetText()
 
+	-- Register for Blizz Interface Options panel
 	self.name = String.APPEARANCE
 	self.parent = "NeedToKnow"
 	self.default = NeedToKnow.ResetCharacter

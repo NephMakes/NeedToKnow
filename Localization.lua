@@ -146,6 +146,22 @@ Localize.enUS = {
 	FONT_COLOR = "Font color", 
 
 	-- Profile panel
+	PROFILE = "Profile", 
+	PROFILE_PANEL_SUBTEXT = "These options let you manage NeedToKnow profiles. Profiles are complete NeedToKnow setups for one specialization.", 
+	PROFILES = "Profiles", 
+	ACTIVATE = "Activate", 
+	ACTIVATE_TOOLTIP = "Activate profile for current specialization", 
+	RENAME = "Rename", 
+	RENAME_TOOLTIP = "Rename profile", 
+	NEW_PROFILE_NAME = "New profile name", 
+	COPY = "Copy", 
+	COPY_TOOLTIP = "Make new profile from copy", 
+	DELETE = "Delete", 
+	DELETE_TOOLTIP = "Delete profile", 
+	TO_ACCOUNT = "To account", 
+	TO_ACCOUNT_TOOLTIP = "Make profile usable by all characters on this account", 
+	TO_CHARACTER = "To character", 
+	TO_CHARACTER_TOOLTIP = "Make profile only usable by this character", 
 
 	-- Slash commands
 	SLASH_RESET = "reset", 
