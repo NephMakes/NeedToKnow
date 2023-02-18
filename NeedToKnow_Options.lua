@@ -67,56 +67,52 @@ function NeedToKnowOptions.IsProfileNameAvailable(newName)
 end
 
 function NeedToKnowOptions.UpdateProfileList()
-    local panel = _G["InterfaceOptionsNeedToKnowProfilePanel"]
-    local scrollPanel = panel.Profiles
-    if scrollPanel.profileNames then
-        local curProfile
-        for n,r in pairs(scrollPanel.profileMap) do
-            if r.ref == NeedToKnow.ProfileSettings then
-                curProfile = n
-                break;
-            end
-        end
+	local panel = _G["InterfaceOptionsNeedToKnowProfilePanel"]
+	local scrollPanel = panel.Profiles
+	if scrollPanel.profileNames then
+		local curProfile
+		for n,r in pairs(scrollPanel.profileMap) do
+			if r.ref == NeedToKnow.ProfileSettings then
+				curProfile = n
+				break;
+			end
+		end
 
 	if not scrollPanel.curSel or not scrollPanel.profileMap[scrollPanel.curSel] then
-            scrollPanel.curSel = curProfile
-        end
-        local curSel = scrollPanel.curSel
+			scrollPanel.curSel = curProfile
+		end
+		local curSel = scrollPanel.curSel
 
-        NeedToKnowOptions.UpdateScrollPanel(scrollPanel, scrollPanel.profileNames, curSel, curProfile)
+		NeedToKnowOptions.UpdateScrollPanel(scrollPanel, scrollPanel.profileNames, curSel, curProfile)
 
-        local optionsPanel = scrollPanel:GetParent()
-        if curSel == curProfile then
-            optionsPanel.SwitchToBtn:Disable()
-        else
-            optionsPanel.SwitchToBtn:Enable()
-        end
+		local optionsPanel = scrollPanel:GetParent()
+		if curSel == curProfile then
+			optionsPanel.activateButton:Disable()
+			optionsPanel.deleteButton:Disable()
+		else
+			optionsPanel.activateButton:Enable()
+			optionsPanel.deleteButton:Enable()
+		end
 
-        if curSel == curProfile then
-            optionsPanel.DeleteBtn:Disable()
-        else
-            optionsPanel.DeleteBtn:Enable()
-        end
+		local curEntry = optionsPanel.NewName:GetText()
+		if NeedToKnowOptions.IsProfileNameAvailable(curEntry) then
+			optionsPanel.renameButton:Enable()
+			optionsPanel.copyButton:Enable()
+		else
+			optionsPanel.renameButton:Disable()
+			optionsPanel.copyButton:Disable()
+		end
 
-        local curEntry = optionsPanel.NewName:GetText()
-        if NeedToKnowOptions.IsProfileNameAvailable(curEntry) then
-            optionsPanel.RenameBtn:Enable()
-            optionsPanel.CopyBtn:Enable()
-        else
-            optionsPanel.RenameBtn:Disable()
-            optionsPanel.CopyBtn:Disable()
-        end
-
-        local rSelectedProfile = scrollPanel.profileMap[curSel].ref;
-        local rSelectedKey = scrollPanel.profileMap[curSel].key;
-        if ( rSelectedProfile and rSelectedKey and NeedToKnow_Globals.Profiles[rSelectedKey] == rSelectedProfile ) then
-            optionsPanel.PrivateBtn:Show();
-            optionsPanel.PublicBtn:Hide();
-        else
-            optionsPanel.PrivateBtn:Hide();
-            optionsPanel.PublicBtn:Show();
-        end
-    end
+		local rSelectedProfile = scrollPanel.profileMap[curSel].ref;
+		local rSelectedKey = scrollPanel.profileMap[curSel].key;
+		if ( rSelectedProfile and rSelectedKey and NeedToKnow_Globals.Profiles[rSelectedKey] == rSelectedProfile ) then
+			optionsPanel.toCharacterButton:Show()
+			optionsPanel.toAccountButton:Hide()
+		else
+			optionsPanel.toCharacterButton:Hide()
+			optionsPanel.toAccountButton:Show()
+		end
+	end
 end
 
 function NeedToKnowOptions.UIPanel_Profile_SwitchToSelected(panel)

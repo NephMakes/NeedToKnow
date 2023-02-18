@@ -13,7 +13,7 @@
 				</FontString>
 				<FontString parentKey="subText" name="$parentSubText1" inherits="GameFontHighlightSmall" nonspacewrap="true" maxLines="5" justifyH="LEFT" justifyV="TOP">
 					<Size>
-						<AbsDimension y="48" x="0"/>
+						<AbsDimension y="32" x="0"/>
 					</Size>
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
@@ -23,32 +23,21 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<Button name="$parentSwitchToBtn" inherits="UIPanelButtonTemplate" parentKey="SwitchToBtn">
+			<Button parentKey="activateButton" name="$parentSwitchToBtn" inherits="UIPanelButtonTemplate">
 				<Size>
 					<AbsDimension x="128" y="22"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parentSubText1" relativePoint="BOTTOM" y="-16"/>
-					<Anchor point="RIGHT" x ="-10" />
+					<Anchor point="TOP" relativeTo="$parentSubText1" relativePoint="BOTTOM" y="-24"/>
+					<Anchor point="RIGHT" x="-16"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>
-						_G[self:GetName().."Text"]:SetText(NEEDTOKNOW.UIPANEL_PROFILE_SWITCHTO);
-					</OnLoad>
 					<OnClick>
 						NeedToKnowOptions.UIPanel_Profile_SwitchToSelected(self:GetParent());
 					</OnClick>
-					<OnEnter>
-						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-						GameTooltip:SetText(NEEDTOKNOW.UIPANEL_SWITCHPROFILE_TOOLTIP, nil, nil, nil, nil, 1);
-					</OnEnter>
-					<OnLeave function="GameTooltip_Hide"/>
 				</Scripts>
-				<NormalFont style="GameFontNormal"/>
-				<HighlightFont style="GameFontHighlight"/>
 			</Button>
-
-			<Button name="$parentDeleteBtn" inherits="UIPanelButtonTemplate" parentKey="DeleteBtn">
+			<Button parentKey="deleteButton" name="$parentDeleteBtn" inherits="UIPanelButtonTemplate">
 				<Size>
 					<AbsDimension x="128" y="22"/>
 				</Size>
@@ -56,23 +45,12 @@
 					<Anchor point="TOPRIGHT" relativeTo="$parentSwitchToBtn" relativePoint="BOTTOMRIGHT" y="-16"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>
-						_G[self:GetName().."Text"]:SetText(NEEDTOKNOW.UIPANEL_PROFILE_DELETE);
-					</OnLoad>
 					<OnClick>
 						NeedToKnowOptions.UIPanel_Profile_DeleteSelected(self:GetParent());
 					</OnClick>
-					<OnEnter>
-						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-						GameTooltip:SetText(NEEDTOKNOW.UIPANEL_DELETEPROFILE_TOOLTIP, nil, nil, nil, nil, 1);
-					</OnEnter>
-					<OnLeave function="GameTooltip_Hide"/>
 				</Scripts>
-				<NormalFont style="GameFontNormal"/>
-				<HighlightFont style="GameFontHighlight"/>
 			</Button>
-
-			<Button name="$parentPublicBtn" inherits="UIPanelButtonTemplate" parentKey="PublicBtn">
+			<Button parentKey="toAccountButton" name="$parentPublicBtn" inherits="UIPanelButtonTemplate">
 				<Size>
 					<AbsDimension x="128" y="22"/>
 				</Size>
@@ -80,23 +58,12 @@
 					<Anchor point="TOPRIGHT" relativeTo="$parentDeleteBtn" relativePoint="BOTTOMRIGHT" y="-16"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>
-						_G[self:GetName().."Text"]:SetText(NEEDTOKNOW.UIPANEL_PROFILE_MAKEPUBLIC);
-					</OnLoad>
 					<OnClick>
 						NeedToKnowOptions.UIPanel_Profile_PublicizeSelected(self:GetParent(), true);
 					</OnClick>
-					<OnEnter>
-						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-						GameTooltip:SetText(NEEDTOKNOW.UIPANEL_PUBLICPROFILE_TOOLTIP, nil, nil, nil, nil, 1);
-					</OnEnter>
-					<OnLeave function="GameTooltip_Hide"/>
 				</Scripts>
-				<NormalFont style="GameFontNormal"/>
-				<HighlightFont style="GameFontHighlight"/>
 			</Button>
-
-			<Button name="$parentPrivateBtn" inherits="UIPanelButtonTemplate" parentKey="PrivateBtn">
+			<Button parentKey="toCharacterButton" name="$parentPrivateBtn" inherits="UIPanelButtonTemplate">
 				<Size>
 					<AbsDimension x="128" y="22"/>
 				</Size>
@@ -104,25 +71,15 @@
 					<Anchor point="TOPRIGHT" relativeTo="$parentDeleteBtn" relativePoint="BOTTOMRIGHT" y="-16"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>
-						_G[self:GetName().."Text"]:SetText(NEEDTOKNOW.UIPANEL_PROFILE_MAKEPRIVATE);
-					</OnLoad>
 					<OnClick>
 						NeedToKnowOptions.UIPanel_Profile_PrivatizeSelected(self:GetParent(), false);
 					</OnClick>
-					<OnEnter>
-						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-						GameTooltip:SetText(NEEDTOKNOW.UIPANEL_PRIVATEPROFILE_TOOLTIP, nil, nil, nil, nil, 1);
-					</OnEnter>
-					<OnLeave function="GameTooltip_Hide"/>
 				</Scripts>
-				<NormalFont style="GameFontNormal"/>
-				<HighlightFont style="GameFontHighlight"/>
 			</Button>
 		</Frames>
 		<Layers>
 			<Layer level="ARTWORK">
-				<FontString name="$parentEditLabel" inherits="GameFontNormalSmall" nonspacewrap="true" maxLines="1" justifyH="LEFT" justifyV="TOP">
+				<FontString parentKey="newNameLabel" name="$parentEditLabel" inherits="GameFontNormalSmall" nonspacewrap="true" maxLines="1" justifyH="LEFT" justifyV="TOP">
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="$parentPublicBtn" relativePoint="BOTTOMLEFT" y="-30"/>
 					</Anchors>
@@ -138,23 +95,12 @@
 					<Anchor point="TOPLEFT" relativeTo="$parentEditLabel" relativePoint="BOTTOMLEFT"/>
 				</Anchors>
 				<Scripts>
-					<OnEscapePressed>
-						self:ClearFocus()
-					</OnEscapePressed>
-					<OnTabPressed>
-						self:ClearFocus()
-					</OnTabPressed>
 					<OnTextChanged>
 						NeedToKnowOptions.UpdateProfileList()
 					</OnTextChanged>
-					<OnLoad>
-						_G[self:GetParent():GetName().."EditLabel"]:SetText(NEEDTOKNOW.UIPANEL_PROFILE_NAMELABEL);
-						self:SetTextColor(1,1,1)
-					</OnLoad>
 				</Scripts>
 			</EditBox>
-
-			<Button name="$parentCopyBtn" inherits="UIPanelButtonTemplate" parentKey="CopyBtn">
+			<Button parentKey="copyButton" name="$parentCopyBtn" inherits="UIPanelButtonTemplate">
 				<Size>
 					<AbsDimension x="128" y="22"/>
 				</Size>
@@ -163,23 +109,12 @@
 					<Anchor point="RIGHT" relativeTo="$parentDeleteBtn" relativePoint="RIGHT" x="-2"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>
-						_G[self:GetName().."Text"]:SetText(NEEDTOKNOW.UIPANEL_PROFILE_DUPLICATE);
-					</OnLoad>
 					<OnClick>
 						NeedToKnowOptions.UIPanel_Profile_CopySelected(self:GetParent());
 					</OnClick>
-					<OnEnter>
-						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-						GameTooltip:SetText(NEEDTOKNOW.UIPANEL_COPYPROFILE_TOOLTIP, nil, nil, nil, nil, 1);
-					</OnEnter>
-					<OnLeave function="GameTooltip_Hide"/>
 				</Scripts>
-				<NormalFont style="GameFontNormal"/>
-				<HighlightFont style="GameFontHighlight"/>
 			</Button>
-
-			<Button name="$parentRenameBtn" inherits="UIPanelButtonTemplate" parentKey="RenameBtn">
+			<Button parentKey="renameButton" name="$parentRenameBtn" inherits="UIPanelButtonTemplate">
 				<Size>
 					<AbsDimension x="128" y="22"/>
 				</Size>
@@ -187,27 +122,16 @@
 					<Anchor point="TOPRIGHT" relativeTo="$parentCopyBtn" relativePoint="BOTTOMRIGHT" y="-16"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>
-						_G[self:GetName().."Text"]:SetText(NEEDTOKNOW.UIPANEL_PROFILE_RENAME);
-					</OnLoad>
 					<OnClick>
 						NeedToKnowOptions.UIPanel_Profile_RenameSelected(self:GetParent());
 					</OnClick>
-					<OnEnter>
-						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-						GameTooltip:SetText(NEEDTOKNOW.UIPANEL_RENAMEPROFILE_TOOLTIP, nil, nil, nil, nil, 1);
-					</OnEnter>
-					<OnLeave function="GameTooltip_Hide"/>
 				</Scripts>
-				<NormalFont style="GameFontNormal"/>
-				<HighlightFont style="GameFontHighlight"/>
 			</Button>
-
 			<Frame parentKey="Profiles" name="$parentProfiles" inherits="NeedToKnowScrollFrameTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" y="-16"/>
 					<Anchor point="BOTTOM" y="10"/>
-					<Anchor point="RIGHT" relativeTo="$parentSwitchToBtn" relativePoint="LEFT" x ="-4"/>
+					<Anchor point="RIGHT" relativeTo="$parentSwitchToBtn" relativePoint="LEFT" x="-4"/>
 				</Anchors>
 			</Frame>
 		</Frames>

@@ -21,6 +21,7 @@ end
 function ProfilePanel:SetScripts()
 	self:SetScript("OnShow", self.OnShow)
 
+
 	-- Profiles scroll frame
 	self.Profiles.configure = function(i, btn, label) 
 		-- btn.Bg:SetTexture(NeedToKnow.LSM:Fetch("statusbar","Minimalist"))
@@ -41,6 +42,20 @@ function ProfilePanel:SetText()
 	self.subText:SetText(String.PROFILE_PANEL_SUBTEXT)
 
 	self.Profiles.title:SetText(String.PROFILES)
+	self.activateButton.Text:SetText(String.ACTIVATE)
+	self.activateButton.tooltipText = String.ACTIVATE_TOOLTIP
+	self.renameButton.Text:SetText(String.RENAME)
+	self.renameButton.tooltipText = String.RENAME_TOOLTIP
+	self.deleteButton.Text:SetText(String.DELETE)
+	self.deleteButton.tooltipText = String.DELETE_TOOLTIP
+	self.copyButton.Text:SetText(String.COPY)
+	self.copyButton.tooltipText = String.COPY_TOOLTIP
+	self.toAccountButton.Text:SetText(String.TO_ACCOUNT)
+	self.toAccountButton.tooltipText = String.TO_ACCOUNT_TOOLTIP
+	self.toCharacterButton.Text:SetText(String.TO_CHARACTER)
+	self.toCharacterButton.tooltipText = String.TO_CHARACTER_TOOLTIP
+
+	self.newNameLabel:SetText(String.NEW_PROFILE_NAME)
 end
 
 function ProfilePanel:OnShow()
@@ -56,6 +71,10 @@ function ProfilePanel:Update()
 	-- Kitjan: Use GetSpecializationInfoForClassID(UnitClass("player"), GetSpecialization()) instead of primary
 	NeedToKnowOptions.UpdateProfileList()
 end
+
+function ProfilePanel:UpdateProfileList()
+end
+
 
 
 
