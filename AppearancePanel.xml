@@ -231,7 +231,6 @@
 			</Button>
 			<Slider parentKey="barPaddingSlider" name="$parentBarPaddingSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
 				<Anchors>
-					<!-- <Anchor point="TOP" relativeTo="$parentBackgroundColorButton" relativePoint="BOTTOM" y="-18"/> -->
 					<Anchor point="TOP" relativeTo="$parentBorderColorButton" relativePoint="BOTTOM" y="-18"/>
 					<Anchor point="LEFT" x="112"/>
 				</Anchors>
@@ -244,8 +243,6 @@
 			</Slider>
 			<Frame parentKey="barFontMenu" name="$parentBarFontMenu" inherits="UIDropDownMenuTemplate" enableMouse="true">
 				<Anchors>
-					<!-- <Anchor point="TOP" relativeTo="$parentBarSpacingSlider" relativePoint="BOTTOM" y="-12"/> -->
-					<!-- <Anchor point="LEFT" x="95"/> -->
 					<Anchor point="TOP" relativeTo="$parentBarAppearanceTitle" relativePoint="BOTTOM" y="-12"/>
 					<Anchor point="LEFT" x="400"/>
 				</Anchors>
@@ -262,7 +259,6 @@
 			<Frame parentKey="fontOutlineMenu" name="$parentFontOutlineMenu" inherits="UIDropDownMenuTemplate" enableMouse="true">
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parentBarFontMenu" relativePoint="BOTTOM" y="-4"/>
-					<!-- <Anchor point="LEFT" x="172"/> -->
 					<Anchor point="LEFT" x="477"/>
 				</Anchors>
 				<Layers>
@@ -278,14 +274,11 @@
 			<Button parentKey="fontColorButton" name="$parentFontColorButton" inherits="NeedToKnowColorButtonTemplate" parentArray="colorButtons">
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parentFontOutlineMenu" relativePoint="BOTTOM" y="-8"/>
-					<!-- <Anchor point="RIGHT" relativePoint="LEFT" x="296"/>-->
 					<Anchor point="RIGHT" relativePoint="LEFT" x="603"/>
 				</Anchors>
 			</Button>
 			<Slider parentKey="fontSizeSlider" name="$parentFontSizeSlider" inherits="NeedToKnowSliderTemplate" parentArray="sliders">
 				<Anchors>
-					<!-- <Anchor point="TOP" relativeTo="$parentFontOutlineMenu" relativePoint="BOTTOM" y="-10"/> -->
-					<!-- <Anchor point="LEFT" x="114"/> -->
 					<Anchor point="TOP" relativeTo="$parentFontColorButton" relativePoint="BOTTOM" y="-18"/>
 					<Anchor point="LEFT" x="419"/>
 				</Anchors>

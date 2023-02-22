@@ -32,9 +32,9 @@ OptionsPanel.xml
 OptionsPanel.lua
 AppearancePanel.xml
 AppearancePanel.lua
+ProfilePanel.xml
 ProfilePanel.lua
 SlashCommand.lua
 BarMenu.lua
 Dialog.lua
 ImportExport.lua
-NeedToKnow_Options.xml

@@ -115,6 +115,7 @@ function NeedToKnowOptions.UpdateProfileList()
 	end
 end
 
+--[[
 function NeedToKnowOptions.UIPanel_Profile_SwitchToSelected(panel)
     local scrollPanel = panel.Profiles
     local curSel = scrollPanel.curSel
@@ -123,6 +124,7 @@ function NeedToKnowOptions.UIPanel_Profile_SwitchToSelected(panel)
         NeedToKnowOptions.UpdateProfileList()
     end
 end
+]]--
 
 StaticPopupDialogs["NEEDTOKNOW.CONFIRMDLG"] = {
     button1 = YES,
@@ -140,6 +142,7 @@ StaticPopupDialogs["NEEDTOKNOW.CONFIRMDLG"] = {
     end
 };
 
+--[[
 function NeedToKnowOptions.UIPanel_Profile_DeleteSelected(panel)
     local scrollPanel = panel.Profiles
     local curSel = scrollPanel.curSel
@@ -165,7 +168,9 @@ function NeedToKnowOptions.UIPanel_Profile_DeleteSelected(panel)
         StaticPopup_Show("NEEDTOKNOW.CONFIRMDLG");
     end
 end
+]]--
 
+--[[
 function NeedToKnowOptions.UIPanel_Profile_CopySelected(panel)
     local scrollPanel = panel.Profiles
     local curSel = scrollPanel.curSel
@@ -177,10 +182,12 @@ function NeedToKnowOptions.UIPanel_Profile_CopySelected(panel)
         NeedToKnow.ChangeProfile(keyNew)
         NeedToKnowOptions.RebuildProfileList(panel)
         edit:SetText("");
-        print("NeedToKnow: Copied",curSel,"to",newName,"and made it the active profile")
+        print("NeedToKnow: Copied", curSel, "to", newName, "and made it the active profile")
     end
 end
+]]--
 
+--[[
 function NeedToKnowOptions.UIPanel_Profile_RenameSelected(panel)
     local scrollPanel = panel.Profiles
     local edit = panel.NewName
@@ -188,13 +195,15 @@ function NeedToKnowOptions.UIPanel_Profile_RenameSelected(panel)
     edit:ClearFocus()
     if scrollPanel.curSel and NeedToKnowOptions.IsProfileNameAvailable(newName) then
         local key = scrollPanel.profileMap[scrollPanel.curSel].key
-        print("NeedToKnow: Renaming profile",NeedToKnow_Profiles[key].name,"to",newName)
-        NeedToKnow_Profiles[key].name = newName;
-        edit:SetText("");
+        print("NeedToKnow: Renaming profile", NeedToKnow_Profiles[key].name, "to", newName)
+        NeedToKnow_Profiles[key].name = newName
+        edit:SetText("")
         NeedToKnowOptions.RebuildProfileList(panel)
     end
 end
+]]--
 
+--[[
 function NeedToKnowOptions.UIPanel_Profile_PublicizeSelected(panel)
     local scrollPanel = panel.Profiles
     if scrollPanel.curSel then
@@ -205,7 +214,9 @@ function NeedToKnowOptions.UIPanel_Profile_PublicizeSelected(panel)
         NeedToKnowOptions.RebuildProfileList(panel)
     end
 end
+]]--
 
+--[[
 function NeedToKnowOptions.UIPanel_Profile_PrivatizeSelected(panel)
     local scrollPanel = panel.Profiles
     if scrollPanel.curSel then
@@ -216,7 +227,7 @@ function NeedToKnowOptions.UIPanel_Profile_PrivatizeSelected(panel)
         NeedToKnowOptions.RebuildProfileList(panel)
     end
 end
-
+]]--
 
 --[[ ScrollFrame ]]-- 
 
