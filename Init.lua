@@ -23,8 +23,6 @@ NeedToKnow.Cooldown = {}
 NeedToKnow.BarMenu = {}
 NeedToKnow.Dialog = {}
 
--- NeedToKnow.ProfilePanel = {}  -- Temporary
-
 
 --[[ Default settings ]]--
 

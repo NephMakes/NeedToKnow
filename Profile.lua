@@ -8,12 +8,23 @@ local GetSpec = _G.GetSpecialization or _G.GetActiveTalentGroup  -- Retail or Cl
 --[[ Profile functions ]]--
 
 function NeedToKnow.FindProfileByName(name)
-	-- local key
 	for k, t in pairs(NeedToKnow_Profiles) do
 		if t.name == name then
 			return k
 		end
 	end
+end
+
+function NeedToKnow.IsProfileNameAvailable(name)
+    if not name or name == "" then
+        return false
+    end
+    for _, profile in pairs(NeedToKnow_Profiles) do
+        if profile.name == name then
+            return false
+        end
+    end
+    return true
 end
 
 function NeedToKnow.RemoveDefaultValues(t, def, k)

@@ -1,12 +1,11 @@
 ﻿-- Interface options panel: Profile
--- Loaf after ProfilePanel.xml
+-- Load after ProfilePanel.xml
 
 local addonName, addonTable = ...
 local ProfilePanel = InterfaceOptionsNeedToKnowProfilePanel
 local String = NeedToKnow.String
 
 function ProfilePanel:OnLoad()
-	Mixin(self, ProfilePanel)  -- Temporary
 	self:SetScripts()
 	self:SetText()
 
@@ -78,6 +77,14 @@ function ProfilePanel:Update()
 	NeedToKnowOptions.UpdateProfileList()
 end
 
+--[[
+function ProfilePanel:UpdateProfileList()
+end
+
+function ProfilePanel:RebuildProfileList()
+end
+]]--
+
 
 --[[ Buttons ]]--
 
@@ -98,7 +105,7 @@ function ProfilePanel:OnClickRenameButton()
 	local editBox = panel.NewName
 	local name = editBox:GetText()
 	editBox:ClearFocus()
-	if scrollPanel.curSel and NeedToKnowOptions.IsProfileNameAvailable(name) then
+	if scrollPanel.curSel and NeedToKnow.IsProfileNameAvailable(name) then
 		local key = scrollPanel.profileMap[scrollPanel.curSel].key
 		-- print("NeedToKnow: Renaming profile", NeedToKnow_Profiles[key].name, "to", name)
 		NeedToKnow_Profiles[key].name = name
@@ -106,6 +113,22 @@ function ProfilePanel:OnClickRenameButton()
 		NeedToKnowOptions.RebuildProfileList(panel)
 	end
 end
+
+StaticPopupDialogs["NEEDTOKNOW.CONFIRMDLG"] = {
+    button1 = YES,
+    button2 = NO,
+    timeout = 0,
+    hideOnEscape = 1,
+    OnShow = function(self)
+        self.oldStrata = self:GetFrameStrata()
+        self:SetFrameStrata("TOOLTIP")
+    end,
+    OnHide = function(self)
+        if self.oldStrata then 
+            self:SetFrameStrata(self.oldStrata) 
+        end
+    end
+}
 
 function ProfilePanel:OnClickDeleteButton()
 	-- called with self = button
@@ -143,7 +166,7 @@ function ProfilePanel:OnClickCopyButton()
 	local edit = panel.NewName
 	local newName = edit:GetText()
 	edit:ClearFocus()
-	if scrollPanel.curSel and NeedToKnowOptions.IsProfileNameAvailable(newName) then
+	if scrollPanel.curSel and NeedToKnow.IsProfileNameAvailable(newName) then
 		local keyNew = NeedToKnow.CreateProfile(CopyTable(scrollPanel.profileMap[curSel].ref), nil, newName)
 		NeedToKnow.ChangeProfile(keyNew)
 		NeedToKnowOptions.RebuildProfileList(panel)

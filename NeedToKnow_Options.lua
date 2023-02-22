@@ -9,20 +9,20 @@ local ScrollFrame = NeedToKnow.ScrollFrame
 -- INTERFACE OPTIONS PANEL: PROFILE
 -- -----------------------------------
 
-NeedToKnowOptions.DefaultSelectedColor =   { 0.1, 0.6, 0.8, 1 }
-NeedToKnowOptions.DefaultNormalColor = { 0.7, 0.7, 0.7, 0 }
+NeedToKnowOptions.DefaultSelectedColor = {0.1, 0.6, 0.8, 1}
+NeedToKnowOptions.DefaultNormalColor = {0.7, 0.7, 0.7, 0}
 
 function NeedToKnowOptions.RebuildProfileList(profilePanel)
     local scrollPanel = profilePanel.Profiles
     local oldKey
-    if ( scrollPanel.curSel and scrollPanel.profileMap ) then
+    if scrollPanel.curSel and scrollPanel.profileMap then
         oldKey = scrollPanel.profileMap[scrollPanel.curSel].key
     end
 
     if not scrollPanel.profileNames then
-        scrollPanel.profileNames = { }
+        scrollPanel.profileNames = {}
     end
-    scrollPanel.profileMap = { }
+    scrollPanel.profileMap = {}
 
     local allNames = scrollPanel.profileNames
     local allRefs = scrollPanel.profileMap
@@ -39,9 +39,9 @@ function NeedToKnowOptions.RebuildProfileList(profilePanel)
                 profName = 'Character: '..rProfile.name -- Fixme: Character-Server:
             end
             allNames[n] = profName
-            allRefs[profName] = { ref = rProfile, global=true, key=profKey }
-            if ( profKey == oldKey ) then
-                scrollPanel.curSel = profName;
+            allRefs[profName] = {ref = rProfile, global = true, key = profKey}
+            if profKey == oldKey then
+                scrollPanel.curSel = profName
             end
         end
     end
@@ -49,10 +49,11 @@ function NeedToKnowOptions.RebuildProfileList(profilePanel)
         table.remove(allNames)
     end
 
-    table.sort(allNames, function(lhs,rhs) return string.upper(lhs)<string.upper(rhs) end )
+    table.sort(allNames, function(lhs, rhs) return string.upper(lhs) < string.upper(rhs) end)
     NeedToKnowOptions.UpdateProfileList()
 end
 
+--[[
 function NeedToKnowOptions.IsProfileNameAvailable(newName)
     if not newName or newName == "" then
         return false;
@@ -65,20 +66,21 @@ function NeedToKnowOptions.IsProfileNameAvailable(newName)
     end
     return true;
 end
+]]--
 
 function NeedToKnowOptions.UpdateProfileList()
 	local panel = _G["InterfaceOptionsNeedToKnowProfilePanel"]
 	local scrollPanel = panel.Profiles
 	if scrollPanel.profileNames then
 		local curProfile
-		for n,r in pairs(scrollPanel.profileMap) do
+		for n, r in pairs(scrollPanel.profileMap) do
 			if r.ref == NeedToKnow.ProfileSettings then
 				curProfile = n
-				break;
+				break
 			end
 		end
 
-	if not scrollPanel.curSel or not scrollPanel.profileMap[scrollPanel.curSel] then
+		if not scrollPanel.curSel or not scrollPanel.profileMap[scrollPanel.curSel] then
 			scrollPanel.curSel = curProfile
 		end
 		local curSel = scrollPanel.curSel
@@ -95,7 +97,8 @@ function NeedToKnowOptions.UpdateProfileList()
 		end
 
 		local curEntry = optionsPanel.NewName:GetText()
-		if NeedToKnowOptions.IsProfileNameAvailable(curEntry) then
+		-- if NeedToKnowOptions.IsProfileNameAvailable(curEntry) then
+		if NeedToKnow.IsProfileNameAvailable(curEntry) then
 			optionsPanel.renameButton:Enable()
 			optionsPanel.copyButton:Enable()
 		else
@@ -103,9 +106,11 @@ function NeedToKnowOptions.UpdateProfileList()
 			optionsPanel.copyButton:Disable()
 		end
 
-		local rSelectedProfile = scrollPanel.profileMap[curSel].ref;
-		local rSelectedKey = scrollPanel.profileMap[curSel].key;
-		if ( rSelectedProfile and rSelectedKey and NeedToKnow_Globals.Profiles[rSelectedKey] == rSelectedProfile ) then
+		local rSelectedProfile = scrollPanel.profileMap[curSel].ref
+		local rSelectedKey = scrollPanel.profileMap[curSel].key
+		if rSelectedProfile and rSelectedKey and 
+			NeedToKnow_Globals.Profiles[rSelectedKey] == rSelectedProfile
+		then
 			optionsPanel.toCharacterButton:Show()
 			optionsPanel.toAccountButton:Hide()
 		else
@@ -116,16 +121,6 @@ function NeedToKnowOptions.UpdateProfileList()
 end
 
 --[[
-function NeedToKnowOptions.UIPanel_Profile_SwitchToSelected(panel)
-    local scrollPanel = panel.Profiles
-    local curSel = scrollPanel.curSel
-    if curSel then
-        NeedToKnow.ChangeProfile( scrollPanel.profileMap[curSel].key )
-        NeedToKnowOptions.UpdateProfileList()
-    end
-end
-]]--
-
 StaticPopupDialogs["NEEDTOKNOW.CONFIRMDLG"] = {
     button1 = YES,
     button2 = NO,
@@ -141,93 +136,8 @@ StaticPopupDialogs["NEEDTOKNOW.CONFIRMDLG"] = {
         end
     end
 };
-
---[[
-function NeedToKnowOptions.UIPanel_Profile_DeleteSelected(panel)
-    local scrollPanel = panel.Profiles
-    local curSel = scrollPanel.curSel
-    if curSel then
-        local k = scrollPanel.profileMap[curSel].key
-        local dlgInfo = StaticPopupDialogs["NEEDTOKNOW.CONFIRMDLG"]
-        dlgInfo.text = "Are you sure you want to delete the profile: ".. curSel .."?"
-        dlgInfo.OnAccept = function(self, data)
-            if NeedToKnow_Profiles[k] == NeedToKnow.ProfileSettings then
-                print("NeedToKnow: Won't delete the active profile!")
-            else
-                NeedToKnow_Profiles[k] = nil;
-                if NeedToKnow_Globals.Profiles[k] then 
-                    print("NeedToKnow: deleted account-wide profile", NeedToKnow_Globals.Profiles[k].name) -- LOCME
-                    NeedToKnow_Globals.Profiles[k] = nil;
-                elseif NeedToKnow_CharSettings.Profiles[k] then 
-                    print("NeedToKnow: deleted character profile", NeedToKnow_CharSettings.Profiles[k].name) -- LOCME
-                    NeedToKnow_CharSettings.Profiles[k] = nil;
-                end
-                NeedToKnowOptions.RebuildProfileList(panel)
-            end
-        end
-        StaticPopup_Show("NEEDTOKNOW.CONFIRMDLG");
-    end
-end
 ]]--
 
---[[
-function NeedToKnowOptions.UIPanel_Profile_CopySelected(panel)
-    local scrollPanel = panel.Profiles
-    local curSel = scrollPanel.curSel
-    local edit = panel.NewName
-    local newName = edit:GetText()
-    edit:ClearFocus()
-    if scrollPanel.curSel and NeedToKnowOptions.IsProfileNameAvailable(newName) then
-        local keyNew = NeedToKnow.CreateProfile(CopyTable(scrollPanel.profileMap[curSel].ref), nil, newName)
-        NeedToKnow.ChangeProfile(keyNew)
-        NeedToKnowOptions.RebuildProfileList(panel)
-        edit:SetText("");
-        print("NeedToKnow: Copied", curSel, "to", newName, "and made it the active profile")
-    end
-end
-]]--
-
---[[
-function NeedToKnowOptions.UIPanel_Profile_RenameSelected(panel)
-    local scrollPanel = panel.Profiles
-    local edit = panel.NewName
-    local newName = edit:GetText()
-    edit:ClearFocus()
-    if scrollPanel.curSel and NeedToKnowOptions.IsProfileNameAvailable(newName) then
-        local key = scrollPanel.profileMap[scrollPanel.curSel].key
-        print("NeedToKnow: Renaming profile", NeedToKnow_Profiles[key].name, "to", newName)
-        NeedToKnow_Profiles[key].name = newName
-        edit:SetText("")
-        NeedToKnowOptions.RebuildProfileList(panel)
-    end
-end
-]]--
-
---[[
-function NeedToKnowOptions.UIPanel_Profile_PublicizeSelected(panel)
-    local scrollPanel = panel.Profiles
-    if scrollPanel.curSel then
-        local ref = scrollPanel.profileMap[scrollPanel.curSel].ref
-        local key = scrollPanel.profileMap[scrollPanel.curSel].key
-        NeedToKnow_Globals.Profiles[key] = ref
-        NeedToKnow_CharSettings.Profiles[key] = nil
-        NeedToKnowOptions.RebuildProfileList(panel)
-    end
-end
-]]--
-
---[[
-function NeedToKnowOptions.UIPanel_Profile_PrivatizeSelected(panel)
-    local scrollPanel = panel.Profiles
-    if scrollPanel.curSel then
-        local ref = scrollPanel.profileMap[scrollPanel.curSel].ref
-        local key = scrollPanel.profileMap[scrollPanel.curSel].key
-        NeedToKnow_Globals.Profiles[key] = nil
-        NeedToKnow_CharSettings.Profiles[key] = ref
-        NeedToKnowOptions.RebuildProfileList(panel)
-    end
-end
-]]--
 
 --[[ ScrollFrame ]]-- 
 
