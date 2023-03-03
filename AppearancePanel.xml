@@ -114,58 +114,6 @@
 		</Frames>
 	</Slider>
 
-	<Frame name="NeedToKnowScrollFrameTemplate" virtual="true">
-		<Layers>
-			<Layer level="BACKGROUND">
-				<FontString parentKey="title" name="$parentTitle" text="ScrollFrame" inherits="GameFontHighlight" justifyH="LEFT" justifyV="TOP">
-					<Anchors>
-						<Anchor point="TOPLEFT"/>
-					</Anchors>
-				</FontString>
-			</Layer>
-		</Layers>
-		<Frames>
-			<ScrollFrame parentKey="List" name="$parentList" inherits="BasicHybridScrollFrameTemplate">					
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT" y="-6"/>
-					<Anchor point="BOTTOMRIGHT" x="-27"/>
-				</Anchors>
-			</ScrollFrame>
-		</Frames>
-	</Frame>
-
-	<Button name="NeedToKnowScrollItemTemplate" virtual="true">
-		<Size x="169" y="22"/>
-		<Anchors>
-			<Anchor point="RIGHT"/>
-		</Anchors>
-		<Layers>
-			<Layer level="BACKGROUND" >
-				<Texture parentKey="Bg" name="$parentBg">
-					<Anchors>
-						<Anchor point="TOPLEFT" x="1" y="-0.99"/>
-						<Anchor point="BOTTOMRIGHT" x="-1" y="0.99"/>
-					</Anchors>
-				</Texture>
-			</Layer>
-			<Layer level="BORDER">
-				<Texture parentKey="Check" name="$parentCheck" file="Interface\Buttons\UI-CheckBox-Check" hidden="true">
-					<Size x="16" y="16"/>
-					<Anchors>
-						<Anchor point="LEFT" x="8"/>
-					</Anchors>
-				</Texture>
-			</Layer>
-		</Layers>
-		<ButtonText parentKey="text" name="$parentTitleText" inherits="GameFontNormalSmallLeft" justifyH="LEFT">
-			<Anchors>
-				<Anchor point="LEFT" relativeTo="$parentCheck" relativePoint="RIGHT" x="3" y="0"/>
-				<Anchor point="RIGHT" x="-3" y="0"/>
-			</Anchors>
-		</ButtonText>
-		<HighlightTexture file="Interface\FriendsFrame\UI-FriendsFrame-HighlightBar-Blue" alphaMode="ADD"/>
-	</Button>
-
 	<Frame name="InterfaceOptionsNeedToKnowAppearancePanel" hidden="true">
 		<Layers>
 			<Layer level="ARTWORK">

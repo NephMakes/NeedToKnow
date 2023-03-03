@@ -12,131 +12,6 @@ local ScrollFrame = NeedToKnow.ScrollFrame
 NeedToKnowOptions.DefaultSelectedColor = {0.1, 0.6, 0.8, 1}
 NeedToKnowOptions.DefaultNormalColor = {0.7, 0.7, 0.7, 0}
 
-function NeedToKnowOptions.RebuildProfileList(profilePanel)
-    local scrollPanel = profilePanel.Profiles
-    local oldKey
-    if scrollPanel.curSel and scrollPanel.profileMap then
-        oldKey = scrollPanel.profileMap[scrollPanel.curSel].key
-    end
-
-    if not scrollPanel.profileNames then
-        scrollPanel.profileNames = {}
-    end
-    scrollPanel.profileMap = {}
-
-    local allNames = scrollPanel.profileNames
-    local allRefs = scrollPanel.profileMap
-
-    local n = 0
-    local subList = NeedToKnow_Profiles
-    if subList then
-        for profKey, rProfile in pairs(subList) do
-            n = n + 1
-            local profName
-            if NeedToKnow_Globals.Profiles[profKey] == rProfile then
-                profName = 'Account: '..rProfile.name -- FIXME Localization
-            else
-                profName = 'Character: '..rProfile.name -- Fixme: Character-Server:
-            end
-            allNames[n] = profName
-            allRefs[profName] = {ref = rProfile, global = true, key = profKey}
-            if profKey == oldKey then
-                scrollPanel.curSel = profName
-            end
-        end
-    end
-    while n < #allNames do
-        table.remove(allNames)
-    end
-
-    table.sort(allNames, function(lhs, rhs) return string.upper(lhs) < string.upper(rhs) end)
-    NeedToKnowOptions.UpdateProfileList()
-end
-
---[[
-function NeedToKnowOptions.IsProfileNameAvailable(newName)
-    if not newName or newName == "" then
-        return false;
-    end
-
-    for k, profile in pairs(NeedToKnow_Profiles) do
-        if profile.name == newName then
-            return false;
-        end
-    end
-    return true;
-end
-]]--
-
-function NeedToKnowOptions.UpdateProfileList()
-	local panel = _G["InterfaceOptionsNeedToKnowProfilePanel"]
-	local scrollPanel = panel.Profiles
-	if scrollPanel.profileNames then
-		local curProfile
-		for n, r in pairs(scrollPanel.profileMap) do
-			if r.ref == NeedToKnow.ProfileSettings then
-				curProfile = n
-				break
-			end
-		end
-
-		if not scrollPanel.curSel or not scrollPanel.profileMap[scrollPanel.curSel] then
-			scrollPanel.curSel = curProfile
-		end
-		local curSel = scrollPanel.curSel
-
-		NeedToKnowOptions.UpdateScrollPanel(scrollPanel, scrollPanel.profileNames, curSel, curProfile)
-
-		local optionsPanel = scrollPanel:GetParent()
-		if curSel == curProfile then
-			optionsPanel.activateButton:Disable()
-			optionsPanel.deleteButton:Disable()
-		else
-			optionsPanel.activateButton:Enable()
-			optionsPanel.deleteButton:Enable()
-		end
-
-		local curEntry = optionsPanel.NewName:GetText()
-		-- if NeedToKnowOptions.IsProfileNameAvailable(curEntry) then
-		if NeedToKnow.IsProfileNameAvailable(curEntry) then
-			optionsPanel.renameButton:Enable()
-			optionsPanel.copyButton:Enable()
-		else
-			optionsPanel.renameButton:Disable()
-			optionsPanel.copyButton:Disable()
-		end
-
-		local rSelectedProfile = scrollPanel.profileMap[curSel].ref
-		local rSelectedKey = scrollPanel.profileMap[curSel].key
-		if rSelectedProfile and rSelectedKey and 
-			NeedToKnow_Globals.Profiles[rSelectedKey] == rSelectedProfile
-		then
-			optionsPanel.toCharacterButton:Show()
-			optionsPanel.toAccountButton:Hide()
-		else
-			optionsPanel.toCharacterButton:Hide()
-			optionsPanel.toAccountButton:Show()
-		end
-	end
-end
-
---[[
-StaticPopupDialogs["NEEDTOKNOW.CONFIRMDLG"] = {
-    button1 = YES,
-    button2 = NO,
-    timeout = 0,
-    hideOnEscape = 1,
-    OnShow = function(self)
-        self.oldStrata = self:GetFrameStrata()
-        self:SetFrameStrata("TOOLTIP")
-    end,
-    OnHide = function(self)
-        if self.oldStrata then 
-            self:SetFrameStrata(self.oldStrata) 
-        end
-    end
-};
-]]--
 
 
 --[[ ScrollFrame ]]-- 
@@ -278,41 +153,39 @@ end
 ]]--
 
 function NeedToKnowOptions.UpdateScrollPanel(panel, list, selected, checked)
-	-- local Value = _G[panel:GetName().."Value"]
-	-- Value:SetText(checked)
-
 	local PanelList = panel.List
 	local buttons = PanelList.buttons
 	HybridScrollFrame_Update(PanelList, #(list) * buttons[1]:GetHeight() , PanelList:GetHeight())
 
-	local numButtons = #buttons;
-	local scrollOffset = HybridScrollFrame_GetOffset(PanelList);
-	local label;
+	local numButtons = #buttons
+	local scrollOffset = HybridScrollFrame_GetOffset(PanelList)
+	local label
 	for i = 1, numButtons do
 		local idx = i + scrollOffset
 		label = list[idx]
-		if ( label ) then
-			buttons[i]:Show();
-			buttons[i].text:SetText(label);
+		if label then
+			buttons[i]:Show()
+			buttons[i].text:SetText(label)
 
-			if ( label == checked ) then
-				buttons[i].Check:Show();
+			if label == checked then
+				buttons[i].Check:Show()
 			else
-				buttons[i].Check:Hide();
+				buttons[i].Check:Hide()
 			end
-			if ( label == selected ) then
+
+			if label == selected then
 				local color = panel.selected_color
 				if not color then color = NeedToKnowOptions.DefaultSelectedColor end
-				buttons[i].Bg:SetVertexColor(unpack(color));
+				buttons[i].Bg:SetVertexColor(unpack(color))
 			else
 				local color = panel.normal_color
 				if not color then color = NeedToKnowOptions.DefaultNormalColor end
-				buttons[i].Bg:SetVertexColor(unpack(color));
+				buttons[i].Bg:SetVertexColor(unpack(color))
 			end
 
-			panel.configure(i, buttons[i], label)
+			-- panel.configure(i, buttons[i], label)
 		else
-			buttons[i]:Hide();
+			buttons[i]:Hide()
 		end
 	end
 end
