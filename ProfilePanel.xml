@@ -32,8 +32,8 @@
 			<Layer level="BACKGROUND" >
 				<Texture parentKey="Bg" name="$parentBg" file="Interface\FriendsFrame\UI-FriendsFrame-HighlightBar-Blue" alphaMode="ADD">
 					<Anchors>
-						<Anchor point="TOPLEFT" x="1" y="-0.99"/>
-						<Anchor point="BOTTOMRIGHT" x="-1" y="0.99"/>
+						<Anchor point="TOPLEFT" x="1" y="-1"/>
+						<Anchor point="BOTTOMRIGHT" x="-1" y="1"/>
 					</Anchors>
 				</Texture>
 			</Layer>

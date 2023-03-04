@@ -27,7 +27,7 @@ function ProfilePanel:SetScripts()
 	self.copyButton:SetScript("OnClick", self.OnClickCopyButton)
 	self.toAccountButton:SetScript("OnClick", self.OnClickToAccountButton)
 	self.toCharacterButton:SetScript("OnClick",self.OnClickToCharacterButton)
-	self.editBox:SetScript("OnTextChanged", ProfilePanel.UpdateProfileList)
+	self.editBox:SetScript("OnTextChanged", ProfilePanel.OnEditBoxTextChanged)
 
 	-- Profile list scroll frame
 	self.Profiles.List:SetScript("OnSizeChanged", ProfilePanel.OnScrollFrameSizeChanged)
@@ -58,29 +58,9 @@ function ProfilePanel:OnShow()
 	self:Update()
 end
 
-function ProfilePanel:Update()
-	-- Called by ProfilePanel:OnShow()
-	if not self:IsVisible() then return end
-	self:UpdateProfileList()
-end
-
-
---[[ Profile list scroll frame ]]--
-
-function ProfilePanel.OnScrollFrameSizeChanged(self)
-	-- called with self = scrollFrame.List
-    HybridScrollFrame_CreateButtons(self, "NeedToKnowScrollItemTemplate")
-	for _, button in pairs(self.buttons) do
-		button:SetScript("OnClick", ProfilePanel.OnClickProfileButton)
-	end
-    local old_value = self.scrollBar:GetValue()
-    local max_value = self.range or self:GetHeight()
-    self.scrollBar:SetValue(min(old_value, max_value))
-end
-
 function ProfilePanel:RebuildProfileList()
-	local profilePanel = self
-	local scrollPanel = profilePanel.Profiles
+	local scrollPanel = self.Profiles
+
 	local oldKey
 	if scrollPanel.curSel and scrollPanel.profileMap then
 		oldKey = scrollPanel.profileMap[scrollPanel.curSel].key
@@ -92,21 +72,20 @@ function ProfilePanel:RebuildProfileList()
 	scrollPanel.profileMap = {}
 
 	local profileNames = scrollPanel.profileNames
-	local allRefs = scrollPanel.profileMap
-
+	local profileMap = scrollPanel.profileMap
 	local i = 0
 	if NeedToKnow_Profiles then
-		for profKey, rProfile in pairs(NeedToKnow_Profiles) do
+		for profileKey, rProfile in pairs(NeedToKnow_Profiles) do
 			i = i + 1
 			local name
-			if NeedToKnow_Globals.Profiles[profKey] == rProfile then
+			if NeedToKnow_Globals.Profiles[profileKey] == rProfile then
 				name = 'Account: '..rProfile.name
 			else
 				name = 'Character: '..rProfile.name
 			end
 			profileNames[i] = name
-			allRefs[name] = {ref = rProfile, global = true, key = profKey}
-			if profKey == oldKey then
+			profileMap[name] = {ref = rProfile, global = true, key = profileKey}
+			if profileKey == oldKey then
 				scrollPanel.curSel = name
 			end
 		end
@@ -114,70 +93,61 @@ function ProfilePanel:RebuildProfileList()
 	while i < #profileNames do
 		table.remove(profileNames)
 	end
-
 	table.sort(profileNames, function(lhs, rhs) return string.upper(lhs) < string.upper(rhs) end)
-	profilePanel:UpdateProfileList()
+
+	self:Update()
 end
 
-function ProfilePanel:UpdateProfileList()
-	-- print(GetTime(), "UpdateProfileList()")
+function ProfilePanel:Update()
 	local self = ProfilePanel
-	-- local panel = ProfilePanel
+	if not self:IsVisible() then return end
+
 	local scrollPanel = self.Profiles
 	if scrollPanel.profileNames then
 		-- Get current profile name
-		local currentName
 		for name, r in pairs(scrollPanel.profileMap) do
 			if r.ref == NeedToKnow.ProfileSettings then
-				currentName = name
+				self.currentProfileName = name
 				break
 			end
 		end
 
 		-- Get selected profile name
 		if not scrollPanel.curSel or not scrollPanel.profileMap[scrollPanel.curSel] then
-			scrollPanel.curSel = currentName
+			scrollPanel.curSel = self.currentProfileName
 		end
 		local selectedName = scrollPanel.curSel
+		self.selectedProfileName = selectedName
 
-		self:UpdateProfileScrollFrame(scrollPanel.profileNames, selectedName, currentName)
-
-		-- Update activate and delete buttons
-		if selectedName == currentName then
-			self.activateButton:Disable()
-			self.deleteButton:Disable()
-		else
-			self.activateButton:Enable()
-			self.deleteButton:Enable()
-		end
-
-		-- Update rename and copy buttons
-		if NeedToKnow.IsProfileNameAvailable(self.editBox:GetText()) then
-			self.renameButton:Enable()
-			self.copyButton:Enable()
-		else
-			self.renameButton:Disable()
-			self.copyButton:Disable()
-		end
-
-		-- Update to-character and to-account buttons
-		local rSelectedProfile = scrollPanel.profileMap[selectedName].ref
-		local rSelectedKey = scrollPanel.profileMap[selectedName].key
-		if rSelectedProfile and rSelectedKey and 
-			NeedToKnow_Globals.Profiles[rSelectedKey] == rSelectedProfile
-		then
-			self.toCharacterButton:Show()
-			self.toAccountButton:Hide()
-		else
-			self.toCharacterButton:Hide()
-			self.toAccountButton:Show()
-		end
+		self:UpdateProfileScrollFrame(scrollPanel.profileNames)
+		self:UpdateButtons()
 	end
 end
 
-function ProfilePanel:UpdateProfileScrollFrame(profileNames, selectedName, currentName)
+function ProfilePanel.OnEditBoxTextChanged(editBox)
+	-- Called with self = editBox
+	ProfilePanel:UpdateButtons()
+end
+
+
+
+--[[ Profile list scroll frame ]]--
+
+function ProfilePanel.OnScrollFrameSizeChanged(self)
+	-- Called with self = scrollFrame
+    HybridScrollFrame_CreateButtons(self, "NeedToKnowScrollItemTemplate")
+	for _, button in pairs(self.buttons) do
+		button:SetScript("OnClick", ProfilePanel.OnClickProfileButton)
+	end
+    local old_value = self.scrollBar:GetValue()
+    local max_value = self.range or self:GetHeight()
+    self.scrollBar:SetValue(min(old_value, max_value))
+end
+
+function ProfilePanel:UpdateProfileScrollFrame(profileNames)
 	local scrollFrame = self.Profiles.List
 	local buttons = scrollFrame.buttons
+
 	HybridScrollFrame_Update(scrollFrame, #profileNames * buttons[1]:GetHeight(), scrollFrame:GetHeight())
 
 	-- Update profile buttons
@@ -187,12 +157,12 @@ function ProfilePanel:UpdateProfileScrollFrame(profileNames, selectedName, curre
 		if name then
 			button:Show()
 			button.text:SetText(name)
-			if name == selectedName then
+			if name == self.selectedProfileName then
 				button.Bg:Show()
 			else
 				button.Bg:Hide()
 			end
-			if name == currentName then
+			if name == self.currentProfileName then
 				button.Check:Show()
 			else
 				button.Check:Hide()
@@ -207,14 +177,46 @@ function ProfilePanel.OnClickProfileButton(button)
 	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
 	local panel = ProfilePanel
 	panel.Profiles.curSel = button.text:GetText()
-	panel:UpdateProfileList()
+	panel.selectedProfileName = button.text:GetText()
+	panel:Update()
 end
 
 
---[[ Buttons ]]--
+--[[ Panel buttons ]]--
 
--- function ProfilePanel:UpdateButtons()
--- end
+function ProfilePanel:UpdateButtons()
+	-- Activate, Delete
+	if self.selectedProfileName == self.currentProfileName then
+		self.activateButton:Disable()
+		self.deleteButton:Disable()
+	else
+		self.activateButton:Enable()
+		self.deleteButton:Enable()
+	end
+
+	-- Rename, Copy
+	if NeedToKnow.IsProfileNameAvailable(self.editBox:GetText()) then
+		self.renameButton:Enable()
+		self.copyButton:Enable()
+	else
+		self.renameButton:Disable()
+		self.copyButton:Disable()
+	end
+
+	-- To Character, To Account
+	local profileMap = self.Profiles.profileMap
+	local selectedProfile = profileMap[self.selectedProfileName].ref
+	local selectedProfileKey = profileMap[self.selectedProfileName].key
+	if selectedProfile and selectedProfileKey and 
+		NeedToKnow_Globals.Profiles[selectedProfileKey] == selectedProfile
+	then
+		self.toCharacterButton:Show()
+		self.toAccountButton:Hide()
+	else
+		self.toCharacterButton:Hide()
+		self.toAccountButton:Show()
+	end
+end
 
 function ProfilePanel.OnClickActivateButton(button)
 	-- called with self = button
@@ -222,9 +224,9 @@ function ProfilePanel.OnClickActivateButton(button)
 	local panel = ProfilePanel
 	local scrollPanel = panel.Profiles
 	local profileName = scrollPanel.curSel
-	if selectedName then
+	if profileName then
 		NeedToKnow.ChangeProfile(scrollPanel.profileMap[profileName].key)
-		panel:UpdateProfileList()
+		panel:Update()
 	end
 end
 
