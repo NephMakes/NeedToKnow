@@ -20,7 +20,7 @@ function AppearancePanel:OnLoad()
 	self.name = String.APPEARANCE
 	self.parent = "NeedToKnow"
 	self.default = NeedToKnow.ResetCharacter
-	self.cancel = NeedToKnowOptions.Cancel
+	self.cancel = NeedToKnow.Cancel
 	-- Need different way to handle cancel?  Might open appearance panel without opening main panel
 	InterfaceOptions_AddCategory(self)
 end

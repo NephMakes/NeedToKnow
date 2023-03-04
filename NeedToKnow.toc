@@ -27,7 +27,6 @@ BarEngine.lua
 Cooldown.lua
 Blink.lua
 BossFight.lua
-NeedToKnow_Options.lua
 OptionsPanel.xml
 OptionsPanel.lua
 AppearancePanel.xml

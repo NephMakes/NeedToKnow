@@ -9,8 +9,8 @@ local ScrollFrame = NeedToKnow.ScrollFrame
 -- INTERFACE OPTIONS PANEL: PROFILE
 -- -----------------------------------
 
-NeedToKnowOptions.DefaultSelectedColor = {0.1, 0.6, 0.8, 1}
-NeedToKnowOptions.DefaultNormalColor = {0.7, 0.7, 0.7, 0}
+-- NeedToKnowOptions.DefaultSelectedColor = {0.1, 0.6, 0.8, 1}
+-- NeedToKnowOptions.DefaultNormalColor = {0.7, 0.7, 0.7, 0}
 
 
 
@@ -152,43 +152,36 @@ function AppearancePanel:OnClickScrollItem()
 end
 ]]--
 
-function NeedToKnowOptions.UpdateScrollPanel(panel, list, selected, checked)
-	local PanelList = panel.List
-	local buttons = PanelList.buttons
-	HybridScrollFrame_Update(PanelList, #(list) * buttons[1]:GetHeight() , PanelList:GetHeight())
+--[[
+function NeedToKnowOptions.UpdateScrollPanel(panel, itemList, selectedItem, checkedItem)
+	-- local itemList = self.itemList
+	local listFrame = panel.List
+	local buttons = listFrame.buttons
+	HybridScrollFrame_Update(listFrame, #itemList * buttons[1]:GetHeight(), listFrame:GetHeight())
 
-	local numButtons = #buttons
-	local scrollOffset = HybridScrollFrame_GetOffset(PanelList)
 	local label
-	for i = 1, numButtons do
-		local idx = i + scrollOffset
-		label = list[idx]
+	for i, button in ipairs(buttons) do
+		label = itemList[i + HybridScrollFrame_GetOffset(listFrame)]
 		if label then
-			buttons[i]:Show()
-			buttons[i].text:SetText(label)
+			button:Show()
+			button.text:SetText(label)
 
-			if label == checked then
-				buttons[i].Check:Show()
+			if label == selectedItem then
+				button.Bg:SetVertexColor(0.1, 0.6, 0.8, 1)
 			else
-				buttons[i].Check:Hide()
+				button.Bg:SetVertexColor(0.7, 0.7, 0.7, 0)
 			end
 
-			if label == selected then
-				local color = panel.selected_color
-				if not color then color = NeedToKnowOptions.DefaultSelectedColor end
-				buttons[i].Bg:SetVertexColor(unpack(color))
+			if label == checkedItem then
+				button.Check:Show()
 			else
-				local color = panel.normal_color
-				if not color then color = NeedToKnowOptions.DefaultNormalColor end
-				buttons[i].Bg:SetVertexColor(unpack(color))
+				button.Check:Hide()
 			end
-
-			-- panel.configure(i, buttons[i], label)
 		else
-			buttons[i]:Hide()
+			button:Hide()
 		end
 	end
 end
-
+]]--
 
 

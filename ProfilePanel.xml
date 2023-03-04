@@ -119,7 +119,7 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<EditBox parentKey="NewName" name="$parentNewName" inherits="InputBoxTemplate" letters="256" historyLines="0" autoFocus="false">
+			<EditBox parentKey="editBox" name="$parentNewName" inherits="InputBoxTemplate" letters="256" historyLines="0" autoFocus="false">
 				<Size>
 					<AbsDimension x="128" y="22"/>
 				</Size>
