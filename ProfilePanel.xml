@@ -3,26 +3,6 @@
 
     <!-- Load before ProfilePanel.lua -->
 
-	<Frame name="NeedToKnowScrollFrameTemplate" virtual="true">
-		<Layers>
-			<Layer level="BACKGROUND">
-				<FontString parentKey="title" name="$parentTitle" text="ScrollFrame" inherits="GameFontHighlight" justifyH="LEFT" justifyV="TOP">
-					<Anchors>
-						<Anchor point="TOPLEFT"/>
-					</Anchors>
-				</FontString>
-			</Layer>
-		</Layers>
-		<Frames>
-			<ScrollFrame parentKey="List" name="$parentList" inherits="BasicHybridScrollFrameTemplate">					
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT" y="-6"/>
-					<Anchor point="BOTTOMRIGHT" x="-27"/>
-				</Anchors>
-			</ScrollFrame>
-		</Frames>
-	</Frame>
-
 	<Button name="NeedToKnowScrollItemTemplate" virtual="true">
 		<Size x="169" y="22"/>
 		<Anchors>
@@ -41,12 +21,12 @@
 				<Texture parentKey="Check" name="$parentCheck" file="Interface\Buttons\UI-CheckBox-Check" hidden="true">
 					<Size x="16" y="16"/>
 					<Anchors>
-						<Anchor point="LEFT" x="8"/>
+						<Anchor point="LEFT" x="2"/>
 					</Anchors>
 				</Texture>
 			</Layer>
 		</Layers>
-		<ButtonText parentKey="text" name="$parentText" inherits="GameFontNormalSmallLeft" justifyH="LEFT">
+		<ButtonText parentKey="text" name="$parentText" inherits="GameFontHighlight" justifyH="LEFT">
 			<Anchors>
 				<Anchor point="LEFT" relativeTo="$parentCheck" relativePoint="RIGHT" x="3" y="0"/>
 				<Anchor point="RIGHT" x="-3" y="0"/>
@@ -144,13 +124,22 @@
 					<Anchor point="TOPRIGHT" relativeTo="$parentCopyBtn" relativePoint="BOTTOMRIGHT" y="-16"/>
 				</Anchors>
 			</Button>
-			<Frame parentKey="Profiles" name="$parentProfiles" inherits="NeedToKnowScrollFrameTemplate">
+			<ScrollFrame parentKey="profileScrollFrame" name="$parentProfileScrollFrame" inherits="BasicHybridScrollFrameTemplate">					
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" y="-16"/>
-					<Anchor point="BOTTOM" y="10"/>
-					<Anchor point="RIGHT" relativeTo="$parentSwitchToBtn" relativePoint="LEFT" x="-4"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" y="-28"/>
+					<Anchor point="BOTTOM" y="20"/>
+					<Anchor point="RIGHT" relativeTo="$parentSwitchToBtn" relativePoint="LEFT" x="-40"/>
 				</Anchors>
-			</Frame>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<FontString parentKey="label" name="$parentLabel" text="ScrollFrame" inherits="GameFontNormal" justifyH="LEFT" justifyV="TOP">
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT" y="6"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+			</ScrollFrame>
 		</Frames>
 	</Frame>
 

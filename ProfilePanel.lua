@@ -30,13 +30,13 @@ function ProfilePanel:SetScripts()
 	self.editBox:SetScript("OnTextChanged", self.OnEditBoxTextChanged)
 
 	-- Profile list scroll frame
-	self.Profiles.List:SetScript("OnSizeChanged", self.OnScrollFrameSizeChanged)
+	self.profileScrollFrame:SetScript("OnSizeChanged", self.OnScrollFrameSizeChanged)
 end
 
 function ProfilePanel:SetText()
 	self.title:SetText("NeedToKnow v"..NeedToKnow.version)
 	self.subText:SetText(String.PROFILE_PANEL_SUBTEXT)
-	self.Profiles.title:SetText(String.PROFILES)
+	self.profileScrollFrame.label:SetText(String.PROFILES)
 	self.activateButton.Text:SetText(String.ACTIVATE)
 	self.activateButton.tooltipText = String.ACTIVATE_TOOLTIP
 	self.renameButton.Text:SetText(String.RENAME)
@@ -131,7 +131,7 @@ function ProfilePanel.OnScrollFrameSizeChanged(scrollFrame)
 end
 
 function ProfilePanel:UpdateProfileScrollFrame()
-	local scrollFrame = self.Profiles.List
+	local scrollFrame = self.profileScrollFrame
 	local buttons = scrollFrame.buttons
 	local profileNames = self.profileNames
 
