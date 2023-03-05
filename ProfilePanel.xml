@@ -30,7 +30,7 @@
 		</Anchors>
 		<Layers>
 			<Layer level="BACKGROUND" >
-				<Texture parentKey="Bg" name="$parentBg" file="Interface\FriendsFrame\UI-FriendsFrame-HighlightBar-Blue" alphaMode="ADD">
+				<Texture parentKey="highlight" name="$parentHighlight" file="Interface\FriendsFrame\UI-FriendsFrame-HighlightBar-Blue" alphaMode="ADD">
 					<Anchors>
 						<Anchor point="TOPLEFT" x="1" y="-1"/>
 						<Anchor point="BOTTOMRIGHT" x="-1" y="1"/>
@@ -46,7 +46,7 @@
 				</Texture>
 			</Layer>
 		</Layers>
-		<ButtonText parentKey="text" name="$parentTitleText" inherits="GameFontNormalSmallLeft" justifyH="LEFT">
+		<ButtonText parentKey="text" name="$parentText" inherits="GameFontNormalSmallLeft" justifyH="LEFT">
 			<Anchors>
 				<Anchor point="LEFT" relativeTo="$parentCheck" relativePoint="RIGHT" x="3" y="0"/>
 				<Anchor point="RIGHT" x="-3" y="0"/>
