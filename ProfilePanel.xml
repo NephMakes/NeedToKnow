@@ -24,12 +24,17 @@
 						<Anchor point="LEFT" x="2"/>
 					</Anchors>
 				</Texture>
+				<FontString parentKey="typeText" name="$parentTypeText" text="??" inherits="GameFontHighlight" justifyH="RIGHT">
+					<Anchors>
+						<Anchor point="RIGHT" x="-4"/>
+					</Anchors>
+				</FontString>
 			</Layer>
 		</Layers>
-		<ButtonText parentKey="text" name="$parentText" inherits="GameFontHighlight" justifyH="LEFT">
+		<ButtonText parentKey="nameText" name="$parentNameText" inherits="GameFontHighlight" justifyH="LEFT">
 			<Anchors>
 				<Anchor point="LEFT" relativeTo="$parentCheck" relativePoint="RIGHT" x="3" y="0"/>
-				<Anchor point="RIGHT" x="-3" y="0"/>
+				<Anchor point="RIGHT" x="-96" y="0"/>
 			</Anchors>
 		</ButtonText>
 		<HighlightTexture file="Interface\FriendsFrame\UI-FriendsFrame-HighlightBar-Blue" alphaMode="ADD"/>
@@ -43,7 +48,7 @@
 						<Anchor point="TOPLEFT" x="16" y="-16"/>
 					</Anchors>
 				</FontString>
-				<FontString parentKey="subText" name="$parentSubText1" inherits="GameFontHighlightSmall" nonspacewrap="true" maxLines="5" justifyH="LEFT" justifyV="TOP">
+				<FontString parentKey="subText" name="$parentSubText" inherits="GameFontHighlightSmall" nonspacewrap="true" maxLines="5" justifyH="LEFT" justifyV="TOP">
 					<Size>
 						<AbsDimension y="32" x="0"/>
 					</Size>
@@ -55,80 +60,80 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<Button parentKey="activateButton" name="$parentSwitchToBtn" inherits="UIPanelButtonTemplate">
+			<Button parentKey="activateButton" name="$parentActivateButton" inherits="UIPanelButtonTemplate">
 				<Size>
 					<AbsDimension x="128" y="22"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parentSubText1" relativePoint="BOTTOM" y="-24"/>
+					<Anchor point="TOP" relativeTo="$parentSubText" relativePoint="BOTTOM" y="-24"/>
 					<Anchor point="RIGHT" x="-16"/>
 				</Anchors>
 			</Button>
-			<Button parentKey="deleteButton" name="$parentDeleteBtn" inherits="UIPanelButtonTemplate">
+			<Button parentKey="deleteButton" name="$parentDeleteButton" inherits="UIPanelButtonTemplate">
 				<Size>
 					<AbsDimension x="128" y="22"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOPRIGHT" relativeTo="$parentSwitchToBtn" relativePoint="BOTTOMRIGHT" y="-16"/>
+					<Anchor point="TOPRIGHT" relativeTo="$parentActivateButton" relativePoint="BOTTOMRIGHT" y="-16"/>
 				</Anchors>
 			</Button>
-			<Button parentKey="toAccountButton" name="$parentPublicBtn" inherits="UIPanelButtonTemplate">
+			<Button parentKey="toAccountButton" name="$parentToAccountButton" inherits="UIPanelButtonTemplate">
 				<Size>
 					<AbsDimension x="128" y="22"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOPRIGHT" relativeTo="$parentDeleteBtn" relativePoint="BOTTOMRIGHT" y="-16"/>
+					<Anchor point="TOPRIGHT" relativeTo="$parentDeleteButton" relativePoint="BOTTOMRIGHT" y="-16"/>
 				</Anchors>
 			</Button>
-			<Button parentKey="toCharacterButton" name="$parentPrivateBtn" inherits="UIPanelButtonTemplate">
+			<Button parentKey="toCharacterButton" name="$parentToCharacterButton" inherits="UIPanelButtonTemplate">
 				<Size>
 					<AbsDimension x="128" y="22"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOPRIGHT" relativeTo="$parentDeleteBtn" relativePoint="BOTTOMRIGHT" y="-16"/>
+					<Anchor point="TOPRIGHT" relativeTo="$parentDeleteButton" relativePoint="BOTTOMRIGHT" y="-16"/>
 				</Anchors>
 			</Button>
 		</Frames>
 		<Layers>
 			<Layer level="ARTWORK">
-				<FontString parentKey="newNameLabel" name="$parentEditLabel" inherits="GameFontNormalSmall" nonspacewrap="true" maxLines="1" justifyH="LEFT" justifyV="TOP">
+				<FontString parentKey="editBoxLabel" name="$parentEditBoxLabel" inherits="GameFontNormalSmall" nonspacewrap="true" maxLines="1" justifyH="LEFT" justifyV="TOP">
 					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="$parentPublicBtn" relativePoint="BOTTOMLEFT" y="-30"/>
+						<Anchor point="TOPLEFT" relativeTo="$parentToAccountButton" relativePoint="BOTTOMLEFT" y="-30"/>
 					</Anchors>
 				</FontString>
 			</Layer>
 		</Layers>
 		<Frames>
-			<EditBox parentKey="editBox" name="$parentNewName" inherits="InputBoxTemplate" letters="256" historyLines="0" autoFocus="false">
+			<EditBox parentKey="editBox" name="$parentEditBox" inherits="InputBoxTemplate" letters="256" historyLines="0" autoFocus="false">
 				<Size>
 					<AbsDimension x="128" y="22"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentEditLabel" relativePoint="BOTTOMLEFT"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentEditBoxLabel" relativePoint="BOTTOMLEFT"/>
 				</Anchors>
 			</EditBox>
-			<Button parentKey="copyButton" name="$parentCopyBtn" inherits="UIPanelButtonTemplate">
+			<Button parentKey="copyButton" name="$parentCopyButton" inherits="UIPanelButtonTemplate">
 				<Size>
 					<AbsDimension x="128" y="22"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parentNewName" relativePoint="BOTTOM" y="-16"/>
-					<Anchor point="RIGHT" relativeTo="$parentDeleteBtn" relativePoint="RIGHT" x="-2"/>
+					<Anchor point="TOP" relativeTo="$parentEditBox" relativePoint="BOTTOM" y="-16"/>
+					<Anchor point="RIGHT" relativeTo="$parentDeleteButton" relativePoint="RIGHT" x="-2"/>
 				</Anchors>
 			</Button>
-			<Button parentKey="renameButton" name="$parentRenameBtn" inherits="UIPanelButtonTemplate">
+			<Button parentKey="renameButton" name="$parentRenameButton" inherits="UIPanelButtonTemplate">
 				<Size>
 					<AbsDimension x="128" y="22"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOPRIGHT" relativeTo="$parentCopyBtn" relativePoint="BOTTOMRIGHT" y="-16"/>
+					<Anchor point="TOPRIGHT" relativeTo="$parentCopyButton" relativePoint="BOTTOMRIGHT" y="-16"/>
 				</Anchors>
 			</Button>
 			<ScrollFrame parentKey="profileScrollFrame" name="$parentProfileScrollFrame" inherits="BasicHybridScrollFrameTemplate">					
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentSubText1" relativePoint="BOTTOMLEFT" y="-28"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentSubText" relativePoint="BOTTOMLEFT" y="-28"/>
 					<Anchor point="BOTTOM" y="20"/>
-					<Anchor point="RIGHT" relativeTo="$parentSwitchToBtn" relativePoint="LEFT" x="-40"/>
+					<Anchor point="RIGHT" relativeTo="$parentActivateButton" relativePoint="LEFT" x="-40"/>
 				</Anchors>
 				<Layers>
 					<Layer level="BACKGROUND">

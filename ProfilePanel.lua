@@ -20,7 +20,7 @@ end
 
 function ProfilePanel:SetScripts()
 	self:SetScript("OnShow", self.OnShow)
-
+	self.profileScrollFrame:SetScript("OnSizeChanged", self.OnScrollFrameSizeChanged)
 	self.activateButton:SetScript("OnClick", self.OnClickActivateButton)
 	self.renameButton:SetScript("OnClick", self.OnClickRenameButton)
 	self.deleteButton:SetScript("OnClick", self.OnClickDeleteButton)
@@ -28,9 +28,6 @@ function ProfilePanel:SetScripts()
 	self.toAccountButton:SetScript("OnClick", self.OnClickToAccountButton)
 	self.toCharacterButton:SetScript("OnClick", self.OnClickToCharacterButton)
 	self.editBox:SetScript("OnTextChanged", self.OnEditBoxTextChanged)
-
-	-- Profile list scroll frame
-	self.profileScrollFrame:SetScript("OnSizeChanged", self.OnScrollFrameSizeChanged)
 end
 
 function ProfilePanel:SetText()
@@ -49,7 +46,7 @@ function ProfilePanel:SetText()
 	self.toAccountButton.tooltipText = String.TO_ACCOUNT_TOOLTIP
 	self.toCharacterButton.Text:SetText(String.TO_CHARACTER)
 	self.toCharacterButton.tooltipText = String.TO_CHARACTER_TOOLTIP
-	self.newNameLabel:SetText(String.NEW_PROFILE_NAME)
+	self.editBoxLabel:SetText(String.NEW_PROFILE_NAME)
 end
 
 function ProfilePanel:OnShow()
@@ -68,16 +65,18 @@ function ProfilePanel:UpdateProfileList()
 	local profileNames = self.profileNames
 	local i = 0
 	if NeedToKnow_Profiles then
-		for profileKey, rProfile in pairs(NeedToKnow_Profiles) do
+		for profileKey, profile in pairs(NeedToKnow_Profiles) do
 			i = i + 1
-			local name
-			if NeedToKnow_Globals.Profiles[profileKey] == rProfile then
-				name = 'Account: '..rProfile.name
+			local name, profileType
+			if NeedToKnow_Globals.Profiles[profileKey] == profile then
+				name = profile.name
+				profileType = "account"
 			else
-				name = 'Character: '..rProfile.name
+				name = profile.name
+				profileType = "character"
 			end
 			profileNames[i] = name
-			self.profileMap[name] = {ref = rProfile, global = true, key = profileKey}
+			self.profileMap[name] = {key = profileKey, ref = profile, profileType = profileType}
 			if profileKey == oldKey then
 				self.selectedProfileName = name
 			end
@@ -143,12 +142,21 @@ function ProfilePanel:UpdateProfileScrollFrame()
 		name = profileNames[i + HybridScrollFrame_GetOffset(scrollFrame)]
 		if name then
 			button:Show()
-			button.text:SetText(name)
+			button.nameText:SetText(name)
+
+			local profileType = self.profileMap[name].profileType
+			if profileType == "account" then
+				button.typeText:SetText(String.ACCOUNT)
+			elseif profileType == "character" then
+				button.typeText:SetText(String.CHARACTER)
+			end
+
 			if name == self.selectedProfileName then
 				button.highlight:Show()
 			else
 				button.highlight:Hide()
 			end
+
 			if name == self.currentProfileName then
 				button.Check:Show()
 			else
@@ -162,7 +170,7 @@ end
 
 function ProfilePanel.OnClickProfileButton(button)
 	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
-	ProfilePanel.selectedProfileName = button.text:GetText()
+	ProfilePanel.selectedProfileName = button.nameText:GetText()
 	ProfilePanel:Update()
 end
 
@@ -305,8 +313,8 @@ function ProfilePanel.OnClickToCharacterButton(button)
 	local profileName = panel.selectedProfileName
 	local profileMap = panel.profileMap
 	if profileName then
-		local ref = profileMap[profileName].ref
 		local key = profileMap[profileName].key
+		local ref = profileMap[profileName].ref
 		NeedToKnow_Globals.Profiles[key] = nil
 		NeedToKnow_CharSettings.Profiles[key] = ref
 		panel:UpdateProfileList()
