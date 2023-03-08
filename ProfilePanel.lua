@@ -21,6 +21,7 @@ end
 function ProfilePanel:SetScripts()
 	self:SetScript("OnShow", self.OnShow)
 	self.profileScrollFrame:SetScript("OnSizeChanged", self.OnScrollFrameSizeChanged)
+	self.profileScrollFrame.update = ProfilePanel.UpdateProfileScrollFrame
 	self.activateButton:SetScript("OnClick", self.OnClickActivateButton)
 	self.renameButton:SetScript("OnClick", self.OnClickRenameButton)
 	self.deleteButton:SetScript("OnClick", self.OnClickDeleteButton)
@@ -34,6 +35,8 @@ function ProfilePanel:SetText()
 	self.title:SetText("NeedToKnow v"..NeedToKnow.version)
 	self.subText:SetText(String.PROFILE_PANEL_SUBTEXT)
 	self.profileScrollFrame.label:SetText(String.PROFILES)
+	self.profileScrollFrame.nameLabel:SetText(String.PROFILE_NAME)
+	self.profileScrollFrame.typeLabel:SetText(String.PROFILE_TYPE)
 	self.activateButton.Text:SetText(String.ACTIVATE)
 	self.activateButton.tooltipText = String.ACTIVATE_TOOLTIP
 	self.renameButton.Text:SetText(String.RENAME)
@@ -116,20 +119,20 @@ function ProfilePanel.OnEditBoxTextChanged(editBox)
 end
 
 
-
 --[[ Profile list scroll frame ]]--
 
 function ProfilePanel.OnScrollFrameSizeChanged(scrollFrame)
-    HybridScrollFrame_CreateButtons(scrollFrame, "NeedToKnowScrollItemTemplate")
+	HybridScrollFrame_CreateButtons(scrollFrame, "NeedToKnowProfileButtonTemplate")
 	for _, button in pairs(scrollFrame.buttons) do
 		button:SetScript("OnClick", ProfilePanel.OnClickProfileButton)
 	end
-    local old_value = scrollFrame.scrollBar:GetValue()
-    local max_value = scrollFrame.range or scrollFrame:GetHeight()
-    scrollFrame.scrollBar:SetValue(min(old_value, max_value))
+	local old_value = scrollFrame.scrollBar:GetValue()
+	local max_value = scrollFrame.range or scrollFrame:GetHeight()
+	scrollFrame.scrollBar:SetValue(min(old_value, max_value))
 end
 
 function ProfilePanel:UpdateProfileScrollFrame()
+	local self = ProfilePanel
 	local scrollFrame = self.profileScrollFrame
 	local buttons = scrollFrame.buttons
 	local profileNames = self.profileNames
@@ -187,13 +190,11 @@ function ProfilePanel:UpdateButtons()
 		self.deleteButton:Enable()
 	end
 
-	-- Rename, Copy
+	-- Rename
 	if NeedToKnow.IsProfileNameAvailable(self.editBox:GetText()) then
 		self.renameButton:Enable()
-		self.copyButton:Enable()
 	else
 		self.renameButton:Disable()
-		self.copyButton:Disable()
 	end
 
 	-- To Character, To Account
@@ -263,7 +264,7 @@ function ProfilePanel.OnClickDeleteButton(button)
 		dlgInfo.text = "Are you sure you want to delete NeedToKnow profile: ".. profileName .."?"
 		dlgInfo.OnAccept = function(self, data)
 			if NeedToKnow_Profiles[k] == NeedToKnow.ProfileSettings then
-				print("NeedToKnow: Won't delete the active profile!")
+				print("NeedToKnow: Can't delete the active profile")
 			else
 				NeedToKnow_Profiles[k] = nil
 				if NeedToKnow_Globals.Profiles[k] then 
@@ -283,13 +284,10 @@ function ProfilePanel.OnClickCopyButton(button)
 	local panel = ProfilePanel
 	local profileName = panel.selectedProfileName
 	local profileMap = panel.profileMap
-	local newName = panel.editBox:GetText()
-	panel.editBox:ClearFocus()
+	local newName = NeedToKnow.GetProfileCopyName(profileName)
 	if profileName and NeedToKnow.IsProfileNameAvailable(newName) then
-		local newKey = NeedToKnow.CreateProfile(CopyTable(profileMap[profileName].ref), nil, newName)
-		NeedToKnow.ChangeProfile(newKey)
+		NeedToKnow.CreateProfile(CopyTable(profileMap[profileName].ref), nil, newName)
 		panel:UpdateProfileList()
-		panel.editBox:SetText("")
 	end
 end
 

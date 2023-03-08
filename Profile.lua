@@ -239,11 +239,11 @@ function NeedToKnow.CreateProfile(settings, idxSpec, nameProfile)
         keyProfile = NeedToKnow.AllocateProfileKey()
     end
 
-    if ( NeedToKnow_CharSettings.Profiles[keyProfile] ) then
-        print("NeedToKnow: Clearing profile ",nameProfile); -- FIXME - Localization
-    else
-        print("NeedToKnow: Adding profile",nameProfile) -- FIXME - Localization
-    end
+--    if ( NeedToKnow_CharSettings.Profiles[keyProfile] ) then
+--        print("NeedToKnow: Clearing profile ", nameProfile); -- FIXME - Localization
+--    else
+--        print("NeedToKnow: Adding profile", nameProfile) -- FIXME - Localization
+--    end
 
     if ( idxSpec ) then
         NeedToKnow.CharSettings.Specs[idxSpec] = keyProfile
@@ -251,6 +251,16 @@ function NeedToKnow.CreateProfile(settings, idxSpec, nameProfile)
     NeedToKnow_CharSettings.Profiles[keyProfile] = settings
     NeedToKnow_Profiles[keyProfile] = settings
     return keyProfile
+end
+
+function NeedToKnow.GetProfileCopyName(oldName)
+	local newName = oldName.." copy"
+	local i = 1
+	while not NeedToKnow.IsProfileNameAvailable(newName) do
+		i = i + 1
+		newName = oldName.." copy "..i
+	end
+	return newName
 end
 
 
@@ -265,14 +275,14 @@ function NeedToKnowLoader.Reset(bResetCharacter)
 end
 
 function NeedToKnowLoader.RoundSettings(t)
-  for k,v in pairs(t) do
-    local typ = type(v)
-    if typ == "number" then
-      t[k] = tonumber(string.format("%0.4f",v))
-    elseif typ == "table" then
-      NeedToKnowLoader.RoundSettings(v)
-    end
-  end    
+	for k, v in pairs(t) do
+		local typ = type(v)
+		if typ == "number" then
+			t[k] = tonumber(string.format("%0.4f", v))
+		elseif typ == "table" then
+			NeedToKnowLoader.RoundSettings(v)
+		end
+	end
 end
 
 function NeedToKnowLoader.MigrateSpec(specSettings, idxSpec)

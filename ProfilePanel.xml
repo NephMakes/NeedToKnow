@@ -3,7 +3,7 @@
 
     <!-- Load before ProfilePanel.lua -->
 
-	<Button name="NeedToKnowScrollItemTemplate" virtual="true">
+	<Button name="NeedToKnowProfileButtonTemplate" virtual="true">
 		<Size x="169" y="22"/>
 		<Anchors>
 			<Anchor point="RIGHT"/>
@@ -21,19 +21,19 @@
 				<Texture parentKey="Check" name="$parentCheck" file="Interface\Buttons\UI-CheckBox-Check" hidden="true">
 					<Size x="16" y="16"/>
 					<Anchors>
-						<Anchor point="LEFT" x="2"/>
+						<Anchor point="LEFT" x="0"/>
 					</Anchors>
 				</Texture>
-				<FontString parentKey="typeText" name="$parentTypeText" text="??" inherits="GameFontHighlight" justifyH="RIGHT">
+				<FontString parentKey="typeText" name="$parentTypeText" text="??" inherits="GameFontHighlight" justifyH="CENTER">
 					<Anchors>
-						<Anchor point="RIGHT" x="-4"/>
+						<Anchor point="CENTER" relativePoint="RIGHT" x="-48"/>
 					</Anchors>
 				</FontString>
 			</Layer>
 		</Layers>
 		<ButtonText parentKey="nameText" name="$parentNameText" inherits="GameFontHighlight" justifyH="LEFT">
 			<Anchors>
-				<Anchor point="LEFT" relativeTo="$parentCheck" relativePoint="RIGHT" x="3" y="0"/>
+				<Anchor point="LEFT" relativeTo="$parentCheck" relativePoint="RIGHT" x="4" y="0"/>
 				<Anchor point="RIGHT" x="-96" y="0"/>
 			</Anchors>
 		</ButtonText>
@@ -65,8 +65,16 @@
 					<AbsDimension x="128" y="22"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parentSubText" relativePoint="BOTTOM" y="-24"/>
+					<Anchor point="TOP" relativeTo="$parentSubText" relativePoint="BOTTOM" y="-50"/>
 					<Anchor point="RIGHT" x="-16"/>
+				</Anchors>
+			</Button>
+			<Button parentKey="copyButton" name="$parentCopyButton" inherits="UIPanelButtonTemplate">
+				<Size>
+					<AbsDimension x="128" y="22"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOPRIGHT" relativeTo="$parentActivateButton" relativePoint="BOTTOMRIGHT" y="-16"/>
 				</Anchors>
 			</Button>
 			<Button parentKey="deleteButton" name="$parentDeleteButton" inherits="UIPanelButtonTemplate">
@@ -74,7 +82,7 @@
 					<AbsDimension x="128" y="22"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOPRIGHT" relativeTo="$parentActivateButton" relativePoint="BOTTOMRIGHT" y="-16"/>
+					<Anchor point="TOPRIGHT" relativeTo="$parentCopyButton" relativePoint="BOTTOMRIGHT" y="-16"/>
 				</Anchors>
 			</Button>
 			<Button parentKey="toAccountButton" name="$parentToAccountButton" inherits="UIPanelButtonTemplate">
@@ -112,7 +120,7 @@
 					<Anchor point="TOPLEFT" relativeTo="$parentEditBoxLabel" relativePoint="BOTTOMLEFT"/>
 				</Anchors>
 			</EditBox>
-			<Button parentKey="copyButton" name="$parentCopyButton" inherits="UIPanelButtonTemplate">
+			<Button parentKey="renameButton" name="$parentRenameButton" inherits="UIPanelButtonTemplate">
 				<Size>
 					<AbsDimension x="128" y="22"/>
 				</Size>
@@ -121,25 +129,27 @@
 					<Anchor point="RIGHT" relativeTo="$parentDeleteButton" relativePoint="RIGHT" x="-2"/>
 				</Anchors>
 			</Button>
-			<Button parentKey="renameButton" name="$parentRenameButton" inherits="UIPanelButtonTemplate">
-				<Size>
-					<AbsDimension x="128" y="22"/>
-				</Size>
-				<Anchors>
-					<Anchor point="TOPRIGHT" relativeTo="$parentCopyButton" relativePoint="BOTTOMRIGHT" y="-16"/>
-				</Anchors>
-			</Button>
 			<ScrollFrame parentKey="profileScrollFrame" name="$parentProfileScrollFrame" inherits="BasicHybridScrollFrameTemplate">					
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentSubText" relativePoint="BOTTOMLEFT" y="-28"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentSubText" relativePoint="BOTTOMLEFT" y="-48"/>
 					<Anchor point="BOTTOM" y="20"/>
 					<Anchor point="RIGHT" relativeTo="$parentActivateButton" relativePoint="LEFT" x="-40"/>
 				</Anchors>
 				<Layers>
 					<Layer level="BACKGROUND">
-						<FontString parentKey="label" name="$parentLabel" text="ScrollFrame" inherits="GameFontNormal" justifyH="LEFT" justifyV="TOP">
+						<FontString parentKey="label" name="$parentLabel" text="[Profiles]" inherits="GameFontNormal" justifyH="LEFT" justifyV="TOP">
 							<Anchors>
-								<Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT" y="6"/>
+								<Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT" y="28"/>
+							</Anchors>
+						</FontString>
+						<FontString parentKey="nameLabel" name="$parentNameLabel" text="[Name]" inherits="GameFontNormalSmall" justifyH="LEFT" justifyV="BOTTOM">
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT" x="20" y="4"/>
+							</Anchors>
+						</FontString>
+						<FontString parentKey="typeLabel" name="$parentTypeLabel" text="[Type]" inherits="GameFontNormalSmall" justifyH="CENTER" justifyV="BOTTOM">
+							<Anchors>
+								<Anchor point="BOTTOM" relativePoint="TOPRIGHT" x="-48" y="4"/>
 							</Anchors>
 						</FontString>
 					</Layer>
