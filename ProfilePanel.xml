@@ -101,32 +101,12 @@
 					<Anchor point="TOPRIGHT" relativeTo="$parentDeleteButton" relativePoint="BOTTOMRIGHT" y="-16"/>
 				</Anchors>
 			</Button>
-		</Frames>
-		<Layers>
-			<Layer level="ARTWORK">
-				<FontString parentKey="editBoxLabel" name="$parentEditBoxLabel" inherits="GameFontNormalSmall" nonspacewrap="true" maxLines="1" justifyH="LEFT" justifyV="TOP">
-					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="$parentToAccountButton" relativePoint="BOTTOMLEFT" y="-30"/>
-					</Anchors>
-				</FontString>
-			</Layer>
-		</Layers>
-		<Frames>
-			<EditBox parentKey="editBox" name="$parentEditBox" inherits="InputBoxTemplate" letters="256" historyLines="0" autoFocus="false">
-				<Size>
-					<AbsDimension x="128" y="22"/>
-				</Size>
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentEditBoxLabel" relativePoint="BOTTOMLEFT"/>
-				</Anchors>
-			</EditBox>
 			<Button parentKey="renameButton" name="$parentRenameButton" inherits="UIPanelButtonTemplate">
 				<Size>
 					<AbsDimension x="128" y="22"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parentEditBox" relativePoint="BOTTOM" y="-16"/>
-					<Anchor point="RIGHT" relativeTo="$parentDeleteButton" relativePoint="RIGHT" x="-2"/>
+					<Anchor point="TOPRIGHT" relativeTo="$parentToAccountButton" relativePoint="BOTTOMRIGHT" y="-16"/>
 				</Anchors>
 			</Button>
 			<ScrollFrame parentKey="profileScrollFrame" name="$parentProfileScrollFrame" inherits="BasicHybridScrollFrameTemplate">					

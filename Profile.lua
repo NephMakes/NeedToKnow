@@ -276,6 +276,14 @@ function NeedToKnow.DeleteProfile(profileKey)
 	end
 end
 
+function NeedToKnow.RenameProfile(profileKey, newName)
+	if NeedToKnow.IsProfileNameAvailable(newName) then
+		NeedToKnow_Profiles[profileKey].name = newName
+	else
+		print("NeedToKnow: Profile name"..newName.." already in use")
+	end
+end
+
 
 --[[ NeedToKnowLoader ]]-- 
 

@@ -28,7 +28,6 @@ function ProfilePanel:SetScripts()
 	self.copyButton:SetScript("OnClick", self.OnClickCopyButton)
 	self.toAccountButton:SetScript("OnClick", self.OnClickToAccountButton)
 	self.toCharacterButton:SetScript("OnClick", self.OnClickToCharacterButton)
-	self.editBox:SetScript("OnTextChanged", self.OnEditBoxTextChanged)
 end
 
 function ProfilePanel:SetText()
@@ -49,7 +48,6 @@ function ProfilePanel:SetText()
 	self.toAccountButton.tooltipText = String.TO_ACCOUNT_TOOLTIP
 	self.toCharacterButton.Text:SetText(String.TO_CHARACTER)
 	self.toCharacterButton.tooltipText = String.TO_CHARACTER_TOOLTIP
-	self.editBoxLabel:SetText(String.NEW_PROFILE_NAME)
 end
 
 function ProfilePanel:OnShow()
@@ -112,10 +110,6 @@ function ProfilePanel:Update()
 		self:UpdateProfileScrollFrame()
 		self:UpdateButtons()
 	end
-end
-
-function ProfilePanel.OnEditBoxTextChanged(editBox)
-	ProfilePanel:UpdateButtons()
 end
 
 
@@ -190,13 +184,6 @@ function ProfilePanel:UpdateButtons()
 		self.deleteButton:Enable()
 	end
 
-	-- Rename
-	if NeedToKnow.IsProfileNameAvailable(self.editBox:GetText()) then
-		self.renameButton:Enable()
-	else
-		self.renameButton:Disable()
-	end
-
 	-- To Character, To Account
 	local selectedProfile = self.profileMap[self.selectedProfileName].ref
 	local selectedProfileKey = self.profileMap[self.selectedProfileName].key
@@ -222,7 +209,6 @@ function ProfilePanel.OnClickActivateButton(button)
 	end
 end
 
---[[
 StaticPopupDialogs["NEEDTOKNOW_RENAME_PROFILE"] = {
 	text = String.RENAME_PROFILE_DIALOG, 
 	button1 = ACCEPT,
@@ -230,56 +216,53 @@ StaticPopupDialogs["NEEDTOKNOW_RENAME_PROFILE"] = {
 	hasEditBox = 1,
 	editBoxWidth = 300,
 	maxLetters = 0,
-	OnShow = function(self)
-		local text = self.data.currentName or ""
-		self.editBox:SetText(text)
+	OnShow = function(self, data)
+		self.editBox:SetText(data.oldName)
+		self.editBox:HighlightText()
 		self.editBox:SetFocus()
 	end,
 	EditBoxOnTextChanged = function(self) 
-		local value = Dialog:GetNumericValue(self:GetText())
+		local newName = self:GetText()
 		local acceptButton = self:GetParent().button1
-		if value then
+		if NeedToKnow.IsProfileNameAvailable(newName) then
 			acceptButton:Enable()
 		else
 			acceptButton:Disable()
 		end
 	end, 
-	EditBoxOnEnterPressed = function(self)
+	EditBoxOnEnterPressed = function(self, data)
 		local newName = self:GetParent().editBox:GetText()
-		local data = self:GetParent().data
-		Dialog:SetSetting(data.varName, newName, data.groupID, data.barID)
-		self:GetParent():Hide()
+		if NeedToKnow.IsProfileNameAvailable(newName) then
+			NeedToKnow.RenameProfile(data.profileKey, newName)
+			self:GetParent():Hide()
+			ProfilePanel:UpdateProfileList()
+		end
 	end,
 	EditBoxOnEscapePressed = function(self)
 		self:GetParent():Hide()
+		-- self:ClearFocus()
 	end,
-	OnAccept = function(self)
+	OnAccept = function(self, data)
 		local newName = self.editBox:GetText()
-		local data = self.data
-		Dialog:SetSetting(data.varName, newName, data.groupID, data.barID)
+		NeedToKnow.RenameProfile(data.profileKey, newName)
+		ProfilePanel:UpdateProfileList()
 	end,
 	OnHide = function(self)
 		ChatEdit_FocusActiveWindow()
 		self.editBox:SetText("")
 	end,
-	timeout = 0,
-	whileDead = 1,
 	hideOnEscape = 1,
+	whileDead = 1,
+	timeout = 0,
 }
-]]--
 
 function ProfilePanel.OnClickRenameButton(button)
 	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
 	local panel = ProfilePanel
-	local oldName = panel.selectedProfileName
-	local newName = panel.editBox:GetText()
-	local profileMap = panel.profileMap
-	panel.editBox:ClearFocus()
-	if oldName and NeedToKnow.IsProfileNameAvailable(newName) then
-		local key = profileMap[oldName].key
-		NeedToKnow_Profiles[key].name = newName
-		panel.editBox:SetText("")
-		panel:UpdateProfileList()
+	local profileName = panel.selectedProfileName
+	if profileName then
+		local data = {oldName = profileName, profileKey = panel.profileMap[profileName].key}
+		StaticPopup_Show("NEEDTOKNOW_RENAME_PROFILE", nil, nil, data)
 	end
 end
 
