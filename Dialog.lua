@@ -1,4 +1,4 @@
-﻿-- Pop-up dialog boxes for user input
+﻿-- Pop-up dialog boxes to input bar settings
 
 -- local addonName, addonTable = ...
 local Dialog = NeedToKnow.Dialog

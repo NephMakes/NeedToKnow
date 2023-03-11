@@ -16,15 +16,15 @@ function NeedToKnow.FindProfileByName(name)
 end
 
 function NeedToKnow.IsProfileNameAvailable(name)
-    if not name or name == "" then
-        return false
-    end
-    for _, profile in pairs(NeedToKnow_Profiles) do
-        if profile.name == name then
-            return false
-        end
-    end
-    return true
+	if not name or name == "" then
+		return false
+	end
+	for _, profile in pairs(NeedToKnow_Profiles) do
+		if profile.name == name then
+			return false
+		end
+	end
+	return true
 end
 
 function NeedToKnow.RemoveDefaultValues(t, def, k)
@@ -263,6 +263,19 @@ function NeedToKnow.GetProfileCopyName(oldName)
 	return newName
 end
 
+function NeedToKnow.DeleteProfile(profileKey)
+	if NeedToKnow_Profiles[profileKey] == NeedToKnow.ProfileSettings then
+		print("NeedToKnow: "..String.CANT_DELETE_ACTIVE_PROFILE)
+	else
+		NeedToKnow_Profiles[profileKey] = nil
+		if NeedToKnow_Globals.Profiles[profileKey] then 
+			NeedToKnow_Globals.Profiles[profileKey] = nil
+		elseif NeedToKnow_CharSettings.Profiles[profileKey] then 
+			NeedToKnow_CharSettings.Profiles[profileKey] = nil
+		end
+	end
+end
+
 
 --[[ NeedToKnowLoader ]]-- 
 
@@ -472,15 +485,15 @@ end
 --[[ Utility functions ]]--
 
 function NeedToKnow.DeepCopy(object)
-    if type(object) ~= "table" then
-        return object
-    else
-        local new_table = {}
-        for k,v in pairs(object) do
-            new_table[k] = NeedToKnow.DeepCopy(v)
-        end
-        return new_table
-    end
+	if type(object) ~= "table" then
+		return object
+	else
+		local new_table = {}
+		for k, v in pairs(object) do
+			new_table[k] = NeedToKnow.DeepCopy(v)
+		end
+		return new_table
+	end
 end
 
 ---- Copies anything (int, table, whatever).  Unlike DeepCopy (and CopyTable), CopyRefGraph can 
@@ -509,11 +522,11 @@ end
 function NeedToKnow.RestoreTableFromCopy(dest, source)
 	for key,value in pairs(source) do
 		if type(value) == "table" then
-		   if dest[key] then
+			if dest[key] then
 				NeedToKnow.RestoreTableFromCopy(dest[key], value)
-		   else
+			else
 				dest[key] = value
-		   end
+			end
 		else
 			dest[key] = value
 		end

@@ -1,7 +1,7 @@
 ﻿-- Interface options panel: Profile
 -- Load after ProfilePanel.xml
 
-local addonName, addonTable = ...
+-- local addonName, addonTable = ...
 local ProfilePanel = InterfaceOptionsNeedToKnowProfilePanel
 local String = NeedToKnow.String
 
@@ -10,7 +10,7 @@ function ProfilePanel:OnLoad()
 	self:SetText()
 
 	-- Register with Blizz Interface Options panel
-	self.name = String.PROFILE
+	self.name = String.PROFILES
 	self.parent = "NeedToKnow"
 	self.default = NeedToKnow.ResetCharacter
 	-- self.cancel = NeedToKnow.Cancel
@@ -119,7 +119,7 @@ function ProfilePanel.OnEditBoxTextChanged(editBox)
 end
 
 
---[[ Profile list scroll frame ]]--
+--[[ Profile scroll frame ]]--
 
 function ProfilePanel.OnScrollFrameSizeChanged(scrollFrame)
 	HybridScrollFrame_CreateButtons(scrollFrame, "NeedToKnowProfileButtonTemplate")
@@ -178,7 +178,7 @@ function ProfilePanel.OnClickProfileButton(button)
 end
 
 
---[[ Panel buttons ]]--
+--[[ Buttons ]]--
 
 function ProfilePanel:UpdateButtons()
 	-- Activate, Delete
@@ -222,6 +222,52 @@ function ProfilePanel.OnClickActivateButton(button)
 	end
 end
 
+--[[
+StaticPopupDialogs["NEEDTOKNOW_RENAME_PROFILE"] = {
+	text = String.RENAME_PROFILE_DIALOG, 
+	button1 = ACCEPT,
+	button2 = CANCEL,
+	hasEditBox = 1,
+	editBoxWidth = 300,
+	maxLetters = 0,
+	OnShow = function(self)
+		local text = self.data.currentName or ""
+		self.editBox:SetText(text)
+		self.editBox:SetFocus()
+	end,
+	EditBoxOnTextChanged = function(self) 
+		local value = Dialog:GetNumericValue(self:GetText())
+		local acceptButton = self:GetParent().button1
+		if value then
+			acceptButton:Enable()
+		else
+			acceptButton:Disable()
+		end
+	end, 
+	EditBoxOnEnterPressed = function(self)
+		local newName = self:GetParent().editBox:GetText()
+		local data = self:GetParent().data
+		Dialog:SetSetting(data.varName, newName, data.groupID, data.barID)
+		self:GetParent():Hide()
+	end,
+	EditBoxOnEscapePressed = function(self)
+		self:GetParent():Hide()
+	end,
+	OnAccept = function(self)
+		local newName = self.editBox:GetText()
+		local data = self.data
+		Dialog:SetSetting(data.varName, newName, data.groupID, data.barID)
+	end,
+	OnHide = function(self)
+		ChatEdit_FocusActiveWindow()
+		self.editBox:SetText("")
+	end,
+	timeout = 0,
+	whileDead = 1,
+	hideOnEscape = 1,
+}
+]]--
+
 function ProfilePanel.OnClickRenameButton(button)
 	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
 	local panel = ProfilePanel
@@ -237,45 +283,35 @@ function ProfilePanel.OnClickRenameButton(button)
 	end
 end
 
-StaticPopupDialogs["NEEDTOKNOW.CONFIRMDLG"] = {
-    button1 = YES,
-    button2 = NO,
-    timeout = 0,
-    hideOnEscape = 1,
-    OnShow = function(self)
-        self.oldStrata = self:GetFrameStrata()
-        self:SetFrameStrata("TOOLTIP")
-    end,
-    OnHide = function(self)
-        if self.oldStrata then 
-            self:SetFrameStrata(self.oldStrata) 
-        end
-    end
+StaticPopupDialogs["NEEDTOKNOW_DELETE_PROFILE"] = {
+	text = String.DELETE_PROFILE_DIALOG, 
+	button1 = YES,
+	button2 = NO,
+	showAlert = 1, 
+	OnShow = function(self, data)
+		data.oldStrata = self:GetFrameStrata()
+		self:SetFrameStrata("TOOLTIP")
+	end,
+	OnAccept = function(self, data)
+		NeedToKnow.DeleteProfile(data.profileKey)
+		ProfilePanel:UpdateProfileList()
+	end, 
+	OnHide = function(self, data)
+		if data.oldStrata then 
+			self:SetFrameStrata(data.oldStrata) 
+		end
+	end, 
+	hideOnEscape = 1,
+	timeout = 0,
 }
 
 function ProfilePanel.OnClickDeleteButton(button)
 	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
 	local panel = ProfilePanel
 	local profileName = panel.selectedProfileName
-	local profileMap = panel.profileMap
 	if profileName then
-		local k = profileMap[profileName].key
-		local dlgInfo = StaticPopupDialogs["NEEDTOKNOW.CONFIRMDLG"]
-		dlgInfo.text = "Are you sure you want to delete NeedToKnow profile: ".. profileName .."?"
-		dlgInfo.OnAccept = function(self, data)
-			if NeedToKnow_Profiles[k] == NeedToKnow.ProfileSettings then
-				print("NeedToKnow: Can't delete the active profile")
-			else
-				NeedToKnow_Profiles[k] = nil
-				if NeedToKnow_Globals.Profiles[k] then 
-					NeedToKnow_Globals.Profiles[k] = nil
-				elseif NeedToKnow_CharSettings.Profiles[k] then 
-					NeedToKnow_CharSettings.Profiles[k] = nil
-				end
-				panel:UpdateProfileList()
-			end
-		end
-		StaticPopup_Show("NEEDTOKNOW.CONFIRMDLG")
+		local data = {profileKey = panel.profileMap[profileName].key}
+		StaticPopup_Show("NEEDTOKNOW_DELETE_PROFILE", profileName, nil, data)
 	end
 end
 
