@@ -35,7 +35,7 @@ function ProfilePanel:SetText()
 	self.subText:SetText(String.PROFILE_PANEL_SUBTEXT)
 	self.profileScrollFrame.label:SetText(String.PROFILES)
 	self.profileScrollFrame.nameLabel:SetText(String.PROFILE_NAME)
-	self.profileScrollFrame.typeLabel:SetText(String.PROFILE_TYPE)
+	self.profileScrollFrame.typeLabel:SetText(String.USABLE_BY)
 	self.activateButton.Text:SetText(String.ACTIVATE)
 	self.activateButton.tooltipText = String.ACTIVATE_TOOLTIP
 	self.renameButton.Text:SetText(String.RENAME)

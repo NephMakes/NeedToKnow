@@ -254,8 +254,8 @@ function NeedToKnow.CreateProfile(settings, idxSpec, nameProfile)
 end
 
 function NeedToKnow.GetProfileCopyName(oldName)
-	local newName = oldName.." copy"
 	local i = 1
+	local newName = oldName.." copy"
 	while not NeedToKnow.IsProfileNameAvailable(newName) do
 		i = i + 1
 		newName = oldName.." copy "..i

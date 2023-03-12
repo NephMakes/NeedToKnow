@@ -65,7 +65,8 @@
 					<AbsDimension x="128" y="22"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parentSubText" relativePoint="BOTTOM" y="-50"/>
+					<Anchor point="TOP" relativeTo="$parentSubText" relativePoint="BOTTOM" y="-32"/>
+					<!-- -50 -->
 					<Anchor point="RIGHT" x="-16"/>
 				</Anchors>
 			</Button>
@@ -74,31 +75,7 @@
 					<AbsDimension x="128" y="22"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOPRIGHT" relativeTo="$parentActivateButton" relativePoint="BOTTOMRIGHT" y="-16"/>
-				</Anchors>
-			</Button>
-			<Button parentKey="deleteButton" name="$parentDeleteButton" inherits="UIPanelButtonTemplate">
-				<Size>
-					<AbsDimension x="128" y="22"/>
-				</Size>
-				<Anchors>
-					<Anchor point="TOPRIGHT" relativeTo="$parentCopyButton" relativePoint="BOTTOMRIGHT" y="-16"/>
-				</Anchors>
-			</Button>
-			<Button parentKey="toAccountButton" name="$parentToAccountButton" inherits="UIPanelButtonTemplate">
-				<Size>
-					<AbsDimension x="128" y="22"/>
-				</Size>
-				<Anchors>
-					<Anchor point="TOPRIGHT" relativeTo="$parentDeleteButton" relativePoint="BOTTOMRIGHT" y="-16"/>
-				</Anchors>
-			</Button>
-			<Button parentKey="toCharacterButton" name="$parentToCharacterButton" inherits="UIPanelButtonTemplate">
-				<Size>
-					<AbsDimension x="128" y="22"/>
-				</Size>
-				<Anchors>
-					<Anchor point="TOPRIGHT" relativeTo="$parentDeleteButton" relativePoint="BOTTOMRIGHT" y="-16"/>
+					<Anchor point="TOP" relativeTo="$parentActivateButton" relativePoint="BOTTOM" y="-16"/>
 				</Anchors>
 			</Button>
 			<Button parentKey="renameButton" name="$parentRenameButton" inherits="UIPanelButtonTemplate">
@@ -106,7 +83,31 @@
 					<AbsDimension x="128" y="22"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOPRIGHT" relativeTo="$parentToAccountButton" relativePoint="BOTTOMRIGHT" y="-16"/>
+					<Anchor point="TOP" relativeTo="$parentCopyButton" relativePoint="BOTTOM" y="-16"/>
+				</Anchors>
+			</Button>
+			<Button parentKey="toAccountButton" name="$parentToAccountButton" inherits="UIPanelButtonTemplate">
+				<Size>
+					<AbsDimension x="128" y="22"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOP" relativeTo="$parentRenameButton" relativePoint="BOTTOM" y="-16"/>
+				</Anchors>
+			</Button>
+			<Button parentKey="toCharacterButton" name="$parentToCharacterButton" inherits="UIPanelButtonTemplate">
+				<Size>
+					<AbsDimension x="128" y="22"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOP" relativeTo="$parentRenameButton" relativePoint="BOTTOM" y="-16"/>
+				</Anchors>
+			</Button>
+			<Button parentKey="deleteButton" name="$parentDeleteButton" inherits="UIPanelButtonTemplate">
+				<Size>
+					<AbsDimension x="128" y="22"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOP" relativeTo="$parentToAccountButton" relativePoint="BOTTOM" y="-16"/>
 				</Anchors>
 			</Button>
 			<ScrollFrame parentKey="profileScrollFrame" name="$parentProfileScrollFrame" inherits="BasicHybridScrollFrameTemplate">					
