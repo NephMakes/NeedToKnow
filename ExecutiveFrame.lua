@@ -3,7 +3,6 @@
 local addonName, addonTable = ...
 local ExecutiveFrame = NeedToKnow.ExecutiveFrame
 
-local GetSpec = _G.GetSpecialization or _G.GetActiveTalentGroup  -- Retail or Classic
 local GetTime = GetTime
 
 -- Spellcast tracking (deprecated)
@@ -11,6 +10,20 @@ local m_last_cast      = addonTable.m_last_cast
 local m_last_cast_head = addonTable.m_last_cast_head
 local m_last_cast_tail = addonTable.m_last_cast_tail
 local m_last_guid = NeedToKnow.m_last_guid
+
+local IS_RETAIL = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+local IS_CLASSIC_WRATH = WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC
+local IS_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
+
+local function GetSpec()
+	if GetSpecialization then  -- Retail		
+		return GetSpecialization()
+	elseif GetActiveTalentGroup then  -- Classic Wrath		
+		return GetActiveTalentGroup()
+	else  -- Classic Era
+		return 1
+	end
+end
 
 
 --[[ ExecutiveFrame functions ]]--
@@ -54,8 +67,11 @@ function ExecutiveFrame:PLAYER_LOGIN()
 	elseif className == "SHAMAN" then
 		NeedToKnow.isShaman = true  -- For totem bar type in BarMenu
 	end
-	self:RegisterEvent("PLAYER_TALENT_UPDATE")
-	self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+
+	if IS_RETAIL or IS_CLASSIC_WRATH then
+		self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+		self:RegisterEvent("PLAYER_TALENT_UPDATE")
+	end
 	self:PLAYER_TALENT_UPDATE()
 
 	NeedToKnow.guidPlayer = UnitGUID("player")
@@ -72,13 +88,13 @@ end
 
 function ExecutiveFrame:PLAYER_TALENT_UPDATE()
 	if NeedToKnow.CharSettings then
-		local spec = GetSpec()
-		local profile_key = NeedToKnow.CharSettings.Specs[spec]
-		if not profile_key then
-			print("NeedToKnow: Switching to spec", spec, "for the first time")
-			profile_key = NeedToKnow.CreateProfile(CopyTable(NEEDTOKNOW.PROFILE_DEFAULTS), spec)
+		local specIndex = NeedToKnow.GetSpecIndex()
+		local profileKey = NeedToKnow.CharSettings.Specs[specIndex]
+		if not profileKey then
+			-- print("NeedToKnow: Creating profile for specialization", specIndex)
+			profileKey = NeedToKnow.CreateNewProfile()
 		end
-		NeedToKnow.ChangeProfile(profile_key)
+		NeedToKnow.ChangeProfile(profileKey)
 	end
 end
 

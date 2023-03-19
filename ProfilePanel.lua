@@ -303,9 +303,8 @@ function ProfilePanel.OnClickCopyButton(button)
 	local panel = ProfilePanel
 	local profileName = panel.selectedProfileName
 	local profileMap = panel.profileMap
-	local newName = NeedToKnow.GetProfileCopyName(profileName)
-	if profileName and NeedToKnow.IsProfileNameAvailable(newName) then
-		NeedToKnow.CreateProfile(CopyTable(profileMap[profileName].ref), nil, newName)
+	if profileName then
+		NeedToKnow.CopyProfile(profileMap[profileName].key)
 		panel:UpdateProfileList()
 	end
 end

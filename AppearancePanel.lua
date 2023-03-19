@@ -144,11 +144,13 @@ function AppearancePanel:MakeBarTextureMenu()
 	for _, customButton in ipairs(self.customButtons) do
 		info.customFrame = customButton
 		button = UIDropDownMenu_AddButton(info)
-		customButton = button.customFrame
-		if currentTexture == customButton.text:GetText() then
-			customButton.texture:SetVertexColor(unpack(selectedColor))
-		else
-			customButton.texture:SetVertexColor(unpack(unselectedColor))
+		if button then  -- button not returned in Classic_Eea
+			customButton = button.customFrame
+			if currentTexture == customButton.text:GetText() then
+				customButton.texture:SetVertexColor(unpack(selectedColor))
+			else
+				customButton.texture:SetVertexColor(unpack(unselectedColor))
+			end
 		end
 	end
 end
@@ -196,14 +198,16 @@ function AppearancePanel:MakeBarFontMenu()
 	local currentFont = NeedToKnow.ProfileSettings.BarFont
 	for _, customButton in ipairs(self.customButtons) do
 		info.customFrame = customButton
-		button = UIDropDownMenu_AddButton(info)
-		customButton = button.customFrame
-		if currentFont == customButton.text:GetText() then
-			customButton.check:Show()
-			customButton.uncheck:Hide()
-		else
-			customButton.check:Hide()
-			customButton.uncheck:Show()
+		local button = UIDropDownMenu_AddButton(info)
+		if button then  -- button not returned in Classic_Eea
+			customButton = button.customFrame
+			if currentFont == customButton.text:GetText() then
+				customButton.check:Show()
+				customButton.uncheck:Hide()
+			else
+				customButton.check:Hide()
+				customButton.uncheck:Show()
+			end
 		end
 	end
 end

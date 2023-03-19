@@ -818,7 +818,6 @@ function NeedToKnow.mfn_AuraCheck_TOTEM(bar, bar_entry, all_stacks)
 end
 ]]--
 
--- Needs testing
 function FindAura:FindBuffCooldown(spellEntry, allStacks)
 	-- For internal cooldowns on procs
 
@@ -832,7 +831,6 @@ function FindAura:FindBuffCooldown(spellEntry, allStacks)
 		if buffStacks.max.expirationTime == 0 then
 			-- TODO: This doesn't work well as a substitute for telling when the aura was applied
 			if not self.expirationTime then
-				-- NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration,  buffStacks.min.buffName, 1, duration + now, buffStacks.min.iconPath,  buffStacks.min.caster)
 				self:AddInstanceToStacks(allStacks, spellEntry, duration,  buffStacks.min.buffName, 1, duration + now, buffStacks.min.iconPath,  buffStacks.min.caster)
 			else
 				self:AddInstanceToStacks(allStacks, spellEntry, self.duration,  self.buffName, 1, self.expirationTime, self.iconPath, "player")
@@ -849,58 +847,6 @@ function FindAura:FindBuffCooldown(spellEntry, allStacks)
 		self:AddInstanceToStacks(allStacks, spellEntry, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, "player")
 	end
 end
--- Bar_AuraCheck helper for watching "internal cooldowns", which is like a spell
--- cooldown for spells cast automatically (procs).  The "reset on buff" logic
--- is still handled by 
---[[
-function NeedToKnow.mfn_AuraCheck_BUFFCD(bar, bar_entry, all_stacks)
-    local buff_stacks = m_scratch.buff_stacks
-    NeedToKnow.mfn_ResetScratchStacks(buff_stacks);
-    NeedToKnow.mfn_AuraCheck_Single(bar, bar_entry, buff_stacks)
-    -- FindAura:FindSingle(bar, bar_entry, buff_stacks)
-    local tNow = g_GetTime()
-    if ( buff_stacks.total > 0 ) then
-        if buff_stacks.max.expirationTime == 0 then
-            -- TODO: This really doesn't work very well as a substitute for telling when the aura was applied
-            if not bar.expirationTime then
-                local nDur = tonumber(bar.settings.buffcd_duration)
-                NeedToKnow.mfn_AddInstanceToStacks( all_stacks, bar_entry,
-                    nDur, buff_stacks.min.buffName, 1, nDur+tNow, buff_stacks.min.iconPath, buff_stacks.min.caster )
-            else
-                NeedToKnow.mfn_AddInstanceToStacks( all_stacks, bar_entry,
-                       bar.duration,                               -- duration
-                       bar.buffName,                               -- name
-                       1,                                          -- count
-                       bar.expirationTime,                         -- expiration time
-                       bar.iconPath,                               -- icon path
-                       "player" )                                  -- caster
-            end
-            return
-        end
-        local tStart = buff_stacks.max.expirationTime - buff_stacks.max.duration
-        local duration = tonumber(bar.settings.buffcd_duration)
-        local expiration = tStart + duration
-        if ( expiration > tNow ) then
-            NeedToKnow.mfn_AddInstanceToStacks( all_stacks, bar_entry,
-                   duration,                                   -- duration
-                   buff_stacks.min.buffName,                                   -- name
-                   -- Seeing the charges on the CD bar violated least surprise for me
-                   1,                                          -- count
-                   expiration,                                 -- expiration time
-                   buff_stacks.min.iconPath,                   -- icon path
-                   buff_stacks.min.caster )                    -- caster
-        end
-    elseif ( bar.expirationTime and bar.expirationTime > tNow + 0.1 ) then
-        NeedToKnow.mfn_AddInstanceToStacks( all_stacks, bar_entry,
-               bar.duration,                               -- duration
-               bar.buffName,                               -- name
-               1,                                          -- count
-               bar.expirationTime,                         -- expiration time
-               bar.iconPath,                               -- icon path
-               "player" )                                  -- caster
-    end
-end
-]]--
 
 -- NephMakes: I don't think temporary enchants aren't a thing anymore, 
 -- but keep this for potential use in WoW Classic
