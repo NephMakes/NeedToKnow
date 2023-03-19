@@ -28,14 +28,14 @@ function NeedToKnow.SlashCommand(cmd)
 			local profileKey = NeedToKnow.FindProfileByName(profileName)
 			if profileKey then
 				NeedToKnow.ChangeProfile(profileKey)
-				NeedToKnowOptions.UIPanel_Profile_Update()
+				-- NeedToKnowOptions.UIPanel_Profile_Update()
 			else
 				print("NeedToKnow: Unknown profile", profileName)
 			end
 		else
-			local spec = GetActiveTalentGroup()
-			local profile = NeedToKnow.CharSettings.Specs[spec]
-			print("NeedToKnow: Current profile is", profile)
+			local specIndex = NeedToKnow.GetSpecIndex()
+			local profileKey = NeedToKnow.CharSettings.Specs[specIndex]
+			print("NeedToKnow: Current profile is", profileKey)
 		end
 	else
 		print("NeedToKnow: Unknown command", cmd)

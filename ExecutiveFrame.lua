@@ -92,7 +92,7 @@ function ExecutiveFrame:PLAYER_TALENT_UPDATE()
 		local profileKey = NeedToKnow.CharSettings.Specs[specIndex]
 		if not profileKey then
 			-- print("NeedToKnow: Creating profile for specialization", specIndex)
-			profileKey = NeedToKnow.CreateNewProfile()
+			profileKey = NeedToKnow.CreateBlankProfile()
 		end
 		NeedToKnow.ChangeProfile(profileKey)
 	end

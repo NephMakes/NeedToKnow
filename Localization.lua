@@ -165,7 +165,6 @@ Localize.enUS = {
 	DELETE = "Delete", 
 	DELETE_TOOLTIP = "Permanently delete profile", 
 	DELETE_PROFILE_DIALOG = "Are you sure you want to delete this profile?\n\n%s", 
-	CANT_DELETE_ACTIVE_PROFILE = "Can't delete active profile", 
 	TO_ACCOUNT = "To Account", 
 	TO_ACCOUNT_TOOLTIP = "Make profile usable by all characters on this account", 
 	TO_CHARACTER = "To Character", 

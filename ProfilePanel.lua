@@ -94,17 +94,13 @@ end
 function ProfilePanel:Update()
 	if not self:IsVisible() then return end
 	if self.profileMap then
-		-- Get current profile name
-		for name, r in pairs(self.profileMap) do
-			if r.ref == NeedToKnow.ProfileSettings then
-				self.currentProfileName = name
-				break
-			end
-		end
+		-- Get active profile name
+		local profileKey = NeedToKnow.GetActiveProfile()
+		self.activeProfileName = NeedToKnow_Profiles[profileKey].name
 
 		-- Get selected profile name
 		if not self.selectedProfileName or not self.profileMap[self.selectedProfileName] then
-			self.selectedProfileName = self.currentProfileName
+			self.selectedProfileName = self.activeProfileName
 		end
 
 		self:UpdateProfileScrollFrame()
@@ -154,7 +150,7 @@ function ProfilePanel:UpdateProfileScrollFrame()
 				button.highlight:Hide()
 			end
 
-			if name == self.currentProfileName then
+			if name == self.activeProfileName then
 				button.Check:Show()
 			else
 				button.Check:Hide()
@@ -176,7 +172,7 @@ end
 
 function ProfilePanel:UpdateButtons()
 	-- Activate, Delete
-	if self.selectedProfileName == self.currentProfileName then
+	if self.selectedProfileName == self.activeProfileName then
 		self.activateButton:Disable()
 		self.deleteButton:Disable()
 	else
@@ -185,11 +181,8 @@ function ProfilePanel:UpdateButtons()
 	end
 
 	-- To Character, To Account
-	local selectedProfile = self.profileMap[self.selectedProfileName].ref
 	local selectedProfileKey = self.profileMap[self.selectedProfileName].key
-	if selectedProfile and selectedProfileKey and 
-		NeedToKnow_Globals.Profiles[selectedProfileKey] == selectedProfile
-	then
+	if selectedProfileKey and NeedToKnow_Globals.Profiles[selectedProfileKey] then
 		self.toCharacterButton:Show()
 		self.toAccountButton:Hide()
 	else
@@ -304,7 +297,8 @@ function ProfilePanel.OnClickCopyButton(button)
 	local profileName = panel.selectedProfileName
 	local profileMap = panel.profileMap
 	if profileName then
-		NeedToKnow.CopyProfile(profileMap[profileName].key)
+		local profileKey = profileMap[profileName].key
+		NeedToKnow.CopyProfile(profileKey)
 		panel:UpdateProfileList()
 	end
 end
@@ -315,10 +309,8 @@ function ProfilePanel.OnClickToAccountButton(button)
 	local profileName = panel.selectedProfileName
 	local profileMap = panel.profileMap
 	if profileName then
-		local key = profileMap[profileName].key
-		local ref = profileMap[profileName].ref
-		NeedToKnow_Globals.Profiles[key] = ref
-		NeedToKnow_CharSettings.Profiles[key] = nil
+		local profileKey = profileMap[profileName].key
+		NeedToKnow.SetProfileToAccount(profileKey)
 		panel:UpdateProfileList()
 	end
 end
@@ -329,10 +321,8 @@ function ProfilePanel.OnClickToCharacterButton(button)
 	local profileName = panel.selectedProfileName
 	local profileMap = panel.profileMap
 	if profileName then
-		local key = profileMap[profileName].key
-		local ref = profileMap[profileName].ref
-		NeedToKnow_Globals.Profiles[key] = nil
-		NeedToKnow_CharSettings.Profiles[key] = ref
+		local profileKey = profileMap[profileName].key
+		NeedToKnow.SetProfileToCharacter(profileKey)
 		panel:UpdateProfileList()
 	end
 end
