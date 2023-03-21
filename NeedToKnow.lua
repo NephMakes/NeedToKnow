@@ -32,12 +32,12 @@ end
 
 function NeedToKnow:GetCharacterSettings()
 	return NeedToKnow.CharSettings
-	-- TO DO: Return SavedVariables object
+	-- TO DO: Return SavedVariables object?
 end
 
 function NeedToKnow:GetProfileSettings()
 	return NeedToKnow.ProfileSettings
-	-- TO DO: Return SavedVariables object
+	-- TO DO: Return SavedVariables object?
 end
 
 function NeedToKnow:GetGroupSettings(groupID)
@@ -130,5 +130,64 @@ function NeedToKnow.GetSpecIndex()
 		return 1
 	end
 end
+
+
+--[[ Table handling functions ]]--
+
+function NeedToKnow.DeepCopy(object)
+	-- Called by NeedToKnow.AddDefaultsToTable()
+	if type(object) ~= "table" then
+		return object
+	else
+		local new_table = {}
+		for k, v in pairs(object) do
+			new_table[k] = NeedToKnow.DeepCopy(v)
+		end
+		return new_table
+	end
+end
+
+function NeedToKnow.RestoreTableFromCopy(dest, source)
+	-- Called by OptionsPanel:Cancel()
+	for key, value in pairs(source) do
+		if type(value) == "table" then
+			if dest[key] then
+				NeedToKnow.RestoreTableFromCopy(dest[key], value)
+			else
+				dest[key] = value
+			end
+		else
+			dest[key] = value
+		end
+	end
+	for key, value in pairs(dest) do
+		if source[key] == nil then
+			dest[key] = nil
+		end
+	end
+end
+
+---- Copies anything (int, table, whatever).  Unlike DeepCopy (and CopyTable), CopyRefGraph can 
+---- recreate a recursive reference structure (CopyTable will stack overflow.)
+---- Copied from http://lua-users.org/wiki/CopyTable
+--[[
+function NeedToKnow.CopyRefGraph(object)
+    local lookup_table = {}
+    local function _copy(object)
+        if type(object) ~= "table" then
+            return object
+        elseif lookup_table[object] then
+            return lookup_table[object]
+        end
+        local new_table = {}
+        lookup_table[object] = new_table
+        for index, value in pairs(object) do
+            new_table[_copy(index)] = _copy(value)
+        end
+        return setmetatable(new_table, getmetatable(object))
+    end
+    return _copy(object)
+end
+]]--
 
 

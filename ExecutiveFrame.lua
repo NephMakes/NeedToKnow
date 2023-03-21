@@ -15,16 +15,6 @@ local IS_RETAIL = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_CLASSIC_WRATH = WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC
 local IS_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 
-local function GetSpec()
-	if GetSpecialization then  -- Retail		
-		return GetSpecialization()
-	elseif GetActiveTalentGroup then  -- Classic Wrath		
-		return GetActiveTalentGroup()
-	else  -- Classic Era
-		return 1
-	end
-end
-
 
 --[[ ExecutiveFrame functions ]]--
 
@@ -89,12 +79,13 @@ end
 function ExecutiveFrame:PLAYER_TALENT_UPDATE()
 	if NeedToKnow.CharSettings then
 		local specIndex = NeedToKnow.GetSpecIndex()
-		local profileKey = NeedToKnow.CharSettings.Specs[specIndex]
+		local profileKey = NeedToKnow.GetProfileForSpec(specIndex)
 		if not profileKey then
-			-- print("NeedToKnow: Creating profile for specialization", specIndex)
+			print("NeedToKnow: Creating profile for specialization", specIndex)
 			profileKey = NeedToKnow.CreateBlankProfile()
 		end
 		NeedToKnow.ChangeProfile(profileKey)
+		-- NeedToKnow.SetActiveProfile(profileKey)
 	end
 end
 

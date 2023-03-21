@@ -12,7 +12,7 @@ function ProfilePanel:OnLoad()
 	-- Register with Blizz Interface Options panel
 	self.name = String.PROFILES
 	self.parent = "NeedToKnow"
-	self.default = NeedToKnow.ResetCharacter
+	self.default = ProfilePanel.OnClickDefaultsButton
 	-- self.cancel = NeedToKnow.Cancel
 	-- Need different way to handle cancel?  Might open appearance panel without opening main panel
 	InterfaceOptions_AddCategory(self)
@@ -95,7 +95,8 @@ function ProfilePanel:Update()
 	if not self:IsVisible() then return end
 	if self.profileMap then
 		-- Get active profile name
-		local profileKey = NeedToKnow.GetActiveProfile()
+		-- local profileKey = NeedToKnow.GetActiveProfile()
+		local profileKey = NeedToKnow.GetProfileForSpec(NeedToKnow.GetSpecIndex())
 		self.activeProfileName = NeedToKnow_Profiles[profileKey].name
 
 		-- Get selected profile name
@@ -325,6 +326,11 @@ function ProfilePanel.OnClickToCharacterButton(button)
 		NeedToKnow.SetProfileToCharacter(profileKey)
 		panel:UpdateProfileList()
 	end
+end
+
+function ProfilePanel.OnClickDefaultsButton()
+	NeedToKnow.ResetCharacter()
+	ProfilePanel:UpdateProfileList()
 end
 
 
