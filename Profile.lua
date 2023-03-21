@@ -144,10 +144,10 @@ end
 
 --[[ Activate, compress, uncompress ]]--
 
---function NeedToKnow.GetActiveProfile()
---	local profileKey = NeedToKnow.GetProfileForSpec(NeedToKnow.GetSpecIndex())
---	return profileKey
---end
+function NeedToKnow.GetActiveProfile()
+	local profileKey = NeedToKnow.GetProfileForSpec(NeedToKnow.GetSpecIndex())
+	return profileKey
+end
 
 function NeedToKnow.GetProfileForSpec(specIndex)
 	local profileKey = NeedToKnow.CharSettings.Specs[specIndex]
@@ -166,20 +166,23 @@ function NeedToKnow.GetProfileByName(name)
 	end
 end
 
--- function NeedToKnow.SetActiveProfile(profileKey)
-function NeedToKnow.ChangeProfile(profile_key)
+--function NeedToKnow.GetProfileSettings(profileKey)
+--	return NeedToKnow_Profiles[profileKey]
+--end
+
+function NeedToKnow.ActivateProfile(profile_key)
 	if NeedToKnow_Profiles[profile_key] and NeedToKnow_Profiles[profile_key] ~= NeedToKnow.ProfileSettings then
 		-- Compress old profile by removing defaults
 		if NeedToKnow.ProfileSettings and NeedToKnow.ProfileSettings.bUncompressed then
-			NeedToKnow.CompressProfile(NeedToKnow.ProfileSettings)
+			NeedToKnow.CompressProfileSettings(NeedToKnow.ProfileSettings)
 		end
 
-		-- Switch to new profile
-		NeedToKnow.ProfileSettings = NeedToKnow_Profiles[profile_key]
+		-- Set new active profile
 		NeedToKnow.SetProfileForSpec(profile_key, NeedToKnow.GetSpecIndex())
+		NeedToKnow.ProfileSettings = NeedToKnow_Profiles[profile_key]
 
 		-- Add missing settings from defaults
-		NeedToKnow.UncompressProfile(NeedToKnow.ProfileSettings)
+		NeedToKnow.UncompressProfileSettings(NeedToKnow.ProfileSettings)
 
 		-- FIXME: We currently display 4 groups in the options UI, not nGroups
 		-- FIXME: We don't handle nGroups changing (showing/hiding groups based on nGroups changing)
@@ -204,15 +207,15 @@ function NeedToKnow.ChangeProfile(profile_key)
 	end
 end
 
-function NeedToKnow.CompressProfile(profileSettings)
+function NeedToKnow.CompressProfileSettings(profileSettings)
 	-- Compress saved variables by removing unused bars/groups and default settings
-	for iG, vG in ipairs(profileSettings["Groups"]) do
-		if iG > profileSettings.nGroups then
-			profileSettings["Groups"][iG] = nil
-		elseif vG.NumberBars then
-			for iB, vB in ipairs(vG["Bars"]) do
-				if iB > vG.NumberBars then
-					vG["Bars"][iB] = nil
+	for groupIndex, groupSettings in ipairs(profileSettings.Groups) do
+		if groupIndex > profileSettings.nGroups then
+			profileSettings.Groups[groupIndex] = nil
+		elseif groupSettings.NumberBars then
+			for barIndex, _ in ipairs(groupSettings.Bars) do
+				if barIndex > groupSettings.NumberBars then
+					groupSettings.Bars[barIndex] = nil
 				end
 			end
 		end
@@ -236,7 +239,7 @@ function NeedToKnow.RemoveDefaultValues(t, def, k)
 
   if #t > 0 then
 	-- An array, like Groups or Bars. Compare each element against def[1]
-	for i,v in ipairs(t)do
+	for i, v in ipairs(t) do
 	  local rhs = def[i]
 	  if rhs == nil then rhs = def[1] end
 	  if NeedToKnow.RemoveDefaultValues(v, rhs, k .. " " .. i) then
@@ -254,11 +257,11 @@ function NeedToKnow.RemoveDefaultValues(t, def, k)
   return fn(t) == nil
 end
 
-function NeedToKnow.UncompressProfile(profileSettings)
+function NeedToKnow.UncompressProfileSettings(profileSettings)
 	-- Uncompress profile by filling in missing settings from defaults
 
-	-- Make sure the arrays have the right number of elements so that
-	-- AddDefaultsToTable will find them and fill them in
+	-- Make sure arrays have right number of elements 
+	-- so AddDefaultsToTable() will find them and fill them in
 	if profileSettings.nGroups then
 		if not profileSettings.Groups then
 			profileSettings.Groups = {}
@@ -266,9 +269,11 @@ function NeedToKnow.UncompressProfile(profileSettings)
 		if not profileSettings.Groups[profileSettings.nGroups] then
 			profileSettings.Groups[profileSettings.nGroups] = {}
 		end
+		-- profileSettings.Groups = profileSettings.Groups or {}
+		-- profileSettings.Groups[profileSettings.nGroups] = profileSettings.Groups[profileSettings.nGroups] or {}
 	end
 	if profileSettings.Groups then
-		for i, g in ipairs(profileSettings.Groups) do
+		for _, g in ipairs(profileSettings.Groups) do
 			if g.NumberBars then
 				if not g.Bars then
 					g.Bars = {}
@@ -276,9 +281,12 @@ function NeedToKnow.UncompressProfile(profileSettings)
 				if not g.Bars[g.NumberBars] then
 					g.Bars[g.NumberBars] = {}
 				end
+				-- g.Bars = g.Bars or {}
+				-- g.Bars[g.NumberBars] = g.Bars[g.NumberBars] or {}
 			end
 		end
-	end    
+	end
+
 	NeedToKnow.AddDefaultsToTable(profileSettings, NEEDTOKNOW.PROFILE_DEFAULTS)
 	profileSettings.bUncompressed = true
 end
@@ -348,6 +356,7 @@ function NeedToKnowLoader.Reset(bResetCharacter)
 end
 
 function NeedToKnowLoader.RoundSettings(t)
+	-- Called by NeedToKnowLoader.MigrateSpec()
 	for k, v in pairs(t) do
 		local typ = type(v)
 		if typ == "number" then
@@ -437,19 +446,21 @@ function NeedToKnowLoader.MigrateCharacterSettings()
 end
 
 function NeedToKnowLoader.FindFontName(fontPath)
-    local fontList = NeedToKnow.LSM:List("font")
-    for i = 1, #fontList do
-        local fontName = fontList[i]
-        local iPath = NeedToKnow.LSM:Fetch("font", fontName)
-        if ( iPath == fontPath ) then
-            return fontName
-        end
-    end
-    return NEEDTOKNOW.PROFILE_DEFAULTS.BarFont
+	local fontList = NeedToKnow.LSM:List("font")
+	for i = 1, #fontList do
+		local fontName = fontList[i]
+		local iPath = NeedToKnow.LSM:Fetch("font", fontName)
+		if iPath == fontPath then
+			return fontName
+		end
+	end
+	return NEEDTOKNOW.PROFILE_DEFAULTS.BarFont
 end
 
--- function NeedToKnow.LoadProfiles()
-function NeedToKnowLoader.SafeUpgrade()
+function NeedToKnow.LoadProfiles()
+	-- Called by ExecutiveFrame:PLAYER_LOGIN()
+
+	-- Set default font
 	local defPath = GameFontHighlight:GetFont()
 	NEEDTOKNOW.PROFILE_DEFAULTS.BarFont = NeedToKnowLoader.FindFontName(defPath)
 
@@ -461,8 +472,8 @@ function NeedToKnowLoader.SafeUpgrade()
 		NeedToKnowLoader.Reset(false)
 	end
 
-	if NeedToKnow_Settings then -- prior to 4.0
-		NeedToKnowLoader.MigrateCharacterSettings()
+	if NeedToKnow_Settings then  -- prior to 4.0
+		NeedToKnowLoader.MigrateCharacterSettings()  -- Upgrade from previous versions
 	end
 
 	if not NeedToKnow_CharSettings then
@@ -485,7 +496,7 @@ function NeedToKnowLoader.SafeUpgrade()
 	local aByName = {}
 	for iS, vS in pairs(NeedToKnow_Globals.Profiles) do
 		if vS.bUncompressed then
-			NeedToKnow.CompressProfile(vS)
+			NeedToKnow.CompressProfileSettings(vS)
 		end
 		-- Although name should never be compressed, it could have been prior to 4.0.16
 		if not vS.name then 
@@ -552,7 +563,7 @@ function NeedToKnowLoader.SafeUpgrade()
 	if profileKey and not NeedToKnow_Profiles[profileKey] then
 		print("NeedToKnow: Active profile", profileKey, "not found. Making new blank profile.")
 		profileKey = NeedToKnow.CreateBlankProfile()
-		NeedToKnow.ChangeProfile(profileKey)
+		NeedToKnow.ActivateProfile(profileKey)
 	end
 
 	 -- TODO: check the required members for existence and delete any corrupted profiles

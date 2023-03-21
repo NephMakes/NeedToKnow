@@ -95,11 +95,11 @@ function ProfilePanel:Update()
 	if not self:IsVisible() then return end
 	if self.profileMap then
 		-- Get active profile name
-		-- local profileKey = NeedToKnow.GetActiveProfile()
-		local profileKey = NeedToKnow.GetProfileForSpec(NeedToKnow.GetSpecIndex())
+		local profileKey = NeedToKnow.GetActiveProfile()
+		-- local profileKey = NeedToKnow.GetProfileForSpec(NeedToKnow.GetSpecIndex())
 		self.activeProfileName = NeedToKnow_Profiles[profileKey].name
 
-		-- Get selected profile name
+		-- Select active profile by default
 		if not self.selectedProfileName or not self.profileMap[self.selectedProfileName] then
 			self.selectedProfileName = self.activeProfileName
 		end
@@ -198,7 +198,7 @@ function ProfilePanel.OnClickActivateButton(button)
 	local profileName = panel.selectedProfileName
 	local profileMap = panel.profileMap
 	if profileName then
-		NeedToKnow.ChangeProfile(profileMap[profileName].key)
+		NeedToKnow.ActivateProfile(profileMap[profileName].key)
 		panel:Update()
 	end
 end

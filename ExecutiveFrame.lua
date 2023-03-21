@@ -1,4 +1,4 @@
-﻿-- Addon setup and certain combat functions 
+﻿-- ExecutiveFrame handles addon setup and some combat functions 
 
 local addonName, addonTable = ...
 local ExecutiveFrame = NeedToKnow.ExecutiveFrame
@@ -49,7 +49,7 @@ function ExecutiveFrame:ADDON_LOADED(addon)
 end
 
 function ExecutiveFrame:PLAYER_LOGIN()
-	NeedToKnowLoader.SafeUpgrade()
+	NeedToKnow.LoadProfiles()
 
 	local _, className = UnitClass("player")
 	if className == "DEATHKNIGHT" and WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
@@ -81,11 +81,10 @@ function ExecutiveFrame:PLAYER_TALENT_UPDATE()
 		local specIndex = NeedToKnow.GetSpecIndex()
 		local profileKey = NeedToKnow.GetProfileForSpec(specIndex)
 		if not profileKey then
-			print("NeedToKnow: Creating profile for specialization", specIndex)
+			print("NeedToKnow: Making new profile for specialization", specIndex)
 			profileKey = NeedToKnow.CreateBlankProfile()
 		end
-		NeedToKnow.ChangeProfile(profileKey)
-		-- NeedToKnow.SetActiveProfile(profileKey)
+		NeedToKnow.ActivateProfile(profileKey)
 	end
 end
 
