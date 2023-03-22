@@ -139,11 +139,11 @@ function NeedToKnow.DeepCopy(object)
 	if type(object) ~= "table" then
 		return object
 	else
-		local new_table = {}
+		local newTable = {}
 		for k, v in pairs(object) do
-			new_table[k] = NeedToKnow.DeepCopy(v)
+			newTable[k] = NeedToKnow.DeepCopy(v)
 		end
-		return new_table
+		return newTable
 	end
 end
 

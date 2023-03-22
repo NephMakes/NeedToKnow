@@ -1,7 +1,13 @@
 ﻿-- Profiles are complete sets of NeedToKnow settings for one specialization
 
+--[[
+Important global variables: 
+	NeedToKnow_Globals: Saved variable. Has account-wide profiles. 
+	NeedToKnow_CharSettings: Saved variable per character. Has character-specific profiles. 
+	NeedToKnow_Profiles: Has all profiles available to character. Deprecated. 
+	NeedToKnow_Settings: Saved variable from old versions. No longer used. Deprecated. 
+]]--
 
---[[ Create, copy, rename, delete ]]--
 
 function NeedToKnow.CreateBlankProfile()
 	-- Make new profile with default settings and return its key
@@ -109,343 +115,10 @@ function NeedToKnow.DeleteProfile(profileKey)
 	end
 end
 
-
---[[ Deprecated ]]--
-
-function NeedToKnow.AllocateProfileKey()
-	local n = NeedToKnow_Globals.NextProfile or 1
-	while NeedToKnow_Profiles["G"..n] do
-		n = n + 1
-	end
-	if NeedToKnow_Globals.NextProfile == null or n >= NeedToKnow_Globals.NextProfile then
-		NeedToKnow_Globals.NextProfile = n + 1
-	end
-	return "G"..n
-end
-
-function NeedToKnow.FindProfileByName(name)
-	for k, t in pairs(NeedToKnow_Profiles) do
-		if t.name == name then
-			return k
-		end
-	end
-end
-
-function NeedToKnow.FindUnusedNumericSuffix(prefix, defPrefix)
-	local suffix = defPrefix or 1
-	local candidate = prefix .. suffix
-	while NeedToKnow.FindProfileByName(candidate) do 
-		suffix = suffix + 1
-		candidate = prefix .. suffix
-	end
-	return candidate
-end
-
-
---[[ Activate, compress, uncompress ]]--
-
-function NeedToKnow.GetActiveProfile()
-	local profileKey = NeedToKnow.GetProfileForSpec(NeedToKnow.GetSpecIndex())
-	return profileKey
-end
-
-function NeedToKnow.GetProfileForSpec(specIndex)
-	local profileKey = NeedToKnow.CharSettings.Specs[specIndex]
-	return profileKey
-end
-
-function NeedToKnow.SetProfileForSpec(profileKey, specIndex)
-	NeedToKnow.CharSettings.Specs[specIndex] = profileKey
-end
-
-function NeedToKnow.GetProfileByName(name)
-	for profileKey, profile in pairs(NeedToKnow_Profiles) do
-		if profile.name == name then
-			return profileKey
-		end
-	end
-end
-
---function NeedToKnow.GetProfileSettings(profileKey)
---	return NeedToKnow_Profiles[profileKey]
---end
-
-function NeedToKnow.ActivateProfile(profile_key)
-	if NeedToKnow_Profiles[profile_key] and NeedToKnow_Profiles[profile_key] ~= NeedToKnow.ProfileSettings then
-		-- Compress old profile by removing defaults
-		if NeedToKnow.ProfileSettings and NeedToKnow.ProfileSettings.bUncompressed then
-			NeedToKnow.CompressProfileSettings(NeedToKnow.ProfileSettings)
-		end
-
-		-- Set new active profile
-		NeedToKnow.SetProfileForSpec(profile_key, NeedToKnow.GetSpecIndex())
-		NeedToKnow.ProfileSettings = NeedToKnow_Profiles[profile_key]
-
-		-- Add missing settings from defaults
-		NeedToKnow.UncompressProfileSettings(NeedToKnow.ProfileSettings)
-
-		-- FIXME: We currently display 4 groups in the options UI, not nGroups
-		-- FIXME: We don't handle nGroups changing (showing/hiding groups based on nGroups changing)
-		-- Forcing 4 groups for now
-		NeedToKnow.ProfileSettings.nGroups = 4
-		for groupID = 1, 4 do
-			if not NeedToKnow.ProfileSettings.Groups[groupID] then
-				NeedToKnow.ProfileSettings.Groups[groupID] = CopyTable(NEEDTOKNOW.GROUP_DEFAULTS)
-				local groupSettings = NeedToKnow.ProfileSettings.Groups[groupID]
-				groupSettings.Enabled = false
-				groupSettings.Position[4] = -100 - (groupID-1) * 100
-			end
-		end
-
-		-- Update bars and options panels
-		NeedToKnow:Update()
-		NeedToKnow:GetOptionsPanel():Update()
-		-- To do: Update AppearancePanel
-	else
-		-- print("NeedToKnow profile", profile_key, "does not exist!")
-		-- Neph: This is triggering sometimes when addon appears to be working fine. Why?
-	end
-end
-
-function NeedToKnow.CompressProfileSettings(profileSettings)
-	-- Compress saved variables by removing unused bars/groups and default settings
-	for groupIndex, groupSettings in ipairs(profileSettings.Groups) do
-		if groupIndex > profileSettings.nGroups then
-			profileSettings.Groups[groupIndex] = nil
-		elseif groupSettings.NumberBars then
-			for barIndex, _ in ipairs(groupSettings.Bars) do
-				if barIndex > groupSettings.NumberBars then
-					groupSettings.Bars[barIndex] = nil
-				end
-			end
-		end
-	end
-	NeedToKnow.RemoveDefaultValues(profileSettings, NEEDTOKNOW.PROFILE_DEFAULTS)
-end
-
-function NeedToKnow.RemoveDefaultValues(t, def, k)
-  if not k then k = "" end
-  if def == nil then
-	-- Some obsolete setting, or perhaps bUncompressed
-	return true
-  end
-  -- Never want to compress name since it's read from inactive profiles
-  -- Note: k was just for debugging, so it's got a leading space as part
-  -- of how the debugging string was built.  This mechanism should probably
-  -- be revisited.
-  if type(t) ~= "table" then
-	return ((k~=" name") and (t == def))
-  end
-
-  if #t > 0 then
-	-- An array, like Groups or Bars. Compare each element against def[1]
-	for i, v in ipairs(t) do
-	  local rhs = def[i]
-	  if rhs == nil then rhs = def[1] end
-	  if NeedToKnow.RemoveDefaultValues(v, rhs, k .. " " .. i) then
-		t[i] = nil
-	  end
-	end
-  else
-	for kT, vT in pairs(t) do
-	  if NeedToKnow.RemoveDefaultValues(t[kT], def[kT], k .. " " .. kT) then
-		t[kT] = nil
-	  end
-	end
-  end
-  local fn = pairs(t)
-  return fn(t) == nil
-end
-
-function NeedToKnow.UncompressProfileSettings(profileSettings)
-	-- Uncompress profile by filling in missing settings from defaults
-
-	-- Make sure arrays have right number of elements 
-	-- so AddDefaultsToTable() will find them and fill them in
-	if profileSettings.nGroups then
-		if not profileSettings.Groups then
-			profileSettings.Groups = {}
-		end
-		if not profileSettings.Groups[profileSettings.nGroups] then
-			profileSettings.Groups[profileSettings.nGroups] = {}
-		end
-		-- profileSettings.Groups = profileSettings.Groups or {}
-		-- profileSettings.Groups[profileSettings.nGroups] = profileSettings.Groups[profileSettings.nGroups] or {}
-	end
-	if profileSettings.Groups then
-		for _, g in ipairs(profileSettings.Groups) do
-			if g.NumberBars then
-				if not g.Bars then
-					g.Bars = {}
-				end
-				if not g.Bars[g.NumberBars] then
-					g.Bars[g.NumberBars] = {}
-				end
-				-- g.Bars = g.Bars or {}
-				-- g.Bars[g.NumberBars] = g.Bars[g.NumberBars] or {}
-			end
-		end
-	end
-
-	NeedToKnow.AddDefaultsToTable(profileSettings, NEEDTOKNOW.PROFILE_DEFAULTS)
-	profileSettings.bUncompressed = true
-end
-
--- DEBUG: remove k, it's just for debugging
-function NeedToKnow.AddDefaultsToTable(t, def, k)
-	if type(t) ~= "table" then return end
-		if def == nil then
-			return
-		end
-	if not k then k = "" end
-	local n = table.maxn(t)
-	if n > 0 then
-		for i = 1, n do
-			local rhs = def[i]
-			if rhs == nil then rhs = def[1] end
-			if t[i] == nil then
-				t[i] = NeedToKnow.DeepCopy(rhs)
-			else
-				NeedToKnow.AddDefaultsToTable(t[i], rhs, k .. " " .. i)
-			end
-		end
-		else
-		for kD, vD in pairs(def) do
-			if t[kD] == nil then
-				if type(vD) == "table" then
-					t[kD] = NeedToKnow.DeepCopy(vD)
-				else
-					t[kD] = vD
-				end
-			else
-				NeedToKnow.AddDefaultsToTable(t[kD], vD, k .. " " .. kD)
-			end
-		end
-	end
-end
-
-function NeedToKnow.Reset(resetCharacter)
-	-- Reset global saved variables (NeedToKnow_Globals) to default settings
-	-- Called by NeedToKnow.SlashCommand()
-    NeedToKnow_Globals = CopyTable(NeedToKnow.DefaultSettings.global)
-    if resetCharacter or resetCharacter == nil then
-        NeedToKnow.ResetCharacter()
-    end
-end
-
-function NeedToKnow.ResetCharacter(bCreateSpecProfile)
-	-- Called by NeedToKnow.Reset(), NeedToKnowLoader.Reset(bResetCharacter), ...
-	-- local charKey = UnitName("player") .. ' - ' .. GetRealmName()
-	NeedToKnow_CharSettings = CopyTable(NEEDTOKNOW.CHARACTER_DEFAULTS)
-	NeedToKnow.CharSettings = NeedToKnow_CharSettings
-	if bCreateSpecProfile == nil or bCreateSpecProfile then
-		NeedToKnow.ExecutiveFrame:PLAYER_TALENT_UPDATE()    
-	end
-end
-
-
-
---[[ NeedToKnowLoader ]]-- 
-
-function NeedToKnowLoader.Reset(bResetCharacter)
-	-- Called by NeedToKnowLoader.SafeUpgrade()
-	NeedToKnow_Globals = CopyTable(NEEDTOKNOW.DEFAULTS)
-	if bResetCharacter == nil or bResetCharacter then
-		NeedToKnow.ResetCharacter()
-	end
-end
-
-function NeedToKnowLoader.RoundSettings(t)
-	-- Called by NeedToKnowLoader.MigrateSpec()
-	for k, v in pairs(t) do
-		local typ = type(v)
-		if typ == "number" then
-			t[k] = tonumber(string.format("%0.4f", v))
-		elseif typ == "table" then
-			NeedToKnowLoader.RoundSettings(v)
-		end
-	end
-end
-
-function NeedToKnowLoader.MigrateSpec(specSettings, specID)
-	-- Convert old profile for spec
-	-- Called by NeedToKnowLoader.MigrateCharacterSettings()
-
-	if ( not specSettings or not specSettings.Groups or not specSettings.Groups[1] or not 
-		specSettings.Groups[2] or not specSettings.Groups[3] or not specSettings.Groups[4] ) then
-		return false
-	end
-
-	-- Round floats to 0.00001, since old versions left really strange values of
-	-- BarSpacing and BarPadding around
-	NeedToKnowLoader.RoundSettings(specSettings)
-	specSettings.Spec = nil
-	specSettings.Locked = nil
-	specSettings.nGroups = 4
-	specSettings.BarFont = NeedToKnowLoader.FindFontName(specSettings.BarFont)
-	local profileKey = NeedToKnow.CreateProfile(specSettings)
-	NeedToKnow.SetProfileForSpec(profileKey, specID)
-	return true
-end
-
-function NeedToKnowLoader.MigrateCharacterSettings()
-	-- Import settings from NeedToKnow versions prior to v4.0.0
-
-    print("NeedToKnow: Migrating settings from", NeedToKnow_Settings["Version"])
-    local oldSettings = NeedToKnow_Settings
-    NeedToKnow.ResetCharacter(false)
-    if ( not oldSettings["Spec"] ) then 
-        NeedToKnow_Settings = nil 
-        return 
-    end
-
-    -- Kitjan: Blink was controlled purely by the alpha of MissingBlink for awhile,
-    -- But then I introduced an explicit blink_enabled variable.  Fill that in
-    -- if it's missing
-    for kS,vS in pairs(oldSettings["Spec"]) do
-      for kG,vG in pairs(vS["Groups"]) do
-        for kB,vB in pairs(vG["Bars"]) do
-            if ( nil == vB.blink_enabled and vB.MissingBlink ) then
-                vB.blink_enabled = vB.MissingBlink.a > 0
-            end
-        end
-      end
-    end
-
-    NeedToKnow.CharSettings["Locked"] = oldSettings["Locked"]
-
-    local bOK
-    if ( oldSettings["Spec"] ) then -- The Spec member existed from versions 2.4 to 3.1.7
-        for specID = 1,2 do
-            local newprofile = oldSettings.Spec[specID]
-            for kD,_ in pairs(NEEDTOKNOW.PROFILE_DEFAULTS) do
-              if oldSettings[kD] then
-                newprofile[kD] = oldSettings[kD]
-              end
-            end
-            bOK = NeedToKnowLoader.MigrateSpec(newprofile, specID)
-        end
-    -- if before dual spec support, copy old settings to both specs    
-    elseif ( oldSettings["Version"] >= "2.0" and oldSettings["Groups"] ) then    
-        bOK = NeedToKnowLoader.MigrateSpec(oldSettings, 1) and 
-              NeedToKnowLoader.MigrateSpec(CopyTable(oldSettings), 2)
-
-        -- save group positions if upgrading from version that used layout-local.txt
-        if ( bOK and NeedToKnow_Settings.Version < "2.1" ) then    
-            for groupID = 1, 4 do -- Prior to 3.2, there were always 4 groups
-                NeedToKnow.SavePosition(_G["NeedToKnow_Group"..groupID], groupID)
-            end
-        end        
-    end
-        
-    if not bOK then
-        print("Old NeedToKnow character settings corrupted or not compatible with current version... starting from scratch")
-        NeedToKnow.ResetCharacter()
-    end
-    NeedToKnow_Settings = nil
-end
-
 function NeedToKnowLoader.FindFontName(fontPath)
+	-- Return font name for given font object
+	-- Because old versions stored font object not name?
+	-- Or because we're localizing the default font? 
 	local fontList = NeedToKnow.LSM:List("font")
 	for i = 1, #fontList do
 		local fontName = fontList[i]
@@ -460,7 +133,7 @@ end
 function NeedToKnow.LoadProfiles()
 	-- Called by ExecutiveFrame:PLAYER_LOGIN()
 
-	-- Set default font
+	-- Why is this here?
 	local defPath = GameFontHighlight:GetFont()
 	NEEDTOKNOW.PROFILE_DEFAULTS.BarFont = NeedToKnowLoader.FindFontName(defPath)
 
@@ -558,8 +231,8 @@ function NeedToKnow.LoadProfiles()
 	end
 
 	-- Make new blank profile if active one was deleted
-	-- local profileKey = NeedToKnow.GetActiveProfile()
-	local profileKey = NeedToKnow.GetProfileForSpec(NeedToKnow.GetSpecIndex())
+	local profileKey = NeedToKnow.GetActiveProfile()
+	-- local profileKey = NeedToKnow.GetProfileForSpec(NeedToKnow.GetSpecIndex())
 	if profileKey and not NeedToKnow_Profiles[profileKey] then
 		print("NeedToKnow: Active profile", profileKey, "not found. Making new blank profile.")
 		profileKey = NeedToKnow.CreateBlankProfile()
@@ -568,6 +241,324 @@ function NeedToKnow.LoadProfiles()
 
 	 -- TODO: check the required members for existence and delete any corrupted profiles
 end
+
+function NeedToKnow.GetActiveProfile()
+	local profileKey = NeedToKnow.GetProfileForSpec(NeedToKnow.GetSpecIndex())
+	return profileKey
+end
+
+--function NeedToKnow.SetActiveProfile(profileKey)
+--	NeedToKnow.SetProfileForSpec(profileKey, NeedToKnow.GetSpecIndex())
+--	NeedToKnow.ProfileSettings = NeedToKnow_Profiles[profileKey]
+--end
+
+function NeedToKnow.GetProfileForSpec(specIndex)
+	local profileKey = NeedToKnow.CharSettings.Specs[specIndex]
+	return profileKey
+end
+
+function NeedToKnow.SetProfileForSpec(profileKey, specIndex)
+	NeedToKnow.CharSettings.Specs[specIndex] = profileKey
+end
+
+function NeedToKnow.GetProfileByName(name)
+	for profileKey, profile in pairs(NeedToKnow_Profiles) do
+		if profile.name == name then
+			return profileKey
+		end
+	end
+end
+
+--function NeedToKnow.GetProfileSettings(profileKey)
+--	return NeedToKnow_Profiles[profileKey]
+--end
+
+function NeedToKnow.ActivateProfile(profileKey)
+	local oldSettings = NeedToKnow.ProfileSettings
+	local newSettings = NeedToKnow_Profiles[profileKey]
+	if newSettings and newSettings ~= oldSettings then
+		if oldSettings and oldSettings.bUncompressed then
+			NeedToKnow.CompressProfileSettings(oldSettings)
+		end
+		NeedToKnow.UncompressProfileSettings(newSettings)
+		NeedToKnow.ProfileSettings = newSettings
+		NeedToKnow.SetProfileForSpec(profileKey, NeedToKnow.GetSpecIndex())
+		NeedToKnow:Update()
+		NeedToKnow.OptionsPanel:Update()
+		NeedToKnow.AppearancePanel:Update()
+	else
+		-- print("NeedToKnow: Profile", profile_key, "not found")
+		-- NEPH: Triggering sometimes when addon appears to be working fine. Why?
+	end
+end
+
+function NeedToKnow.CompressProfileSettings(profileSettings)
+	-- Compress saved variables by removing unused bars/groups and default settings
+	for groupIndex, groupSettings in ipairs(profileSettings.Groups) do
+		if groupIndex > profileSettings.nGroups then
+			profileSettings.Groups[groupIndex] = nil
+		elseif groupSettings.NumberBars then
+			for barIndex, _ in ipairs(groupSettings.Bars) do
+				if barIndex > groupSettings.NumberBars then
+					groupSettings.Bars[barIndex] = nil
+				end
+			end
+		end
+	end
+	NeedToKnow.RemoveDefaultValues(profileSettings, NEEDTOKNOW.PROFILE_DEFAULTS)
+end
+
+function NeedToKnow.RemoveDefaultValues(t, def, k)
+  if not k then k = "" end
+  if def == nil then
+	-- Some obsolete setting, or perhaps bUncompressed
+	return true
+  end
+  -- Never want to compress name since it's read from inactive profiles
+  -- Note: k was just for debugging, so it's got a leading space as part
+  -- of how the debugging string was built.  This mechanism should probably
+  -- be revisited.
+  if type(t) ~= "table" then
+	return ((k~=" name") and (t == def))
+  end
+
+  if #t > 0 then
+	-- An array, like Groups or Bars. Compare each element against def[1]
+	for i, v in ipairs(t) do
+	  local rhs = def[i]
+	  if rhs == nil then rhs = def[1] end
+	  if NeedToKnow.RemoveDefaultValues(v, rhs, k .. " " .. i) then
+		t[i] = nil
+	  end
+	end
+  else
+	for kT, vT in pairs(t) do
+	  if NeedToKnow.RemoveDefaultValues(t[kT], def[kT], k .. " " .. kT) then
+		t[kT] = nil
+	  end
+	end
+  end
+  local fn = pairs(t)
+  return fn(t) == nil
+end
+
+function NeedToKnow.UncompressProfileSettings(profileSettings)
+	-- Uncompress profile by filling in missing settings from defaults
+
+	-- Make sure arrays have right number of elements 
+	-- so AddDefaultsToTable() will find them and fill them in
+	if profileSettings.nGroups then
+		profileSettings.Groups = profileSettings.Groups or {}
+		profileSettings.Groups[profileSettings.nGroups] = profileSettings.Groups[profileSettings.nGroups] or {}
+	end
+	if profileSettings.Groups then
+		for _, groupSettings in ipairs(profileSettings.Groups) do
+			if groupSettings.NumberBars then
+				groupSettings.Bars = groupSettings.Bars or {}
+				groupSettings.Bars[groupSettings.NumberBars] = groupSettings.Bars[groupSettings.NumberBars] or {}
+			end
+		end
+	end
+
+	NeedToKnow.AddDefaultsToTable(profileSettings, NEEDTOKNOW.PROFILE_DEFAULTS)
+	profileSettings.bUncompressed = true
+
+	-- Deprecated legacy code from unfinished feature to change number of bar groups
+	profileSettings.nGroups = 4
+	for groupID = 1, profileSettings.nGroups do
+		if not profileSettings.Groups[groupID] then
+			profileSettings.Groups[groupID] = CopyTable(NEEDTOKNOW.GROUP_DEFAULTS)
+			local groupSettings = profileSettings.Groups[groupID]
+			groupSettings.Enabled = false
+			groupSettings.Position[4] = -100 - (groupID-1) * 100
+		end
+	end
+end
+
+function NeedToKnow.AddDefaultsToTable(t, def, k)
+	-- DEBUG: remove k, it's just for debugging
+	if type(t) ~= "table" then return end
+		if def == nil then
+			return
+		end
+	if not k then k = "" end
+	local n = table.maxn(t)  -- Note: table.maxn() deprecated as of Lua 5.2, WoW uses Lua 5.1.1
+	if n > 0 then
+		for i = 1, n do
+			local rhs = def[i]
+			if rhs == nil then rhs = def[1] end
+			if t[i] == nil then
+				t[i] = NeedToKnow.DeepCopy(rhs)
+			else
+				NeedToKnow.AddDefaultsToTable(t[i], rhs, k .. " " .. i)
+			end
+		end
+		else
+		for kD, vD in pairs(def) do
+			if t[kD] == nil then
+				if type(vD) == "table" then
+					t[kD] = NeedToKnow.DeepCopy(vD)
+				else
+					t[kD] = vD
+				end
+			else
+				NeedToKnow.AddDefaultsToTable(t[kD], vD, k .. " " .. kD)
+			end
+		end
+	end
+end
+
+function NeedToKnow.Reset(resetCharacter)
+	-- Reset global saved variables (NeedToKnow_Globals) to default settings
+	-- Called by NeedToKnow.SlashCommand()
+    NeedToKnow_Globals = CopyTable(NeedToKnow.DefaultSettings.global)
+    if resetCharacter or resetCharacter == nil then
+        NeedToKnow.ResetCharacter()
+    end
+end
+
+function NeedToKnow.ResetCharacter(bCreateSpecProfile)
+	-- Called by NeedToKnow.Reset(), NeedToKnowLoader.Reset(bResetCharacter), ...
+	-- local charKey = UnitName("player") .. ' - ' .. GetRealmName()
+	NeedToKnow_CharSettings = CopyTable(NEEDTOKNOW.CHARACTER_DEFAULTS)
+	NeedToKnow.CharSettings = NeedToKnow_CharSettings
+	if bCreateSpecProfile == nil or bCreateSpecProfile then
+		NeedToKnow.ExecutiveFrame:PLAYER_TALENT_UPDATE()    
+	end
+end
+
+
+--[[ Deprecated ]]--
+
+--[[ NeedToKnowLoader ]]-- 
+
+function NeedToKnowLoader.Reset(bResetCharacter)
+	-- Called by NeedToKnowLoader.SafeUpgrade()
+	NeedToKnow_Globals = CopyTable(NEEDTOKNOW.DEFAULTS)
+	if bResetCharacter == nil or bResetCharacter then
+		NeedToKnow.ResetCharacter()
+	end
+end
+
+function NeedToKnowLoader.MigrateCharacterSettings()
+	-- Import settings from NeedToKnow versions prior to v4.0.0
+
+    print("NeedToKnow: Migrating settings from", NeedToKnow_Settings["Version"])
+    local oldSettings = NeedToKnow_Settings
+    NeedToKnow.ResetCharacter(false)
+    if ( not oldSettings["Spec"] ) then 
+        NeedToKnow_Settings = nil 
+        return 
+    end
+
+    -- Kitjan: Blink was controlled purely by the alpha of MissingBlink for awhile,
+    -- But then I introduced an explicit blink_enabled variable.  Fill that in
+    -- if it's missing
+    for kS,vS in pairs(oldSettings["Spec"]) do
+      for kG,vG in pairs(vS["Groups"]) do
+        for kB,vB in pairs(vG["Bars"]) do
+            if ( nil == vB.blink_enabled and vB.MissingBlink ) then
+                vB.blink_enabled = vB.MissingBlink.a > 0
+            end
+        end
+      end
+    end
+
+    NeedToKnow.CharSettings["Locked"] = oldSettings["Locked"]
+
+    local bOK
+    if ( oldSettings["Spec"] ) then -- The Spec member existed from versions 2.4 to 3.1.7
+        for specID = 1,2 do
+            local newprofile = oldSettings.Spec[specID]
+            for kD,_ in pairs(NEEDTOKNOW.PROFILE_DEFAULTS) do
+              if oldSettings[kD] then
+                newprofile[kD] = oldSettings[kD]
+              end
+            end
+            bOK = NeedToKnowLoader.MigrateSpec(newprofile, specID)
+        end
+    -- if before dual spec support, copy old settings to both specs    
+    elseif ( oldSettings["Version"] >= "2.0" and oldSettings["Groups"] ) then    
+        bOK = NeedToKnowLoader.MigrateSpec(oldSettings, 1) and 
+              NeedToKnowLoader.MigrateSpec(CopyTable(oldSettings), 2)
+
+        -- save group positions if upgrading from version that used layout-local.txt
+        if ( bOK and NeedToKnow_Settings.Version < "2.1" ) then    
+            for groupID = 1, 4 do -- Prior to 3.2, there were always 4 groups
+                NeedToKnow.SavePosition(_G["NeedToKnow_Group"..groupID], groupID)
+            end
+        end        
+    end
+        
+    if not bOK then
+        print("Old NeedToKnow character settings corrupted or not compatible with current version... starting from scratch")
+        NeedToKnow.ResetCharacter()
+    end
+    NeedToKnow_Settings = nil
+end
+
+function NeedToKnowLoader.MigrateSpec(specSettings, specID)
+	-- Convert old profile for spec
+	-- Called by NeedToKnowLoader.MigrateCharacterSettings()
+
+	if ( not specSettings or not specSettings.Groups or not specSettings.Groups[1] or not 
+		specSettings.Groups[2] or not specSettings.Groups[3] or not specSettings.Groups[4] ) then
+		return false
+	end
+
+	-- Round floats to 0.00001, since old versions left really strange values of
+	-- BarSpacing and BarPadding around
+	NeedToKnowLoader.RoundSettings(specSettings)
+	specSettings.Spec = nil
+	specSettings.Locked = nil
+	specSettings.nGroups = 4
+	specSettings.BarFont = NeedToKnowLoader.FindFontName(specSettings.BarFont)
+	local profileKey = NeedToKnow.CreateProfile(specSettings)
+	NeedToKnow.SetProfileForSpec(profileKey, specID)
+	return true
+end
+
+function NeedToKnowLoader.RoundSettings(t)
+	-- Called by NeedToKnowLoader.MigrateSpec()
+	for k, v in pairs(t) do
+		local typ = type(v)
+		if typ == "number" then
+			t[k] = tonumber(string.format("%0.4f", v))
+		elseif typ == "table" then
+			NeedToKnowLoader.RoundSettings(v)
+		end
+	end
+end
+
+function NeedToKnow.AllocateProfileKey()
+	local n = NeedToKnow_Globals.NextProfile or 1
+	while NeedToKnow_Profiles["G"..n] do
+		n = n + 1
+	end
+	if NeedToKnow_Globals.NextProfile == null or n >= NeedToKnow_Globals.NextProfile then
+		NeedToKnow_Globals.NextProfile = n + 1
+	end
+	return "G"..n
+end
+
+function NeedToKnow.FindProfileByName(name)
+	for k, t in pairs(NeedToKnow_Profiles) do
+		if t.name == name then
+			return k
+		end
+	end
+end
+
+function NeedToKnow.FindUnusedNumericSuffix(prefix, defPrefix)
+	local suffix = defPrefix or 1
+	local candidate = prefix .. suffix
+	while NeedToKnow.FindProfileByName(candidate) do 
+		suffix = suffix + 1
+		candidate = prefix .. suffix
+	end
+	return candidate
+end
+
 
 
 

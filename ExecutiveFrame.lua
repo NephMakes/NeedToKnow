@@ -71,9 +71,9 @@ function ExecutiveFrame:PLAYER_LOGIN()
 	NeedToKnow.isLocked = NeedToKnow:GetCharacterSettings().Locked
 	NeedToKnow:Update()
 
-	self:UnregisterEvent("PLAYER_LOGIN")
-	self:UnregisterEvent("ADDON_LOADED")
-	NeedToKnowLoader = nil
+--	self:UnregisterEvent("PLAYER_LOGIN")
+--	self:UnregisterEvent("ADDON_LOADED")
+--	NeedToKnowLoader = nil
 end
 
 function ExecutiveFrame:PLAYER_TALENT_UPDATE()
@@ -117,7 +117,7 @@ end
 
 function NeedToKnow.RegisterSpellcastSent()
 	-- Called by Bar:Activate()
-	if ( NeedToKnow.nRegisteredSent ) then
+	if NeedToKnow.nRegisteredSent then
 		NeedToKnow.nRegisteredSent = NeedToKnow.nRegisteredSent + 1
 	else
 		NeedToKnow.nRegisteredSent = 1

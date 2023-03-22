@@ -96,7 +96,6 @@ function ProfilePanel:Update()
 	if self.profileMap then
 		-- Get active profile name
 		local profileKey = NeedToKnow.GetActiveProfile()
-		-- local profileKey = NeedToKnow.GetProfileForSpec(NeedToKnow.GetSpecIndex())
 		self.activeProfileName = NeedToKnow_Profiles[profileKey].name
 
 		-- Select active profile by default
