@@ -1,4 +1,4 @@
-## Interface: 100005
+## Interface: 100007
 ## Title: NeedToKnow
 ## Author: NephMakes, lieandswell
 ## X-FormerAuthor: Kitjan

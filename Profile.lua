@@ -4,8 +4,8 @@
 Important global variables: 
 	NeedToKnow_Globals: Saved variable. Has account-wide profiles. 
 	NeedToKnow_CharSettings: Saved variable per character. Has character-specific profiles. 
-	NeedToKnow_Profiles: Has all profiles available to character. Deprecated. 
 	NeedToKnow_Settings: Saved variable from old versions. No longer used. Deprecated. 
+	NeedToKnow_Profiles: Has all profiles available to character. Deprecated. 
 ]]--
 
 
@@ -63,8 +63,8 @@ end
 function NeedToKnow.CopyProfile(profileKey)
 	-- Called by ProfilePanel.OnClickCopyButton()
 	local profile = CopyTable(NeedToKnow_Profiles[profileKey])
-	local name = NeedToKnow.GetProfileCopyName(profile.name)
 	profileKey = NeedToKnow.CreateProfile(profile)
+	local name = NeedToKnow.GetProfileCopyName(profile.name)
 	NeedToKnow.RenameProfile(profileKey, name)
 	return profileKey
 end
@@ -102,8 +102,25 @@ function NeedToKnow.SetProfileToCharacter(profileKey)
 	NeedToKnow_CharSettings.Profiles[profileKey] = profile
 end
 
+--function NeedToKnow.IsProfileToAccount(profileKey)
+--	if NeedToKnow_Globals.Profiles[profileKey] then
+--		return true
+--	else
+--		return false
+--	end
+--end
+--
+--function NeedToKnow.IsProfileToCharacter(profileKey)
+--	if NeedToKnow_CharSettings.Profiles[profileKey] then
+--		return true
+--	else
+--		return false
+--	end
+--end
+
 function NeedToKnow.DeleteProfile(profileKey)
 	if NeedToKnow_Profiles[profileKey] == NeedToKnow.ProfileSettings then
+	-- if profileKey == NeedToKnow.GetActiveProfile() then
 		print("NeedToKnow: Can't delete active profile")
 	else
 		NeedToKnow_Profiles[profileKey] = nil
@@ -112,11 +129,14 @@ function NeedToKnow.DeleteProfile(profileKey)
 		elseif NeedToKnow_CharSettings.Profiles[profileKey] then 
 			NeedToKnow_CharSettings.Profiles[profileKey] = nil
 		end
+		-- NeedToKnow_Globals.Profiles[profileKey] = nil
+		-- NeedToKnow_CharSettings.Profiles[profileKey] = nil
 	end
 end
 
+-- Should be somewhere else
 function NeedToKnowLoader.FindFontName(fontPath)
-	-- Return font name for given font object
+	-- Return font name for given font path
 	-- Because old versions stored font object not name?
 	-- Or because we're localizing the default font? 
 	local fontList = NeedToKnow.LSM:List("font")
@@ -145,7 +165,7 @@ function NeedToKnow.LoadProfiles()
 		NeedToKnowLoader.Reset(false)
 	end
 
-	if NeedToKnow_Settings then  -- prior to 4.0
+	if NeedToKnow_Settings then  -- NeedToKnow_Settings used prior to 4.0
 		NeedToKnowLoader.MigrateCharacterSettings()  -- Upgrade from previous versions
 	end
 
@@ -232,9 +252,9 @@ function NeedToKnow.LoadProfiles()
 
 	-- Make new blank profile if active one was deleted
 	local profileKey = NeedToKnow.GetActiveProfile()
-	-- local profileKey = NeedToKnow.GetProfileForSpec(NeedToKnow.GetSpecIndex())
+	-- local profileKey = NeedToKnow.GetProfileForSpec()
 	if profileKey and not NeedToKnow_Profiles[profileKey] then
-		print("NeedToKnow: Active profile", profileKey, "not found. Making new blank profile.")
+		print("NeedToKnow: Profile", profileKey, "not found. Making new blank profile.")
 		profileKey = NeedToKnow.CreateBlankProfile()
 		NeedToKnow.ActivateProfile(profileKey)
 	end
@@ -242,23 +262,18 @@ function NeedToKnow.LoadProfiles()
 	 -- TODO: check the required members for existence and delete any corrupted profiles
 end
 
-function NeedToKnow.GetActiveProfile()
-	local profileKey = NeedToKnow.GetProfileForSpec(NeedToKnow.GetSpecIndex())
-	return profileKey
+function NeedToKnow.SetProfileForSpec(profileKey, specIndex)
+	NeedToKnow.CharSettings.Specs[specIndex] = profileKey
 end
-
---function NeedToKnow.SetActiveProfile(profileKey)
---	NeedToKnow.SetProfileForSpec(profileKey, NeedToKnow.GetSpecIndex())
---	NeedToKnow.ProfileSettings = NeedToKnow_Profiles[profileKey]
---end
 
 function NeedToKnow.GetProfileForSpec(specIndex)
 	local profileKey = NeedToKnow.CharSettings.Specs[specIndex]
 	return profileKey
 end
 
-function NeedToKnow.SetProfileForSpec(profileKey, specIndex)
-	NeedToKnow.CharSettings.Specs[specIndex] = profileKey
+function NeedToKnow.GetActiveProfile()
+	local profileKey = NeedToKnow.GetProfileForSpec(NeedToKnow.GetSpecIndex())
+	return profileKey
 end
 
 function NeedToKnow.GetProfileByName(name)
@@ -287,7 +302,7 @@ function NeedToKnow.ActivateProfile(profileKey)
 		NeedToKnow.OptionsPanel:Update()
 		NeedToKnow.AppearancePanel:Update()
 	else
-		-- print("NeedToKnow: Profile", profile_key, "not found")
+		-- print("NeedToKnow: Profile", profileKey, "not found")
 		-- NEPH: Triggering sometimes when addon appears to be working fine. Why?
 	end
 end
@@ -308,54 +323,24 @@ function NeedToKnow.CompressProfileSettings(profileSettings)
 	NeedToKnow.RemoveDefaultValues(profileSettings, NEEDTOKNOW.PROFILE_DEFAULTS)
 end
 
-function NeedToKnow.RemoveDefaultValues(t, def, k)
-  if not k then k = "" end
-  if def == nil then
-	-- Some obsolete setting, or perhaps bUncompressed
-	return true
-  end
-  -- Never want to compress name since it's read from inactive profiles
-  -- Note: k was just for debugging, so it's got a leading space as part
-  -- of how the debugging string was built.  This mechanism should probably
-  -- be revisited.
-  if type(t) ~= "table" then
-	return ((k~=" name") and (t == def))
-  end
-
-  if #t > 0 then
-	-- An array, like Groups or Bars. Compare each element against def[1]
-	for i, v in ipairs(t) do
-	  local rhs = def[i]
-	  if rhs == nil then rhs = def[1] end
-	  if NeedToKnow.RemoveDefaultValues(v, rhs, k .. " " .. i) then
-		t[i] = nil
-	  end
-	end
-  else
-	for kT, vT in pairs(t) do
-	  if NeedToKnow.RemoveDefaultValues(t[kT], def[kT], k .. " " .. kT) then
-		t[kT] = nil
-	  end
-	end
-  end
-  local fn = pairs(t)
-  return fn(t) == nil
-end
-
 function NeedToKnow.UncompressProfileSettings(profileSettings)
 	-- Uncompress profile by filling in missing settings from defaults
 
 	-- Make sure arrays have right number of elements 
 	-- so AddDefaultsToTable() will find them and fill them in
+	local numberGroups = profileSettings.nGroups
 	if profileSettings.nGroups then
 		profileSettings.Groups = profileSettings.Groups or {}
 		profileSettings.Groups[profileSettings.nGroups] = profileSettings.Groups[profileSettings.nGroups] or {}
+		-- profileSettings.Groups[numberGroups] = profileSettings.Groups[numberGroups] or {}
 	end
 	if profileSettings.Groups then
 		for _, groupSettings in ipairs(profileSettings.Groups) do
+			local numberBars = groupSettings.NumberBars
 			if groupSettings.NumberBars then
 				groupSettings.Bars = groupSettings.Bars or {}
 				groupSettings.Bars[groupSettings.NumberBars] = groupSettings.Bars[groupSettings.NumberBars] or {}
+				-- groupSettings.Bars[numberBars] = groupSettings.Bars[numberBars] or {}
 			end
 		end
 	end
@@ -375,18 +360,53 @@ function NeedToKnow.UncompressProfileSettings(profileSettings)
 	end
 end
 
+function NeedToKnow.RemoveDefaultValues(t, def, k)
+	if def == nil then return true end  -- Some obsolete setting, or perhaps bUncompressed
+	if not k then k = "" end
+
+	-- Never want to compress name since it's read from inactive profiles
+	-- Note: k was just for debugging, so it's got a leading space as part
+	-- of how the debugging string was built.  This mechanism should probably
+	-- be revisited.
+	if type(t) ~= "table" then
+		return ((k ~= " name") and (t == def))
+	end
+
+	if #t > 0 then
+		-- An array, like Groups or Bars. Compare each element against def[1]
+		for i, v in ipairs(t) do
+			local rhs = def[i]
+			if rhs == nil then
+				rhs = def[1]
+			end
+			if NeedToKnow.RemoveDefaultValues(v, rhs, k .. " " .. i) then
+				t[i] = nil
+			end
+		end
+	else
+		for kT, vT in pairs(t) do
+			if NeedToKnow.RemoveDefaultValues(t[kT], def[kT], k .. " " .. kT) then
+				t[kT] = nil
+			end
+		end
+	end
+	local fn = pairs(t)  -- Check if there's anything left in t
+	return fn(t) == nil  -- Return true if t is empty
+end
+
 function NeedToKnow.AddDefaultsToTable(t, def, k)
 	-- DEBUG: remove k, it's just for debugging
 	if type(t) ~= "table" then return end
-		if def == nil then
-			return
-		end
+	if def == nil then return end
 	if not k then k = "" end
+
 	local n = table.maxn(t)  -- Note: table.maxn() deprecated as of Lua 5.2, WoW uses Lua 5.1.1
 	if n > 0 then
 		for i = 1, n do
 			local rhs = def[i]
-			if rhs == nil then rhs = def[1] end
+			if rhs == nil then 
+				rhs = def[1]
+			end
 			if t[i] == nil then
 				t[i] = NeedToKnow.DeepCopy(rhs)
 			else
