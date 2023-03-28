@@ -63,8 +63,8 @@ end
 function NeedToKnow.CopyProfile(profileKey)
 	-- Called by ProfilePanel.OnClickCopyButton()
 	local profile = CopyTable(NeedToKnow_Profiles[profileKey])
-	profileKey = NeedToKnow.CreateProfile(profile)
 	local name = NeedToKnow.GetProfileCopyName(profile.name)
+	profileKey = NeedToKnow.CreateProfile(profile)
 	NeedToKnow.RenameProfile(profileKey, name)
 	return profileKey
 end
@@ -119,18 +119,12 @@ end
 --end
 
 function NeedToKnow.DeleteProfile(profileKey)
-	if NeedToKnow_Profiles[profileKey] == NeedToKnow.ProfileSettings then
-	-- if profileKey == NeedToKnow.GetActiveProfile() then
+	if profileKey == NeedToKnow.GetActiveProfile() then
 		print("NeedToKnow: Can't delete active profile")
 	else
 		NeedToKnow_Profiles[profileKey] = nil
-		if NeedToKnow_Globals.Profiles[profileKey] then 
-			NeedToKnow_Globals.Profiles[profileKey] = nil
-		elseif NeedToKnow_CharSettings.Profiles[profileKey] then 
-			NeedToKnow_CharSettings.Profiles[profileKey] = nil
-		end
-		-- NeedToKnow_Globals.Profiles[profileKey] = nil
-		-- NeedToKnow_CharSettings.Profiles[profileKey] = nil
+		NeedToKnow_Globals.Profiles[profileKey] = nil
+		NeedToKnow_CharSettings.Profiles[profileKey] = nil
 	end
 end
 
@@ -320,27 +314,24 @@ function NeedToKnow.CompressProfileSettings(profileSettings)
 			end
 		end
 	end
-	NeedToKnow.RemoveDefaultValues(profileSettings, NEEDTOKNOW.PROFILE_DEFAULTS)
+	NeedToKnow.RemoveDefaultSettings(profileSettings, NEEDTOKNOW.PROFILE_DEFAULTS)
 end
 
 function NeedToKnow.UncompressProfileSettings(profileSettings)
 	-- Uncompress profile by filling in missing settings from defaults
 
-	-- Make sure arrays have right number of elements 
-	-- so AddDefaultsToTable() will find them and fill them in
+	-- Make sure arrays have right number of elements for AddDefaultsToTable()
 	local numberGroups = profileSettings.nGroups
-	if profileSettings.nGroups then
+	if numberGroups then
 		profileSettings.Groups = profileSettings.Groups or {}
-		profileSettings.Groups[profileSettings.nGroups] = profileSettings.Groups[profileSettings.nGroups] or {}
-		-- profileSettings.Groups[numberGroups] = profileSettings.Groups[numberGroups] or {}
+		profileSettings.Groups[numberGroups] = profileSettings.Groups[numberGroups] or {}
 	end
 	if profileSettings.Groups then
 		for _, groupSettings in ipairs(profileSettings.Groups) do
 			local numberBars = groupSettings.NumberBars
-			if groupSettings.NumberBars then
+			if numberBars then
 				groupSettings.Bars = groupSettings.Bars or {}
-				groupSettings.Bars[groupSettings.NumberBars] = groupSettings.Bars[groupSettings.NumberBars] or {}
-				-- groupSettings.Bars[numberBars] = groupSettings.Bars[numberBars] or {}
+				groupSettings.Bars[numberBars] = groupSettings.Bars[numberBars] or {}
 			end
 		end
 	end
@@ -360,45 +351,48 @@ function NeedToKnow.UncompressProfileSettings(profileSettings)
 	end
 end
 
-function NeedToKnow.RemoveDefaultValues(t, def, k)
-	if def == nil then return true end  -- Some obsolete setting, or perhaps bUncompressed
-	if not k then k = "" end
+function NeedToKnow.RemoveDefaultSettings(object, default, debugString)
+	-- Delete default values from object then return true if object is empty or nil
 
-	-- Never want to compress name since it's read from inactive profiles
-	-- Note: k was just for debugging, so it's got a leading space as part
-	-- of how the debugging string was built.  This mechanism should probably
-	-- be revisited.
-	if type(t) ~= "table" then
-		return ((k ~= " name") and (t == def))
+	if not debugString then debugString = "" end
+	-- Note: debugString had leading space. Should be revisited.
+
+	if default == nil then return true end  -- Obsolete setting or maybe bUncompressed
+
+	if type(object) ~= "table" then
+		return ((object == default) and (debugString ~= " name"))
+		-- Note: Shouldn't compress name because it's read from inactive profiles
 	end
 
-	if #t > 0 then
-		-- An array, like Groups or Bars. Compare each element against def[1]
-		for i, v in ipairs(t) do
-			local rhs = def[i]
-			if rhs == nil then
-				rhs = def[1]
+	if #object > 0 then  -- Indexed table like Groups or Bars
+		for i, v in ipairs(object) do
+			local defaultValue = default[i]
+			if defaultValue == nil then
+				defaultValue = default[1]
 			end
-			if NeedToKnow.RemoveDefaultValues(v, rhs, k .. " " .. i) then
-				t[i] = nil
+			if NeedToKnow.RemoveDefaultSettings(v, defaultValue, debugString .. " " .. i) then
+				object[i] = nil
 			end
 		end
 	else
-		for kT, vT in pairs(t) do
-			if NeedToKnow.RemoveDefaultValues(t[kT], def[kT], k .. " " .. kT) then
-				t[kT] = nil
+		for k, v in pairs(object) do
+			if NeedToKnow.RemoveDefaultSettings(object[k], default[k], debugString .. " " .. k) then
+				object[k] = nil
 			end
 		end
 	end
-	local fn = pairs(t)  -- Check if there's anything left in t
-	return fn(t) == nil  -- Return true if t is empty
+
+	-- Return true if object empty
+	local fn = pairs(object)
+	return fn(object) == nil
 end
 
 function NeedToKnow.AddDefaultsToTable(t, def, k)
-	-- DEBUG: remove k, it's just for debugging
-	if type(t) ~= "table" then return end
-	if def == nil then return end
 	if not k then k = "" end
+	-- DEBUG: remove k, it's just for debugging
+
+	if def == nil then return end
+	if type(t) ~= "table" then return end
 
 	local n = table.maxn(t)  -- Note: table.maxn() deprecated as of Lua 5.2, WoW uses Lua 5.1.1
 	if n > 0 then
@@ -443,7 +437,7 @@ function NeedToKnow.ResetCharacter(bCreateSpecProfile)
 	NeedToKnow_CharSettings = CopyTable(NEEDTOKNOW.CHARACTER_DEFAULTS)
 	NeedToKnow.CharSettings = NeedToKnow_CharSettings
 	if bCreateSpecProfile == nil or bCreateSpecProfile then
-		NeedToKnow.ExecutiveFrame:PLAYER_TALENT_UPDATE()    
+		NeedToKnow.ExecutiveFrame:PLAYER_TALENT_UPDATE()  -- Should be a profile function
 	end
 end
 
