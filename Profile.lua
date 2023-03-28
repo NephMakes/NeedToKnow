@@ -320,7 +320,7 @@ end
 function NeedToKnow.UncompressProfileSettings(profileSettings)
 	-- Uncompress profile by filling in missing settings from defaults
 
-	-- Make sure arrays have right number of elements for AddDefaultsToTable()
+	-- Make sure arrays have right number of elements for AddDefaultSettings()
 	local numberGroups = profileSettings.nGroups
 	if numberGroups then
 		profileSettings.Groups = profileSettings.Groups or {}
@@ -336,7 +336,7 @@ function NeedToKnow.UncompressProfileSettings(profileSettings)
 		end
 	end
 
-	NeedToKnow.AddDefaultsToTable(profileSettings, NEEDTOKNOW.PROFILE_DEFAULTS)
+	NeedToKnow.AddDefaultSettings(profileSettings, NEEDTOKNOW.PROFILE_DEFAULTS)
 	profileSettings.bUncompressed = true
 
 	-- Deprecated legacy code from unfinished feature to change number of bar groups
@@ -352,12 +352,15 @@ function NeedToKnow.UncompressProfileSettings(profileSettings)
 end
 
 function NeedToKnow.RemoveDefaultSettings(object, default, debugString)
-	-- Delete default values from object then return true if object is empty or nil
+	-- Recursively delete default settings from object
+	-- Then return true if object is nil, an empty table, or non-table equal to default
 
 	if not debugString then debugString = "" end
 	-- Note: debugString had leading space. Should be revisited.
 
-	if default == nil then return true end  -- Obsolete setting or maybe bUncompressed
+	if default == nil then  -- Obsolete setting or maybe bUncompressed
+		return true
+	end
 
 	if type(object) ~= "table" then
 		return ((object == default) and (debugString ~= " name"))
@@ -382,48 +385,46 @@ function NeedToKnow.RemoveDefaultSettings(object, default, debugString)
 		end
 	end
 
-	-- Return true if object empty
+	-- Return true if object is empty table
 	local fn = pairs(object)
 	return fn(object) == nil
 end
 
-function NeedToKnow.AddDefaultsToTable(t, def, k)
-	if not k then k = "" end
-	-- DEBUG: remove k, it's just for debugging
-
-	if def == nil then return end
-	if type(t) ~= "table" then return end
-
-	local n = table.maxn(t)  -- Note: table.maxn() deprecated as of Lua 5.2, WoW uses Lua 5.1.1
-	if n > 0 then
+function NeedToKnow.AddDefaultSettings(object, default)
+	-- Recursively add default settings to object
+	if (default == nil) or (type(object) ~= "table") then
+		return
+	end
+	local n = table.maxn(object)  -- Note: table.maxn() deprecated as of Lua 5.2, WoW uses Lua 5.1.1
+	if n > 0 then  -- Indexed table like Groups or Bars
 		for i = 1, n do
-			local rhs = def[i]
-			if rhs == nil then 
-				rhs = def[1]
+			local defaultValue = default[i]
+			if defaultValue == nil then 
+				defaultValue = default[1]
 			end
-			if t[i] == nil then
-				t[i] = NeedToKnow.DeepCopy(rhs)
+			if object[i] == nil then
+				object[i] = NeedToKnow.DeepCopy(defaultValue)
 			else
-				NeedToKnow.AddDefaultsToTable(t[i], rhs, k .. " " .. i)
+				NeedToKnow.AddDefaultSettings(object[i], defaultValue)
 			end
 		end
-		else
-		for kD, vD in pairs(def) do
-			if t[kD] == nil then
-				if type(vD) == "table" then
-					t[kD] = NeedToKnow.DeepCopy(vD)
+	else
+		for key, value in pairs(default) do
+			if object[key] == nil then
+				if type(value) == "table" then
+					object[key] = NeedToKnow.DeepCopy(value)
 				else
-					t[kD] = vD
+					object[key] = value
 				end
 			else
-				NeedToKnow.AddDefaultsToTable(t[kD], vD, k .. " " .. kD)
+				NeedToKnow.AddDefaultSettings(object[key], value)
 			end
 		end
 	end
 end
 
 function NeedToKnow.Reset(resetCharacter)
-	-- Reset global saved variables (NeedToKnow_Globals) to default settings
+	-- Reset global saved variables to default settings
 	-- Called by NeedToKnow.SlashCommand()
     NeedToKnow_Globals = CopyTable(NeedToKnow.DefaultSettings.global)
     if resetCharacter or resetCharacter == nil then
@@ -432,6 +433,7 @@ function NeedToKnow.Reset(resetCharacter)
 end
 
 function NeedToKnow.ResetCharacter(bCreateSpecProfile)
+	-- Reset character saved variables to default settings
 	-- Called by NeedToKnow.Reset(), NeedToKnowLoader.Reset(bResetCharacter), ...
 	-- local charKey = UnitName("player") .. ' - ' .. GetRealmName()
 	NeedToKnow_CharSettings = CopyTable(NEEDTOKNOW.CHARACTER_DEFAULTS)
@@ -447,6 +449,7 @@ end
 --[[ NeedToKnowLoader ]]-- 
 
 function NeedToKnowLoader.Reset(bResetCharacter)
+	-- Reset global saved variables to default settings
 	-- Called by NeedToKnowLoader.SafeUpgrade()
 	NeedToKnow_Globals = CopyTable(NEEDTOKNOW.DEFAULTS)
 	if bResetCharacter == nil or bResetCharacter then

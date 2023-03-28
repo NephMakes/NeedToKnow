@@ -91,7 +91,8 @@ NEEDTOKNOW.GROUP_DEFAULTS = {
     Bars = {NEEDTOKNOW.BAR_DEFAULTS, NEEDTOKNOW.BAR_DEFAULTS, NEEDTOKNOW.BAR_DEFAULTS},
 }
 NEEDTOKNOW.PROFILE_DEFAULTS = {
-	name = "Default",
+	-- name = "Default",
+	name = "",
 	nGroups = 4,
 	Groups = {NEEDTOKNOW.GROUP_DEFAULTS},
 	BarTexture = "BantoBar",
