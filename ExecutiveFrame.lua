@@ -50,7 +50,7 @@ function ExecutiveFrame:ADDON_LOADED(addon)
 end
 
 function ExecutiveFrame:PLAYER_LOGIN()
-	NeedToKnow.LoadProfiles()
+	NeedToKnow:LoadProfiles()
 
 	local _, className = UnitClass("player")
 	if className == "DEATHKNIGHT" and WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then

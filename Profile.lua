@@ -128,22 +128,14 @@ function NeedToKnow.DeleteProfile(profileKey)
 	end
 end
 
-function NeedToKnow.LoadProfiles()
+function NeedToKnow:LoadProfiles()
 	-- Called by ExecutiveFrame:PLAYER_LOGIN()
 
 	NeedToKnow_Profiles = {}
 
-	-- If there had been an error during the previous upgrade, NeedToKnow_Settings 
-	-- may be in an inconsistent, halfway state.  
 	if not NeedToKnow_Globals then
 		NeedToKnowLoader.Reset(false)
 	end
-
---	if NeedToKnow_Settings then  -- NeedToKnow_Settings used prior to 4.0
---		NeedToKnowLoader.MigrateCharacterSettings()  -- Upgrade from previous versions
---	end
-	-- NeedToKnow v4.0 was >5 years ago
-
 	if not NeedToKnow_CharSettings then
 		-- We'll call talent update right after this, so pass false now
 		NeedToKnow.ResetCharacter(false)
@@ -451,8 +443,10 @@ function NeedToKnowLoader.Reset(bResetCharacter)
 	end
 end
 
+--[[
 function NeedToKnowLoader.MigrateCharacterSettings()
 	-- Import settings from NeedToKnow versions prior to v4.0.0
+	-- But 2011 was a long time ago. Time to move on. 
 
     print("NeedToKnow: Migrating settings from", NeedToKnow_Settings["Version"])
     local oldSettings = NeedToKnow_Settings
@@ -528,6 +522,7 @@ function NeedToKnowLoader.MigrateSpec(specSettings, specID)
 	NeedToKnow.SetProfileForSpec(profileKey, specID)
 	return true
 end
+]]--
 
 function NeedToKnowLoader.RoundSettings(t)
 	-- Called by NeedToKnowLoader.MigrateSpec()

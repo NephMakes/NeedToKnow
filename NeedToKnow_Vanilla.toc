@@ -9,7 +9,7 @@
 ## OptionalDeps: LibStub, LibSharedMedia-3.0
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
-## SavedVariablesPerCharacter: NeedToKnow_Settings, NeedToKnow_CharSettings
+## SavedVariablesPerCharacter: NeedToKnow_CharSettings
 ## SavedVariables: NeedToKnow_Globals
 libs\LibStub\LibStub.lua
 libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
