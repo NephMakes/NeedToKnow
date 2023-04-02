@@ -273,7 +273,7 @@ function NeedToKnow.ImportBarSettingsFromString(text, bars, barID)
 		pruned = {}
 	end
 	if pruned then
-		NeedToKnow.AddDefaultsToTable(pruned, NEEDTOKNOW.BAR_DEFAULTS)
+		NeedToKnow.AddDefaultSettings(pruned, NEEDTOKNOW.BAR_DEFAULTS)
 		bars[barID] = pruned
 	end
 end
@@ -281,7 +281,7 @@ end
 function NeedToKnow.ExportBarSettingsToString(barSettings)
 	-- Called by Dialog:ExportSettings()
 	local pruned = CopyTable(barSettings)
-	NeedToKnow.RemoveDefaultValues(pruned, NEEDTOKNOW.BAR_DEFAULTS)
+	NeedToKnow.RemoveDefaultSettings(pruned, NEEDTOKNOW.BAR_DEFAULTS)
 	return "bv1:"..TableToString(pruned)
 end
 

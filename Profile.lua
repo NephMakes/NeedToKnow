@@ -128,28 +128,8 @@ function NeedToKnow.DeleteProfile(profileKey)
 	end
 end
 
--- Should be somewhere else
-function NeedToKnowLoader.FindFontName(fontPath)
-	-- Return font name for given font path
-	-- Because old versions stored font object not name?
-	-- Or because we're localizing the default font? 
-	local fontList = NeedToKnow.LSM:List("font")
-	for i = 1, #fontList do
-		local fontName = fontList[i]
-		local iPath = NeedToKnow.LSM:Fetch("font", fontName)
-		if iPath == fontPath then
-			return fontName
-		end
-	end
-	return NEEDTOKNOW.PROFILE_DEFAULTS.BarFont
-end
-
 function NeedToKnow.LoadProfiles()
 	-- Called by ExecutiveFrame:PLAYER_LOGIN()
-
-	-- Why is this here?
-	local defPath = GameFontHighlight:GetFont()
-	NEEDTOKNOW.PROFILE_DEFAULTS.BarFont = NeedToKnowLoader.FindFontName(defPath)
 
 	NeedToKnow_Profiles = {}
 
@@ -159,9 +139,10 @@ function NeedToKnow.LoadProfiles()
 		NeedToKnowLoader.Reset(false)
 	end
 
-	if NeedToKnow_Settings then  -- NeedToKnow_Settings used prior to 4.0
-		NeedToKnowLoader.MigrateCharacterSettings()  -- Upgrade from previous versions
-	end
+--	if NeedToKnow_Settings then  -- NeedToKnow_Settings used prior to 4.0
+--		NeedToKnowLoader.MigrateCharacterSettings()  -- Upgrade from previous versions
+--	end
+	-- NeedToKnow v4.0 was >5 years ago
 
 	if not NeedToKnow_CharSettings then
 		-- We'll call talent update right after this, so pass false now
@@ -246,7 +227,6 @@ function NeedToKnow.LoadProfiles()
 
 	-- Make new blank profile if active one was deleted
 	local profileKey = NeedToKnow.GetActiveProfile()
-	-- local profileKey = NeedToKnow.GetProfileForSpec()
 	if profileKey and not NeedToKnow_Profiles[profileKey] then
 		print("NeedToKnow: Profile", profileKey, "not found. Making new blank profile.")
 		profileKey = NeedToKnow.CreateBlankProfile()
@@ -295,9 +275,9 @@ function NeedToKnow.ActivateProfile(profileKey)
 		NeedToKnow:Update()
 		NeedToKnow.OptionsPanel:Update()
 		NeedToKnow.AppearancePanel:Update()
-	else
+	-- else
 		-- print("NeedToKnow: Profile", profileKey, "not found")
-		-- NEPH: Triggering sometimes when addon appears to be working fine. Why?
+		-- Neph: Triggering sometimes when addon appears to be working fine. Why?
 	end
 end
 
@@ -446,7 +426,21 @@ end
 
 --[[ Deprecated ]]--
 
---[[ NeedToKnowLoader ]]-- 
+function NeedToKnowLoader.FindFontName(fontPath)
+	-- Return font name for given font path
+	-- Because old versions stored font path not name?
+	-- Or because we're localizing the default font? 
+	local fontList = NeedToKnow.LSM:List("font")
+	for i = 1, #fontList do
+		local fontName = fontList[i]
+		local iPath = NeedToKnow.LSM:Fetch("font", fontName)
+		if iPath == fontPath then
+			return fontName
+		end
+	end
+	return NEEDTOKNOW.PROFILE_DEFAULTS.BarFont
+end
+
 
 function NeedToKnowLoader.Reset(bResetCharacter)
 	-- Reset global saved variables to default settings

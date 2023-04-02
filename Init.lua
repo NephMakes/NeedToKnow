@@ -23,6 +23,30 @@ NeedToKnow.BarMenu = {}
 NeedToKnow.Dialog = {}
 
 
+--[[ Load fonts, bar textures, etc (LibSharedMedia) ]]--
+
+NeedToKnow.LSM = LibStub("LibSharedMedia-3.0", true)
+local barTextures = {
+	["Aluminum"]   = [[Interface\Addons\NeedToKnow\Textures\Aluminum.tga]],
+	["Armory"]     = [[Interface\Addons\NeedToKnow\Textures\Armory.tga]],
+	["BantoBar"]   = [[Interface\Addons\NeedToKnow\Textures\BantoBar.tga]],
+	["DarkBottom"] = [[Interface\Addons\NeedToKnow\Textures\Darkbottom.tga]],
+	["Default"]    = [[Interface\Addons\NeedToKnow\Textures\Default.tga]],
+	["Flat"]       = [[Interface\Addons\NeedToKnow\Textures\Flat.tga]],
+	["Glaze"]      = [[Interface\Addons\NeedToKnow\Textures\Glaze.tga]],
+	["Gloss"]      = [[Interface\Addons\NeedToKnow\Textures\Gloss.tga]],
+	["Graphite"]   = [[Interface\Addons\NeedToKnow\Textures\Graphite.tga]],
+	["Minimalist"] = [[Interface\Addons\NeedToKnow\Textures\Minimalist.tga]],
+	["Otravi"]     = [[Interface\Addons\NeedToKnow\Textures\Otravi.tga]],
+	["Smooth"]     = [[Interface\Addons\NeedToKnow\Textures\Smooth.tga]],
+	["Smooth v2"]  = [[Interface\Addons\NeedToKnow\Textures\Smoothv2.tga]],
+	["Striped"]    = [[Interface\Addons\NeedToKnow\Textures\Striped.tga]]
+}
+for k, v in pairs(barTextures) do
+	NeedToKnow.LSM:Register("statusbar", k, v) 
+end
+
+
 --[[ Default settings ]]--
 
 NeedToKnow.DefaultSettings = {}
@@ -45,7 +69,20 @@ DefaultSettings.global = {
     Chars = {},
 }
 
-
+function DefaultSettings:LocalizeDefaultFont()
+	local gameFontName
+	local gameFont = GameFontHighlight:GetFont()
+	local fontList = NeedToKnow.LSM:List("font")
+	for _, fontName in ipairs(fontList) do
+		local font = NeedToKnow.LSM:Fetch("font", fontName)
+		if font == gameFont then
+			gameFontName = fontName
+			break
+		end
+	end
+	NEEDTOKNOW.PROFILE_DEFAULTS.BarFont = gameFontName or "Fritz Quadrata TT"  -- Deprecated
+	self.profile.BarFont = gameFontName or "Fritz Quadrata TT"
+end
 
 NEEDTOKNOW.BAR_DEFAULTS = {
     Enabled         = true,
@@ -73,7 +110,7 @@ NEEDTOKNOW.BAR_DEFAULTS = {
     blink_ooc       = true,
     blink_boss      = false,
     blink_label     = "",
-    buffcd_duration = 45,  -- Most procs have 45 sec internal cooldown
+    buffcd_duration = 45,  -- Proc internal cooldown (seconds)
     buffcd_reset_spells = "",
     usable_duration = 0,
     append_cd       = false,
@@ -117,28 +154,10 @@ NEEDTOKNOW.DEFAULTS = {
     Chars       = {},
 }
 
-
--- LibSharedMedia library support
-NeedToKnow.LSM = LibStub("LibSharedMedia-3.0", true)
-local barTextures = {
-	["Aluminum"]   = [[Interface\Addons\NeedToKnow\Textures\Aluminum.tga]],
-	["Armory"]     = [[Interface\Addons\NeedToKnow\Textures\Armory.tga]],
-	["BantoBar"]   = [[Interface\Addons\NeedToKnow\Textures\BantoBar.tga]],
-	["DarkBottom"] = [[Interface\Addons\NeedToKnow\Textures\Darkbottom.tga]],
-	["Default"]    = [[Interface\Addons\NeedToKnow\Textures\Default.tga]],
-	["Flat"]       = [[Interface\Addons\NeedToKnow\Textures\Flat.tga]],
-	["Glaze"]      = [[Interface\Addons\NeedToKnow\Textures\Glaze.tga]],
-	["Gloss"]      = [[Interface\Addons\NeedToKnow\Textures\Gloss.tga]],
-	["Graphite"]   = [[Interface\Addons\NeedToKnow\Textures\Graphite.tga]],
-	["Minimalist"] = [[Interface\Addons\NeedToKnow\Textures\Minimalist.tga]],
-	["Otravi"]     = [[Interface\Addons\NeedToKnow\Textures\Otravi.tga]],
-	["Smooth"]     = [[Interface\Addons\NeedToKnow\Textures\Smooth.tga]],
-	["Smooth v2"]  = [[Interface\Addons\NeedToKnow\Textures\Smoothv2.tga]],
-	["Striped"]    = [[Interface\Addons\NeedToKnow\Textures\Striped.tga]]
-}
-for k, v in pairs(barTextures) do
-	NeedToKnow.LSM:Register("statusbar", k, v) 
+do
+	NeedToKnow.DefaultSettings:LocalizeDefaultFont()
 end
+
 
 
 -- Kitjan's addon locals

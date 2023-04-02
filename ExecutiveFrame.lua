@@ -31,6 +31,7 @@ ExecutiveFrame:RegisterEvent("PLAYER_LOGIN")
 
 function ExecutiveFrame:ADDON_LOADED(addon)
 	if addon == addonName then
+
 		-- Make bar groups
 		NeedToKnow.barGroups = {}
 		for groupID = 1, NeedToKnow.MAX_BARGROUPS do
