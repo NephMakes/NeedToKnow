@@ -6,6 +6,8 @@ Important global variables:
 	NeedToKnow_CharSettings: Saved variable per character. Has character-specific profiles. 
 	NeedToKnow_Settings: Saved variable from old versions. No longer used. Deprecated. 
 	NeedToKnow_Profiles: Has all profiles available to character. Deprecated. 
+
+	NeedToKnow.profiles = Table of profiles available to character {{profileKey = settings}, ...}
 ]]--
 
 
@@ -131,21 +133,23 @@ end
 function NeedToKnow:LoadProfiles()
 	-- Called by ExecutiveFrame:PLAYER_LOGIN()
 
-	NeedToKnow_Profiles = {}
+	-- NeedToKnow.profiles = {}
+	NeedToKnow_Profiles = {}  -- Deprecated
 
 	if not NeedToKnow_Globals then
 		NeedToKnowLoader.Reset(false)
 	end
 	if not NeedToKnow_CharSettings then
-		-- We'll call talent update right after this, so pass false now
+		-- [Kitjan] We'll call talent update right after this, so pass false now
 		NeedToKnow.ResetCharacter(false)
 	end
-	NeedToKnow.CharSettings = NeedToKnow_CharSettings
+
+	NeedToKnow.CharSettings = NeedToKnow_CharSettings  -- Deprecated
 
 	-- 4.0 settings sanity check 
 	if not NeedToKnow_Globals or
-	   not NeedToKnow_Globals["Version"] or
-	   not NeedToKnow_Globals.Profiles
+		-- not NeedToKnow_Globals["Version"] or
+		not NeedToKnow_Globals.Profiles
 	then
 		print("NeedToKnow: Settings corrupted. Resetting.")
 		NeedToKnowLoader.Reset()
@@ -158,10 +162,10 @@ function NeedToKnow:LoadProfiles()
 		if vS.bUncompressed then
 			NeedToKnow.CompressProfileSettings(vS)
 		end
-		-- Although name should never be compressed, it could have been prior to 4.0.16
-		if not vS.name then 
-			vS.name = "Default"
-		end
+--		-- Although name should never be compressed, it could have been prior to 4.0.16
+--		if not vS.name then 
+--			vS.name = "Default"
+--		end
 		local cur = tonumber(iS:sub(2))
 		if cur > maxKey then 
 			maxKey = cur
@@ -193,16 +197,15 @@ function NeedToKnow:LoadProfiles()
 				aFixups[oS] = iS
 			end
 
-			-- Although name should never be compressed, it could have been prior to 4.0.16
-			if not vS.name then
-				vS.name = "Default"
-			end
+--			-- Although name should never be compressed, it could have been prior to 4.0.16
+--			if not vS.name then
+--				vS.name = "Default"
+--			end
 			local cur = tonumber(iS:sub(2))
 			if cur > maxKey then
 				maxKey = cur
 			end
 			NeedToKnow_Profiles[iS] = vS
-			-- local k = NeedToKnow.FindProfileByName(vS.name)
 		end
 	end
 
@@ -212,6 +215,7 @@ function NeedToKnow:LoadProfiles()
 		NeedToKnow_CharSettings.Profiles[oS] = nil
 	end
 
+	-- Show error message if problem with NextProfile
 	if not NeedToKnow_Globals.NextProfile or maxKey > NeedToKnow_Globals.NextProfile then
 		print("Warning, NeedToKnow forgot how many profiles it had allocated. New account profiles may hiccup when switching characters.")
 		NeedToKnow_Globals.NextProfile = maxKey + 1
@@ -395,6 +399,18 @@ function NeedToKnow.AddDefaultSettings(object, default)
 	end
 end
 
+function NeedToKnow:UpdateActiveProfile()
+	if NeedToKnow.CharSettings then
+		local specIndex = NeedToKnow.GetSpecIndex()
+		local profileKey = NeedToKnow.GetProfileForSpec(specIndex)
+		if not profileKey then
+			print("NeedToKnow: Making new profile for specialization", specIndex)
+			profileKey = NeedToKnow.CreateBlankProfile()
+		end
+		NeedToKnow.ActivateProfile(profileKey)
+	end
+end
+
 function NeedToKnow.Reset(resetCharacter)
 	-- Reset global saved variables to default settings
 	-- Called by NeedToKnow.SlashCommand()
@@ -411,28 +427,12 @@ function NeedToKnow.ResetCharacter(bCreateSpecProfile)
 	NeedToKnow_CharSettings = CopyTable(NEEDTOKNOW.CHARACTER_DEFAULTS)
 	NeedToKnow.CharSettings = NeedToKnow_CharSettings
 	if bCreateSpecProfile == nil or bCreateSpecProfile then
-		NeedToKnow.ExecutiveFrame:PLAYER_TALENT_UPDATE()  -- Should be a profile function
+		NeedToKnow:UpdateActiveProfile()
 	end
 end
 
 
 --[[ Deprecated ]]--
-
-function NeedToKnowLoader.FindFontName(fontPath)
-	-- Return font name for given font path
-	-- Because old versions stored font path not name?
-	-- Or because we're localizing the default font? 
-	local fontList = NeedToKnow.LSM:List("font")
-	for i = 1, #fontList do
-		local fontName = fontList[i]
-		local iPath = NeedToKnow.LSM:Fetch("font", fontName)
-		if iPath == fontPath then
-			return fontName
-		end
-	end
-	return NEEDTOKNOW.PROFILE_DEFAULTS.BarFont
-end
-
 
 function NeedToKnowLoader.Reset(bResetCharacter)
 	-- Reset global saved variables to default settings
@@ -444,9 +444,10 @@ function NeedToKnowLoader.Reset(bResetCharacter)
 end
 
 --[[
+-- v4.0 released quite some time ago. Time to move on. 
+
 function NeedToKnowLoader.MigrateCharacterSettings()
 	-- Import settings from NeedToKnow versions prior to v4.0.0
-	-- But 2011 was a long time ago. Time to move on. 
 
     print("NeedToKnow: Migrating settings from", NeedToKnow_Settings["Version"])
     local oldSettings = NeedToKnow_Settings
@@ -522,7 +523,6 @@ function NeedToKnowLoader.MigrateSpec(specSettings, specID)
 	NeedToKnow.SetProfileForSpec(profileKey, specID)
 	return true
 end
-]]--
 
 function NeedToKnowLoader.RoundSettings(t)
 	-- Called by NeedToKnowLoader.MigrateSpec()
@@ -536,6 +536,22 @@ function NeedToKnowLoader.RoundSettings(t)
 	end
 end
 
+function NeedToKnowLoader.FindFontName(fontPath)
+	-- Return font name for given font path
+	-- Because old versions stored font path not name?
+	-- Or because we're localizing the default font? 
+	local fontList = NeedToKnow.LSM:List("font")
+	for i = 1, #fontList do
+		local fontName = fontList[i]
+		local iPath = NeedToKnow.LSM:Fetch("font", fontName)
+		if iPath == fontPath then
+			return fontName
+		end
+	end
+	return NEEDTOKNOW.PROFILE_DEFAULTS.BarFont
+end
+]]--
+
 function NeedToKnow.AllocateProfileKey()
 	local n = NeedToKnow_Globals.NextProfile or 1
 	while NeedToKnow_Profiles["G"..n] do
@@ -547,14 +563,6 @@ function NeedToKnow.AllocateProfileKey()
 	return "G"..n
 end
 
-function NeedToKnow.FindProfileByName(name)
-	for k, t in pairs(NeedToKnow_Profiles) do
-		if t.name == name then
-			return k
-		end
-	end
-end
-
 function NeedToKnow.FindUnusedNumericSuffix(prefix, defPrefix)
 	local suffix = defPrefix or 1
 	local candidate = prefix .. suffix
@@ -563,6 +571,14 @@ function NeedToKnow.FindUnusedNumericSuffix(prefix, defPrefix)
 		candidate = prefix .. suffix
 	end
 	return candidate
+end
+
+function NeedToKnow.FindProfileByName(name)
+	for k, t in pairs(NeedToKnow_Profiles) do
+		if t.name == name then
+			return k
+		end
+	end
 end
 
 

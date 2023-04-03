@@ -1,6 +1,6 @@
 ﻿-- ExecutiveFrame handles addon setup and some combat functions 
 
-local addonName, addonTable = ...
+local _, addonTable = ...
 local ExecutiveFrame = NeedToKnow.ExecutiveFrame
 
 local GetTime = GetTime
@@ -29,8 +29,10 @@ ExecutiveFrame:RegisterEvent("ADDON_LOADED")
 ExecutiveFrame:RegisterEvent("PLAYER_LOGIN")
 -- ExecutiveFrame:RegisterEvent("PLAYER_ENTERING_WORLD")  -- Might be better indicator that spec info available
 
-function ExecutiveFrame:ADDON_LOADED(addon)
-	if addon == addonName then
+function ExecutiveFrame:ADDON_LOADED(addonName)
+	if addonName == "NeedToKnow" then
+		NeedToKnow.accountSettings = NeedToKnow_Globals
+		NeedToKnow.characterSettings = NeedToKnow_CharSettings
 
 		-- Make bar groups
 		NeedToKnow.barGroups = {}
@@ -46,6 +48,7 @@ function ExecutiveFrame:ADDON_LOADED(addon)
 		NeedToKnow.m_last_guid = {}  -- [spell][guidTarget] = {startTime, duration, expirationTime}
 
 		NeedToKnow.AddSlashCommand()
+		self:UnregisterEvent("ADDON_LOADED")
 	end
 end
 
@@ -64,6 +67,7 @@ function ExecutiveFrame:PLAYER_LOGIN()
 		self:RegisterEvent("PLAYER_TALENT_UPDATE")
 	end
 	self:PLAYER_TALENT_UPDATE()
+	-- NeedToKnow:UpdateActiveProfile()
 
 	NeedToKnow.guidPlayer = UnitGUID("player")
 	self:RegisterEvent("GROUP_ROSTER_UPDATE")
@@ -78,24 +82,13 @@ function ExecutiveFrame:PLAYER_LOGIN()
 end
 
 function ExecutiveFrame:PLAYER_TALENT_UPDATE()
-	if NeedToKnow.CharSettings then
-		local specIndex = NeedToKnow.GetSpecIndex()
-		local profileKey = NeedToKnow.GetProfileForSpec(specIndex)
-		if not profileKey then
-			print("NeedToKnow: Making new profile for specialization", specIndex)
-			profileKey = NeedToKnow.CreateBlankProfile()
-		end
-		NeedToKnow.ActivateProfile(profileKey)
-	end
+	NeedToKnow:UpdateActiveProfile()
 end
 
 function ExecutiveFrame:ACTIVE_TALENT_GROUP_CHANGED()
-	-- Kitjan: This is the only event we're guaranteed to get on a talent switch,
-	-- so we have to listen for it.  However, the client may not yet have
-	-- the spellbook updates, so trying to evaluate the cooldowns may fail.
-	-- This is one of the reasons the cooldown logic has to fail silently
-	-- and try again later
-	self:PLAYER_TALENT_UPDATE()
+	-- [Kitjan] This is the only event we're guaranteed to get on a talent switch, so we have to listen for it.  -- However, the client may not yet have the spellbook updates, so trying to evaluate the cooldowns may fail.
+	-- This is one of the reasons the cooldown logic has to fail silently and try again later
+	NeedToKnow:UpdateActiveProfile()
 end
 
 function ExecutiveFrame:PLAYER_REGEN_DISABLED()

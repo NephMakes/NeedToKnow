@@ -32,12 +32,10 @@ end
 
 function NeedToKnow:GetCharacterSettings()
 	return NeedToKnow.CharSettings
-	-- TO DO: Return SavedVariables object?
 end
 
 function NeedToKnow:GetProfileSettings()
 	return NeedToKnow.ProfileSettings
-	-- TO DO: Return SavedVariables object?
 end
 
 function NeedToKnow:GetGroupSettings(groupID)
