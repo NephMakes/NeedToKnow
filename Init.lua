@@ -49,41 +49,6 @@ end
 
 --[[ Default settings ]]--
 
-NeedToKnow.DefaultSettings = {}
-local DefaultSettings = NeedToKnow.DefaultSettings
-
-DefaultSettings.bar = {}
-DefaultSettings.barGroup = {}
-DefaultSettings.profile = {}
-
-DefaultSettings.character = {
-    Specs = {},
-    Locked = false,
-    Profiles = {},
-}
-
-DefaultSettings.global = {
-    Version = NeedToKnow.version,
-    OldVersion = NeedToKnow.version,
-    Profiles = {},
-    Chars = {},
-}
-
-function DefaultSettings:LocalizeDefaultFont()
-	local gameFontName
-	local gameFont = GameFontHighlight:GetFont()
-	local fontList = NeedToKnow.LSM:List("font")
-	for _, fontName in ipairs(fontList) do
-		local font = NeedToKnow.LSM:Fetch("font", fontName)
-		if font == gameFont then
-			gameFontName = fontName
-			break
-		end
-	end
-	NEEDTOKNOW.PROFILE_DEFAULTS.BarFont = gameFontName or "Fritz Quadrata TT"  -- Deprecated
-	self.profile.BarFont = gameFontName or "Fritz Quadrata TT"
-end
-
 NEEDTOKNOW.BAR_DEFAULTS = {
     Enabled         = true,
     AuraName        = "",
@@ -154,8 +119,43 @@ NEEDTOKNOW.DEFAULTS = {
     Chars       = {},
 }
 
+NeedToKnow.DefaultSettings = {}
+local DefaultSettings = NeedToKnow.DefaultSettings
+
+--[[
+DefaultSettings.BAR = {}
+DefaultSettings.BARGROUP = {}
+DefaultSettings.PROFILE = {}
+DefaultSettings.CHARACTER = {
+    Specs = {},
+    Locked = false,
+    Profiles = {},
+}
+DefaultSettings.ACCOUNT = {
+    Version = NeedToKnow.version,
+    OldVersion = NeedToKnow.version,
+    Profiles = {},
+    Chars = {},
+}
+]]--
+
+function DefaultSettings:LocalizeDefaultFont()
+	local gameFontName
+	local gameFont = GameFontHighlight:GetFont()
+	local fontList = NeedToKnow.LSM:List("font")
+	for _, fontName in ipairs(fontList) do
+		local font = NeedToKnow.LSM:Fetch("font", fontName)
+		if font == gameFont then
+			gameFontName = fontName
+			break
+		end
+	end
+	NEEDTOKNOW.PROFILE_DEFAULTS.BarFont = gameFontName or "Fritz Quadrata TT"  -- Deprecated
+	-- self.profile.BarFont = gameFontName or "Fritz Quadrata TT"
+end
+
 do
-	NeedToKnow.DefaultSettings:LocalizeDefaultFont()
+	DefaultSettings:LocalizeDefaultFont()
 end
 
 

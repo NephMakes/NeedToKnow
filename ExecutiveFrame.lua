@@ -31,8 +31,7 @@ ExecutiveFrame:RegisterEvent("PLAYER_LOGIN")
 
 function ExecutiveFrame:ADDON_LOADED(addonName)
 	if addonName == "NeedToKnow" then
-		NeedToKnow.accountSettings = NeedToKnow_Globals
-		NeedToKnow.characterSettings = NeedToKnow_CharSettings
+		-- NeedToKnow:LoadSavedVariables()
 
 		-- Make bar groups
 		NeedToKnow.barGroups = {}
@@ -75,10 +74,6 @@ function ExecutiveFrame:PLAYER_LOGIN()
 
 	NeedToKnow.isLocked = NeedToKnow:GetCharacterSettings().Locked
 	NeedToKnow:Update()
-
---	self:UnregisterEvent("PLAYER_LOGIN")
---	self:UnregisterEvent("ADDON_LOADED")
---	NeedToKnowLoader = nil
 end
 
 function ExecutiveFrame:PLAYER_TALENT_UPDATE()
