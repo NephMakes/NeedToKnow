@@ -4,26 +4,24 @@
 Important global variables: 
 	NeedToKnow_Globals: Saved variable. Has account-wide profiles. 
 	NeedToKnow_CharSettings: Saved variable per character. Has character-specific profiles. 
-	NeedToKnow_Settings: Saved variable from old versions. No longer used. Deprecated. 
-	NeedToKnow_Profiles: Has all profiles available to character. Deprecated. 
 
-	NeedToKnow.profiles = Table of profiles available to character {{profileKey = settings}, ...}
+NeedToKnow.profiles: Table of profiles available to character {[profileKey] = settings}
 ]]--
 
 
 --[[ Settings ]]--
 
---[[
 function NeedToKnow:LoadSavedVariables()
 	if NeedToKnow_Globals then
 		self.accountSettings = NeedToKnow_Globals
 	else
-		NeedToKnow:ResetAccountSettings()
+		self:ResetAccountSettings()
 	end
 	if NeedToKnow_CharSettings then
 		self.characterSettings = NeedToKnow_CharSettings
+		self.CharSettings = NeedToKnow_CharSettings  -- Deprecated
 	else
-		NeedToKnow:ResetCharacterSettings()
+		self:ResetCharacterSettings()
 	end
 end
 
@@ -35,40 +33,11 @@ end
 function NeedToKnow:ResetCharacterSettings()
 	NeedToKnow_CharSettings = CopyTable(NEEDTOKNOW.CHARACTER_DEFAULTS)
 	self.characterSettings = NeedToKnow_CharSettings
-end
-]]--
-
-function NeedToKnow.ResetCharacter(bCreateSpecProfile)
-	-- Reset character saved variables to default settings
-	-- Called by NeedToKnow.Reset(), NeedToKnowLoader.Reset(bResetCharacter), ...
-	NeedToKnow_CharSettings = CopyTable(NEEDTOKNOW.CHARACTER_DEFAULTS)
-	NeedToKnow.CharSettings = NeedToKnow_CharSettings
-	if bCreateSpecProfile == nil or bCreateSpecProfile then
-		NeedToKnow:UpdateActiveProfile()
-	end
-end
-
-function NeedToKnowLoader.Reset(bResetCharacter)
-	-- Reset global saved variables to default settings
-	-- Called by NeedToKnowLoader.SafeUpgrade()
-	NeedToKnow_Globals = CopyTable(NEEDTOKNOW.DEFAULTS)
-	if bResetCharacter == nil or bResetCharacter then
-		NeedToKnow.ResetCharacter()
-	end
-end
-
-function NeedToKnow.Reset(resetCharacter)
-	-- Reset global saved variables to default settings
-	-- Called by NeedToKnow.SlashCommand()
-    NeedToKnow_Globals = CopyTable(NeedToKnow.DefaultSettings.global)
-    if resetCharacter or resetCharacter == nil then
-        NeedToKnow.ResetCharacter()
-    end
+	self.CharSettings = NeedToKnow_CharSettings  -- Deprecated
 end
 
 
-
---[[ Profile ]]--
+--[[ Profiles ]]--
 
 function NeedToKnow.CreateBlankProfile()
 	-- Make new profile with default settings and return its key
@@ -80,7 +49,7 @@ function NeedToKnow.CreateProfile(settings)
 	-- Make new profile with given settings and return its key
 	local profileKey = NeedToKnow.GetNewProfileKey()
 	settings.name = NeedToKnow.GetNewProfileName()
-	NeedToKnow_Profiles[profileKey] = settings
+	NeedToKnow.profiles[profileKey] = settings
 	NeedToKnow.SetProfileToCharacter(profileKey)
 	return profileKey
 end
@@ -88,10 +57,10 @@ end
 function NeedToKnow.GetNewProfileKey()
 	-- Return unique profile key with format "G[integer]"
 	local n = NeedToKnow_Globals.NextProfile or 1
-	while NeedToKnow_Profiles["G"..n] do
+	while NeedToKnow.profiles["G"..n] do
 		n = n + 1
 	end
-	if NeedToKnow_Globals.NextProfile == null or n >= NeedToKnow_Globals.NextProfile then
+	if not NeedToKnow_Globals.NextProfile or n >= NeedToKnow_Globals.NextProfile then
 		NeedToKnow_Globals.NextProfile = n + 1
 	end
 	return "G"..n
@@ -113,7 +82,7 @@ function NeedToKnow.IsProfileNameAvailable(name)
 	if not name or name == "" then
 		return false
 	end
-	for _, profile in pairs(NeedToKnow_Profiles) do
+	for _, profile in pairs(NeedToKnow.profiles) do
 		if profile.name == name then
 			return false
 		end
@@ -122,8 +91,9 @@ function NeedToKnow.IsProfileNameAvailable(name)
 end
 
 function NeedToKnow.CopyProfile(profileKey)
+	-- Make new profile with same settings and return its key
 	-- Called by ProfilePanel.OnClickCopyButton()
-	local profile = CopyTable(NeedToKnow_Profiles[profileKey])
+	local profile = CopyTable(NeedToKnow.profiles[profileKey])
 	local name = NeedToKnow.GetProfileCopyName(profile.name)
 	profileKey = NeedToKnow.CreateProfile(profile)
 	NeedToKnow.RenameProfile(profileKey, name)
@@ -143,7 +113,7 @@ end
 
 function NeedToKnow.RenameProfile(profileKey, newName)
 	if NeedToKnow.IsProfileNameAvailable(newName) then
-		NeedToKnow_Profiles[profileKey].name = newName
+		NeedToKnow.profiles[profileKey].name = newName
 	else
 		print("NeedToKnow: Profile name", newName, "already in use")
 	end
@@ -151,14 +121,14 @@ end
 
 function NeedToKnow.SetProfileToAccount(profileKey)
 	-- Make profile usable by all characters on this account
-	local profile = NeedToKnow_Profiles[profileKey]
+	local profile = NeedToKnow.profiles[profileKey]
 	NeedToKnow_Globals.Profiles[profileKey] = profile
 	NeedToKnow_CharSettings.Profiles[profileKey] = nil
 end
 
 function NeedToKnow.SetProfileToCharacter(profileKey)
 	-- Make profile only usable by this character
-	local profile = NeedToKnow_Profiles[profileKey]
+	local profile = NeedToKnow.profiles[profileKey]
 	NeedToKnow_Globals.Profiles[profileKey] = nil
 	NeedToKnow_CharSettings.Profiles[profileKey] = profile
 end
@@ -183,7 +153,7 @@ function NeedToKnow.DeleteProfile(profileKey)
 	if profileKey == NeedToKnow.GetActiveProfile() then
 		print("NeedToKnow: Can't delete active profile")
 	else
-		NeedToKnow_Profiles[profileKey] = nil
+		NeedToKnow.profiles[profileKey] = nil
 		NeedToKnow_Globals.Profiles[profileKey] = nil
 		NeedToKnow_CharSettings.Profiles[profileKey] = nil
 	end
@@ -192,29 +162,10 @@ end
 function NeedToKnow:LoadProfiles()
 	-- Called by ExecutiveFrame:PLAYER_LOGIN()
 
-	NeedToKnow_Profiles = {}  -- Deprecated
-	-- NeedToKnow.profiles = {}
+	NeedToKnow.profiles = {}  -- Table of available profiles, {[profileKey] = settings}
+	-- NeedToKnow_Profiles = NeedToKnow.profiles  -- Deprecated
 
-	if not NeedToKnow_Globals then
-		NeedToKnowLoader.Reset(false)
-	end
-	if not NeedToKnow_CharSettings then
-		-- [Kitjan] We'll call talent update right after this, so pass false now
-		NeedToKnow.ResetCharacter(false)
-	end
-
-	NeedToKnow.CharSettings = NeedToKnow_CharSettings  -- Deprecated
-
-	-- 4.0 settings sanity check 
-	if not NeedToKnow_Globals or
-		-- not NeedToKnow_Globals["Version"] or
-		not NeedToKnow_Globals.Profiles
-	then
-		print("NeedToKnow: Settings corrupted. Resetting.")
-		NeedToKnowLoader.Reset()
-	end
-
-	-- Populate NeedToKnow_Profiles from NeedToKnow_Globals and NeedToKnow_CharSettings
+	-- Populate NeedToKnow.profiles from NeedToKnow_Globals and NeedToKnow_CharSettings
 	local maxKeyIndex = 0
 	local profilesByName = {}
 	for key, settings in pairs(NeedToKnow_Globals.Profiles) do
@@ -236,7 +187,7 @@ function NeedToKnow:LoadProfiles()
 			maxKeyIndex = keyIndex
 		end
 
-		NeedToKnow_Profiles[key] = settings
+		NeedToKnow.profiles[key] = settings
 	end
 	local aFixups = {}
 	if NeedToKnow_CharSettings.Profiles then
@@ -250,10 +201,9 @@ function NeedToKnow:LoadProfiles()
 			profilesByName[settings.name] = settings
 
 			-- Check if duplicate profileKey
-			if NeedToKnow_Profiles[key] then
-				print(
-					"NeedToKnow: Duplicate profile key", key .. ".",
-					"May encounter error with profile", settings.name, "or", NeedToKnow_Profiles[key].name
+			if NeedToKnow.profiles[key] then
+				print("NeedToKnow: Duplicate profile key", key .. ". May encounter error with profile", 
+					settings.name, "or", NeedToKnow.profiles[key].name
 				)
 				local newKey = NeedToKnow.GetNewProfileKey()
 				aFixups[key] = newKey
@@ -265,7 +215,7 @@ function NeedToKnow:LoadProfiles()
 				maxKeyIndex = keyIndex
 			end
 
-			NeedToKnow_Profiles[key] = settings
+			NeedToKnow.profiles[key] = settings
 		end
 	end
 
@@ -277,19 +227,9 @@ function NeedToKnow:LoadProfiles()
 
 	-- Show error message if problem with NextProfile
 	if not NeedToKnow_Globals.NextProfile or maxKeyIndex > NeedToKnow_Globals.NextProfile then
-		print("NeedToKnow ERROR: Forgot how many profiles allocated. May encounter error when switching characters.")
+		-- print("NeedToKnow ERROR (NextProfile): May encounter error with account-wide profiles on other characters.")
 		NeedToKnow_Globals.NextProfile = maxKeyIndex + 1
 	end
-
-	-- Make new blank profile if active one was deleted
-	local profileKey = NeedToKnow.GetActiveProfile()
-	if profileKey and not NeedToKnow_Profiles[profileKey] then
-		print("NeedToKnow: Profile", profileKey, "not found. Making new blank profile.")
-		profileKey = NeedToKnow.CreateBlankProfile()
-		NeedToKnow.ActivateProfile(profileKey)
-	end
-
-	 -- [Kitjan] TODO: Check required members for existence and delete corrupted profiles
 end
 
 function NeedToKnow.GetNonduplicateProfileName(oldName)
@@ -318,7 +258,7 @@ function NeedToKnow.GetActiveProfile()
 end
 
 function NeedToKnow.GetProfileByName(name)
-	for profileKey, profile in pairs(NeedToKnow_Profiles) do
+	for profileKey, profile in pairs(NeedToKnow.profiles) do
 		if profile.name == name then
 			return profileKey
 		end
@@ -326,12 +266,12 @@ function NeedToKnow.GetProfileByName(name)
 end
 
 --function NeedToKnow.GetProfileSettings(profileKey)
---	return NeedToKnow_Profiles[profileKey]
+--	return NeedToKnow.profiles[profileKey]
 --end
 
 function NeedToKnow.ActivateProfile(profileKey)
 	local oldSettings = NeedToKnow.ProfileSettings
-	local newSettings = NeedToKnow_Profiles[profileKey]
+	local newSettings = NeedToKnow.profiles[profileKey]
 	if newSettings and newSettings ~= oldSettings then
 		if oldSettings and oldSettings.bUncompressed then
 			NeedToKnow.CompressProfileSettings(oldSettings)
@@ -342,6 +282,7 @@ function NeedToKnow.ActivateProfile(profileKey)
 		NeedToKnow:Update()
 		NeedToKnow.OptionsPanel:Update()
 		NeedToKnow.AppearancePanel:Update()
+		NeedToKnow.ProfilePanel:UpdateProfileList()  -- TO DO: Fix update function
 	end
 end
 
@@ -468,20 +409,25 @@ function NeedToKnow.AddDefaultSettings(object, default)
 end
 
 function NeedToKnow:UpdateActiveProfile()
-	if NeedToKnow.CharSettings then
-		local specIndex = NeedToKnow.GetSpecIndex()
-		local profileKey = NeedToKnow.GetProfileForSpec(specIndex)
-		if not profileKey then
-			local name, realm = UnitFullName("player")
-			print("NeedToKnow: Making new profile for", name.."-"..realm, "specialization", specIndex)
-			profileKey = NeedToKnow.CreateBlankProfile()
-		end
-		NeedToKnow.ActivateProfile(profileKey)
+	-- Load profile for current spec. Make new one if doesn't already exist. 
+	local specIndex = NeedToKnow.GetSpecIndex()
+	local profileKey = NeedToKnow.GetProfileForSpec(specIndex)
+	if not profileKey then
+		local name, realm = UnitFullName("player")
+		print("NeedToKnow: Making new profile for", name .. "-" .. realm, "specialization", specIndex)
+		profileKey = NeedToKnow.CreateBlankProfile()
+	elseif not NeedToKnow.profiles[profileKey] then
+		print("NeedToKnow: Profile", profileKey, "not found. Making new blank profile.")
+		profileKey = NeedToKnow.CreateBlankProfile()
 	end
+	NeedToKnow.ActivateProfile(profileKey)
 end
 
+
+--[[ Old stuff that might be useful when upgrading to new version ]]--
+
 --[[
--- v4.0 released quite some time ago. Time to move on. 
+-- NeedToKnow v4.0 was released quite some time ago. Time to move on. 
 
 function NeedToKnowLoader.MigrateCharacterSettings()
 	-- Import settings from NeedToKnow versions prior to v4.0.0
@@ -571,21 +517,6 @@ function NeedToKnowLoader.RoundSettings(t)
 			NeedToKnowLoader.RoundSettings(v)
 		end
 	end
-end
-
-function NeedToKnowLoader.FindFontName(fontPath)
-	-- Return font name for given font path
-	-- Because old versions stored font path not name?
-	-- Or because we're localizing the default font? 
-	local fontList = NeedToKnow.LSM:List("font")
-	for i = 1, #fontList do
-		local fontName = fontList[i]
-		local iPath = NeedToKnow.LSM:Fetch("font", fontName)
-		if iPath == fontPath then
-			return fontName
-		end
-	end
-	return NEEDTOKNOW.PROFILE_DEFAULTS.BarFont
 end
 ]]--
 

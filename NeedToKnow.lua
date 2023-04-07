@@ -56,6 +56,7 @@ function NeedToKnow:Update()
 			group:Update()
 		end
 	end
+	-- TO DO: Update options panels
 end
 
 function NeedToKnow:UpdateBarGroup(groupID)

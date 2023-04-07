@@ -1,6 +1,6 @@
 -- Load after libs and before everything else
 
-local addonName, addonTable = ...
+local addonName, _ = ...
 
 -- Declare global variables
 NeedToKnow = {}
@@ -9,7 +9,6 @@ NeedToKnow.version = GetAddOnMetadata(addonName, "Version")
 -- Deprecated:
 NEEDTOKNOW = {}
 NEEDTOKNOW.VERSION = GetAddOnMetadata(addonName, "Version")
-NeedToKnowLoader = {}  -- Used by Profile.lua
 
 -- Namespaces
 NeedToKnow.ExecutiveFrame = CreateFrame("Frame", "NeedToKnow_ExecutiveFrame")
@@ -116,6 +115,7 @@ NEEDTOKNOW.DEFAULTS = {
     Version     = NeedToKnow.version,
     OldVersion  = NeedToKnow.version,
     Profiles    = {},
+    -- NextProfile = 1, 
     Chars       = {},
 }
 
@@ -140,8 +140,8 @@ DefaultSettings.ACCOUNT = {
 ]]--
 
 function DefaultSettings:LocalizeDefaultFont()
-	local gameFontName
 	local gameFont = GameFontHighlight:GetFont()
+	local gameFontName
 	local fontList = NeedToKnow.LSM:List("font")
 	for _, fontName in ipairs(fontList) do
 		local font = NeedToKnow.LSM:Fetch("font", fontName)
@@ -151,7 +151,7 @@ function DefaultSettings:LocalizeDefaultFont()
 		end
 	end
 	NEEDTOKNOW.PROFILE_DEFAULTS.BarFont = gameFontName or "Fritz Quadrata TT"  -- Deprecated
-	-- self.profile.BarFont = gameFontName or "Fritz Quadrata TT"
+	-- self.PROFILE.BarFont = gameFontName or "Fritz Quadrata TT"
 end
 
 do
@@ -163,8 +163,8 @@ end
 -- Kitjan's addon locals
 NeedToKnow.m_last_guid = {}  -- For ExtendedTime
 -- Used by Executive Frame:
-addonTable.m_last_cast = {}
-addonTable.m_last_cast_head = {}
-addonTable.m_last_cast_tail = {}
+NeedToKnow.m_last_cast = {}
+NeedToKnow.m_last_cast_head = {}
+NeedToKnow.m_last_cast_tail = {}
 
 

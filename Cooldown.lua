@@ -1,5 +1,11 @@
 ﻿-- Track spell and item cooldowns
 
+--[[
+	[Kitjan]: ACTIVE_TALENT_GROUP_CHANGED is only event guaranteed on talent switch, 
+	but client might not have spell info yet. So checking cooldowns should fail silently 
+	and try again later. 
+]]--
+
 -- local addonName, addonTable = ...
 local Cooldown = NeedToKnow.Cooldown
 

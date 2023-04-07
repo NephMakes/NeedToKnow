@@ -1,14 +1,14 @@
 ﻿-- ExecutiveFrame handles addon setup and some combat functions 
 
-local _, addonTable = ...
+-- local _, addonTable = ...
 local ExecutiveFrame = NeedToKnow.ExecutiveFrame
 
 local GetTime = GetTime
 
 -- Spellcast tracking (deprecated)
-local m_last_cast      = addonTable.m_last_cast
-local m_last_cast_head = addonTable.m_last_cast_head
-local m_last_cast_tail = addonTable.m_last_cast_tail
+local m_last_cast      = NeedToKnow.m_last_cast
+local m_last_cast_head = NeedToKnow.m_last_cast_head
+local m_last_cast_tail = NeedToKnow.m_last_cast_tail
 local m_last_guid = NeedToKnow.m_last_guid
 
 local IS_RETAIL = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
@@ -31,7 +31,7 @@ ExecutiveFrame:RegisterEvent("PLAYER_LOGIN")
 
 function ExecutiveFrame:ADDON_LOADED(addonName)
 	if addonName == "NeedToKnow" then
-		-- NeedToKnow:LoadSavedVariables()
+		NeedToKnow:LoadSavedVariables()
 
 		-- Make bar groups
 		NeedToKnow.barGroups = {}
@@ -41,7 +41,7 @@ function ExecutiveFrame:ADDON_LOADED(addonName)
 
 		NeedToKnow.totem_drops = {} -- array 1-4 of precise times totems appeared
 		self.BossFightBars = {}
-		m_last_cast = {} -- [n] = { spell, target, serial }
+		m_last_cast = {} -- [n] = {spell, target, serial}
 		m_last_cast_head = 1
 		m_last_cast_tail = 1
 		NeedToKnow.m_last_guid = {}  -- [spell][guidTarget] = {startTime, duration, expirationTime}
@@ -56,6 +56,7 @@ function ExecutiveFrame:PLAYER_LOGIN()
 
 	local _, className = UnitClass("player")
 	if className == "DEATHKNIGHT" and WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
+	-- if className == "DEATHKNIGHT" and not IS_RETAIL then
 		NeedToKnow.isClassicDeathKnight = true  -- To filter rune cooldowns out of ability cooldowns
 	elseif className == "SHAMAN" then
 		NeedToKnow.isShaman = true  -- For totem bar type in BarMenu
@@ -65,8 +66,7 @@ function ExecutiveFrame:PLAYER_LOGIN()
 		self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 		self:RegisterEvent("PLAYER_TALENT_UPDATE")
 	end
-	self:PLAYER_TALENT_UPDATE()
-	-- NeedToKnow:UpdateActiveProfile()
+	NeedToKnow:UpdateActiveProfile()
 
 	NeedToKnow.guidPlayer = UnitGUID("player")
 	self:RegisterEvent("GROUP_ROSTER_UPDATE")
@@ -81,8 +81,6 @@ function ExecutiveFrame:PLAYER_TALENT_UPDATE()
 end
 
 function ExecutiveFrame:ACTIVE_TALENT_GROUP_CHANGED()
-	-- [Kitjan] This is the only event we're guaranteed to get on a talent switch, so we have to listen for it.  -- However, the client may not yet have the spellbook updates, so trying to evaluate the cooldowns may fail.
-	-- This is one of the reasons the cooldown logic has to fail silently and try again later
 	NeedToKnow:UpdateActiveProfile()
 end
 

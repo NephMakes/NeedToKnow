@@ -2,7 +2,8 @@
 -- Load after ProfilePanel.xml
 
 -- local addonName, addonTable = ...
-local ProfilePanel = InterfaceOptionsNeedToKnowProfilePanel
+NeedToKnow.ProfilePanel = InterfaceOptionsNeedToKnowProfilePanel
+local ProfilePanel = NeedToKnow.ProfilePanel
 local String = NeedToKnow.String
 
 function ProfilePanel:OnLoad()
@@ -65,8 +66,8 @@ function ProfilePanel:UpdateProfileList()
 	self.profileNames = self.profileNames or {}
 	local profileNames = self.profileNames
 	local i = 0
-	if NeedToKnow_Profiles then
-		for profileKey, profile in pairs(NeedToKnow_Profiles) do
+	if NeedToKnow.profiles then
+		for profileKey, profile in pairs(NeedToKnow.profiles) do
 			i = i + 1
 			local name, profileType
 			if NeedToKnow_Globals.Profiles[profileKey] == profile then
@@ -96,7 +97,7 @@ function ProfilePanel:Update()
 	if self.profileMap then
 		-- Get active profile name
 		local profileKey = NeedToKnow.GetActiveProfile()
-		self.activeProfileName = NeedToKnow_Profiles[profileKey].name
+		self.activeProfileName = NeedToKnow.profiles[profileKey].name
 
 		-- Select active profile by default
 		if not self.selectedProfileName or not self.profileMap[self.selectedProfileName] then
@@ -328,8 +329,12 @@ function ProfilePanel.OnClickToCharacterButton(button)
 end
 
 function ProfilePanel.OnClickDefaultsButton()
-	NeedToKnow.ResetCharacter()
-	ProfilePanel:UpdateProfileList()
+	-- NeedToKnow.ResetCharacter()
+	-- ProfilePanel:UpdateProfileList()
+	NeedToKnow:ResetCharacterSettings()
+	NeedToKnow:LoadProfiles()
+	NeedToKnow:UpdateActiveProfile()
+	-- TO DO: Not working properly
 end
 
 

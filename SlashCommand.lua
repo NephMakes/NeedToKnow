@@ -20,21 +20,25 @@ function NeedToKnow.SlashCommand(cmd)
 	if not cmd then
 		NeedToKnow.ToggleLockUnlock()
 	elseif cmd == String.SLASH_RESET then
-		-- Reset character settings and global saved variables (NeedToKnow_Globals)
-		NeedToKnow.Reset(true)
+		-- Reset account and character to default settings
+		NeedToKnow:ResetAccountSettings()
+		NeedToKnow:ResetCharacterSettings()
+		NeedToKnow:LoadProfiles()
+		NeedToKnow:UpdateActiveProfile()
+		-- TO DO: Not working properly?
 	elseif cmd == String.SLASH_PROFILE then
 		if args[1] then
+			-- Activate profile by name
 			local profileName = table.concat(args, " ")
-			local profileKey = NeedToKnow.FindProfileByName(profileName)
+			local profileKey = NeedToKnow.GetProfileByName(profileName)
 			if profileKey then
-				NeedToKnow.ChangeProfile(profileKey)
-				-- NeedToKnowOptions.UIPanel_Profile_Update()
+				NeedToKnow.ActivateProfile(profileKey)
 			else
 				print("NeedToKnow: Unknown profile", profileName)
 			end
 		else
-			local specIndex = NeedToKnow.GetSpecIndex()
-			local profileKey = NeedToKnow.CharSettings.Specs[specIndex]
+			-- Print profile key
+			local profileKey = NeedToKnow.GetActiveProfile()
 			print("NeedToKnow: Current profile is", profileKey)
 		end
 	else

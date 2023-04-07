@@ -1,6 +1,6 @@
 -- Bar appearance and interaction
 
-local addonName, addonTable = ...
+-- local addonName, addonTable = ...
 
 local Bar = NeedToKnow.Bar
 local String = NeedToKnow.String
