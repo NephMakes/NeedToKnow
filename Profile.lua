@@ -1,22 +1,27 @@
 ﻿-- Profiles are complete sets of NeedToKnow settings for one specialization
 
 --[[
-Important global variables: 
-	NeedToKnow_Globals: Saved variable. Has account-wide profiles. 
-	NeedToKnow_CharSettings: Saved variable per character. Has character-specific profiles. 
+NeedToKnow_Globals: Saved variable. Has account-wide profiles. 
+NeedToKnow_CharSettings: Saved variable per character. Has character-specific profiles. 
 
+NeedToKnow.accountSettings: Reference to NeedToKnow_Globals
+NeedToKnow.characterSettings: Reference to NeedToKnow_CharSettings
 NeedToKnow.profiles: Table of profiles available to character {[profileKey] = settings}
+NeedToKnow.characterSettings.Specs: Table of active profiles for each spec {[specIndex] = profileKey}
+NeedToKnow.profileSettings: Reference to settings for current active profile
 ]]--
 
 
 --[[ Settings ]]--
 
 function NeedToKnow:LoadSavedVariables()
+	-- Load account-wide saved variable
 	if NeedToKnow_Globals then
 		self.accountSettings = NeedToKnow_Globals
 	else
 		self:ResetAccountSettings()
 	end
+	-- Load character-specific saved variable
 	if NeedToKnow_CharSettings then
 		self.characterSettings = NeedToKnow_CharSettings
 		self.CharSettings = NeedToKnow_CharSettings  -- Deprecated
@@ -34,6 +39,14 @@ function NeedToKnow:ResetCharacterSettings()
 	NeedToKnow_CharSettings = CopyTable(NEEDTOKNOW.CHARACTER_DEFAULTS)
 	self.characterSettings = NeedToKnow_CharSettings
 	self.CharSettings = NeedToKnow_CharSettings  -- Deprecated
+end
+
+function NeedToKnow:GetCharacterSettings()
+	return NeedToKnow.characterSettings
+end
+
+function NeedToKnow:GetProfileSettings()
+	return NeedToKnow.ProfileSettings
 end
 
 
@@ -56,12 +69,13 @@ end
 
 function NeedToKnow.GetNewProfileKey()
 	-- Return unique profile key with format "G[integer]"
-	local n = NeedToKnow_Globals.NextProfile or 1
+	local settings = NeedToKnow.accountSettings
+	local n = settings.NextProfile or 1
 	while NeedToKnow.profiles["G"..n] do
 		n = n + 1
 	end
-	if not NeedToKnow_Globals.NextProfile or n >= NeedToKnow_Globals.NextProfile then
-		NeedToKnow_Globals.NextProfile = n + 1
+	if not settings.NextProfile or settings.NextProfile <= n then
+		settings.NextProfile = n + 1
 	end
 	return "G"..n
 end
@@ -122,27 +136,27 @@ end
 function NeedToKnow.SetProfileToAccount(profileKey)
 	-- Make profile usable by all characters on this account
 	local profile = NeedToKnow.profiles[profileKey]
-	NeedToKnow_Globals.Profiles[profileKey] = profile
-	NeedToKnow_CharSettings.Profiles[profileKey] = nil
+	NeedToKnow.accountSettings.Profiles[profileKey] = profile
+	NeedToKnow.characterSettings.Profiles[profileKey] = nil
 end
 
 function NeedToKnow.SetProfileToCharacter(profileKey)
 	-- Make profile only usable by this character
 	local profile = NeedToKnow.profiles[profileKey]
-	NeedToKnow_Globals.Profiles[profileKey] = nil
-	NeedToKnow_CharSettings.Profiles[profileKey] = profile
+	NeedToKnow.accountSettings.Profiles[profileKey] = nil
+	NeedToKnow.characterSettings.Profiles[profileKey] = profile
 end
 
---function NeedToKnow.IsProfileToAccount(profileKey)
---	if NeedToKnow_Globals.Profiles[profileKey] then
+--function NeedToKnow:IsProfileToAccount(profileKey)
+--	if self.accountSettings.Profiles[profileKey] then
 --		return true
 --	else
 --		return false
 --	end
 --end
 --
---function NeedToKnow.IsProfileToCharacter(profileKey)
---	if NeedToKnow_CharSettings.Profiles[profileKey] then
+--function NeedToKnow:IsProfileToCharacter(profileKey)
+--	if self.characterSettings.Profiles[profileKey] then
 --		return true
 --	else
 --		return false
@@ -154,21 +168,22 @@ function NeedToKnow.DeleteProfile(profileKey)
 		print("NeedToKnow: Can't delete active profile")
 	else
 		NeedToKnow.profiles[profileKey] = nil
-		NeedToKnow_Globals.Profiles[profileKey] = nil
-		NeedToKnow_CharSettings.Profiles[profileKey] = nil
+		NeedToKnow.accountSettings.Profiles[profileKey] = nil
+		NeedToKnow.characterSettings.Profiles[profileKey] = nil
 	end
 end
 
 function NeedToKnow:LoadProfiles()
 	-- Called by ExecutiveFrame:PLAYER_LOGIN()
+	self.profiles = {}  -- Table of available profiles, {[profileKey] = settings}
+	local accountSettings = self.accountSettings
+	local characterSettings = self.characterSettings
 
-	NeedToKnow.profiles = {}  -- Table of available profiles, {[profileKey] = settings}
-	-- NeedToKnow_Profiles = NeedToKnow.profiles  -- Deprecated
-
-	-- Populate NeedToKnow.profiles from NeedToKnow_Globals and NeedToKnow_CharSettings
+	-- Populate NeedToKnow.profiles from saved variables
 	local maxKeyIndex = 0
-	local profilesByName = {}
-	for key, settings in pairs(NeedToKnow_Globals.Profiles) do
+	local profilesByName = {}  -- For fixing duplicated profile names
+	local aFixups = {}  -- For fixing duplicated profile keys
+	for key, settings in pairs(accountSettings.Profiles) do
 		if settings.bUncompressed then
 			NeedToKnow.CompressProfileSettings(settings)
 		end
@@ -187,48 +202,46 @@ function NeedToKnow:LoadProfiles()
 			maxKeyIndex = keyIndex
 		end
 
-		NeedToKnow.profiles[key] = settings
+		self.profiles[key] = settings
 	end
-	local aFixups = {}
-	if NeedToKnow_CharSettings.Profiles then
-		for key, settings in pairs(NeedToKnow_CharSettings.Profiles) do
-			-- Fix duplicated profile name
-			if profilesByName[settings.name] then
-				local newName = NeedToKnow.GetNonduplicateProfileName(oldName)
-				print("NeedToKnow: Duplicate profile name", settings.name .. ".", "Renaming", newName)
-				settings.name = newName
-			end
-			profilesByName[settings.name] = settings
-
-			-- Check if duplicate profileKey
-			if NeedToKnow.profiles[key] then
-				print("NeedToKnow: Duplicate profile key", key .. ". May encounter error with profile", 
-					settings.name, "or", NeedToKnow.profiles[key].name
-				)
-				local newKey = NeedToKnow.GetNewProfileKey()
-				aFixups[key] = newKey
-			end
-
-			-- Update maxKeyIndex for NeedToKnow_Globals.NextProfile
-			local keyIndex = tonumber(key:sub(2))
-			if keyIndex > maxKeyIndex then
-				maxKeyIndex = keyIndex
-			end
-
-			NeedToKnow.profiles[key] = settings
+	for key, settings in pairs(characterSettings.Profiles) do
+		-- Fix duplicated profile name
+		if profilesByName[settings.name] then
+			local newName = NeedToKnow.GetNonduplicateProfileName(oldName)
+			print("NeedToKnow: Duplicate profile name", settings.name .. ".", "Renaming", newName)
+			settings.name = newName
 		end
+		profilesByName[settings.name] = settings
+
+		-- Check if duplicate profileKey
+		if NeedToKnow.profiles[key] then
+			print("NeedToKnow: Duplicate profile key", key .. ". May encounter error with profile", 
+				settings.name, "or", NeedToKnow.profiles[key].name
+			)
+			local newKey = NeedToKnow.GetNewProfileKey()
+			aFixups[key] = newKey
+		end
+
+		-- Update maxKeyIndex for NeedToKnow_Globals.NextProfile
+		local keyIndex = tonumber(key:sub(2))
+		if keyIndex > maxKeyIndex then
+			maxKeyIndex = keyIndex
+		end
+
+		self.profiles[key] = settings
 	end
 
 	-- Fix duplicate profile keys
 	for oldKey, newKey in pairs(aFixups) do
-		NeedToKnow_CharSettings.Profiles[newKey] = NeedToKnow_CharSettings.Profiles[oldKey]
-		NeedToKnow_CharSettings.Profiles[oldKey] = nil
+		local profiles = characterSettings.Profiles
+		profiles[newKey] = profiles[oldKey]
+		profiles[oldKey] = nil
 	end
 
-	-- Show error message if problem with NextProfile
-	if not NeedToKnow_Globals.NextProfile or maxKeyIndex > NeedToKnow_Globals.NextProfile then
+	-- Fix any problems with NextProfile
+	if not accountSettings.NextProfile or accountSettings.NextProfile <= maxKeyIndex then
 		-- print("NeedToKnow ERROR (NextProfile): May encounter error with account-wide profiles on other characters.")
-		NeedToKnow_Globals.NextProfile = maxKeyIndex + 1
+		accountSettings.NextProfile = maxKeyIndex + 1
 	end
 end
 
@@ -244,11 +257,11 @@ function NeedToKnow.GetNonduplicateProfileName(oldName)
 end
 
 function NeedToKnow.SetProfileForSpec(profileKey, specIndex)
-	NeedToKnow.CharSettings.Specs[specIndex] = profileKey
+	NeedToKnow.characterSettings.Specs[specIndex] = profileKey
 end
 
 function NeedToKnow.GetProfileForSpec(specIndex)
-	local profileKey = NeedToKnow.CharSettings.Specs[specIndex]
+	local profileKey = NeedToKnow.characterSettings.Specs[specIndex]
 	return profileKey
 end
 

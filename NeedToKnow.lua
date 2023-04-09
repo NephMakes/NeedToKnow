@@ -30,14 +30,6 @@ end
 
 --[[ Get settings ]]--
 
-function NeedToKnow:GetCharacterSettings()
-	return NeedToKnow.CharSettings
-end
-
-function NeedToKnow:GetProfileSettings()
-	return NeedToKnow.ProfileSettings
-end
-
 function NeedToKnow:GetGroupSettings(groupID)
 	return NeedToKnow.ProfileSettings.Groups[groupID]
 end

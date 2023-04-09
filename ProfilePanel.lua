@@ -70,7 +70,7 @@ function ProfilePanel:UpdateProfileList()
 		for profileKey, profile in pairs(NeedToKnow.profiles) do
 			i = i + 1
 			local name, profileType
-			if NeedToKnow_Globals.Profiles[profileKey] == profile then
+			if NeedToKnow.accountSettings.Profiles[profileKey] == profile then
 				name = profile.name
 				profileType = "account"
 			else
@@ -183,7 +183,7 @@ function ProfilePanel:UpdateButtons()
 
 	-- To Character, To Account
 	local selectedProfileKey = self.profileMap[self.selectedProfileName].key
-	if selectedProfileKey and NeedToKnow_Globals.Profiles[selectedProfileKey] then
+	if selectedProfileKey and NeedToKnow.accountSettings.Profiles[selectedProfileKey] then
 		self.toCharacterButton:Show()
 		self.toAccountButton:Hide()
 	else
