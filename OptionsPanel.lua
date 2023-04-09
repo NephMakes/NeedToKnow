@@ -1,8 +1,9 @@
 ﻿-- Interface options panel (Main)
 -- Load after OptionsPanel.xml
 
-local addonName, addonTable = ...
-NeedToKnow.OptionsPanel = _G["InterfaceOptionsNeedToKnowPanel"]
+local addonName, NeedToKnow = ...
+
+NeedToKnow.OptionsPanel = InterfaceOptionsNeedToKnowPanel
 local OptionsPanel = NeedToKnow.OptionsPanel
 local String = NeedToKnow.String
 

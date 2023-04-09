@@ -1,6 +1,6 @@
 -- For bar behavior that changes when fighting bosses (Blink)
 
--- local _, addonTable = ...
+local _, NeedToKnow = ...
 local ExecutiveFrame = NeedToKnow.ExecutiveFrame
 local Bar = NeedToKnow.Bar
 

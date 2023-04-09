@@ -1,6 +1,6 @@
 ﻿-- Bar right-click menu
 
--- local addonName, addonTable = ...
+local _, NeedToKnow = ...
 local BarMenu = NeedToKnow.BarMenu
 local String = NeedToKnow.String
 local Dialog = NeedToKnow.Dialog

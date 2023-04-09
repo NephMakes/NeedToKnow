@@ -1,6 +1,6 @@
 -- Import and export bar settings as concise string
 
--- local addonName, addonTable = ...
+local _, NeedToKnow = ...
 
 local SHORTENINGS = {
     Enabled         = "On",

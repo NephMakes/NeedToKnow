@@ -1,11 +1,9 @@
 -- Load after libs and before everything else
 
-local addonName, _ = ...
-
--- Declare global variables
-NeedToKnow = {}
+local addonName, NeedToKnow = ...
 NeedToKnow.version = GetAddOnMetadata(addonName, "Version")
 
+-- Declare global variables
 -- Deprecated:
 NEEDTOKNOW = {}
 NEEDTOKNOW.VERSION = GetAddOnMetadata(addonName, "Version")

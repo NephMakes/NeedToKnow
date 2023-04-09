@@ -1,6 +1,6 @@
 -- Bar text
 
--- local addonName, addonTable = ...
+local _, NeedToKnow = ...
 local Bar = NeedToKnow.Bar
 
 -- local versions of frequently-used global functions

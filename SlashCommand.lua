@@ -1,6 +1,6 @@
 ﻿-- Slash commands
 
--- local addonName, addonTable = ...
+local _, NeedToKnow = ...
 local String = NeedToKnow.String
 
 function NeedToKnow.AddSlashCommand()

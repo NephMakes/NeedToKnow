@@ -1,9 +1,11 @@
 ﻿-- Interface options panel: Appearance
 -- Load after AppearancePanel.xml, OptionsPanel.lua
 
-local addonName, addonTable = ...
-NeedToKnow.AppearancePanel = _G["InterfaceOptionsNeedToKnowAppearancePanel"]
+local addonName, NeedToKnow = ...
+
+NeedToKnow.AppearancePanel = InterfaceOptionsNeedToKnowAppearancePanel
 NeedToKnow.OptionSlider = {}
+
 local AppearancePanel = NeedToKnow.AppearancePanel
 local OptionSlider = NeedToKnow.OptionSlider
 local OptionsPanel = NeedToKnow.OptionsPanel

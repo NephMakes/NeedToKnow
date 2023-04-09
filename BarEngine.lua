@@ -1,6 +1,6 @@
 -- Bar tracking behavior
 
--- local _, addonTable = ...
+local _, NeedToKnow = ...
 
 local Bar = NeedToKnow.Bar
 local FindAura = NeedToKnow.FindAura

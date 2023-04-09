@@ -1,6 +1,6 @@
 ﻿-- ExecutiveFrame handles addon setup and some combat functions 
 
--- local _, addonTable = ...
+local _, NeedToKnow = ...
 local ExecutiveFrame = NeedToKnow.ExecutiveFrame
 
 local GetTime = GetTime

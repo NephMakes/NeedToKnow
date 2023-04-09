@@ -6,7 +6,7 @@
 	and try again later. 
 ]]--
 
--- local addonName, addonTable = ...
+local _, NeedToKnow = ...
 local Cooldown = NeedToKnow.Cooldown
 
 -- Local versions of global functions

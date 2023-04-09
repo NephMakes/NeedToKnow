@@ -1,6 +1,6 @@
 ﻿-- Pop-up dialog boxes to input bar settings
 
--- local addonName, addonTable = ...
+local _, NeedToKnow = ...
 local Dialog = NeedToKnow.Dialog
 local String = NeedToKnow.String
 

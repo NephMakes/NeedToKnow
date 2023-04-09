@@ -3,14 +3,14 @@
 --[[
 NeedToKnow_Globals: Saved variable. Has account-wide profiles. 
 NeedToKnow_CharSettings: Saved variable per character. Has character-specific profiles. 
-
-NeedToKnow.accountSettings: Reference to NeedToKnow_Globals
-NeedToKnow.characterSettings: Reference to NeedToKnow_CharSettings
-NeedToKnow.profiles: Table of profiles available to character {[profileKey] = settings}
+NeedToKnow.accountSettings: Reference to account-wide saved variable
+NeedToKnow.characterSettings: Reference to character-specific saved variable
+NeedToKnow.profiles: Table of all profiles available to character {[profileKey] = settings}
 NeedToKnow.characterSettings.Specs: Table of active profiles for each spec {[specIndex] = profileKey}
 NeedToKnow.profileSettings: Reference to settings for current active profile
 ]]--
 
+local _, NeedToKnow = ...
 
 --[[ Settings ]]--
 
@@ -38,19 +38,21 @@ end
 function NeedToKnow:ResetCharacterSettings()
 	NeedToKnow_CharSettings = CopyTable(NEEDTOKNOW.CHARACTER_DEFAULTS)
 	self.characterSettings = NeedToKnow_CharSettings
-	self.CharSettings = NeedToKnow_CharSettings  -- Deprecated
+	self.CharSettings = self.characterSettings  -- Deprecated
 end
 
 function NeedToKnow:GetCharacterSettings()
+	-- Deprecated function
 	return NeedToKnow.characterSettings
-end
-
-function NeedToKnow:GetProfileSettings()
-	return NeedToKnow.ProfileSettings
 end
 
 
 --[[ Profiles ]]--
+
+function NeedToKnow:GetProfileSettings()
+	-- Deprecated function
+	return NeedToKnow.profileSettings
+end
 
 function NeedToKnow.CreateBlankProfile()
 	-- Make new profile with default settings and return its key
@@ -63,7 +65,7 @@ function NeedToKnow.CreateProfile(settings)
 	local profileKey = NeedToKnow.GetNewProfileKey()
 	settings.name = NeedToKnow.GetNewProfileName()
 	NeedToKnow.profiles[profileKey] = settings
-	NeedToKnow.SetProfileToCharacter(profileKey)
+	NeedToKnow.SetProfileToCharacter(profileKey)  -- Character-specific by default
 	return profileKey
 end
 
@@ -106,7 +108,6 @@ end
 
 function NeedToKnow.CopyProfile(profileKey)
 	-- Make new profile with same settings and return its key
-	-- Called by ProfilePanel.OnClickCopyButton()
 	local profile = CopyTable(NeedToKnow.profiles[profileKey])
 	local name = NeedToKnow.GetProfileCopyName(profile.name)
 	profileKey = NeedToKnow.CreateProfile(profile)
@@ -175,7 +176,7 @@ end
 
 function NeedToKnow:LoadProfiles()
 	-- Called by ExecutiveFrame:PLAYER_LOGIN()
-	self.profiles = {}  -- Table of available profiles, {[profileKey] = settings}
+	self.profiles = {}  -- Table of profiles available to character {[profileKey] = settings}
 	local accountSettings = self.accountSettings
 	local characterSettings = self.characterSettings
 
@@ -283,14 +284,15 @@ end
 --end
 
 function NeedToKnow.ActivateProfile(profileKey)
-	local oldSettings = NeedToKnow.ProfileSettings
+	local oldSettings = NeedToKnow.profileSettings
 	local newSettings = NeedToKnow.profiles[profileKey]
 	if newSettings and newSettings ~= oldSettings then
 		if oldSettings and oldSettings.bUncompressed then
 			NeedToKnow.CompressProfileSettings(oldSettings)
 		end
 		NeedToKnow.UncompressProfileSettings(newSettings)
-		NeedToKnow.ProfileSettings = newSettings
+		NeedToKnow.profileSettings = newSettings
+		NeedToKnow.ProfileSettings = NeedToKnow.profileSettings  -- Deprecated
 		NeedToKnow.SetProfileForSpec(profileKey, NeedToKnow.GetSpecIndex())
 		NeedToKnow:Update()
 		NeedToKnow.OptionsPanel:Update()

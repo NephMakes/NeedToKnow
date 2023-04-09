@@ -1,6 +1,6 @@
 ﻿-- Must be loaded early in .toc
 
--- local addonName, addonTable = ...
+local _, NeedToKnow = ...
 
 NeedToKnow.String = {}
 local Localize = {}

@@ -3,10 +3,8 @@
 -- by NephMakes (aka lieandswell), Kitjan
 -- --------------------------------------
 
--- local addonName, addonTable = ...
-
+local _, NeedToKnow = ...
 local String = NeedToKnow.String
-
 
 
 --[[ Get objects ]]--
@@ -16,7 +14,8 @@ function NeedToKnow:GetBarGroup(groupID)
 end
 
 function NeedToKnow:GetGroup(groupID)
-	return NeedToKnow:GetBarGroup(groupID)
+	-- return NeedToKnow:GetBarGroup(groupID)
+	return self:GetBarGroup(groupID)
 end
 
 function NeedToKnow:GetBar(groupID, barID)
@@ -24,18 +23,21 @@ function NeedToKnow:GetBar(groupID, barID)
 end
 
 function NeedToKnow:GetOptionsPanel()
-	return _G["InterfaceOptionsNeedToKnowPanel"]
+	-- return _G["InterfaceOptionsNeedToKnowPanel"]
+	return InterfaceOptionsNeedToKnowPanel
 end
 
 
 --[[ Get settings ]]--
 
 function NeedToKnow:GetGroupSettings(groupID)
-	return NeedToKnow.ProfileSettings.Groups[groupID]
+	-- return NeedToKnow.ProfileSettings.Groups[groupID]
+	return self.profileSettings.Groups[groupID]
 end
 
 function NeedToKnow:GetBarSettings(groupID, barID)
-	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
+	-- local groupSettings = NeedToKnow:GetGroupSettings(groupID)
+	local groupSettings = self:GetGroupSettings(groupID)
 	return groupSettings.Bars[barID]
 end
 
@@ -57,7 +59,9 @@ function NeedToKnow:UpdateBarGroup(groupID)
 end
 
 function NeedToKnow:UpdateGroup(groupID)
-	 NeedToKnow:UpdateBarGroup(groupID)
+	-- Deprecated function
+	-- NeedToKnow:UpdateBarGroup(groupID)
+	 self:UpdateBarGroup(groupID)
 end
 
 function NeedToKnow:UpdateBar(groupID, barID)

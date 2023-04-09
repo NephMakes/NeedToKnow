@@ -1,7 +1,8 @@
 ﻿-- Interface options panel: Profile
 -- Load after ProfilePanel.xml
 
--- local addonName, addonTable = ...
+local _, NeedToKnow = ...
+
 NeedToKnow.ProfilePanel = InterfaceOptionsNeedToKnowProfilePanel
 local ProfilePanel = NeedToKnow.ProfilePanel
 local String = NeedToKnow.String
