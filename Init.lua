@@ -73,7 +73,7 @@ NEEDTOKNOW.BAR_DEFAULTS = {
     blink_boss      = false,
     blink_label     = "",
     buffcd_duration = 45,  -- Proc internal cooldown (seconds)
-    buffcd_reset_spells = "",
+    buffcd_reset_spells = "",  -- Buffs that reset proc cooldown
     usable_duration = 0,
     append_cd       = false,
     append_usable   = false,
@@ -133,6 +133,7 @@ DefaultSettings.ACCOUNT = {
     Version = NeedToKnow.version,
     OldVersion = NeedToKnow.version,
     Profiles = {},
+    -- NextProfile = 1, 
     Chars = {},
 }
 ]]--

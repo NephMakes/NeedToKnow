@@ -3,7 +3,7 @@
 local _, NeedToKnow = ...
 local String = NeedToKnow.String
 
-function NeedToKnow.AddSlashCommand()
+function NeedToKnow:AddSlashCommand()
 	SlashCmdList["NEEDTOKNOW"] = NeedToKnow.SlashCommand
 	SLASH_NEEDTOKNOW1 = "/needtoknow"
 	SLASH_NEEDTOKNOW2 = "/ntk"

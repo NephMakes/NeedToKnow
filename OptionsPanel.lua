@@ -10,6 +10,11 @@ local String = NeedToKnow.String
 local MAX_GROUPS = 4
 local MAX_BARS_PER_GROUP = 9
 
+function NeedToKnow:GetOptionsPanel()
+	-- Deprecated function. Use NeedToKnow.OptionsPanel instead. 
+	return _G["InterfaceOptionsNeedToKnowPanel"]
+end
+
 
 -- function NeedToKnow:ShowOptionsPanel() end
 

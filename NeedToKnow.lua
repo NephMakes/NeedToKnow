@@ -9,22 +9,8 @@ local String = NeedToKnow.String
 
 --[[ Get objects ]]--
 
-function NeedToKnow:GetBarGroup(groupID)
-	return self.barGroups[groupID]
-end
-
-function NeedToKnow:GetGroup(groupID)
-	-- return NeedToKnow:GetBarGroup(groupID)
-	return self:GetBarGroup(groupID)
-end
-
 function NeedToKnow:GetBar(groupID, barID)
 	return _G["NeedToKnow_Group"..groupID.."Bar"..barID]
-end
-
-function NeedToKnow:GetOptionsPanel()
-	-- return _G["InterfaceOptionsNeedToKnowPanel"]
-	return InterfaceOptionsNeedToKnowPanel
 end
 
 
@@ -50,7 +36,7 @@ function NeedToKnow:Update()
 			group:Update()
 		end
 	end
-	-- TO DO: Update options panels
+	-- TO DO: Update options panels?
 end
 
 function NeedToKnow:UpdateBarGroup(groupID)

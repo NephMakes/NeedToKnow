@@ -12,6 +12,7 @@ NeedToKnow.profileSettings: Reference to settings for current active profile
 
 local _, NeedToKnow = ...
 
+
 --[[ Settings ]]--
 
 function NeedToKnow:LoadSavedVariables()
@@ -42,7 +43,7 @@ function NeedToKnow:ResetCharacterSettings()
 end
 
 function NeedToKnow:GetCharacterSettings()
-	-- Deprecated function
+	-- Deprecated
 	return NeedToKnow.characterSettings
 end
 
@@ -50,7 +51,7 @@ end
 --[[ Profiles ]]--
 
 function NeedToKnow:GetProfileSettings()
-	-- Deprecated function
+	-- Deprecated
 	return NeedToKnow.profileSettings
 end
 

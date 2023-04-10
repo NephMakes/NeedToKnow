@@ -5,15 +5,15 @@ local ExecutiveFrame = NeedToKnow.ExecutiveFrame
 
 local GetTime = GetTime
 
+local IS_RETAIL = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+local IS_CLASSIC_WRATH = WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC
+local IS_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
+
 -- Spellcast tracking (deprecated)
 local m_last_cast      = NeedToKnow.m_last_cast
 local m_last_cast_head = NeedToKnow.m_last_cast_head
 local m_last_cast_tail = NeedToKnow.m_last_cast_tail
 local m_last_guid = NeedToKnow.m_last_guid
-
-local IS_RETAIL = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
-local IS_CLASSIC_WRATH = WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC
-local IS_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 
 
 --[[ ExecutiveFrame functions ]]--
@@ -26,18 +26,12 @@ function ExecutiveFrame:OnEvent(event, ...)
 end
 ExecutiveFrame:SetScript("OnEvent", ExecutiveFrame.OnEvent)
 ExecutiveFrame:RegisterEvent("ADDON_LOADED")
-ExecutiveFrame:RegisterEvent("PLAYER_LOGIN")
--- ExecutiveFrame:RegisterEvent("PLAYER_ENTERING_WORLD")  -- Might be better indicator that spec info available
 
 function ExecutiveFrame:ADDON_LOADED(addonName)
 	if addonName == "NeedToKnow" then
 		NeedToKnow:LoadSavedVariables()
-
-		-- Make bar groups
-		NeedToKnow.barGroups = {}
-		for groupID = 1, NeedToKnow.MAX_BARGROUPS do
-			NeedToKnow.barGroups[groupID] = NeedToKnow.BarGroup:New(groupID)
-		end
+		NeedToKnow:MakeBarGroups()
+		NeedToKnow:AddSlashCommand()
 
 		NeedToKnow.totem_drops = {} -- array 1-4 of precise times totems appeared
 		self.BossFightBars = {}
@@ -46,38 +40,37 @@ function ExecutiveFrame:ADDON_LOADED(addonName)
 		m_last_cast_tail = 1
 		NeedToKnow.m_last_guid = {}  -- [spell][guidTarget] = {startTime, duration, expirationTime}
 
-		NeedToKnow.AddSlashCommand()
+		self:RegisterEvent("PLAYER_LOGIN")
+		if IS_RETAIL or IS_CLASSIC_WRATH then
+			self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+			self:RegisterEvent("PLAYER_TALENT_UPDATE")
+		end
+		self:RegisterEvent("GROUP_ROSTER_UPDATE")
 		self:UnregisterEvent("ADDON_LOADED")
 	end
 end
 
 function ExecutiveFrame:PLAYER_LOGIN()
-	NeedToKnow:LoadProfiles()
-
+	-- Get player info
 	local _, className = UnitClass("player")
-	if className == "DEATHKNIGHT" and WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
-	-- if className == "DEATHKNIGHT" and not IS_RETAIL then
+	if className == "DEATHKNIGHT" and not IS_RETAIL then
 		NeedToKnow.isClassicDeathKnight = true  -- To filter rune cooldowns out of ability cooldowns
 	elseif className == "SHAMAN" then
 		NeedToKnow.isShaman = true  -- For totem bar type in BarMenu
 	end
-
-	if IS_RETAIL or IS_CLASSIC_WRATH then
-		self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
-		self:RegisterEvent("PLAYER_TALENT_UPDATE")
-	end
-	NeedToKnow:UpdateActiveProfile()
-
 	NeedToKnow.guidPlayer = UnitGUID("player")
-	self:RegisterEvent("GROUP_ROSTER_UPDATE")
 	self:RefreshRaidMemberNames()
 
-	NeedToKnow.isLocked = NeedToKnow:GetCharacterSettings().Locked
-	NeedToKnow:Update()
+	-- Load settings (depends on spec)
+	NeedToKnow.isLocked = NeedToKnow.characterSettings.Locked
+	NeedToKnow:LoadProfiles()
+	NeedToKnow:UpdateActiveProfile()  -- Calls NeedToKnow:Update()
 end
 
 function ExecutiveFrame:PLAYER_TALENT_UPDATE()
-	NeedToKnow:UpdateActiveProfile()
+	if NeedToKnow.profiles then  -- May fire before PLAYER_LOGIN
+		NeedToKnow:UpdateActiveProfile()
+	end
 end
 
 function ExecutiveFrame:ACTIVE_TALENT_GROUP_CHANGED()
@@ -300,7 +293,7 @@ function ExecutiveFrame:GetNameAndServer(unit)
 	-- Called by ExecutiveFrame:RefreshRaidMemberNames()
 	local name, server = UnitName(unit)
 	if name and server then 
-		return name..'-'..server
+		return name .. "-" .. server
 	end
 	return name
 end

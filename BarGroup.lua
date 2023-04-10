@@ -7,6 +7,23 @@ local String = NeedToKnow.String
 
 NeedToKnow.MAX_BARGROUPS = 4
 
+function NeedToKnow:MakeBarGroups()
+	self.barGroups = {}
+	for groupID = 1, self.MAX_BARGROUPS do
+		self.barGroups[groupID] = self.BarGroup:New(groupID)
+	end
+end
+
+function NeedToKnow:GetBarGroup(groupID)
+	return self.barGroups[groupID]
+end
+
+function NeedToKnow:GetGroup(groupID)
+	-- Deprecated. Use NeedToKnow:GetBarGroup(groupID) instead. 
+	-- return NeedToKnow:GetBarGroup(groupID)
+	return self:GetBarGroup(groupID)
+end
+
 
 --[[ BarGroup ]]--
 
