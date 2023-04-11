@@ -14,20 +14,6 @@ function NeedToKnow:GetBar(groupID, barID)
 end
 
 
---[[ Get settings ]]--
-
-function NeedToKnow:GetGroupSettings(groupID)
-	-- return NeedToKnow.ProfileSettings.Groups[groupID]
-	return self.profileSettings.Groups[groupID]
-end
-
-function NeedToKnow:GetBarSettings(groupID, barID)
-	-- local groupSettings = NeedToKnow:GetGroupSettings(groupID)
-	local groupSettings = self:GetGroupSettings(groupID)
-	return groupSettings.Bars[barID]
-end
-
-
 --[[ Update ]]--
 
 function NeedToKnow:Update()
@@ -116,7 +102,6 @@ end
 --[[ Table handling functions ]]--
 
 function NeedToKnow.DeepCopy(object)
-	-- Called by NeedToKnow.AddDefaultsToTable()
 	if type(object) ~= "table" then
 		return object
 	else

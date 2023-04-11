@@ -20,7 +20,6 @@ end
 
 function NeedToKnow:GetGroup(groupID)
 	-- Deprecated. Use NeedToKnow:GetBarGroup(groupID) instead. 
-	-- return NeedToKnow:GetBarGroup(groupID)
 	return self:GetBarGroup(groupID)
 end
 

@@ -1,8 +1,7 @@
-﻿-- Interface options panel: Profile
+﻿-- Interface options panel: Profiles
 -- Load after ProfilePanel.xml
 
 local _, NeedToKnow = ...
-
 NeedToKnow.ProfilePanel = InterfaceOptionsNeedToKnowProfilePanel
 local ProfilePanel = NeedToKnow.ProfilePanel
 local String = NeedToKnow.String
@@ -72,6 +71,7 @@ function ProfilePanel:UpdateProfileList()
 			i = i + 1
 			local name, profileType
 			if NeedToKnow.accountSettings.Profiles[profileKey] == profile then
+			-- if NeedToKnow:IsProfileToAccount(profileKey) then
 				name = profile.name
 				profileType = "account"
 			else
@@ -97,7 +97,7 @@ function ProfilePanel:Update()
 	if not self:IsVisible() then return end
 	if self.profileMap then
 		-- Get active profile name
-		local profileKey = NeedToKnow.GetActiveProfile()
+		local profileKey = NeedToKnow:GetActiveProfile()
 		self.activeProfileName = NeedToKnow.profiles[profileKey].name
 
 		-- Select active profile by default
@@ -199,7 +199,7 @@ function ProfilePanel.OnClickActivateButton(button)
 	local profileName = panel.selectedProfileName
 	local profileMap = panel.profileMap
 	if profileName then
-		NeedToKnow.ActivateProfile(profileMap[profileName].key)
+		NeedToKnow:ActivateProfile(profileMap[profileName].key)
 		panel:Update()
 	end
 end
@@ -219,7 +219,7 @@ StaticPopupDialogs["NEEDTOKNOW_RENAME_PROFILE"] = {
 	EditBoxOnTextChanged = function(self) 
 		local newName = self:GetText()
 		local acceptButton = self:GetParent().button1
-		if NeedToKnow.IsProfileNameAvailable(newName) then
+		if NeedToKnow:IsProfileNameAvailable(newName) then
 			acceptButton:Enable()
 		else
 			acceptButton:Disable()
@@ -227,8 +227,8 @@ StaticPopupDialogs["NEEDTOKNOW_RENAME_PROFILE"] = {
 	end, 
 	EditBoxOnEnterPressed = function(self, data)
 		local newName = self:GetParent().editBox:GetText()
-		if NeedToKnow.IsProfileNameAvailable(newName) then
-			NeedToKnow.RenameProfile(data.profileKey, newName)
+		if NeedToKnow:IsProfileNameAvailable(newName) then
+			NeedToKnow:RenameProfile(data.profileKey, newName)
 			self:GetParent():Hide()
 			ProfilePanel:UpdateProfileList()
 		end
@@ -239,7 +239,7 @@ StaticPopupDialogs["NEEDTOKNOW_RENAME_PROFILE"] = {
 	end,
 	OnAccept = function(self, data)
 		local newName = self.editBox:GetText()
-		NeedToKnow.RenameProfile(data.profileKey, newName)
+		NeedToKnow:RenameProfile(data.profileKey, newName)
 		ProfilePanel:UpdateProfileList()
 	end,
 	OnHide = function(self)
@@ -271,7 +271,7 @@ StaticPopupDialogs["NEEDTOKNOW_DELETE_PROFILE"] = {
 		self:SetFrameStrata("TOOLTIP")
 	end,
 	OnAccept = function(self, data)
-		NeedToKnow.DeleteProfile(data.profileKey)
+		NeedToKnow:DeleteProfile(data.profileKey)
 		ProfilePanel:UpdateProfileList()
 	end, 
 	OnHide = function(self, data)
@@ -300,7 +300,7 @@ function ProfilePanel.OnClickCopyButton(button)
 	local profileMap = panel.profileMap
 	if profileName then
 		local profileKey = profileMap[profileName].key
-		NeedToKnow.CopyProfile(profileKey)
+		NeedToKnow:CopyProfile(profileKey)
 		panel:UpdateProfileList()
 	end
 end
@@ -312,7 +312,7 @@ function ProfilePanel.OnClickToAccountButton(button)
 	local profileMap = panel.profileMap
 	if profileName then
 		local profileKey = profileMap[profileName].key
-		NeedToKnow.SetProfileToAccount(profileKey)
+		NeedToKnow:SetProfileToAccount(profileKey)
 		panel:UpdateProfileList()
 	end
 end
@@ -324,7 +324,7 @@ function ProfilePanel.OnClickToCharacterButton(button)
 	local profileMap = panel.profileMap
 	if profileName then
 		local profileKey = profileMap[profileName].key
-		NeedToKnow.SetProfileToCharacter(profileKey)
+		NeedToKnow:SetProfileToCharacter(profileKey)
 		panel:UpdateProfileList()
 	end
 end

@@ -61,7 +61,6 @@ function ExecutiveFrame:PLAYER_LOGIN()
 	NeedToKnow.guidPlayer = UnitGUID("player")
 	self:RefreshRaidMemberNames()
 
-	-- Load settings (depends on spec)
 	NeedToKnow.isLocked = NeedToKnow.characterSettings.Locked
 	NeedToKnow:LoadProfiles()
 	NeedToKnow:UpdateActiveProfile()  -- Calls NeedToKnow:Update()

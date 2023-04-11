@@ -149,7 +149,7 @@ function DefaultSettings:LocalizeDefaultFont()
 			break
 		end
 	end
-	NEEDTOKNOW.PROFILE_DEFAULTS.BarFont = gameFontName or "Fritz Quadrata TT"  -- Deprecated
+	NEEDTOKNOW.PROFILE_DEFAULTS.BarFont = gameFontName or "Fritz Quadrata TT"
 	-- self.PROFILE.BarFont = gameFontName or "Fritz Quadrata TT"
 end
 

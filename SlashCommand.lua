@@ -30,15 +30,15 @@ function NeedToKnow.SlashCommand(cmd)
 		if args[1] then
 			-- Activate profile by name
 			local profileName = table.concat(args, " ")
-			local profileKey = NeedToKnow.GetProfileByName(profileName)
+			local profileKey = NeedToKnow:GetProfileByName(profileName)
 			if profileKey then
-				NeedToKnow.ActivateProfile(profileKey)
+				NeedToKnow:ActivateProfile(profileKey)
 			else
 				print("NeedToKnow: Unknown profile", profileName)
 			end
 		else
 			-- Print profile key
-			local profileKey = NeedToKnow.GetActiveProfile()
+			local profileKey = NeedToKnow:GetActiveProfile()
 			print("NeedToKnow: Current profile is", profileKey)
 		end
 	else
