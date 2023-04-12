@@ -18,7 +18,7 @@ function NeedToKnow.SlashCommand(cmd)
 	table.remove(args, 1)
 
 	if not cmd then
-		NeedToKnow.ToggleLockUnlock()
+		NeedToKnow:ToggleLockUnlock()
 	elseif cmd == String.SLASH_RESET then
 		-- Reset account and character to default settings
 		NeedToKnow:ResetAccountSettings()

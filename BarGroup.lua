@@ -1,16 +1,18 @@
-local _, NeedToKnow = ...
+-- Bar group functions, including resize button
 
+local _, NeedToKnow = ...
 local BarGroup = NeedToKnow.BarGroup
 local ResizeButton = NeedToKnow.ResizeButton
 local Bar = NeedToKnow.Bar
 local String = NeedToKnow.String
+local DefaultSettings = NeedToKnow.DefaultSettings
 
 NeedToKnow.MAX_BARGROUPS = 4
 
 function NeedToKnow:MakeBarGroups()
 	self.barGroups = {}
 	for groupID = 1, self.MAX_BARGROUPS do
-		self.barGroups[groupID] = self.BarGroup:New(groupID)
+		self.barGroups[groupID] = BarGroup:New(groupID)
 	end
 end
 
@@ -19,8 +21,23 @@ function NeedToKnow:GetBarGroup(groupID)
 end
 
 function NeedToKnow:GetGroup(groupID)
-	-- Deprecated. Use NeedToKnow:GetBarGroup(groupID) instead. 
-	return self:GetBarGroup(groupID)
+	-- Deprecated. Use GetBarGroup() instead. 
+	return self.barGroups[groupID]
+end
+
+function NeedToKnow:UpdateBarGroups()
+	for _, group in ipairs(self.barGroups) do
+		group:Update()
+	end
+end
+
+function NeedToKnow:UpdateBarGroup(groupID)
+	self.barGroups[groupID]:Update()
+end
+
+function NeedToKnow:UpdateGroup(groupID)
+	-- Deprecated. Use UpdateBarGroup() instead
+	self.barGroups[groupID]:Update()
 end
 
 
@@ -43,7 +60,6 @@ function BarGroup:OnLoad()
 end
 
 function BarGroup:Update()
-	-- Called by NeedToKnow:Update(), NeedToKnow:UpdateBarGroup()
 	self.settings = NeedToKnow:GetGroupSettings(self:GetID())
 
 	if not self.settings.Enabled then
@@ -65,7 +81,7 @@ function BarGroup:Update()
 			self.bars[barID] = Bar:New(self, barID)
 		end
 		if not self.settings.Bars[barID] then
-			self.settings.Bars[barID] = CopyTable(NEEDTOKNOW.BAR_DEFAULTS)
+			self.settings.Bars[barID] = CopyTable(DefaultSettings.bar)
 		end
 	end
 

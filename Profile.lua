@@ -1,6 +1,7 @@
 ﻿-- Profiles are complete sets of NeedToKnow settings for one specialization
 
 local _, NeedToKnow = ...
+local DefaultSettings = NeedToKnow.DefaultSettings
 
 --[[
 NeedToKnow_Globals: Saved variable. Has account-wide profiles. 
@@ -34,12 +35,12 @@ function NeedToKnow:LoadSavedVariables()
 end
 
 function NeedToKnow:ResetAccountSettings()
-	NeedToKnow_Globals = CopyTable(NEEDTOKNOW.DEFAULTS)
+	NeedToKnow_Globals = CopyTable(DefaultSettings.account)
 	self.accountSettings = NeedToKnow_Globals
 end
 
 function NeedToKnow:ResetCharacterSettings()
-	NeedToKnow_CharSettings = CopyTable(NEEDTOKNOW.CHARACTER_DEFAULTS)
+	NeedToKnow_CharSettings = CopyTable(DefaultSettings.character)
 	self.characterSettings = NeedToKnow_CharSettings
 	self.CharSettings = self.characterSettings  -- Deprecated
 end
@@ -59,7 +60,6 @@ function NeedToKnow:GetGroupSettings(groupID)
 end
 
 function NeedToKnow:GetBarSettings(groupID, barID)
-	-- local groupSettings = NeedToKnow:GetGroupSettings(groupID)
 	local groupSettings = self:GetBarGroupSettings(groupID)
 	return groupSettings.Bars[barID]
 end
@@ -76,7 +76,7 @@ end
 
 function NeedToKnow:CreateBlankProfile()
 	-- Make new profile with default settings and return its key
-	local profileKey = self:CreateProfile(CopyTable(NEEDTOKNOW.PROFILE_DEFAULTS))
+	local profileKey = self:CreateProfile(CopyTable(DefaultSettings.profile))
 	return profileKey
 end
 
@@ -103,7 +103,7 @@ function NeedToKnow:GetNewProfileKey()
 end
 
 function NeedToKnow:GetNewProfileName()
-	-- Return unique profile name with format "Character-Server [integer]"
+	-- Return unique profile name with format "[Character]-[Server] [integer]"
 	local i = 1
 	local name = UnitName("player") .. "-" .. GetRealmName()
 	while not self:IsProfileNameAvailable(name) do
@@ -333,7 +333,7 @@ function NeedToKnow:CompressProfileSettings(profileSettings)
 			end
 		end
 	end
-	NeedToKnow:RemoveDefaultSettings(profileSettings, NEEDTOKNOW.PROFILE_DEFAULTS)
+	NeedToKnow:RemoveDefaultSettings(profileSettings, DefaultSettings.profile)
 end
 
 function NeedToKnow:UncompressProfileSettings(profileSettings)
@@ -355,14 +355,14 @@ function NeedToKnow:UncompressProfileSettings(profileSettings)
 		end
 	end
 
-	self:AddDefaultSettings(profileSettings, NEEDTOKNOW.PROFILE_DEFAULTS)
+	self:AddDefaultSettings(profileSettings, DefaultSettings.profile)
 	profileSettings.bUncompressed = true
 
 	-- Deprecated legacy code from unfinished feature to change number of bar groups
 	profileSettings.nGroups = 4
 	for groupID = 1, profileSettings.nGroups do
 		if not profileSettings.Groups[groupID] then
-			profileSettings.Groups[groupID] = CopyTable(NEEDTOKNOW.GROUP_DEFAULTS)
+			profileSettings.Groups[groupID] = CopyTable(DefaultSettings.barGroup)
 			local groupSettings = profileSettings.Groups[groupID]
 			groupSettings.Enabled = false
 			groupSettings.Position[4] = -100 - (groupID-1) * 100

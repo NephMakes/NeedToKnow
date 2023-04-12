@@ -7,33 +7,10 @@ local _, NeedToKnow = ...
 local String = NeedToKnow.String
 
 
---[[ Get objects ]]--
+--[[ Bar ]]--
 
 function NeedToKnow:GetBar(groupID, barID)
 	return _G["NeedToKnow_Group"..groupID.."Bar"..barID]
-end
-
-
---[[ Update ]]--
-
-function NeedToKnow:Update()
-	if UnitExists("player") then
-		for groupID, group in ipairs(NeedToKnow.barGroups) do
-			group:Update()
-		end
-	end
-	-- TO DO: Update options panels?
-end
-
-function NeedToKnow:UpdateBarGroup(groupID)
-	-- NeedToKnow:GetBarGroup(groupID):Update()
-	self.barGroups[groupID]:Update()
-end
-
-function NeedToKnow:UpdateGroup(groupID)
-	-- Deprecated function
-	-- NeedToKnow:UpdateBarGroup(groupID)
-	 self:UpdateBarGroup(groupID)
 end
 
 function NeedToKnow:UpdateBar(groupID, barID)
@@ -42,28 +19,40 @@ function NeedToKnow:UpdateBar(groupID, barID)
 end
 
 
+--[[ Update ]]--
+
+function NeedToKnow:Update()
+	self:UpdateBarGroups()
+	-- TO DO: Update options panels
+end
+
+
 --[[ Lock/unlock ]]--
 
 function NeedToKnow:Lock()
 	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
-	NeedToKnow:GetCharacterSettings().Locked = true
+	-- NeedToKnow:GetCharacterSettings().Locked = true
+	self.characterSettings.Locked = true
 	NeedToKnow.isLocked = true
 	NeedToKnow.last_cast = {}  -- Deprecated
 	NeedToKnow:Update()
+	-- self:UpdateBarGroups()
 end
 
 function NeedToKnow:Unlock()
 	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
-	NeedToKnow:GetCharacterSettings().Locked = false
+	-- NeedToKnow:GetCharacterSettings().Locked = false
+	self.characterSettings.Locked = false
 	NeedToKnow.isLocked = nil
 	NeedToKnow:Update()
+	-- self:UpdateBarGroups()
 end
 
 function NeedToKnow:ToggleLockUnlock()
-	if NeedToKnow.isLocked then
-		NeedToKnow:Unlock()
+	if self.isLocked then
+		self:Unlock()
 	else
-		NeedToKnow:Lock()
+		self:Lock()
 	end
 end
 

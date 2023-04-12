@@ -397,10 +397,10 @@ If you want to be super helpful, you can translate this stuff into whatever non-
 
 Thanks a bunch!  
 
---]]
+]]--
 
 
-
+--[[
 -- NEEDTOKNOW defined in Init.lua
 
 -- Define defaults in enUS
@@ -537,5 +537,5 @@ elseif ( GetLocale() == "zhTW" ) then
 	NEEDTOKNOW.UIPANEL_TOOLTIP_BARTEXTURE = "選擇計時條的材質圖像.";
 	NEEDTOKNOW.CMD_RESET = "重置";
 end
-
+]]--
 

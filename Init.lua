@@ -3,11 +3,6 @@
 local addonName, NeedToKnow = ...
 NeedToKnow.version = GetAddOnMetadata(addonName, "Version")
 
--- Declare global variables
--- Deprecated:
-NEEDTOKNOW = {}
-NEEDTOKNOW.VERSION = GetAddOnMetadata(addonName, "Version")
-
 -- Namespaces
 NeedToKnow.ExecutiveFrame = CreateFrame("Frame", "NeedToKnow_ExecutiveFrame")
 NeedToKnow.BarGroup = {}
@@ -46,97 +41,78 @@ end
 
 --[[ Default settings ]]--
 
-NEEDTOKNOW.BAR_DEFAULTS = {
-    Enabled         = true,
-    AuraName        = "",
-    Unit            = "player",
-    BuffOrDebuff    = "HELPFUL",
-    OnlyMine        = true,
-    BarColor        = {r = 0.6, g = 0.6, b = 0.6, a = 1.0},
-    MissingBlink    = {r = 1, g = 0, b = 0, a = 1},
-    TimeFormat      = "Fmt_SingleUnit",
-    vct_enabled     = false,
-    vct_color       = {r = 0, g = 0, b = 0, a = 0.4},
-    vct_spell       = "",
-    vct_extra       = 0,
-    bDetectExtends  = false,
-    show_text       = true,
-    show_count      = true,
-    show_time       = true,
-    show_spark      = true,
-    show_icon       = false,
-    show_all_stacks = false,
-    show_charges    = true,
-    show_text_user  = "",
-    blink_enabled   = false,
-    blink_ooc       = true,
-    blink_boss      = false,
-    blink_label     = "",
-    buffcd_duration = 45,  -- Proc internal cooldown (seconds)
-    buffcd_reset_spells = "",  -- Buffs that reset proc cooldown
-    usable_duration = 0,
-    append_cd       = false,
-    append_usable   = false,
+NeedToKnow.DefaultSettings = {}
+local DefaultSettings = NeedToKnow.DefaultSettings
+
+DefaultSettings.bar = {
+	Enabled = true,
+	AuraName = "",
+	Unit = "player",
+	BuffOrDebuff = "HELPFUL",
+	OnlyMine = true,
+	BarColor = {r = 0.6, g = 0.6, b = 0.6, a = 1.0},
+	MissingBlink = {r = 1, g = 0, b = 0, a = 1},
+	TimeFormat = "Fmt_SingleUnit",
+	vct_enabled = false,
+	vct_color = {r = 0, g = 0, b = 0, a = 0.4},
+	vct_spell = "",
+	vct_extra = 0,
+	bDetectExtends = false,
+	show_text = true,
+	show_count = true,
+	show_time = true,
+	show_spark = true,
+	show_icon = false,
+	show_all_stacks = false,
+	show_charges = true,
+	show_text_user = "",
+	blink_enabled = false,
+	blink_ooc = true,
+	blink_boss = false,
+	blink_label = "",
+	buffcd_duration = 45,  -- Proc internal cooldown (seconds)
+	buffcd_reset_spells = "",  -- Buffs that reset proc cooldown
+	usable_duration = 0,
+	append_cd = false,
+	append_usable = false,
 }
-NEEDTOKNOW.GROUP_DEFAULTS = {
-    Enabled = true,
-    NumberBars = 3,
-    Position = {"TOPLEFT", "TOPLEFT", 100, -100},
-    Scale = 1,
-    Width = 270,
-    direction = "down", 
-    condenseGroup = false, 
-    FixedDuration = 0, 
-    Bars = {NEEDTOKNOW.BAR_DEFAULTS, NEEDTOKNOW.BAR_DEFAULTS, NEEDTOKNOW.BAR_DEFAULTS},
+DefaultSettings.barGroup = {
+	Enabled = true,
+	NumberBars = 3,
+	Position = {"TOPLEFT", "TOPLEFT", 100, -100},
+	Scale = 1,
+	Width = 270,
+	direction = "down", 
+	condenseGroup = false, 
+	FixedDuration = 0, 
+	Bars = {DefaultSettings.bar, DefaultSettings.bar, DefaultSettings.bar},
 }
-NEEDTOKNOW.PROFILE_DEFAULTS = {
-	-- name = "Default",
+DefaultSettings.profile = {
 	name = "",
 	nGroups = 4,
-	Groups = {NEEDTOKNOW.GROUP_DEFAULTS},
+	Groups = {DefaultSettings.barGroup},
 	BarTexture = "BantoBar",
 	BkgdColor = {0, 0, 0, 0.8},
 	BorderColor = {0, 0, 0, 1}, 
 	BarSpacing = 2,
-	BarPadding = 2,  -- border size
+	BarPadding = 2,  -- Border size
 	BarFont = "Fritz Quadrata TT",
 	FontOutline = 0,
 	FontSize = 12,
 	FontColor = {1, 1, 1, 1}, 
 }
-NEEDTOKNOW.CHARACTER_DEFAULTS = {
-    Specs       = {},
-    Locked      = false,
-    Profiles    = {},
+DefaultSettings.character = {
+	Specs = {},
+	Locked = false,
+	Profiles = {},
 }
-NEEDTOKNOW.DEFAULTS = {
-    Version     = NeedToKnow.version,
-    OldVersion  = NeedToKnow.version,
-    Profiles    = {},
-    -- NextProfile = 1, 
-    Chars       = {},
+DefaultSettings.account = {
+	Version = NeedToKnow.version,
+	OldVersion = NeedToKnow.version,
+	Profiles = {},
+	NextProfile = 1, 
+	-- Chars = {},
 }
-
-NeedToKnow.DefaultSettings = {}
-local DefaultSettings = NeedToKnow.DefaultSettings
-
---[[
-DefaultSettings.BAR = {}
-DefaultSettings.BARGROUP = {}
-DefaultSettings.PROFILE = {}
-DefaultSettings.CHARACTER = {
-    Specs = {},
-    Locked = false,
-    Profiles = {},
-}
-DefaultSettings.ACCOUNT = {
-    Version = NeedToKnow.version,
-    OldVersion = NeedToKnow.version,
-    Profiles = {},
-    -- NextProfile = 1, 
-    Chars = {},
-}
-]]--
 
 function DefaultSettings:LocalizeDefaultFont()
 	local gameFont = GameFontHighlight:GetFont()
@@ -149,8 +125,7 @@ function DefaultSettings:LocalizeDefaultFont()
 			break
 		end
 	end
-	NEEDTOKNOW.PROFILE_DEFAULTS.BarFont = gameFontName or "Fritz Quadrata TT"
-	-- self.PROFILE.BarFont = gameFontName or "Fritz Quadrata TT"
+	self.profile.BarFont = gameFontName or "Fritz Quadrata TT"
 end
 
 do

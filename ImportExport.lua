@@ -1,6 +1,7 @@
 -- Import and export bar settings as concise string
 
 local _, NeedToKnow = ...
+local DefaultSettings = NeedToKnow.DefaultSettings
 
 local SHORTENINGS = {
 	Enabled         = "On",
@@ -146,11 +147,9 @@ local function TableToString(v)
 		end
 		local k
 		if index ~= i then
-			-- k = NEEDTOKNOW.SHORTENINGS[index] or index 
 			k = SHORTENINGS[index] or index 
 		end
 		if type(value) == "table" then
-			-- value = NeedToKnowIE.TableToString(value)
 			value = TableToString(value)
 		end
 		ret = ret .. CombineKeyValue(k, value)
@@ -198,7 +197,6 @@ local function StringToTable(text, ofs)
 			k = i
 		else
 			k = text:sub(cur,eq-1)
-			-- k = NEEDTOKNOW.LENGTHENINGS[k] or k
 			k = LENGTHENINGS[k] or k
 			if not k or k == "" then
 				print("Error parsing key at", cur)
@@ -273,7 +271,7 @@ function NeedToKnow.ImportBarSettingsFromString(text, bars, barID)
 		pruned = {}
 	end
 	if pruned then
-		NeedToKnow:AddDefaultSettings(pruned, NEEDTOKNOW.BAR_DEFAULTS)
+		NeedToKnow:AddDefaultSettings(pruned, DefaultSettings.bar)
 		bars[barID] = pruned
 	end
 end
@@ -281,8 +279,8 @@ end
 function NeedToKnow.ExportBarSettingsToString(barSettings)
 	-- Called by Dialog:ExportSettings()
 	local pruned = CopyTable(barSettings)
-	NeedToKnow:RemoveDefaultSettings(pruned, NEEDTOKNOW.BAR_DEFAULTS)
-	return "bv1:"..TableToString(pruned)
+	NeedToKnow:RemoveDefaultSettings(pruned, DefaultSettings.bar)
+	return "bv1:" .. TableToString(pruned)
 end
 
 --[[
