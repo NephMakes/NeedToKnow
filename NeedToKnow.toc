@@ -18,6 +18,7 @@ Init.lua
 Localization.lua
 NeedToKnow.lua
 ExecutiveFrame.lua
+Settings.lua
 Profile.lua
 BarGroup.lua
 Bar.xml

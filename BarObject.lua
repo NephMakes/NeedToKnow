@@ -16,6 +16,18 @@ local SecondsToTimeAbbrev = SecondsToTimeAbbrev
 local UPDATE_INTERVAL = 0.025  -- Make this an addon-wide variable?
 
 
+--[[ NeedToKnow:BarMethods() ]]--
+
+function NeedToKnow:GetBar(groupID, barID)
+	return _G["NeedToKnow_Group"..groupID.."Bar"..barID]
+end
+
+function NeedToKnow:UpdateBar(groupID, barID)
+	-- Called by BarMenu functions
+	NeedToKnow:GetBar(groupID, barID):Update()
+end
+
+
 --[[ Bar setup ]]--
 
 function Bar:New(group, barID)

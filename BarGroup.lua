@@ -64,14 +64,10 @@ function BarGroup:Update()
 
 	if not self.settings.Enabled then
 		self:Hide()
-		for barID, bar in ipairs(self.bars) do
+		for _, bar in ipairs(self.bars) do
 			bar:Inactivate()
 		end
 		return
-	else
-		self:Show()
-		self:SetPosition(self.settings.Position, self.settings.Scale)
-		self.resizeButton:Update()
 	end
 
 	-- Make missing bars
@@ -96,6 +92,10 @@ function BarGroup:Update()
 		end
 	end
 	self:UpdateBarPosition()
+
+	self:Show()
+	self:SetPosition(self.settings.Position, self.settings.Scale)
+	self.resizeButton:Update()
 end
 
 function BarGroup:SetPosition(position, scale)
