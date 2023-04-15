@@ -1,14 +1,12 @@
-﻿-- Must be loaded early in .toc
+﻿-- Load early in .toc
 
 local _, NeedToKnow = ...
-
-NeedToKnow.String = {}
 local Localize = {}
 
 Localize.enUS = {
 	-- Bar tooltips
 	BAR_TOOLTIP1 = "NeedToKnow",
-	BAR_TOOLTIP2 = "Right click bars to set up. More options in Blizzard interface options menu. Type /needtoknow to lock and enable.",
+	BAR_TOOLTIP2 = "Right click bars to set up. More options in Blizzard interface options menu. Type /needtoknow or /ntk to lock and enable.",
 	RESIZE_TOOLTIP = "Click and drag to change size",
 
 	-- Bar right-click menu

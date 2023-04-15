@@ -14,9 +14,8 @@
 libs\LibStub\LibStub.lua
 libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
 libs\LibSharedMedia-3.0\lib.xml
-Init.lua
-Localization.lua
 NeedToKnow.lua
+Localization.lua
 ExecutiveFrame.lua
 Settings.lua
 Profile.lua
