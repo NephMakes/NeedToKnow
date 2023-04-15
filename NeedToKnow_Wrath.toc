@@ -1,24 +1,30 @@
 ## Interface: 30401
 ## Title: NeedToKnow
 ## Author: NephMakes, lieandswell
-## X-FormerAuthor: Kitjan
 ## Version: 4.6.2
 ## Notes: Simple, effective timer bars
-## X-Credits: Bilt, Fxfighter EU-Echsenkessel, metalchoir, sp00n, Vlakarados, wowui.cn
 ## X-Category: Buffs, Combat
+## X-FormerAuthor: Kitjan
+## X-Credits: Bilt, Fxfighter EU-Echsenkessel, metalchoir, sp00n, Vlakarados, wowui.cn
 ## OptionalDeps: LibStub, LibSharedMedia-3.0
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
-## SavedVariablesPerCharacter: NeedToKnow_CharSettings
 ## SavedVariables: NeedToKnow_Globals
+## SavedVariablesPerCharacter: NeedToKnow_CharSettings
+
+# Libs
 libs\LibStub\LibStub.lua
 libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
 libs\LibSharedMedia-3.0\lib.xml
+
+# Setup
 NeedToKnow.lua
 Localization.lua
 ExecutiveFrame.lua
 Settings.lua
 Profile.lua
+
+# Bar behavior
 BarGroup.lua
 Bar.xml
 BarObject.lua
@@ -27,6 +33,11 @@ BarEngine.lua
 Cooldown.lua
 Blink.lua
 BossFight.lua
+
+# Config UI
+BarMenu.lua
+Dialog.lua
+ImportExport.lua
 OptionsPanel.xml
 OptionsPanel.lua
 AppearancePanel.xml
@@ -34,6 +45,3 @@ AppearancePanel.lua
 ProfilePanel.xml
 ProfilePanel.lua
 SlashCommand.lua
-BarMenu.lua
-Dialog.lua
-ImportExport.lua
