@@ -1,7 +1,9 @@
 local addonName, NeedToKnow = ...
 NeedToKnow.version = GetAddOnMetadata(addonName, "Version")
 
--- Define namespaces
+
+--[[ Namespaces ]]--
+
 NeedToKnow.String = {}  -- Localized strings
 NeedToKnow.BarGroup = {}
 NeedToKnow.ResizeButton = {}

@@ -143,16 +143,15 @@ function AppearancePanel:MakeBarTextureMenu()
 	local info = {}
 	local button
 	local currentTexture = NeedToKnow.ProfileSettings.BarTexture
-	for _, customButton in ipairs(self.customButtons) do
+	for i, customButton in ipairs(self.customButtons) do
 		info.customFrame = customButton
-		button = UIDropDownMenu_AddButton(info)
-		if button then  -- button not returned in Classic_Eea
-			customButton = button.customFrame
-			if currentTexture == customButton.text:GetText() then
-				customButton.texture:SetVertexColor(unpack(selectedColor))
-			else
-				customButton.texture:SetVertexColor(unpack(unselectedColor))
-			end
+		button = UIDropDownMenu_AddButton(info)  -- button not returned in Classic_Era
+		button = button or _G["DropDownList1Button"..i]
+		customButton = button.customFrame
+		if currentTexture == customButton.text:GetText() then
+			customButton.texture:SetVertexColor(unpack(selectedColor))
+		else
+			customButton.texture:SetVertexColor(unpack(unselectedColor))
 		end
 	end
 end
@@ -198,18 +197,17 @@ function AppearancePanel:MakeBarFontMenu()
 	local info = {}
 	local button
 	local currentFont = NeedToKnow.ProfileSettings.BarFont
-	for _, customButton in ipairs(self.customButtons) do
+	for i, customButton in ipairs(self.customButtons) do
 		info.customFrame = customButton
-		local button = UIDropDownMenu_AddButton(info)
-		if button then  -- button not returned in Classic_Eea
-			customButton = button.customFrame
-			if currentFont == customButton.text:GetText() then
-				customButton.check:Show()
-				customButton.uncheck:Hide()
-			else
-				customButton.check:Hide()
-				customButton.uncheck:Show()
-			end
+		local button = UIDropDownMenu_AddButton(info)  -- button not returned in Classic_Era
+		button = button or _G["DropDownList1Button"..i]
+		customButton = button.customFrame
+		if currentFont == customButton.text:GetText() then
+			customButton.check:Show()
+			customButton.uncheck:Hide()
+		else
+			customButton.check:Hide()
+			customButton.uncheck:Show()
 		end
 	end
 end
