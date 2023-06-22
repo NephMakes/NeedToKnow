@@ -268,6 +268,7 @@ function NeedToKnow:UpdateActiveProfile()
 		print("NeedToKnow: Making new profile for", name.."-"..realm, "specialization", specIndex)
 		profileKey = self:CreateBlankProfile()
 	elseif not NeedToKnow.profiles[profileKey] then
+	-- elseif NeedToKnow.profiles and not NeedToKnow.profiles[profileKey] then
 		print("NeedToKnow: Profile", profileKey, "not found. Making new blank profile.")
 		profileKey = self:CreateBlankProfile()
 	end
