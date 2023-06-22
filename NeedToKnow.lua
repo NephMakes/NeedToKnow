@@ -49,8 +49,6 @@ end
 
 --[[ High-level functions ]]--
 
-local String = NeedToKnow.String
-
 function NeedToKnow:Update()
 	self:UpdateBarGroups()
 	-- TO DO: Update options panels
@@ -95,7 +93,7 @@ function NeedToKnow:GetPrettyName(barSettings)
 	if barSettings.BuffOrDebuff == "EQUIPSLOT" then
 		local index = tonumber(barSettings.AuraName)
 		if index then 
-			return String.ITEM_NAMES[index] 
+			return self.String.ITEM_NAMES[index] 
 		else 
 			return ""
 		end
