@@ -67,13 +67,15 @@ function ExecutiveFrame:PLAYER_LOGIN()
 end
 
 function ExecutiveFrame:PLAYER_TALENT_UPDATE()
-	if NeedToKnow.profiles then  -- May fire before PLAYER_LOGIN
+	if NeedToKnow.profiles then  -- Event may fire before PLAYER_LOGIN
 		NeedToKnow:UpdateActiveProfile()
 	end
 end
 
 function ExecutiveFrame:ACTIVE_TALENT_GROUP_CHANGED()
-	NeedToKnow:UpdateActiveProfile()
+	if NeedToKnow.profiles then  -- Event may fire before PLAYER_LOGIN
+		NeedToKnow:UpdateActiveProfile()
+	end
 end
 
 function ExecutiveFrame:PLAYER_REGEN_DISABLED()

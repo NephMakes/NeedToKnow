@@ -1,7 +1,7 @@
 ## Interface: 100100
 ## Title: NeedToKnow
 ## Author: NephMakes, lieandswell
-## Version: 4.6.3
+## Version: 4.6.4
 ## Notes: Simple, effective timer bars
 ## X-Category: Buffs, Combat
 ## X-FormerAuthor: Kitjan
