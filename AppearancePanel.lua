@@ -280,7 +280,7 @@ function AppearancePanel:ChooseColor()
 	-- Kitjan: Not sure if I should leave this state around or not.  It seems like the
 	-- correct strata to have it at anyway, so I'm going to leave it there for now
 	ColorPickerFrame:SetFrameStrata("FULLSCREEN_DIALOG")
-	OpenColorPicker(info)
+	ColorPickerFrame:SetupColorPickerAndShow(info)
 end
 
 function AppearancePanel.SetColor()
@@ -295,7 +295,7 @@ end
 
 function AppearancePanel.SetOpacity()
 	local variable = ColorPickerFrame.extraInfo
-	NeedToKnow.ProfileSettings[variable][4] = 1 - OpacitySliderFrame:GetValue()
+	NeedToKnow.ProfileSettings[variable][4] = ColorPickerFrame:GetColorAlpha()
 	NeedToKnow:Update()
 	AppearancePanel:Update()
 end
@@ -303,7 +303,7 @@ end
 function AppearancePanel.CancelColor(previousValues)
 	if previousValues then
 		local variable = ColorPickerFrame.extraInfo
-		NeedToKnow.ProfileSettings[variable] = {previousValues.r, previousValues.g, previousValues.b, 1 - previousValues.opacity}
+		NeedToKnow.ProfileSettings[variable] = {previousValues.r, previousValues.g, previousValues.b, previousValues.opacity or 1}
 		NeedToKnow:Update()
 		AppearancePanel:Update()
 	end

@@ -373,7 +373,7 @@ function BarMenu.SetOpacity()
 	local groupID, barID = BarMenu.groupID, BarMenu.barID
 	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
 	local color = barSettings[ColorPickerFrame.extraInfo]
-	color.a = 1 - OpacitySliderFrame:GetValue()
+	color.a = ColorPickerFrame:GetColorAlpha()
 	NeedToKnow:UpdateBar(groupID, barID)
 end
 
