@@ -79,9 +79,11 @@ end
 
 function NeedToKnow.GetSpecIndex()
 	-- Return index of player's current specialization
-	if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then  -- Retail
+	if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 		return GetSpecialization()
-	elseif WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC then  -- Classic Wrath
+	elseif WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC then
+		return GetActiveTalentGroup()
+	elseif WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC then
 		return GetActiveTalentGroup()
 	else  -- Classic Era
 		return 1

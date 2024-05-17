@@ -295,7 +295,7 @@ end
 
 function AppearancePanel.SetOpacity()
 	local variable = ColorPickerFrame.extraInfo
-	NeedToKnow.ProfileSettings[variable][4] = ColorPickerFrame:GetColorAlpha()
+	NeedToKnow.ProfileSettings[variable][4] = 1 - ColorPickerFrame:GetColorAlpha()
 	NeedToKnow:Update()
 	AppearancePanel:Update()
 end
@@ -303,7 +303,7 @@ end
 function AppearancePanel.CancelColor(previousValues)
 	if previousValues then
 		local variable = ColorPickerFrame.extraInfo
-		NeedToKnow.ProfileSettings[variable] = {previousValues.r, previousValues.g, previousValues.b, previousValues.opacity or 1}
+		NeedToKnow.ProfileSettings[variable] = {previousValues.r, previousValues.g, previousValues.b, 1 - previousValues.opacity}
 		NeedToKnow:Update()
 		AppearancePanel:Update()
 	end

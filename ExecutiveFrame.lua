@@ -7,6 +7,7 @@ local GetTime = GetTime
 
 local IS_RETAIL = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_CLASSIC_WRATH = WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC
+local IS_CLASSIC_CATA = WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC
 local IS_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 
 -- Spellcast tracking (deprecated)
@@ -41,7 +42,7 @@ function ExecutiveFrame:ADDON_LOADED(addonName)
 		NeedToKnow.m_last_guid = {}  -- [spell][guidTarget] = {startTime, duration, expirationTime}
 
 		self:RegisterEvent("PLAYER_LOGIN")
-		if IS_RETAIL or IS_CLASSIC_WRATH then
+		if IS_RETAIL or IS_CLASSIC_WRATH or IS_CLASSIC_CATA then
 			self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 			self:RegisterEvent("PLAYER_TALENT_UPDATE")
 		end
