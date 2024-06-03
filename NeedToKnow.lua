@@ -7,6 +7,7 @@ NeedToKnow.version = GetAddOnMetadata(addonName, "Version")
 NeedToKnow.String = {}  -- Localized strings
 NeedToKnow.BarGroup = {}
 NeedToKnow.ResizeButton = {}
+NeedToKnow.BarGroupTab = {}
 NeedToKnow.Bar = {}
 NeedToKnow.FindAura = {}
 NeedToKnow.Cooldown = {}
@@ -56,6 +57,7 @@ end
 
 function NeedToKnow:Lock()
 	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
+	self = NeedToKnow  -- In case called from dropdown menu
 	self.isLocked = true
 	self.characterSettings.Locked = true
 	self.last_cast = {}  -- Deprecated

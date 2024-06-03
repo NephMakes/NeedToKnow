@@ -1,8 +1,9 @@
 -- Bar group functions, including resize button
 
-local _, NeedToKnow = ...
+local addonName, NeedToKnow = ...
 local BarGroup = NeedToKnow.BarGroup
 local ResizeButton = NeedToKnow.ResizeButton
+local BarGroupTab = NeedToKnow.BarGroupTab
 local Bar = NeedToKnow.Bar
 local String = NeedToKnow.String
 local DefaultSettings = NeedToKnow.DefaultSettings
@@ -56,6 +57,7 @@ function BarGroup:OnLoad()
 	self:SetMovable(true)
 	self:SetSize(1, 1)
 	self.resizeButton = ResizeButton:New(self)
+	self.tab = BarGroupTab:New(self)
 	self.bars = {}
 end
 
@@ -96,6 +98,7 @@ function BarGroup:Update()
 	self:Show()
 	self:SetPosition(self.settings.Position, self.settings.Scale)
 	self.resizeButton:Update()
+	self.tab:Update()
 end
 
 function BarGroup:SetPosition(position, scale)
@@ -250,7 +253,108 @@ function ResizeButton:OnMouseUp()
 end
 
 
+--[[ BarGroupTab ]]--
 
+function BarGroupTab:New(barGroup)
+	local tab = CreateFrame("Button", barGroup:GetName().."Tab", barGroup, "NeedToKnow_BarGroupTabTemplate")
+	Mixin(tab, BarGroupTab)
+	tab:OnLoad()
+	return tab
+end
 
+function BarGroupTab:OnLoad()
+	self:SetScript("OnEnter", self.OnEnter)
+	self:SetScript("OnLeave", self.OnLeave)
+	self:SetScript("OnClick", self.OnClick)
+	self:SetScript("OnDragStart", self.OnDragStart)
+	self:SetScript("OnDragStop", self.OnDragStop)
+	self:RegisterForClicks("RightButtonUp")
+	self:RegisterForDrag("LeftButton")
+	UIDropDownMenu_Initialize(self.menu, self.InitializeDropDown, "MENU")
+end
+
+function BarGroupTab:Update()
+	if NeedToKnow.isLocked then
+		self:Hide()
+	else
+		self:Show()
+		local barGroup = self:GetParent()
+		self.text:SetText(String.NEEDTOKNOW_GROUP.." "..barGroup:GetID())
+
+		-- Adjust for group orientation (up/down)
+		self:ClearAllPoints()
+		self.text:ClearAllPoints()
+		self.highlight:ClearAllPoints()
+		local borderSize = NeedToKnow.ProfileSettings.BarPadding
+		if barGroup.settings.direction == "up" then
+			self:SetPoint("TOPLEFT", barGroup, "BOTTOMLEFT", 0, -borderSize)
+			self.text:SetPoint("LEFT", self.leftTexture, "RIGHT", 0, 5)
+			self.highlight:SetPoint("LEFT", self.leftTexture, "LEFT", 0, 7)
+			self.highlight:SetPoint("RIGHT", self.rightTexture, "RIGHT", 0, 7)
+			self.leftTexture:SetTexCoord(0, 0.25, 1, 0)
+			self.middleTexture:SetTexCoord(0.25, 0.75, 1, 0)
+			self.rightTexture:SetTexCoord(0.75, 1, 1, 0)
+		else
+			self:SetPoint("BOTTOMLEFT", barGroup, "TOPLEFT", 0, borderSize)
+			self.text:SetPoint("LEFT", self.leftTexture, "RIGHT", 0, -5)
+			self.highlight:SetPoint("LEFT", self.leftTexture, "LEFT", 0, -7)
+			self.highlight:SetPoint("RIGHT", self.rightTexture, "RIGHT", 0, -7)
+			self.leftTexture:SetTexCoord(0, 0.25, 0, 1)
+			self.middleTexture:SetTexCoord(0.25, 0.75, 0, 1)
+			self.rightTexture:SetTexCoord(0.75, 1, 0, 1)
+		end
+	end
+end
+
+function BarGroupTab:OnEnter()
+	GameTooltip_SetDefaultAnchor(GameTooltip, self)
+	GameTooltip:AddLine(String.BAR_TOOLTIP1, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b, 1)
+	GameTooltip:AddLine(String.BAR_TOOLTIP2, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
+	GameTooltip:Show()
+end
+
+function BarGroupTab:OnLeave()
+	_G["GameTooltip"]:Hide()
+end
+
+function BarGroupTab:OnClick(mouseButton)
+	PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON)
+	if mouseButton == "RightButton" then
+		ToggleDropDownMenu(1, nil, self.menu, self:GetName(), 0, 0)
+		return
+	end
+	CloseDropDownMenus()
+end
+
+function BarGroupTab:InitializeDropDown()
+	local info = UIDropDownMenu_CreateInfo()
+
+	info.text = String.GROUP_OPTIONS
+	info.func = BarGroupTab.OpenOptionsPanel
+	info.isNotRadio = true
+	info.notCheckable = true
+	UIDropDownMenu_AddButton(info, UIDROPDOWNMENU_MENU_LEVEL)
+
+	info.text = String.LOCK_AND_ACTIVATE
+	info.func = NeedToKnow.Lock
+	info.isNotRadio = true
+	info.notCheckable = true
+	UIDropDownMenu_AddButton(info, UIDROPDOWNMENU_MENU_LEVEL)
+end
+
+function BarGroupTab:OpenOptionsPanel()
+	InterfaceAddOnsList_Update()
+	InterfaceOptionsFrame_OpenToCategory(addonName)
+end
+
+function BarGroupTab:OnDragStart()
+	self:GetParent():StartMoving()
+end
+
+function BarGroupTab:OnDragStop()
+	local barGroup = self:GetParent()
+	barGroup:StopMovingOrSizing()
+	barGroup:SavePosition()
+end
 
 

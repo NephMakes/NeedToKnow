@@ -108,6 +108,11 @@ Localize.enUS = {
 	DIALOG_SUBTEXT_REPLACE_TEXT = "To individually replace names, enter text in order separated by commas. Clear text to stop replacing", 
 	DIALOG_SUBTEXT_IMPORT_EXPORT = "Clear text to clear settings", 
 
+	-- BarGroup tab
+	NEEDTOKNOW_GROUP = "NeedToKnow group", 
+	GROUP_OPTIONS = "Group options", 
+	LOCK_AND_ACTIVATE = "Lock and activate bars", 
+
 	-- Options panel
 	OPTIONS_PANEL_SUBTEXT = "These options let you modify NeedToKnow timer bars", 
 	BAR_GROUPS = "Bar groups", 
