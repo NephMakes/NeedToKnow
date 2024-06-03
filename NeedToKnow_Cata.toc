@@ -1,7 +1,7 @@
 ## Interface: 40400
 ## Title: NeedToKnow
 ## Author: NephMakes, lieandswell
-## Version: 4.6.6
+## Version: 4.7.0
 ## Notes: Simple, effective timer bars
 ## X-Category: Buffs, Combat
 ## X-FormerAuthor: Kitjan

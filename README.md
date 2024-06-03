@@ -6,7 +6,7 @@ NeedToKnow lets you track specific buffs, debuffs, and cooldowns as timer bars t
 
 NeedToKnow is very useful for frequently used short-duration buffs and debuffs. For example, a rogue could configure NeedToKnow to show timer bars for Slice & Dice and Rupture. A Death Knight could use it to track their diseases. 
 
-### Features
+### Key Features
 * Easy to set up and customize. Easy on your computer. 
 * Works with procs, on-use equipment, and totems
 * Track more than one buff or debuff with single bar
