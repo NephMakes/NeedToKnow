@@ -9,15 +9,13 @@ NeedToKnow is very useful for frequently used short-duration buffs and debuffs. 
 ### Features
 * Easy to set up and customize. Easy on your computer. 
 * Works with procs, on-use equipment, and totems
-* Different setups for different specializations
-* Track by SpellID
-* Track more than one buff or debuff with one bar
+* Track more than one buff or debuff with single bar
+* Make bars deplete at same rate to see which will finish first
 
 ### Other features
 * Save setups for different specializations
 * Track by name or spell ID
 * Show cast time indicator to see when to refresh buffs and debuffs before they finish
-* Make bars deplete at same rate to see which will finish first
 * Blink bars when buff or debuff missing
 * Track buffs on raid members without having to focus them
 
