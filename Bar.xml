@@ -125,7 +125,7 @@
 	</Frame>
 
 	<Button name="NeedToKnow_BarGroupTabTemplate" toplevel="true" enableMouse="true" virtual="true">
-		<Size x="157" y="32"/>
+		<Size x="122" y="32"/>
 		<Anchors>
 			<Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="TOPLEFT" x="0" y="1"/>
 		</Anchors>
@@ -139,7 +139,7 @@
 					<TexCoords left="0.0" right="0.25" top="0.0" bottom="1.0"/>
 				</Texture>
 				<Texture name="$parentMiddle" parentKey="middleTexture" file="Interface\ChatFrame\ChatFrameTab">
-					<Size x="125" y="32"/>
+					<Size x="100" y="32"/>
 					<Anchors>
 						<Anchor point="LEFT" relativeTo="$parentLeft" relativePoint="RIGHT"/>
 					</Anchors>

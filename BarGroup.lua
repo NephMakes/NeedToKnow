@@ -279,9 +279,9 @@ function BarGroupTab:Update()
 	else
 		self:Show()
 		local barGroup = self:GetParent()
-		self.text:SetText(String.NEEDTOKNOW_GROUP.." "..barGroup:GetID())
+		self.text:SetText(String.BAR_GROUP.." "..barGroup:GetID())
 
-		-- Adjust for group orientation (up/down)
+		-- Orient up/down
 		self:ClearAllPoints()
 		self.text:ClearAllPoints()
 		self.highlight:ClearAllPoints()

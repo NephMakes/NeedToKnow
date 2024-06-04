@@ -49,11 +49,11 @@ function Bar:OnLoad()
 	self:SetScript("OnSizeChanged", Bar.OnSizeChanged)
 	
 	-- Want to not need these eventually
-    self.bar1 = self.Texture
-    self.bar2 = self.Texture2
+	self.bar1 = self.Texture
+	self.bar2 = self.Texture2
 	self.spark = self.Spark
-    self.text = self.Text
-    self.time = self.Time
+	self.text = self.Text
+	self.time = self.Time
 	self.vct = self.CastTime
 
 	Mixin(self.border, BarBorder)
@@ -203,7 +203,7 @@ function Bar:UpdateAppearance()
 		end
 
 		self.Time:Show()
-    else
+	else
 		-- Aura has indefinite duration
 		self.max_value = 1
 		self:SetValue(self.Texture, 1)
