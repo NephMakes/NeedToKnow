@@ -10,10 +10,11 @@ local _, NeedToKnow = ...
 local Cooldown = NeedToKnow.Cooldown
 
 -- Local versions of global functions
-local GetSpellCooldown = GetSpellCooldown
-local GetItemCooldown = GetItemCooldown or C_Container.GetItemCooldown  -- Classic or Retail/WotLK
-local GetSpellCharges = GetSpellCharges
-
+local GetSpellInfo = C_Spell.GetSpellInfo or GetSpellInfo
+local GetSpellCooldown = C_Spell.GetSpellCooldown or GetSpellCooldown
+local GetSpellCharges = C_Spell.GetSpellCharges or GetSpellCharges
+local GetItemInfo = C_Item.GetItemInfo or GetItemInfo
+local GetItemCooldown = C_Container.GetItemCooldown or GetItemCooldown
 
 function Cooldown.SetUpSpell(bar, info)
 	local name, icon, spellID
