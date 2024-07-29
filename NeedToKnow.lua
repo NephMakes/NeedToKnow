@@ -1,6 +1,6 @@
 local addonName, NeedToKnow = ...
+local GetAddOnMetadata = C_AddOns.GetAddOnMetadata or GetAddOnMetadata
 NeedToKnow.version = GetAddOnMetadata(addonName, "Version")
-
 
 --[[ Namespaces ]]--
 
