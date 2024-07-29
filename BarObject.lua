@@ -9,7 +9,7 @@ local BarBorder = NeedToKnow.BarBorder
 
 -- local versions of frequently-used functions
 local GetTime = GetTime
-local GetSpellInfo = GetSpellInfo
+local GetSpellInfo = C_Spell.GetSpellInfo or GetSpellInfo
 local SecondsToTimeAbbrev = SecondsToTimeAbbrev
 
 -- Deprecated: 
