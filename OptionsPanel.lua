@@ -15,8 +15,7 @@ function NeedToKnow:GetOptionsPanel()
 	return _G["InterfaceOptionsNeedToKnowPanel"]
 end
 
-
--- function NeedToKnow:ShowOptionsPanel() end
+-- TO DO: function NeedToKnow:ShowOptionsPanel() end
 
 
 --[[ Options panel ]]--
@@ -30,9 +29,15 @@ function OptionsPanel:OnLoad()
 	self:SetPanelScripts()
 
 	self.name = addonName
-	self.default = NeedToKnow.ResetCharacter
+	self.default = NeedToKnow.ResetCharacter  -- Deprecated?
 	self.cancel = self.Cancel
-	InterfaceOptions_AddCategory(self)
+	self.OnCommit = nil
+	self.OnDefault = NeedToKnow.ResetCharacter
+	self.OnRefresh = nil
+
+	local category, layout = Settings.RegisterCanvasLayoutCategory(self, self.name, self.name)
+	category.ID = self.name
+	Settings.RegisterAddOnCategory(category)
 end
 
 function OptionsPanel:SetPanelText()

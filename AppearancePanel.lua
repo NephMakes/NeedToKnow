@@ -21,10 +21,16 @@ function AppearancePanel:OnLoad()
 	-- Register for Blizz Interface Options panel
 	self.name = String.APPEARANCE
 	self.parent = "NeedToKnow"
-	self.default = NeedToKnow.ResetCharacter
+	self.default = NeedToKnow.ResetCharacter   -- Deprecated?
 	self.cancel = NeedToKnow.Cancel
 	-- Need different way to handle cancel?  Might open appearance panel without opening main panel
-	InterfaceOptions_AddCategory(self)
+	self.OnCommit = nil
+	self.OnDefault = NeedToKnow.ResetCharacter
+	self.OnRefresh = nil
+
+	local category = Settings.GetCategory(self.parent)
+	local subcategory, layout = Settings.RegisterCanvasLayoutSubcategory(category, self, self.name, self.name)
+	subcategory.ID = self.name
 end
 
 function AppearancePanel:SetScripts()
