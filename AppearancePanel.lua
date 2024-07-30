@@ -27,7 +27,6 @@ function AppearancePanel:OnLoad()
 	self.OnCommit = nil
 	self.OnDefault = NeedToKnow.ResetCharacter
 	self.OnRefresh = nil
-
 	local category = Settings.GetCategory(self.parent)
 	local subcategory, layout = Settings.RegisterCanvasLayoutSubcategory(category, self, self.name, self.name)
 	subcategory.ID = self.name

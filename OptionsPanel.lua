@@ -28,13 +28,13 @@ function OptionsPanel:OnLoad()
 	self:SetPanelText()
 	self:SetPanelScripts()
 
+	-- Register for Blizz Interface Options panel
 	self.name = addonName
 	self.default = NeedToKnow.ResetCharacter  -- Deprecated?
 	self.cancel = self.Cancel
 	self.OnCommit = nil
 	self.OnDefault = NeedToKnow.ResetCharacter
 	self.OnRefresh = nil
-
 	local category, layout = Settings.RegisterCanvasLayoutCategory(self, self.name, self.name)
 	category.ID = self.name
 	Settings.RegisterAddOnCategory(category)
