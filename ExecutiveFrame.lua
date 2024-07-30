@@ -299,7 +299,3 @@ function ExecutiveFrame:GetNameAndServer(unit)
 	end
 	return name
 end
-
-
-
-

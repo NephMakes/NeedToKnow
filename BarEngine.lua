@@ -11,11 +11,12 @@ local UPDATE_INTERVAL = 0.025  -- 40 /sec
 
 -- Local versions of frequently-used global functions
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
-local IsUsableSpell = IsUsableSpell
+local GetAuraDataByIndex = C_UnitAuras.GetAuraDataByIndex
 local GetInventoryItemID = GetInventoryItemID
-local GetSpellInfo = GetSpellInfo
+local GetSpellInfo = C_Spell.GetSpellInfo or GetSpellInfo
 local GetTime = GetTime
 local GetTotemInfo = GetTotemInfo
+local IsUsableSpell = C_Spell.IsSpellUsable or IsUsableSpell
 local UnitExists = UnitExists
 local UnitGUID = UnitGUID
 
@@ -414,6 +415,7 @@ m_scratch.all_stacks = {
 	total = 0,
 }
 m_scratch.buff_stacks = {
+	-- Used to track proc internal cooldowns (barType "BUFFCD")
 	min = {
 		buffName = "", 
 		duration = 0, 
@@ -653,12 +655,12 @@ function FindAura:FindSingle(spellEntry, allStacks)
 	if spellEntry.id then
 		local j = 1
 		while true do
-			local name, icon, count, _, duration, expirationTime, sourceUnit, _, _, spellID, _, _, _, _, _, value1, value2, value3 = UnitAura(self.unit, j, filter)
-			if not name then
+			local aura = GetAuraDataByIndex(self.unit, j, filter)
+			if not aura then
 				break
 			end
-			if spellID == spellEntry.id then 
-				self:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
+			if aura.spellId == spellEntry.id then 
+				self:AddInstanceToStacks(allStacks, spellEntry, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, aura.sourceUnit, nil, nil, nil)
 				return
 			end
 			j = j + 1
@@ -677,12 +679,13 @@ function FindAura:FindAllStacks(spellEntry, allStacks)
 	local j = 1
 	local filter = self.settings.BuffOrDebuff
 	while true do
-		local name, icon, count, _, duration, expirationTime, sourceUnit, _, _, spellID, _, _, _, _, _, value1, value2, value3 = UnitAura(self.unit, j, filter)
-		if not name then
+		local aura = GetAuraDataByIndex(self.unit, j, filter)
+		if not aura then
 			break
 		end
-		if name == spellEntry.name or spellID == spellEntry.id then
-			self:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
+		if aura.name == spellEntry.name or aura.spellId == spellEntry.id then 
+			self:AddInstanceToStacks(allStacks, spellEntry, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, aura.sourceUnit, nil, nil, nil)
+			return
 		end
 		j = j + 1
 	end

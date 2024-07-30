@@ -2,8 +2,13 @@
 
 ## NeedToKnow
 
-### v4.7.0
+### v4.7.0 (2024-06-04)
 * Added tab to bar groups to access options and lock addon
+
+### v4.6.6
+* Fixed bug with picking colors (thanks tuxedobob!)
+* Fixed profile switching in Cata classic
+* Updated .toc files
 
 ### v4.6.5
 * Updated .toc
