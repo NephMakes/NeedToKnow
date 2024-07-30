@@ -2,6 +2,10 @@
 
 ## NeedToKnow
 
+### v4.7.1 (2024-07-30)
+* Updated various API calls for Retail patch 11.0.2
+* Updated .toc for Retail patch 11.0.2
+
 ### v4.7.0 (2024-06-04)
 * Added tab to bar groups to access options and lock addon
 
