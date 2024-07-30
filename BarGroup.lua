@@ -343,8 +343,8 @@ function BarGroupTab:InitializeDropDown()
 end
 
 function BarGroupTab:OpenOptionsPanel()
-	InterfaceAddOnsList_Update()
-	InterfaceOptionsFrame_OpenToCategory(addonName)
+	-- InterfaceAddOnsList_Update()
+	Settings.OpenToCategory(addonName)
 end
 
 function BarGroupTab:OnDragStart()
