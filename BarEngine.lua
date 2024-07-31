@@ -13,12 +13,18 @@ local UPDATE_INTERVAL = 0.025  -- 40 /sec
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
 local GetAuraDataByIndex = C_UnitAuras.GetAuraDataByIndex
 local GetInventoryItemID = GetInventoryItemID
-local GetSpellInfo = C_Spell.GetSpellInfo or GetSpellInfo
 local GetTime = GetTime
 local GetTotemInfo = GetTotemInfo
 local IsUsableSpell = C_Spell.IsSpellUsable or IsUsableSpell
 local UnitExists = UnitExists
 local UnitGUID = UnitGUID
+
+-- Functions different between Retail and Classic as of 11.0.0
+local function GetMySpellInfo(spell)
+	local info = C_Spell.GetSpellInfo(spell)  -- Only in Retail
+	return info.name, nil, info.iconID, info.castTime, info.minRange, info.maxRange, info.spellID, info.originalIconID
+end
+local GetSpellInfo = GetSpellInfo or GetMySpellInfo
 
 -- Deprecated: 
 local m_last_guid = NeedToKnow.m_last_guid  -- For detect extends

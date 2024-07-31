@@ -9,8 +9,14 @@ local BarBorder = NeedToKnow.BarBorder
 
 -- local versions of frequently-used functions
 local GetTime = GetTime
-local GetSpellInfo = C_Spell.GetSpellInfo or GetSpellInfo
 local SecondsToTimeAbbrev = SecondsToTimeAbbrev
+
+-- Functions different between Retail and Classic as of 11.0.0
+local function GetMySpellInfo(spell)
+	local info = C_Spell.GetSpellInfo(spell)  -- Only in Retail
+	return info.name, nil, info.iconID, info.castTime, info.minRange, info.maxRange, info.spellID, info.originalIconID
+end
+local GetSpellInfo = GetSpellInfo or GetMySpellInfo
 
 -- Deprecated: 
 local UPDATE_INTERVAL = 0.025  -- Make this an addon-wide variable?
@@ -344,25 +350,22 @@ end
 function Bar:GetCastTimeDuration()
 	-- Called by Bar:UpdateCastTime()
 	-- Which is called by Bar:OnUpdate() if CastTime used, so make sure it's efficent
-
+	local castTime
 	local castDuration = 0
-
 	local spell = self.settings.vct_spell
 	if not spell or spell == "" then
 		spell = self.buffName
 	end
-	local _, _, _, castTime = GetSpellInfo(spell)
+	_, _, _, castTime = GetSpellInfo(spell)
 	if castTime then
 		castDuration = castTime / 1000
 		self.vct_refresh = true
 	else
 		self.vct_refresh = false
 	end
-
 	if self.settings.vct_extra then
 		castDuration = castDuration + self.settings.vct_extra
 	end
-
 	return castDuration
 end
 

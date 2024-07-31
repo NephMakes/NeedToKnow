@@ -10,11 +10,26 @@ local _, NeedToKnow = ...
 local Cooldown = NeedToKnow.Cooldown
 
 -- Local versions of global functions
-local GetSpellInfo = C_Spell.GetSpellInfo or GetSpellInfo
-local GetSpellCooldown = C_Spell.GetSpellCooldown or GetSpellCooldown
-local GetSpellCharges = C_Spell.GetSpellCharges or GetSpellCharges
 local GetItemInfo = C_Item.GetItemInfo or GetItemInfo
-local GetItemCooldown = C_Container.GetItemCooldown or GetItemCooldown
+local GetItemCooldown = C_Container.GetItemCooldown
+
+-- Functions that are different between Retail and Classic as of patch 11.0.0
+local function GetMySpellInfo(spell)
+	local info = C_Spell.GetSpellInfo(spell)  -- Only in Retail
+	return info.name, nil, info.iconID, info.castTime, info.minRange, info.maxRange, info.spellID, info.originalIconID
+end
+local function GetMySpellCharges(spell)
+	local info = C_Spell.GetSpellCharges(spell)  -- Only in Retail
+	return info.currentCharges, info.maxCharges, info.cooldownStartTime, info.cooldownDuration, info.chargeModRate
+end
+local function GetMySpellCooldown(spell)
+	local info = C_Spell.GetSpellCooldown(spell)  -- Only in Retail
+	return info.startTime, info.duration, info.isEnabled, info.modRate
+end
+local GetSpellInfo = GetSpellInfo or GetMySpellInfo
+local GetSpellCharges = GetSpellCharges or GetMySpellCharges
+local GetSpellCooldown = GetSpellCooldown or GetMySpellCooldown
+
 
 function Cooldown.SetUpSpell(bar, info)
 	local name, icon, spellID

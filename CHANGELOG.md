@@ -2,6 +2,9 @@
 
 ## NeedToKnow
 
+### v4.7.2 (2024-07-30)
+* Fixed more API bugs with Retail patch 11.0.2
+
 ### v4.7.1 (2024-07-30)
 * Updated various API calls for Retail patch 11.0.2
 * Updated .toc for Retail patch 11.0.2
