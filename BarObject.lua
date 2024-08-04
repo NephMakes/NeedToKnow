@@ -269,7 +269,7 @@ function Bar:Unlock()
 	self.Texture:SetVertexColor(color.r, color.g, color.b, color.a)
 	self.Texture2:Hide()
 
-	self:SetUnlockedText(settings)
+	self:SetUnlockedText()
 
 	if settings.vct_enabled then
 		self.CastTime:SetWidth(self:GetWidth()/8)

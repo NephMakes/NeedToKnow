@@ -92,6 +92,7 @@ function NeedToKnow.GetSpecIndex()
 	end
 end
 
+-- Deprecated
 function NeedToKnow:GetPrettyName(barSettings)
 	-- Called by Bar:SetUnlockedText() and BarMenu_Initialize (indirectly)
 	if barSettings.BuffOrDebuff == "EQUIPSLOT" then
@@ -105,5 +106,4 @@ function NeedToKnow:GetPrettyName(barSettings)
 		return barSettings.AuraName
 	end
 end
-
 

@@ -97,7 +97,7 @@ function Bar:UpdateSpells()
 		shownName = strtrim(shownName)
 		table.insert(self.spell_names, shownName)
 	end
-	-- self:UpdateReplacementText()  -- TO DO
+	-- self:UpdateReplacementNames()  -- TO DO
 
 	-- Process list of reset spells for internal cooldowns
 	-- TO DO: add check for settings.BuffOrDebuff == "BUFFCD"
@@ -121,6 +121,17 @@ function Bar:UpdateSpells()
 		self.reset_start = nil
 	end
 end
+
+-- Not yet implemented
+function Bar:UpdateReplacementNames()
+	-- Called by Bar:UpdateSpells()
+	self.spell_names = {}
+	for shownName in self.settings.show_text_user:gmatch("([^,]+)") do
+		shownName = strtrim(shownName)
+		table.insert(self.spell_names, shownName)
+	end
+end
+
 
 function Bar:UpdateBarType()
 	-- Set up tracking functions
@@ -525,9 +536,11 @@ function Bar:CheckAura()
 			extended, duration = self:GetExtendedTime(buffName, duration, expirationTime, self.unit)
 		end
 
-		-- bar.duration = tonumber(bar.fixedDuration) or duration
+		-- bar.duration = tonumber(bar.fixedDuration) or duration  -- From old code
 		self.duration = duration
 		self.expirationTime = expirationTime
+		self.count = count
+		self.extendedTime = extended
 		self.idxName = idxName
 		self.buffName = buffName
 		self.iconPath = iconPath
@@ -540,8 +553,7 @@ function Bar:CheckAura()
 
 		self.isBlinking = false  -- Because UpdateAppearance() calls OnUpdate which checks bar.isBlinking
 		self:UpdateAppearance()
-		-- self:UpdateBarText(self.settings, count, extended, all_stacks)
-		self:UpdateBarText(self.settings, count, extended)
+		self:SetLockedText()
 		self:Show()
 	else
 		if settings.bDetectExtends and self.buffName then
@@ -550,6 +562,8 @@ function Bar:CheckAura()
 		self.buffName = nil
 		self.duration = nil
 		self.expirationTime = nil
+		self.count = nil
+		self.extendedTime = nil
 
 		if self:ShouldBlink(settings, unitExists) then
 			self:Blink(settings)
