@@ -6,6 +6,7 @@ local Bar = NeedToKnow.Bar
 local FindAura = NeedToKnow.FindAura
 local Cooldown = NeedToKnow.Cooldown
 local ExecutiveFrame = NeedToKnow.ExecutiveFrame
+local String = NeedToKnow.String
 
 local UPDATE_INTERVAL = 0.025  -- 40 /sec
 
@@ -44,8 +45,8 @@ function Bar:Update()
 	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
 	self.settings = groupSettings.Bars[barID]
 
-	self:UpdateSpells()
-	self:UpdateBarType()
+	self:SetSpells()
+	self:SetBarType()
 	self:SetAppearance()
 
 	self.max_value = 1
@@ -70,36 +71,39 @@ function Bar:Update()
 	end
 end
 
-function Bar:UpdateSpells()
-	-- Update tracked spells/abilities
+function Bar:SetSpells()
+	-- Set spells/items/abilities tracked by bar
 	-- Called by Bar:Update()
-
 	local settings = self.settings
-	self.auraName = settings.AuraName  -- User entry
 
-	-- Process list of spell names or IDs
-	self.spells = {}
-	local spellIndex = 0
-	for spell in self.auraName:gmatch("([^,]+)") do
-		spellIndex = spellIndex + 1
-		spell = strtrim(spell)
-		local _, numDigits = spell:find("^-?%d+")
-		if numDigits == spell:len() then
-			-- Track by ID
-			table.insert(self.spells, {idxName = spellIndex, id = tonumber(spell)})
-		else
-			-- Track by name
-			table.insert(self.spells, {idxName = spellIndex, name = spell})
-		end
+	local spellNames = {}
+	for spellName in settings.AuraName:gmatch("([^,]+)") do
+		table.insert(spellNames, strtrim(spellName))
 	end
 
-	-- Process list of user-set name overrides
-	self.spell_names = {}
+	local shownNames = {}
 	for shownName in settings.show_text_user:gmatch("([^,]+)") do
-		shownName = strtrim(shownName)
-		table.insert(self.spell_names, shownName)
+		table.insert(shownNames, strtrim(shownName))
 	end
-	-- self.replacementNames = self:GetReplacementNames()
+
+	self.spells = {}
+	for i, spellName in ipairs(spellNames) do
+		local spellEntry = {}
+		local _, numDigits = string.find(spellName, "^-?%d+")
+		if numDigits == string.len(spellName) then
+			spellEntry.id = tonumber(spellName)  -- Track by ID
+		else
+			spellEntry.name = spellName  -- Track by name
+		end
+		if shownNames[i] then
+			spellEntry.shownName = shownNames[i]
+		elseif shownNames[1] then
+			spellEntry.shownName = shownNames[math.min(#shownNames, #spellNames)]
+		elseif settings.BuffOrDebuff == "EQUIPSLOT" then  -- self.barType not set yet
+			spellEntry.shownName = String.GetItemSlotName(spellName) 
+		end
+		table.insert(self.spells, spellEntry)
+	end
 
 	-- Process list of reset spells for internal cooldowns
 	-- TO DO: add check for settings.BuffOrDebuff == "BUFFCD"
@@ -112,9 +116,9 @@ function Bar:UpdateSpells()
 			resetSpell = strtrim(resetSpell)
 			local _, numDigits = resetSpell:find("^%d+")
 			if numDigits == resetSpell:len() then
-				table.insert(self.reset_spells, {idxName = spellIndex, id = tonumber(resetSpell)})
+				table.insert(self.reset_spells, {id = tonumber(resetSpell)})
 			else
-				table.insert(self.reset_spells, {idxName = spellIndex, name = resetSpell})
+				table.insert(self.reset_spells, {name = resetSpell})
 			end
 			table.insert(self.reset_start, 0)
 		end
@@ -124,23 +128,13 @@ function Bar:UpdateSpells()
 	end
 end
 
--- Not yet implemented
-function Bar:GetReplacementNames()
-	-- Called by Bar:UpdateSpells()
-	local replacementNames = {}
-	for shownName in self.settings.show_text_user:gmatch("([^,]+)") do
-		shownName = strtrim(shownName)
-		table.insert(replacementNames, shownName)
-	end
-	return replacementNames
-end
-
-function Bar:UpdateBarType()
+function Bar:SetBarType()
 	-- Set up tracking functions
 	-- Called by Bar:Update()
 
 	local settings = self.settings
-	local barType = settings.BuffOrDebuff
+	self.barType = settings.BuffOrDebuff
+	local barType = self.barType
 
 	if barType == "BUFFCD" or
 		barType == "TOTEM" or
@@ -167,7 +161,7 @@ function Bar:UpdateBarType()
 	elseif barType == "EQUIPSLOT" then
 		self.fnCheck = FindAura.FindEquipSlotCooldown
 	elseif barType == "CASTCD" then
-		for index, spellInfo in ipairs(self.spells) do
+		for _, spellInfo in ipairs(self.spells) do
 			Cooldown.SetUpSpell(self, spellInfo)
 		end
 		self.fnCheck = FindAura.FindCooldown
@@ -186,8 +180,8 @@ function Bar:Activate()
 	self.nextUpdate = GetTime() + UPDATE_INTERVAL
 
 	local settings = self.settings
+	local barType = self.barType
 
-	local barType = settings.BuffOrDebuff
 	if barType == "TOTEM" then
 		self:RegisterEvent("PLAYER_TOTEM_UPDATE")
 	elseif barType == "CASTCD" then
@@ -285,7 +279,7 @@ function Bar:Inactivate()
 		"PLAYER_REGEN_DISABLED", 
 		"PLAYER_REGEN_ENABLED", 
 	}
-	for i, event in pairs(eventList) do
+	for _, event in pairs(eventList) do
 		self:UnregisterEvent(event)
 	end
 	self["PLAYER_SPELLCAST_SUCCEEDED"] = nil  -- Fake event called by ExecutiveFrame
@@ -363,7 +357,6 @@ function Bar:PLAYER_SPELLCAST_SUCCEEDED(unit, ...)
 	-- Fake event called by ExecutiveFrame to monitor last raid recipient
 	-- local spellName, spellID, target = select(1,...)
 	local spellName, spellID = select(1, ...)
-	-- local i, entry
 	for i, entry in ipairs(self.spells) do
 		if entry.id == spellID or entry.name == spellName then
 			-- self.unit = target or "unknown"
@@ -449,7 +442,6 @@ m_scratch.buff_stacks = {
 	total = 0,
 }
 m_scratch.bar_entry = {
-	idxName = 0,
 	barSpell = "",
 	isSpellID = false,
 }
@@ -469,23 +461,22 @@ function Bar:CheckAura()
 
 	-- Determine if bar should show anything
 	local all_stacks       
-	local idxName, duration, buffName, count, expirationTime, iconPath, caster
+	local buffName, duration, count, expirationTime, iconPath, caster, shownName
 	if unitExists then
 		all_stacks = m_scratch.all_stacks
 		self:ResetScratchStacks(all_stacks)
 
 		-- Call helper function for each spell in list until first found
-		for idx, entry in ipairs(self.spells) do
-			self.fnCheck(self, entry, all_stacks)  -- fnCheck assigned by Bar:Update()
+		for _, spellEntry in ipairs(self.spells) do
+			self.fnCheck(self, spellEntry, all_stacks)  -- fnCheck assigned by Bar:SetBarType()
 			if all_stacks.total > 0 and not settings.show_all_stacks then
-				idxName = idx
 				break
 			end
 		end
 	end
 	if all_stacks and all_stacks.total > 0 then
-		idxName = all_stacks.min.idxName
 		buffName = all_stacks.min.buffName
+		shownName = all_stacks.min.shownName
 		duration = all_stacks.max.duration
 		expirationTime = all_stacks.min.expirationTime
 		count = all_stacks.total
@@ -525,7 +516,7 @@ function Bar:CheckAura()
 		end
 	end
 	-- TO DO: 
-    -- if settings.BuffOrDebuff == "BUFFCD" and self.reset_spells and duration then
+    -- if self.barType == "BUFFCD" and self.reset_spells and duration then
 		-- duration = self:GetProcReset(duration, expirationTime)
 	-- end
 
@@ -543,8 +534,8 @@ function Bar:CheckAura()
 		self.expirationTime = expirationTime
 		self.count = count
 		self.extendedTime = extended
-		self.idxName = idxName
 		self.buffName = buffName
+		self.shownName = shownName
 		self.iconPath = iconPath
 
 		if all_stacks and all_stacks.max.expirationTime ~= expirationTime then
@@ -562,6 +553,7 @@ function Bar:CheckAura()
 			self:ClearExtendedTime()
 		end
 		self.buffName = nil
+		self.shownName = nil
 		self.duration = nil
 		self.expirationTime = nil
 		self.count = nil
@@ -584,6 +576,7 @@ function Bar:CheckAura()
 	end
 end
 
+-- Not yet implemented
 function Bar:GetProcReset(duration, expirationTime)
 	local maxStart = 0
 	local tNow = GetTime()
@@ -666,7 +659,7 @@ end
 -- FindAura:Methods() 
 --   assigned by Bar:Update(), called by Bar:CheckAura()
 --   self = bar
---   spellEntry is element of bar.spells, {idxName, id} or {idxName, name}
+--   spellEntry is element of bar.spells, {name, id, shownName}
 
 function FindAura:FindSingle(spellEntry, allStacks)
 	-- Find first aura instance then update allStacks
@@ -922,8 +915,8 @@ function Bar:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, e
 			count = 1 
 		end
 		if allStacks.total == 0 or allStacks.min.expirationTime > expirationTime then
-			allStacks.min.idxName = spellEntry.idxName
 			allStacks.min.buffName = name
+			allStacks.min.shownName = spellEntry.shownName
 			allStacks.min.caster = sourceUnit
 			allStacks.min.duration = duration
 			allStacks.min.expirationTime = expirationTime
@@ -961,10 +954,7 @@ function Bar:OnUpdate(elapsed)
 			local duration = self.fixedDuration or self.duration
 			local bar1_timeLeft = self.expirationTime - now
 			if bar1_timeLeft < 0 then
-				if self.settings.BuffOrDebuff == "CASTCD" or
-					self.settings.BuffOrDebuff == "BUFFCD" or
-					self.settings.BuffOrDebuff == "EQUIPSLOT"
-				then
+				if self.barType == "CASTCD" or self.barType == "BUFFCD" or self.barType == "EQUIPSLOT" then
 					-- Item cooldowns don't fire event when they expire.
 					-- Other cooldowns fire event too soon. So keep checking.
 					self:CheckAura()

@@ -366,27 +366,32 @@ do
 end
 
 NeedToKnow.String.ITEM_NAMES = {
-    -- Used by NeedToKnow.lua, NeedToKnow_Options.lua
-    -- Seems like this should already exist somewhere
-    -- Strings come from the chart on http://www.wowwiki.com/WoW_constants
-    HEADSLOT,
-    NECKSLOT,
-    SHOULDERSLOT,
-    SHIRTSLOT,
-    CHESTSLOT,
-    WAISTSLOT,
-    LEGSSLOT,
-    FEETSLOT,
-    WRISTSLOT,
-    HANDSSLOT,
-    FINGER0SLOT_UNIQUE,
-    FINGER1SLOT_UNIQUE,
-    TRINKET0SLOT_UNIQUE,
-    TRINKET1SLOT_UNIQUE,
-    BACKSLOT,
-    MAINHANDSLOT,
-    SECONDARYHANDSLOT,
-    RANGEDSLOT.."/"..RELICSLOT,
-    TABARDSLOT
+	-- Also used in BarMenu.lua
+	-- Seems like this should already exist somewhere. Enum.InventoryType?
+	HEADSLOT,
+	NECKSLOT,
+	SHOULDERSLOT,
+	SHIRTSLOT,
+	CHESTSLOT,
+	WAISTSLOT,
+	LEGSSLOT,
+	FEETSLOT,
+	WRISTSLOT,
+	HANDSSLOT,
+	FINGER0SLOT_UNIQUE,
+	FINGER1SLOT_UNIQUE,
+	TRINKET0SLOT_UNIQUE,
+	TRINKET1SLOT_UNIQUE,
+	BACKSLOT,
+	MAINHANDSLOT,
+	SECONDARYHANDSLOT,
+	RANGEDSLOT.."/"..RELICSLOT,
+	TABARDSLOT
 }
 
+function NeedToKnow.String.GetItemSlotName(slotIndex)
+	slotIndex = tonumber(slotIndex)
+	if slotIndex then 
+		return NeedToKnow.String.ITEM_NAMES[slotIndex] 
+	end
+end

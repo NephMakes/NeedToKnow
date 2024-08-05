@@ -10,41 +10,24 @@ local SecondsToTimeAbbrev = SecondsToTimeAbbrev
 
 --[[ Text ]]--
 
---[[
-function Bar:UpdateText()
-	-- Not used right now, isLocked not yet implemented
-	if self.isLocked then
-		self:SetLockedText()
-	else
-		self:SetUnlockedText()
-	end
-end
-]]--
-
 function Bar:SetUnlockedText()
 	-- Set text shown when bar is unlocked and configurable
 	-- Called by Bar:Unlock()
-	local name, appendedText 
+	local name 
 	local settings = self.settings
 	if settings.show_text then
-		if settings.show_text_user ~= "" then
-			-- User-specified replacement text 
+		if settings.show_text_user ~= "" then  -- User-specified replacement text 
 			name = settings.show_text_user
-		elseif settings.BuffOrDebuff == "EQUIPSLOT" then
-			local slotIndex = tonumber(settings.AuraName)
-			if slotIndex then 
-				name = String.ITEM_NAMES[slotIndex] 
-			else 
-				name = ""
-			end
+		elseif self.barType == "EQUIPSLOT" then
+			name = String.GetItemSlotName(settings.AuraName) or ""
 		else
 			name = settings.AuraName
 		end
 	else
 		name = ""
 	end
-	appendedText = self:GetAppendedText()
-	-- Could show placeholders for count, extendedTime but makes config view very messy
+	local appendedText = self:GetAppendedText()
+	-- Could show placeholders for count and extendedTime but makes config view very messy
 	self.Text:SetText(name..appendedText)
 end
 
@@ -56,31 +39,7 @@ function Bar:SetLockedText()
 	local settings = self.settings
 
 	if settings.show_text then
-		if settings.show_text_user ~= "" then
-			-- User-specified replacement text 
-			-- Stored in self.spell_names, set in Bar:UpdateSpells()
-			local idx = self.idxName
-			if idx > #self.spell_names then 
-				idx = #self.spell_names
-			end
-			name = self.spell_names[idx]
-			--[[
-			local spellIndex = self.idxName
-			if spellIndex > #self.replacementNames then 
-				spellIndex = #self.replacementNames
-			end
-			name = self.replacementNames[spellIndex]
-			]]--
-		elseif settings.BuffOrDebuff == "EQUIPSLOT" then
-			local slotIndex = tonumber(settings.AuraName)
-			if slotIndex then 
-				name = String.ITEM_NAMES[slotIndex] 
-			else 
-				name = ""
-			end
-		else
-			name = self.buffName
-		end
+		name = self.shownName or self.buffName or ""
 	else
 		name = ""
 	end
@@ -108,12 +67,10 @@ function Bar:GetAppendedText()
 	local appendedText
 	local settings = self.settings
 	if settings.append_cd and
-		(settings.BuffOrDebuff == "CASTCD" 
-		 or settings.BuffOrDebuff == "BUFFCD"
-		 or settings.BuffOrDebuff == "EQUIPSLOT")
+		(self.barType == "CASTCD" or self.barType == "BUFFCD" or self.barType == "EQUIPSLOT")
 	then
 		appendedText = " CD"
-	elseif settings.append_usable and settings.BuffOrDebuff == "USABLE" then
+	elseif settings.append_usable and self.barType == "USABLE" then
 		appendedText = " Usable"
 	else
 		appendedText = ""
