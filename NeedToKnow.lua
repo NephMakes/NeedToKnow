@@ -92,18 +92,3 @@ function NeedToKnow.GetSpecIndex()
 	end
 end
 
--- Deprecated
-function NeedToKnow:GetPrettyName(barSettings)
-	-- Called by Bar:SetUnlockedText() and BarMenu_Initialize (indirectly)
-	if barSettings.BuffOrDebuff == "EQUIPSLOT" then
-		local index = tonumber(barSettings.AuraName)
-		if index then 
-			return self.String.ITEM_NAMES[index] 
-		else 
-			return ""
-		end
-	else
-		return barSettings.AuraName
-	end
-end
-

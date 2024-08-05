@@ -85,8 +85,10 @@ function Bar:UpdateSpells()
 		spell = strtrim(spell)
 		local _, numDigits = spell:find("^-?%d+")
 		if numDigits == spell:len() then
+			-- Track by ID
 			table.insert(self.spells, {idxName = spellIndex, id = tonumber(spell)})
 		else
+			-- Track by name
 			table.insert(self.spells, {idxName = spellIndex, name = spell})
 		end
 	end
@@ -97,7 +99,7 @@ function Bar:UpdateSpells()
 		shownName = strtrim(shownName)
 		table.insert(self.spell_names, shownName)
 	end
-	-- self:UpdateReplacementNames()  -- TO DO
+	-- self.replacementNames = self:GetReplacementNames()
 
 	-- Process list of reset spells for internal cooldowns
 	-- TO DO: add check for settings.BuffOrDebuff == "BUFFCD"
@@ -123,15 +125,15 @@ function Bar:UpdateSpells()
 end
 
 -- Not yet implemented
-function Bar:UpdateReplacementNames()
+function Bar:GetReplacementNames()
 	-- Called by Bar:UpdateSpells()
-	self.spell_names = {}
+	local replacementNames = {}
 	for shownName in self.settings.show_text_user:gmatch("([^,]+)") do
 		shownName = strtrim(shownName)
-		table.insert(self.spell_names, shownName)
+		table.insert(replacementNames, shownName)
 	end
+	return replacementNames
 end
-
 
 function Bar:UpdateBarType()
 	-- Set up tracking functions

@@ -119,7 +119,7 @@ SubMenu.TimeFormat = {
 	{value = "Fmt_Float", itemType = "varValue", menuText = String.TIME_DECIMAL},
 }
 SubMenu.castTimeOptions = {
-	-- {itemType = "heading", headingType = "castTime"}, 
+	-- {value = "castTimeHeading", itemType = "heading", headingType = "castTime"}, 
 	{value = "vct_enabled", itemType = "boolean", menuText = String.CAST_TIME_ENABLE},
 	{value = "vct_color", itemType = "color", menuText = String.COLOR},
 	{value = "vct_spell", itemType = "dialog", dialogType = "text", showCheck = true, menuText = String.CAST_TIME_CHOOSE_SPELL},
@@ -171,11 +171,11 @@ function BarMenu:ShowMenu(bar)
 	BarMenu.groupID = bar:GetParent():GetID()
 	if not BarMenu.frame then
 		BarMenu.frame = BarMenu:New()
-    end
-    ToggleDropDownMenu(1, nil, BarMenu.frame, "cursor", 0, 0)
-    if not DropDownList1:IsShown() then
-        ToggleDropDownMenu(1, nil, BarMenu.frame, "cursor", 0, 0)
-    end
+	end
+	ToggleDropDownMenu(1, nil, BarMenu.frame, "cursor", 0, 0)
+	if not DropDownList1:IsShown() then
+		ToggleDropDownMenu(1, nil, BarMenu.frame, "cursor", 0, 0)
+	end
 end
 
 function BarMenu:New()
@@ -288,27 +288,46 @@ function BarMenu:AddButton(barSettings, menuItem, subMenuKey)
 end
 
 function BarMenu:GetHeadingText(headingType, barSettings)
-	local text, time
-	if headingType == "auraName" then
-		-- Show concise summary of what bar does
-		-- and show user if important info missing
-		text = NeedToKnow:GetPrettyName(barSettings)
-		if not text or text == "" then text = "??" end
-		if text ~= "" then
-			local barType = barSettings.BuffOrDebuff
-			text = text.." – "..ButtonText["barType"][barType]
-			if barType == "HELPFUL" or barType == "HARMFUL" then
-				text = text.." ("..barSettings.Unit..")"
-			elseif barType == "USABLE" then
-				time = barSettings.usable_duration
-				if not time or time == "" then time = "??" end
-				text = text.." ("..time.." s)"
-			elseif barType == "BUFFCD" then
-				time = barSettings.buffcd_duration
-				if not time or time == "" then time = "??" end
-				text = text.." ("..time.." s)"
+	-- if headingType == "auraName" then
+		-- Show concise summary of what bar does and if info missing
+		local barType = barSettings.BuffOrDebuff
+
+		local nameText
+		if barType == "EQUIPSLOT" then
+			local slotIndex = tonumber(barSettings.AuraName)
+			if slotIndex then 
+				nameText = String.ITEM_NAMES[slotIndex] 
 			end
+		else
+			nameText = barSettings.AuraName
 		end
+		if not nameText or nameText == "" then
+			nameText = "???"
+		end
+
+		local barTypeText = " – "..ButtonText["barType"][barType]
+
+		local extraText
+		if barType == "HELPFUL" or barType == "HARMFUL" then
+			extraText = " ("..barSettings.Unit..")"
+		elseif barType == "USABLE" then
+			local time = barSettings.usable_duration
+			if not time or time == "" then 
+				time = "???"
+			end
+			extraText = " ("..time.." s)"
+		elseif barType == "BUFFCD" then
+			local time = barSettings.buffcd_duration
+			if not time or time == "" then 
+				time = "???"
+			end
+			extraText = " ("..time.." s)"
+		else
+			extraText = ""
+		end
+
+		return nameText..barTypeText..extraText
+	--[[
 	elseif headingType == "castTime" then
 		-- Show timed spell and/or extra time
 		text = barSettings.vct_spell or ""
@@ -317,8 +336,9 @@ function BarMenu:GetHeadingText(headingType, barSettings)
 			if text ~= "" then text = text.." + " end
 			text = text..string.format("%0.1fs", time)
 		end
-	end
-	return text
+		return text
+	]]--
+	-- end
 end
 
 function BarMenu.IgnoreToggle(button)
@@ -485,17 +505,17 @@ function BarMenu:GetMenuButton(menuLevel, buttonValue)
 end
 
 function BarMenu:EnableMenuItem(menuLevel, valueName)
-    local button = BarMenu:GetMenuButton(menuLevel, valueName)
-    if button then
-        button:Enable()
-    end
+	local button = BarMenu:GetMenuButton(menuLevel, valueName)
+	if button then
+		button:Enable()
+	end
 end
 
 function BarMenu:DisableMenuItem(menuLevel, valueName)
-    local button = BarMenu:GetMenuButton(menuLevel, valueName)
-    if button then
-        button:Disable()
-    end
+	local button = BarMenu:GetMenuButton(menuLevel, valueName)
+	if button then
+		button:Disable()
+	end
 end
 
 --[[

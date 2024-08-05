@@ -64,6 +64,13 @@ function Bar:SetLockedText()
 				idx = #self.spell_names
 			end
 			name = self.spell_names[idx]
+			--[[
+			local spellIndex = self.idxName
+			if spellIndex > #self.replacementNames then 
+				spellIndex = #self.replacementNames
+			end
+			name = self.replacementNames[spellIndex]
+			]]--
 		elseif settings.BuffOrDebuff == "EQUIPSLOT" then
 			local slotIndex = tonumber(settings.AuraName)
 			if slotIndex then 
@@ -89,7 +96,7 @@ function Bar:SetLockedText()
 
 	local extendedTime = self.extendedTime
 	if extendedTime and extendedTime > 1 then
-		extendedTimeText = string.format(" +%.0fs", extendedTime)
+		extendedTimeText = string.format(" + %.0fs", extendedTime)
 	else
 		extendedTimeText = ""
 	end
