@@ -172,7 +172,7 @@ end
 
 function Bar:UpdateAppearance()
 	-- For bar elements that can change in combat
-	-- Called by Bar:CheckAura()
+	-- Called by Bar:OnDurationFound()
 
 	local barSettings = self.settings
 

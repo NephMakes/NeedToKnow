@@ -74,6 +74,7 @@ end
 function Bar:SetSpells()
 	-- Set spells/items/abilities tracked by bar
 	-- Called by Bar:Update()
+
 	local settings = self.settings
 
 	local spellNames = {}
@@ -129,7 +130,7 @@ function Bar:SetSpells()
 end
 
 function Bar:SetBarType()
-	-- Set up tracking functions
+	-- Set tracking functions
 	-- Called by Bar:Update()
 
 	local settings = self.settings
@@ -447,6 +448,8 @@ m_scratch.bar_entry = {
 }
 
 function Bar:CheckAura()
+	-- Get duration of tracked auras/cooldowns and act accordingly
+	-- This is the primary update call for for active bars
 	-- Called by many functions
 	local settings = self.settings
 
@@ -485,7 +488,11 @@ function Bar:CheckAura()
 	end
 
 	-- Cancel work done above if reset spell encountered.  reset_spells only set for BUFFCD. 
-	if self.reset_spells then
+	-- TO DO: 
+    -- if self.barType == "BUFFCD" and self.reset_spells and duration then
+		-- duration = self:GetProcReset(duration, expirationTime)
+	-- end
+	if self.barType == "BUFFCD" and self.reset_spells then
 		local maxStart = 0
 		local tNow = GetTime()
 		local buff_stacks = m_scratch.buff_stacks
@@ -515,60 +522,14 @@ function Bar:CheckAura()
 			duration = nil
 		end
 	end
-	-- TO DO: 
-    -- if self.barType == "BUFFCD" and self.reset_spells and duration then
-		-- duration = self:GetProcReset(duration, expirationTime)
-	-- end
 
     if duration then
-	    -- There's an aura or cooldown this bar is watching. Set it up
-        duration = tonumber(duration)
-
-		local extended
-		if settings.bDetectExtends then
-			extended, duration = self:GetExtendedTime(buffName, duration, expirationTime, self.unit)
-		end
-
-		-- bar.duration = tonumber(bar.fixedDuration) or duration  -- From old code
-		self.duration = duration
-		self.expirationTime = expirationTime
-		self.count = count
-		self.extendedTime = extended
-		self.buffName = buffName
-		self.shownName = shownName
-		self.iconPath = iconPath
-
-		if all_stacks and all_stacks.max.expirationTime ~= expirationTime then
-			self.max_expirationTime = all_stacks.max.expirationTime
-		else
-			self.max_expirationTime = nil
-		end
-
-		self.isBlinking = false  -- Because UpdateAppearance() calls OnUpdate which checks bar.isBlinking
-		self:UpdateAppearance()
-		self:SetLockedText()
-		self:Show()
+		self:OnDurationFound(buffName, iconPath, count, duration, expirationTime, shownName, all_stacks)
 	else
-		if settings.bDetectExtends and self.buffName then
-			self:ClearExtendedTime()
-		end
-		self.buffName = nil
-		self.shownName = nil
-		self.duration = nil
-		self.expirationTime = nil
-		self.count = nil
-		self.extendedTime = nil
-
-		if self:ShouldBlink(settings, unitExists) then
-			self:Blink(settings)
-			self:Show()
-		else    
-			self.isBlinking = false
-			self:Hide()
-		end
+		self:OnDurationAbsent(unitExists)
 	end
 
-	-- Condense group
+	-- Condense/expand bar group
 	local barGroup = self:GetParent()
 	if barGroup.settings.condenseGroup and (self.isVisible ~= self:IsVisible()) then
 		barGroup:UpdateBarPosition()
@@ -611,6 +572,7 @@ function Bar:GetProcReset(duration, expirationTime)
 end
 
 function Bar:GetExtendedTime(auraName, duration, expirationTime, unit)
+	-- Called by Bar:OnDurationFound()
 	local extended
 	local curStart = expirationTime - duration
 	local guidTarget = UnitGUID(unit)
@@ -647,6 +609,7 @@ function Bar:GetExtendedTime(auraName, duration, expirationTime, unit)
 end
 
 function Bar:ClearExtendedTime()
+	-- Called by Bar:OnDurationAbsent()
 	local r = m_last_guid[self.buffName]
 	if r then
 		local guidTarget = UnitGUID(self.unit)
@@ -916,11 +879,11 @@ function Bar:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, e
 		end
 		if allStacks.total == 0 or allStacks.min.expirationTime > expirationTime then
 			allStacks.min.buffName = name
-			allStacks.min.shownName = spellEntry.shownName
-			allStacks.min.caster = sourceUnit
+			allStacks.min.iconPath = icon
 			allStacks.min.duration = duration
 			allStacks.min.expirationTime = expirationTime
-			allStacks.min.iconPath = icon
+			allStacks.min.caster = sourceUnit
+			allStacks.min.shownName = spellEntry.shownName
 		end
 		if allStacks.total == 0 or allStacks.max.expirationTime < expirationTime then
 			allStacks.max.duration = duration
@@ -932,6 +895,60 @@ end
 
 function Bar:ResetScratchStacks(auraStacks)
 	auraStacks.total = 0
+end
+
+function Bar:OnDurationFound(buffName, iconPath, count, duration, expirationTime, shownName, all_stacks)
+	-- Update bar to show tracked buff/debuff/cooldown
+	-- Called by Bar:CheckAura()
+	local settings = self.settings
+	duration = tonumber(duration)
+
+	local extended
+	if settings.bDetectExtends then
+		extended, duration = self:GetExtendedTime(buffName, duration, expirationTime, self.unit)
+	end
+
+	self.buffName = buffName
+	self.iconPath = iconPath
+	self.count = count
+	-- bar.duration = tonumber(bar.fixedDuration) or duration  -- From old code
+	self.duration = duration
+	self.expirationTime = expirationTime
+	self.extendedTime = extended
+	self.shownName = shownName
+
+	if all_stacks and all_stacks.max.expirationTime ~= expirationTime then
+		self.max_expirationTime = all_stacks.max.expirationTime
+	else
+		self.max_expirationTime = nil
+	end
+
+	self.isBlinking = false  -- Because UpdateAppearance() calls OnUpdate which checks bar.isBlinking
+	self:UpdateAppearance()
+	self:SetLockedText()
+	self:Show()
+end
+
+function Bar:OnDurationAbsent(unitExists)
+	-- Update bar to show no tracked buff/debuff/cooldown
+	-- Called by Bar:CheckAura()
+	local settings = self.settings
+	if settings.bDetectExtends and self.buffName then
+		self:ClearExtendedTime()
+	end
+	self.buffName = nil
+	self.count = nil
+	self.duration = nil
+	self.expirationTime = nil
+	self.extendedTime = nil
+	self.shownName = nil
+	if self:ShouldBlink(settings, unitExists) then
+		self:Blink(settings)
+		self:Show()
+	else    
+		self.isBlinking = false
+		self:Hide()
+	end
 end
 
 

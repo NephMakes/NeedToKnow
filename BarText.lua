@@ -12,7 +12,7 @@ local SecondsToTimeAbbrev = SecondsToTimeAbbrev
 
 function Bar:SetUnlockedText()
 	-- Set text shown when bar is unlocked and configurable
-	-- Called by Bar:Unlock()
+	-- Called by Bar:Unlock(), Bar:Blink()
 	local name 
 	local settings = self.settings
 	if settings.show_text then
@@ -33,7 +33,7 @@ end
 
 function Bar:SetLockedText()
 	-- Set text shown when bar is locked and active
-	-- Called by Bar:CheckAura() if duration found
+	-- Called by Bar:OnDurationFound() if duration found
 
 	local name, appendedText, countText, extendedTimeText 
 	local settings = self.settings

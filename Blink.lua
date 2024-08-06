@@ -5,7 +5,7 @@ local Bar = NeedToKnow.Bar
 
 function Bar:ShouldBlink(barSettings, unitExists)
 	-- Determine if bar should blink, return true/false
-	-- Called by Bar:CheckAura()
+	-- Called by Bar:OnDurationAbsent()
 	if barSettings.blink_enabled then
 		local shouldBlink = unitExists and not UnitIsDead(self.unit)
 		if shouldBlink and not barSettings.blink_ooc and not UnitAffectingCombat("player") then
@@ -46,7 +46,8 @@ function Bar:Blink(barSettings)
 		else
 			local oldText = self.Text:GetText()
 			if not oldText or oldText == "" then
-				self.Text:SetText(NeedToKnow:GetPrettyName(barSettings))
+				-- self.Text:SetText(NeedToKnow:GetPrettyName(barSettings))
+				self:SetUnlockedText()
 			end
 		end
 	end
