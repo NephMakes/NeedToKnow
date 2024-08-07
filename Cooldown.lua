@@ -7,6 +7,7 @@
 ]]--
 
 local _, NeedToKnow = ...
+local Bar = NeedToKnow.Bar
 local Cooldown = NeedToKnow.Cooldown
 
 -- Local versions of global functions
@@ -30,6 +31,13 @@ local GetSpellInfo = GetSpellInfo or GetMySpellInfo
 local GetSpellCharges = GetSpellCharges or GetMySpellCharges
 local GetSpellCooldown = GetSpellCooldown or GetMySpellCooldown
 
+
+function Bar:SetCooldownSpells()
+	-- Called by Bar:SetSpells()
+	for _, spellInfo in pairs(self.spells) do
+		Cooldown.SetUpSpell(self, spellInfo)
+	end
+end
 
 function Cooldown.SetUpSpell(bar, info)
 	local name, icon, spellID
