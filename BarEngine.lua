@@ -120,12 +120,12 @@ function Bar:SetSpells()
 	local settings = self.settings
 
 	local spellNames = {}
-	for spellName in settings.AuraName:gmatch("([^,]+)") do
+	for spellName in settings.AuraName:gmatch("([^,;]+)") do  -- Commas deprecated
 		table.insert(spellNames, strtrim(spellName))
 	end
 
 	local shownNames = {}
-	for shownName in settings.show_text_user:gmatch("([^,]+)") do
+	for shownName in settings.show_text_user:gmatch("([^,;]+)") do  -- Commas deprecated
 		table.insert(shownNames, strtrim(shownName))
 	end
 
@@ -163,7 +163,7 @@ function Bar:SetBuffCooldownResetSpells()
 		self.reset_spells = {}
 		self.reset_start = {}
 		local spellIndex = 0
-		for resetSpell in settings.buffcd_reset_spells:gmatch("([^,]+)") do
+		for resetSpell in settings.buffcd_reset_spells:gmatch("([^,;]+)") do  -- Commas deprecated
 			spellIndex = spellIndex + 1
 			resetSpell = strtrim(resetSpell)
 			local _, numDigits = resetSpell:find("^%d+")
