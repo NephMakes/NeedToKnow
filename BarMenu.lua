@@ -19,8 +19,7 @@ local MainMenu = {
 }
 
 local SubMenu = {}
-SubMenu.BuffOrDebuff = {
-	-- Bar type
+SubMenu.BuffOrDebuff = {  -- Bar type
 	{value = "HELPFUL", itemType = "varValue", menuText = String.BARTYPE_HELPFUL},
 	{value = "HARMFUL", itemType = "varValue", menuText = String.BARTYPE_HARMFUL},
 	{value = "CASTCD", itemType = "varValue", menuText = String.BARTYPE_CASTCD},
@@ -75,31 +74,32 @@ SubMenu.HELPFUL = {
 SubMenu.HARMFUL = {
 	{value = "debuffUnit", itemType = "submenu", menuText = String.CHOOSE_UNIT},
 	{value = "OnlyMine", itemType = "boolean", menuText = String.ONLY_MINE},
-	{value = "show_all_stacks", itemType = "boolean", menuText = String.SUM_ALL_CASTERS},
+	-- {value = "show_all_stacks", itemType = "boolean", menuText = String.SUM_ALL_CASTERS},
+	{value = "show_all_stacks", itemType = "boolean", menuText = String.SUM_ALL_ENTRIES},
 }
 SubMenu.CASTCD = {
 	{value = "show_charges", itemType = "boolean", menuText = String.SHOW_CHARGE_COOLDOWN}, 
-	{value = "append_cd", itemType = "boolean", menuText = String.APPEND_CD}, 
+	-- {value = "append_cd", itemType = "boolean", menuText = String.APPEND_CD}, 
 }
 SubMenu.EQUIPSLOT = {
-	{value = "append_cd", itemType = "boolean", menuText = String.APPEND_CD}, 
+	-- {value = "append_cd", itemType = "boolean", menuText = String.APPEND_CD}, 
 }
 SubMenu.USABLE = {
 	{value = "usable_duration", itemType = "dialog", dialogType = "numeric", menuText = String.SET_USABLE_DURATION},
-	{value = "append_usable", itemType = "boolean", menuText = String.APPEND_USABLE}, 
+	-- {value = "append_usable", itemType = "boolean", menuText = String.APPEND_USABLE}, 
 }
 SubMenu.BUFFCD = {
 	{value = "buffcd_duration", itemType = "dialog", dialogType = "numeric", menuText = String.SET_BUFFCD_DURATION},
 	{value = "buffcd_reset_spells", itemType = "dialog", dialogType = "text", menuText = String.BUFFCD_RESET},
-	{value = "append_cd", itemType = "boolean", menuText = String.APPEND_CD}, 
+	-- {value = "append_cd", itemType = "boolean", menuText = String.APPEND_CD}, 
 }
 SubMenu.TOTEM = {}
 SubMenu.moreOptions = {
 	{value = "show", itemType = "submenu", menuText = String.SHOW}, 
-	{value = "TimeFormat", itemType = "submenu", menuText = String.TIME_FORMAT}, 
 	{value = "textOptions", itemType = "submenu", menuText = String.TEXT_OPTIONS}, 
 	{value = "castTimeOptions", itemType = "submenu", menuText = String.CAST_TIME},
 	{value = "blinkOptions", itemType = "submenu", menuText = String.BLINK_SETTINGS}, 
+	{value = "TimeFormat", itemType = "submenu", menuText = String.TIME_FORMAT}, 
 	{value = "importExport", itemType = "dialog", dialogType = "importExport", menuText = String.IMPORT_EXPORT_SETTINGS},
 }
 SubMenu.show = {
@@ -110,8 +110,9 @@ SubMenu.show = {
 	{value = "show_icon", itemType = "boolean", menuText = String.SHOW_ICON},
 }
 SubMenu.textOptions = {
+	-- {value = "show_text_user", itemType = "dialog", dialogType = "text", showCheck = true, menuText = String.REPLACE_BAR_TEXT},
+	{value = "show_text_user", itemType = "dialog", dialogType = "text", showCheck = true, menuText = String.CUSTOM_BAR_TEXT},
 	{value = "bDetectExtends", itemType = "boolean", menuText = String.SHOW_TIME_ADDED}, 
-	{value = "show_text_user", itemType = "dialog", dialogType = "text", showCheck = true, menuText = String.REPLACE_BAR_TEXT},
 }
 SubMenu.TimeFormat = {
 	{value = "Fmt_SingleUnit", itemType = "varValue", menuText = String.TIME_SINGLE_UNIT},
@@ -461,6 +462,7 @@ function BarMenu:UpdateMenu(barSettings)
 	end
 
 	-- Disable/enable buttons
+	--[[
 	if barSettings.show_all_stacks then
 		BarMenu:DisableMenuItem(2, "OnlyMine")
 	else
@@ -471,6 +473,7 @@ function BarMenu:UpdateMenu(barSettings)
 	else
 		BarMenu:EnableMenuItem(2, "show_all_stacks")
 	end
+	]]--
 	-- Make sure order of operations matches BarEngine.lua
 
 	--[[

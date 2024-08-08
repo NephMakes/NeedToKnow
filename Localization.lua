@@ -19,9 +19,10 @@ Localize.enUS = {
 	BARTYPE_HELPFUL = "Buff",
 	BARTYPE_HARMFUL = "Debuff",
 	BARTYPE_CASTCD = "Spell or item cooldown",
-	BARTYPE_EQUIPSLOT = "Equipped item cooldown",
+	-- BARTYPE_EQUIPSLOT = "Equipped item cooldown",
+	BARTYPE_EQUIPSLOT = "Item slot cooldown",
 	BARTYPE_USABLE = "Reactive spell or ability", 
-	BARTYPE_BUFFCD = "Proc internal cooldown",
+	BARTYPE_BUFFCD = "Buff internal cooldown",
 	BARTYPE_TOTEM = "Totem",
 	SETTINGS = SETTINGS, -- "Settings"
 	OPTIONS = "Options", 
@@ -43,6 +44,7 @@ Localize.enUS = {
 	UNIT_LAST_RAID = "Last raid recipient",
 	ONLY_MINE = "Only show mine",
 	SUM_ALL_CASTERS = "Sum from all casters",
+	SUM_ALL_ENTRIES = "Show sum of all entries",
 	SHOW_CHARGE_COOLDOWN = "Show first and last charge cooldown",
 	BUFFCD_RESET = "Set reset buffs",
 	SET_USABLE_DURATION = "Set usable time",
@@ -58,13 +60,14 @@ Localize.enUS = {
 	TIME_MIN_SEC = "Minutes and seconds (01:12)",
 	TIME_DECIMAL = "Decimal seconds (12.1)",
 	TEXT_OPTIONS = "Text options", 
-	SHOW_MYPIP = "Show * if mine",
+	-- SHOW_MYPIP = "Show * if mine",
 	SHOW_TIME_ADDED = "Show time added",
 	SHOW_TTN1 = "Show 1st tooltip number",
 	SHOW_TTN2 = "Show 2nd tooltip number",
 	SHOW_TTN3 = "Show 3rd tooltip number",
+	CUSTOM_BAR_TEXT = "Custom bar text",
 	REPLACE_BAR_TEXT = "Replace bar text",
-	ADD_BAR_TEXT = "Add bar text",
+	-- ADD_BAR_TEXT = "Add bar text",
 	APPEND_CD = "Append \"CD\"", 
 	APPEND_USABLE = "Append \"usable\"", 
 	CAST_TIME = "Cast timer",
@@ -367,7 +370,7 @@ end
 
 NeedToKnow.String.ITEM_NAMES = {
 	-- Also used in BarMenu.lua
-	-- Seems like this should already exist somewhere. Enum.InventoryType?
+	-- Seems like this should already exist somewhere
 	HEADSLOT,
 	NECKSLOT,
 	SHOULDERSLOT,
@@ -388,10 +391,3 @@ NeedToKnow.String.ITEM_NAMES = {
 	RANGEDSLOT.."/"..RELICSLOT,
 	TABARDSLOT
 }
-
-function NeedToKnow.String.GetItemSlotName(slotIndex)
-	slotIndex = tonumber(slotIndex)
-	if slotIndex then 
-		return NeedToKnow.String.ITEM_NAMES[slotIndex] 
-	end
-end

@@ -90,21 +90,22 @@ function Bar:SetBarType()
 	self.unit = settings.Unit
 
 	if barType == "BUFFCD" then
+		self.fnCheck = FindAura.FindBuffCooldown
+		self.FindSingle = FindAura.FindSingle
 		local duration = tonumber(settings.buffcd_duration)
 		if not duration or duration < 1 then
 			print("NeedToKnow: Please set internal cooldown time for ", settings.AuraName)
 		end
-		self.fnCheck = FindAura.FindBuffCooldown
-		self.FindSingle = FindAura.FindSingle
 	elseif barType == "TOTEM" then
-		-- self.dropTime = {}  -- array 1-4 of precise times totems appeared
 		self.fnCheck = FindAura.FindTotem
+		-- self.dropTime = {}  -- array 1-4 of precise times totems appeared
 	elseif barType == "USABLE" then
 		self.fnCheck = FindAura.FindSpellUsable
 	elseif barType == "EQUIPSLOT" then
 		self.fnCheck = FindAura.FindEquipSlotCooldown
 	elseif barType == "CASTCD" then
 		self.fnCheck = FindAura.FindCooldown
+	-- elseif barType == "TEMPENHANCE" then
 	elseif settings.show_all_stacks then
 		self.fnCheck = FindAura.FindAllStacks
 	else
@@ -115,6 +116,7 @@ end
 function Bar:SetSpells()
 	-- Set spells/items/abilities tracked by bar
 	-- Called by Bar:Update()
+
 	local settings = self.settings
 
 	local spellNames = {}
@@ -130,7 +132,6 @@ function Bar:SetSpells()
 	self.spells = {}
 	for i, spellName in ipairs(spellNames) do
 		local spellEntry = {}
-
 		local _, numDigits = string.find(spellName, "^-?%d+")
 		if numDigits == string.len(spellName) then
 			spellEntry.id = tonumber(spellName)  -- Track by ID
@@ -143,7 +144,7 @@ function Bar:SetSpells()
 		elseif shownNames[1] then
 			spellEntry.shownName = shownNames[math.min(#shownNames, #spellNames)]
 		elseif self.barType == "EQUIPSLOT" then
-			spellEntry.shownName = String.GetItemSlotName(spellName) 
+			spellEntry.shownName = C_Item.GetItemInventorySlotInfo(spellName)
 		end
 
 		table.insert(self.spells, spellEntry)
@@ -152,11 +153,11 @@ function Bar:SetSpells()
 	if self.barType == "CASTCD" then
 		self:SetCooldownSpells()
 	elseif self.barType == "BUFFCD" then
-		self:SetInternalCooldownResetSpells()
+		self:SetBuffCooldownResetSpells()
 	end
 end
 
-function Bar:SetInternalCooldownResetSpells()
+function Bar:SetBuffCooldownResetSpells()
 	local settings = self.settings
 	if settings.buffcd_reset_spells and settings.buffcd_reset_spells ~= "" then
 		self.reset_spells = {}
@@ -209,10 +210,10 @@ function Bar:Activate()
 		self:RegisterEvent("UNIT_AURA")
 	end
 
-	if self.unit == "focus" then
-		self:RegisterEvent("PLAYER_FOCUS_CHANGED")
-	elseif self.unit == "target" then
+	if self.unit == "target" then
 		self:RegisterEvent("PLAYER_TARGET_CHANGED")
+	elseif self.unit == "focus" then
+		self:RegisterEvent("PLAYER_FOCUS_CHANGED")
 	elseif self.unit == "pet" then
 		self:RegisterEvent("UNIT_PET")
 		-- self:RegisterUnitEvent("UNIT_PET", "pet")  -- To do
@@ -243,7 +244,7 @@ function Bar:RegisterExtendedTime()
 	for _, entry in pairs(self.spells) do
 		local spellName
 		if entry.id then
-			spellName = GetSpellInfo(entry.id)
+			spellName = GetSpellInfo(entry.id) or entry.id
 		else
 			spellName = entry.name
 		end
@@ -252,8 +253,6 @@ function Bar:RegisterExtendedTime()
 			if not r then
 				m_last_guid[spellName] = {time = 0, dur = 0, expiry = 0}
 			end
---		else
---			print("Warning! NeedToKnow could not get name for ", entry.id)
 		end
 	end
 	NeedToKnow.RegisterSpellcastSent()
@@ -455,7 +454,7 @@ m_scratch.bar_entry = {
 
 function Bar:CheckAura()
 	-- Get duration of tracked buffs/debuffs/cooldowns and act accordingly
-	-- Primary update call for for active bars, called by many functions
+	-- Primary update call for active bars, called by many functions
 
 	local settings = self.settings
 
@@ -463,13 +462,12 @@ function Bar:CheckAura()
 	if self.unit == "player" then
 		unitExists = true
 	elseif settings.Unit == "lastraid" then
-		unitExists = self.unit and UnitExists(self.unit)  
-		-- self.unit set by Bar:PLAYER_SPELLCAST_SUCCEEDED()
+		unitExists = self.unit and UnitExists(self.unit)  -- Set by Bar:PLAYER_SPELLCAST_SUCCEEDED()
 	else
 		unitExists = UnitExists(self.unit)
 	end
 
-	local buffName, iconPath, count, duration, expirationTime, caster, shownName, all_stacks
+	local all_stacks, buffName, iconPath, count, duration, expirationTime, caster, shownName
 	if unitExists then
 		all_stacks = m_scratch.all_stacks
 		self:ResetScratchStacks(all_stacks)
@@ -491,7 +489,7 @@ function Bar:CheckAura()
 	end
 
     if self.barType == "BUFFCD" and self.reset_spells and duration then
-		duration = self:GetInternalCooldownReset(duration, expirationTime)
+		duration = self:GetBuffCooldownReset(duration, expirationTime)
 	end
 
     if duration then
@@ -508,12 +506,12 @@ function Bar:CheckAura()
 	end
 end
 
-function Bar:GetInternalCooldownReset(duration, expirationTime)
+function Bar:GetBuffCooldownReset(duration, expirationTime)
 	local maxStart = 0
 	local tNow = GetTime()
 	local buff_stacks = m_scratch.buff_stacks
 	self:ResetScratchStacks(buff_stacks)
-	-- Keep track of when the reset auras were last applied to the player
+	-- Track when reset auras last applied to player
 	for idx, resetSpell in ipairs(self.reset_spells) do
 		-- Relies on BUFFCD setting target to player. onlyMine will work either way. 
 		local resetDuration, _, _, resetExpiration = FindAura.FindSingle(self, resetSpell, buff_stacks)
@@ -652,7 +650,7 @@ function FindAura:FindSpellUsable(spellEntry, allStacks)
 			if not self.expirationTime or 
 				(self.expirationTime > 0 and self.expirationTime < now - 0.01) 
 			then
-				duration = self.settings.usable_duration  -- Has to be set by user
+				duration = self.settings.usable_duration  -- Has to be set by user :(
 				expirationTime = now + duration
 			else
 				duration = self.duration
@@ -919,11 +917,6 @@ function Bar:OnDurationAbsent(unitExists)
 	end
 end
 
-
--- --------
--- OnUpdate
--- --------
-
 function Bar:OnUpdate(elapsed)
 	-- Called very frequently. Make sure it's efficient. 
 	local now = GetTime()
@@ -965,7 +958,7 @@ function Bar:OnUpdate(elapsed)
 			end
 
 			if self.max_expirationTime then
-				local bar2_timeLeft = self.max_expirationTime - GetTime()
+				local bar2_timeLeft = self.max_expirationTime - now
 				self:SetValue(self.bar2, bar2_timeLeft, bar1_timeLeft)
             end
 		end

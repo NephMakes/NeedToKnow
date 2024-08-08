@@ -46,7 +46,6 @@ function Bar:Blink(barSettings)
 		else
 			local oldText = self.Text:GetText()
 			if not oldText or oldText == "" then
-				-- self.Text:SetText(NeedToKnow:GetPrettyName(barSettings))
 				self:SetUnlockedText()
 			end
 		end

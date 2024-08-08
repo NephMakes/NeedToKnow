@@ -94,8 +94,7 @@ function ExecutiveFrame:PLAYER_REGEN_ENABLED()
 	self:ClearBossFight()
 end
 
-
--- For last raid recipient and detect extends:
+-- For last raid recipient (unit "lastraid") and ExtendedTime
 
 function NeedToKnow.RegisterSpellcastSent()
 	-- Called by Bar:Activate()
@@ -109,9 +108,9 @@ end
 
 function NeedToKnow.UnregisterSpellcastSent()
 	-- Called by Bar:Inactivate()
-	if ( NeedToKnow.nRegisteredSent ) then
+	if NeedToKnow.nRegisteredSent then
 		NeedToKnow.nRegisteredSent = NeedToKnow.nRegisteredSent - 1
-		if ( 0 == NeedToKnow.nRegisteredSent ) then
+		if NeedToKnow.nRegisteredSent == 0 then
 			NeedToKnow.nRegisteredSent = nil
 			ExecutiveFrame:UnregisterEvent("UNIT_SPELLCAST_SENT")
 			ExecutiveFrame:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")

@@ -19,23 +19,25 @@ function Bar:SetUnlockedText()
 		if settings.show_text_user ~= "" then  -- User-specified replacement text 
 			name = settings.show_text_user
 		elseif self.barType == "EQUIPSLOT" then
-			name = String.GetItemSlotName(settings.AuraName) or ""
+			name = C_Item.GetItemInventorySlotInfo(tonumber(settings.AuraName)) or ""
 		else
 			name = settings.AuraName
 		end
 	else
 		name = ""
 	end
-	local appendedText = self:GetAppendedText()
+	-- local appendedText = self:GetAppendedText()
 	-- Could show placeholders for count and extendedTime but makes config view very messy
-	self.Text:SetText(name..appendedText)
+	-- self.Text:SetText(name..appendedText)
+	self.Text:SetText(name)
 end
 
 function Bar:SetLockedText()
 	-- Set text shown when bar is locked and active
 	-- Called by Bar:OnDurationFound() if duration found
 
-	local name, appendedText, countText, extendedTimeText 
+	-- local name, appendedText, countText, extendedTimeText 
+	local name, countText, extendedTimeText 
 	local settings = self.settings
 
 	if settings.show_text then
@@ -43,8 +45,6 @@ function Bar:SetLockedText()
 	else
 		name = ""
 	end
-
-	appendedText = self:GetAppendedText()
 
 	local count = self.count
 	if settings.show_count and count and count > 1 then
@@ -60,9 +60,13 @@ function Bar:SetLockedText()
 		extendedTimeText = ""
 	end
 
-	self.Text:SetText(name..appendedText..countText..extendedTimeText)
+	-- appendedText = self:GetAppendedText()
+
+	-- self.Text:SetText(name..appendedText..countText..extendedTimeText)
+	self.Text:SetText(name..countText..extendedTimeText)
 end
 
+--[[
 function Bar:GetAppendedText()
 	local appendedText
 	local settings = self.settings
@@ -77,7 +81,7 @@ function Bar:GetAppendedText()
 	end
 	return appendedText
 end
-
+]]--
 
 --[[ Time ]]--
 
