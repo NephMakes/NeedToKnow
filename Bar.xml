@@ -62,13 +62,14 @@
 						<Anchor point="BOTTOM"/>
 					</Anchors>
 				</Texture>
+				<!--
 				<Texture parentKey="Texture2" name="$parentTexture2">
-					<!-- For user-determined max duration -->
 					<Anchors>
 						<Anchor point="TOPLEFT"/>
 						<Anchor point="BOTTOM"/>
 					</Anchors>
 				</Texture>
+				-->
 			</Layer>
 			<Layer level="ARTWORK">
 				<Texture parentKey="CastTime" name="$parentCastTime" alphaMode="BLEND">
@@ -94,7 +95,7 @@
 				<Texture parentKey="Spark" name="$parentSpark" file="Interface\CastingBar\UI-CastingBar-Spark" alphaMode="ADD">
 					<Size x="32" y="60"/>
 					<Anchors>
-						<Anchor point="CENTER" relativeTo="$parent" relativePoint="RIGHT"/>
+						<Anchor point="CENTER" relativeTo="$parentTexture" relativePoint="RIGHT"/>
 					</Anchors>
 				</Texture>
 			</Layer>
@@ -122,6 +123,9 @@
 				</Frames>
 			</Frame>
 		</Frames>
+		<KeyValues>
+			<KeyValue key="maxTimeLeft" value="1" keyType="string" type="number" />
+		</KeyValues>
 	</Frame>
 
 	<Button name="NeedToKnow_BarGroupTabTemplate" toplevel="true" enableMouse="true" virtual="true">

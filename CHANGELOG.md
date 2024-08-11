@@ -2,6 +2,11 @@
 
 ## NeedToKnow
 
+### v4.7.3 (2024-08-11)
+* Fixed: "Show sum of all" now correctly describes bar behavior (formerly "Sum from all casters")
+* Fixed: Equipped item cooldowns now show inventory slot name
+* Removed: "Append CD" and "Append usable" (redundant with "Custom bar text")
+
 ### v4.7.2 (2024-07-30)
 * Fixed more API bugs with Retail patch 11.0.2
 

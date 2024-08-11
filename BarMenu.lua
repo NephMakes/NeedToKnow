@@ -11,8 +11,8 @@ local Dialog = NeedToKnow.Dialog
 local MainMenu = {
 	{value = "mainHeading", itemType = "heading", headingType = "auraName"},
 	{value = "AuraName", itemType = "dialog", dialogType = "text", menuText = String.CHOOSE_SPELL_ITEM_ABILITY},
-	{value = "BuffOrDebuff", itemType = "submenu", menuText = String.BARTYPE},
-	{value = "options", itemType = "submenu", menuText = String.SETTINGS},
+	{value = "BuffOrDebuff", itemType = "submenu", menuText = String.BARTYPE},  -- bar type
+	{value = "options", itemType = "submenu", menuText = String.SETTINGS},  -- type-specific options
 	{value = "moreOptions", itemType = "submenu", menuText = String.MORE_OPTIONS}, 
 	{value = "BarColor", itemType = "color", menuText = String.COLOR},
 	{value = "Enabled", itemType = "boolean", menuText = String.ENABLE_BAR},
@@ -22,9 +22,10 @@ local SubMenu = {}
 SubMenu.BuffOrDebuff = {  -- Bar type
 	{value = "HELPFUL", itemType = "varValue", menuText = String.BARTYPE_HELPFUL},
 	{value = "HARMFUL", itemType = "varValue", menuText = String.BARTYPE_HARMFUL},
+	-- {value = "EQUIPBUFF", itemType = "varValue", menuText = String.BARTYPE_EQUIPBUFF},  -- Not yet implemented
+	{value = "USABLE", itemType = "varValue", menuText = String.BARTYPE_USABLE}, 
 	{value = "CASTCD", itemType = "varValue", menuText = String.BARTYPE_CASTCD},
 	{value = "EQUIPSLOT", itemType = "varValue", menuText = String.BARTYPE_EQUIPSLOT},
-	{value = "USABLE", itemType = "varValue", menuText = String.BARTYPE_USABLE},
 	{value = "BUFFCD", itemType = "varValue", menuText = String.BARTYPE_BUFFCD},
 	{value = "TOTEM", itemType = "varValue", menuText = String.BARTYPE_TOTEM},
 }
@@ -66,27 +67,35 @@ SubMenu.inventorySlot = {
 	{value = "18", itemType = "varValue", menuText = String.ITEM_NAMES[18]},
 	{value = "19", itemType = "varValue", menuText = String.ITEM_NAMES[19]},
 }
+SubMenu.equipBuffSlot = {
+	{value = "16", itemType = "varValue", menuText = String.ITEM_NAMES[16]},
+	{value = "17", itemType = "varValue", menuText = String.ITEM_NAMES[17]},
+	{value = "18", itemType = "varValue", menuText = String.ITEM_NAMES[18]},
+}
 SubMenu.HELPFUL = {
 	{value = "Unit", itemType = "submenu", menuText = String.CHOOSE_UNIT},
 	{value = "OnlyMine", itemType = "boolean", menuText = String.ONLY_MINE},
-	{value = "show_all_stacks", itemType = "boolean", menuText = String.SUM_ALL_CASTERS},
+	-- {value = "show_all_stacks", itemType = "boolean", menuText = String.SUM_ALL_CASTERS},
+	{value = "show_all_stacks", itemType = "boolean", menuText = String.SHOW_SUM_OF_ALL},
 }
 SubMenu.HARMFUL = {
 	{value = "debuffUnit", itemType = "submenu", menuText = String.CHOOSE_UNIT},
 	{value = "OnlyMine", itemType = "boolean", menuText = String.ONLY_MINE},
 	-- {value = "show_all_stacks", itemType = "boolean", menuText = String.SUM_ALL_CASTERS},
-	{value = "show_all_stacks", itemType = "boolean", menuText = String.SUM_ALL_ENTRIES},
-}
-SubMenu.CASTCD = {
-	{value = "show_charges", itemType = "boolean", menuText = String.SHOW_CHARGE_COOLDOWN}, 
-	-- {value = "append_cd", itemType = "boolean", menuText = String.APPEND_CD}, 
-}
-SubMenu.EQUIPSLOT = {
-	-- {value = "append_cd", itemType = "boolean", menuText = String.APPEND_CD}, 
+	{value = "show_all_stacks", itemType = "boolean", menuText = String.SHOW_SUM_OF_ALL},
 }
 SubMenu.USABLE = {
 	{value = "usable_duration", itemType = "dialog", dialogType = "numeric", menuText = String.SET_USABLE_DURATION},
 	-- {value = "append_usable", itemType = "boolean", menuText = String.APPEND_USABLE}, 
+}
+SubMenu.CASTCD = {
+	{value = "show_charges", itemType = "boolean", menuText = String.SHOW_CHARGE_COOLDOWN}, 
+	-- {value = "append_cd", itemType = "boolean", menuText = String.APPEND_CD}, 
+	{value = "show_all_stacks", itemType = "boolean", menuText = String.SHOW_SUM_OF_ALL},
+}
+SubMenu.EQUIPSLOT = {
+	-- {value = "append_cd", itemType = "boolean", menuText = String.APPEND_CD}, 
+	{value = "show_all_stacks", itemType = "boolean", menuText = String.SHOW_SUM_OF_ALL},
 }
 SubMenu.BUFFCD = {
 	{value = "buffcd_duration", itemType = "dialog", dialogType = "numeric", menuText = String.SET_BUFFCD_DURATION},
@@ -94,6 +103,7 @@ SubMenu.BUFFCD = {
 	-- {value = "append_cd", itemType = "boolean", menuText = String.APPEND_CD}, 
 }
 SubMenu.TOTEM = {}
+SubMenu.EQUIPBUFF = {}
 SubMenu.moreOptions = {
 	{value = "show", itemType = "submenu", menuText = String.SHOW}, 
 	{value = "textOptions", itemType = "submenu", menuText = String.TEXT_OPTIONS}, 
@@ -111,7 +121,7 @@ SubMenu.show = {
 }
 SubMenu.textOptions = {
 	-- {value = "show_text_user", itemType = "dialog", dialogType = "text", showCheck = true, menuText = String.REPLACE_BAR_TEXT},
-	{value = "show_text_user", itemType = "dialog", dialogType = "text", showCheck = true, menuText = String.CUSTOM_BAR_TEXT},
+	{value = "show_text_user", itemType = "dialog", dialogType = "text", showCheck = true, menuText = String.CUSTOM_BAR_TEXT}, 
 	{value = "bDetectExtends", itemType = "boolean", menuText = String.SHOW_TIME_ADDED}, 
 }
 SubMenu.TimeFormat = {
@@ -137,6 +147,7 @@ SubMenu.blinkOptions = {
 local VariableRedirects = {
 	-- Format: subMenuKey = varName
 	inventorySlot = "AuraName",  -- Reused button
+	equipBuffSlot = "AuraName",  -- Reused button
 	debuffUnit = "Unit",  -- Different list of possible values
 }
 
@@ -148,6 +159,7 @@ ButtonText["barType"] = {
 	HARMFUL = String.BARTYPE_HARMFUL, 
 	CASTCD = String.BARTYPE_CASTCD, 
 	EQUIPSLOT = String.BARTYPE_EQUIPSLOT, 
+	EQUIPBUFF = String.BARTYPE_EQUIPBUFF, 
 	USABLE = String.BARTYPE_USABLE, 
 	BUFFCD = String.BARTYPE_BUFFCD, 
 	TOTEM = String.BARTYPE_TOTEM, 
@@ -158,6 +170,7 @@ ButtonText["options"] = {
 	HARMFUL = String.DEBUFF_SETTINGS, 
 	CASTCD = String.COOLDOWN_SETTINGS, 
 	EQUIPSLOT = String.COOLDOWN_SETTINGS, 
+	EQUIPBUFF = String.BUFF_SETTINGS, 
 	USABLE = String.USABLE_SETTINGS, 
 	BUFFCD = String.COOLDOWN_SETTINGS, 
 	TOTEM = String.TOTEM_SETTINGS, 
@@ -299,6 +312,11 @@ function BarMenu:GetHeadingText(headingType, barSettings)
 			if slotIndex then 
 				nameText = String.ITEM_NAMES[slotIndex] 
 			end
+		elseif barType == "EQUIPBUFF" then
+			local slotIndex = tonumber(barSettings.AuraName)
+			if slotIndex then 
+				nameText = String.ITEM_NAMES[slotIndex] 
+			end
 		else
 			nameText = barSettings.AuraName
 		end
@@ -431,6 +449,16 @@ function BarMenu:UpdateMenu(barSettings)
 			-- To do: Disable button clickable?
 			button.oldvalue = button.value
 			button.value = "inventorySlot"
+		end
+	elseif barType == "EQUIPBUFF" then
+		button = BarMenu:GetMenuButton(1, "AuraName")
+		if button then
+			local arrow = _G[button:GetName().."ExpandArrow"]
+			arrow:Show()
+			button.hasArrow = true
+			-- To do: Disable button clickable?
+			button.oldvalue = button.value
+			button.value = "equipBuffSlot"
 		end
 	else
 		-- Restore auraName button 

@@ -136,7 +136,8 @@ local DialogText = {
 	vct_spell = String.DIALOG_CAST_TIME_SPELL, 
 	vct_extra = String.DIALOG_CAST_TIME_ADD, 
 	blink_label = String.DIALOG_BLINK_TEXT, 
-	show_text_user = String.DIALOG_REPLACE_TEXT, 
+	-- show_text_user = String.DIALOG_REPLACE_TEXT, 
+	show_text_user = String.DIALOG_CUSTOM_TEXT, 
 }
 
 local DialogSubText = {
@@ -152,7 +153,8 @@ local DialogSubText = {
 	vct_spell = String.DIALOG_SUBTEXT_CAST_TIME_SPELL, 
 	vct_extra = String.DIALOG_SUBTEXT_CAST_TIME_ADD, 
 	blink_label = String.DIALOG_SUBTEXT_BLINK_TEXT, 
-	show_text_user = String.DIALOG_SUBTEXT_REPLACE_TEXT, 
+	-- show_text_user = String.DIALOG_SUBTEXT_REPLACE_TEXT, 
+	show_text_user = String.DIALOG_SUBTEXT_CUSTOM_TEXT, 
 }
 
 local DialogData = {} -- Reused table {varName, currentValue, groupID, barID}

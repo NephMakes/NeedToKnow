@@ -9,12 +9,16 @@ local ExecutiveFrame = NeedToKnow.ExecutiveFrame
 local String = NeedToKnow.String
 
 local UPDATE_INTERVAL = 0.025  -- 40 /sec
+local INVSLOT_MAINHAND = INVSLOT_MAINHAND
+local INVSLOT_OFFHAND = INVSLOT_OFFHAND
+local INVSLOT_RANGED = INVSLOT_RANGED
 
 -- Local versions of frequently-used global functions
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
 local GetAuraDataByIndex = C_UnitAuras.GetAuraDataByIndex
 local GetInventoryItemID = GetInventoryItemID
 local GetTime = GetTime
+local GetItemInfo = C_Item.GetItemInfo or GetItemInfo
 local GetTotemInfo = GetTotemInfo
 local IsUsableSpell = C_Spell.IsSpellUsable or IsUsableSpell
 local UnitExists = UnitExists
@@ -41,18 +45,16 @@ function Bar:Update()
 	-- when addon loaded, locked/unlocked, or bar configuration changed
 
 	local groupID = self:GetParent():GetID()
-	local barID = self:GetID()
 	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
-	self.settings = groupSettings.Bars[barID]
+	self.settings = groupSettings.Bars[self:GetID()]
 
 	self:SetBarType()
 	self:SetSpells()
 	self:SetAppearance()
 
-	self.max_value = 1
-	self:SetValue(self.bar1, 1)
+	-- Set max bar time for group
 	self.fixedDuration = tonumber(groupSettings.FixedDuration)
-	if not self.fixedDuration or 0 >= self.fixedDuration then
+	if not self.fixedDuration or self.fixedDuration <= 0 then
 		self.fixedDuration = nil
 	end
 
@@ -83,6 +85,7 @@ function Bar:SetBarType()
 		barType == "TOTEM" or 
 		barType == "USABLE" or 
 		barType == "EQUIPSLOT" or 
+		barType == "EQUIPBUFF" or 
 		barType == "CASTCD" 
 	then
 		settings.Unit = "player"
@@ -105,7 +108,8 @@ function Bar:SetBarType()
 		self.fnCheck = FindAura.FindEquipSlotCooldown
 	elseif barType == "CASTCD" then
 		self.fnCheck = FindAura.FindCooldown
-	-- elseif barType == "TEMPENHANCE" then
+	elseif barType == "EQUIPBUFF" then
+		self.fnCheck = FindAura.FindEquipSlotBuff
 	elseif settings.show_all_stacks then
 		self.fnCheck = FindAura.FindAllStacks
 	else
@@ -115,17 +119,19 @@ end
 
 function Bar:SetSpells()
 	-- Set spells/items/abilities tracked by bar
-	-- Called by Bar:Update()
+	-- Called by Bar:Update
 
 	local settings = self.settings
 
 	local spellNames = {}
-	for spellName in settings.AuraName:gmatch("([^,;]+)") do  -- Commas deprecated
+	-- for spellName in settings.AuraName:gmatch("([^;]+)") do  -- Not yet
+	for spellName in settings.AuraName:gmatch("([^,]+)") do
 		table.insert(spellNames, strtrim(spellName))
 	end
 
 	local shownNames = {}
-	for shownName in settings.show_text_user:gmatch("([^,;]+)") do  -- Commas deprecated
+	-- for shownName in settings.show_text_user:gmatch("([^;]+)") do  -- Not yet
+	for shownName in settings.show_text_user:gmatch("([^,]+)") do
 		table.insert(shownNames, strtrim(shownName))
 	end
 
@@ -143,8 +149,8 @@ function Bar:SetSpells()
 			spellEntry.shownName = shownNames[i]
 		elseif shownNames[1] then
 			spellEntry.shownName = shownNames[math.min(#shownNames, #spellNames)]
-		elseif self.barType == "EQUIPSLOT" then
-			spellEntry.shownName = C_Item.GetItemInventorySlotInfo(spellName)
+		elseif self.barType == "EQUIPSLOT" or self.barType == "EQUIPBUFF" then
+			spellEntry.shownName = String.GetInventorySlotName(spellName)
 		end
 
 		table.insert(self.spells, spellEntry)
@@ -163,7 +169,8 @@ function Bar:SetBuffCooldownResetSpells()
 		self.reset_spells = {}
 		self.reset_start = {}
 		local spellIndex = 0
-		for resetSpell in settings.buffcd_reset_spells:gmatch("([^,;]+)") do  -- Commas deprecated
+		-- for resetSpell in settings.buffcd_reset_spells:gmatch("([^;]+)") do  -- Not yet
+		for resetSpell in settings.buffcd_reset_spells:gmatch("([^,]+)") do
 			spellIndex = spellIndex + 1
 			resetSpell = strtrim(resetSpell)
 			local _, numDigits = resetSpell:find("^%d+")
@@ -181,7 +188,7 @@ function Bar:SetBuffCooldownResetSpells()
 end
 
 function Bar:Activate()
-	-- Called by Bar:Update() if NeedToKnow is locked
+	-- Called by Bar:Update if NeedToKnow is locked
 
 	self:SetScript("OnEvent", self.OnEvent)
 	self:SetScript("OnUpdate", self.OnUpdate)
@@ -197,6 +204,9 @@ function Bar:Activate()
 		self:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 	elseif barType == "EQUIPSLOT" then
 		self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
+	elseif barType == "EQUIPBUFF" then
+		-- self:RegisterEvent("WEAPON_ENCHANT_CHANGED")
+		self:RegisterEvent("UNIT_INVENTORY_CHANGED")
 	elseif barType == "USABLE" then
 		self:RegisterEvent("SPELL_UPDATE_USABLE")
 	elseif self.unit == "targettarget" then
@@ -284,6 +294,8 @@ function Bar:Inactivate()
 		"UNIT_TARGET", 
 		"PLAYER_REGEN_DISABLED", 
 		"PLAYER_REGEN_ENABLED", 
+--		"WEAPON_ENCHANT_CHANGED", 
+--		"UNIT_INVENTORY_CHANGED", 
 	}
 	for _, event in pairs(eventList) do
 		self:UnregisterEvent(event)
@@ -323,6 +335,7 @@ function Bar:ACTIONBAR_UPDATE_COOLDOWN()
 end
 
 local auraEvents = {
+	-- For Bar:COMBAT_LOG_EVENT_UNFILTERED
     SPELL_AURA_APPLIED = true,
     SPELL_AURA_REMOVED = true,
     SPELL_AURA_APPLIED_DOSE = true,
@@ -411,6 +424,19 @@ function Bar:UNIT_TARGET(unit, ...)
 	self:CheckAura()
 end
 
+--[[
+function Bar:WEAPON_ENCHANT_CHANGED(...)
+	-- Event only in Retail
+	-- print("NeedToKnow: WEAPON_ENCHANT_CHANGED")
+end
+
+function Bar:UNIT_INVENTORY_CHANGED(unit, ...)
+--	if unit == "player" then
+--		print("NeedToKnow: UNIT_INVENTORY_CHANGED", unit)
+--	end
+	self:CheckAura()
+end
+]]--
 
 -- -----------------
 -- Tracking behavior
@@ -481,10 +507,17 @@ function Bar:CheckAura()
 			buffName = all_stacks.min.buffName
 			iconPath = all_stacks.min.iconPath
 			count = all_stacks.total
-			duration = all_stacks.max.duration
-			expirationTime = all_stacks.min.expirationTime
 			caster = all_stacks.min.caster
 			shownName = all_stacks.min.shownName
+
+			if settings.show_all_stacks then
+				duration = all_stacks.max.duration
+				expirationTime = all_stacks.max.expirationTime
+				-- Show name and icon of spell/item with least time left
+			else
+				duration = all_stacks.min.duration
+				expirationTime = all_stacks.min.expirationTime
+			end
 		end
 	end
 
@@ -538,7 +571,7 @@ function Bar:GetBuffCooldownReset(duration, expirationTime)
 end
 
 function Bar:GetExtendedTime(auraName, duration, expirationTime, unit)
-	-- Called by Bar:OnDurationFound()
+	-- Called by Bar:OnDurationFound
 	local extended
 	local curStart = expirationTime - duration
 	local guidTarget = UnitGUID(unit)
@@ -565,7 +598,7 @@ function Bar:GetExtendedTime(auraName, duration, expirationTime, unit)
 			r.expiry = expirationTime
 			extended = expirationTime - (r.time + r.dur)
 			if extended > 1 then
-				duration = r.dur 
+				duration = r.dur
 			else
 				extended = nil
 			end
@@ -575,7 +608,7 @@ function Bar:GetExtendedTime(auraName, duration, expirationTime, unit)
 end
 
 function Bar:ClearExtendedTime()
-	-- Called by Bar:OnDurationAbsent()
+	-- Called by Bar:OnDurationAbsent
 	local r = m_last_guid[self.buffName]
 	if r then
 		local guidTarget = UnitGUID(self.unit)
@@ -707,96 +740,48 @@ function FindAura:FindEquipSlotCooldown(spellEntry, allStacks)
 	end
 end
 
--- Needs testing
-function FindAura:FindTotem(spellEntry, allStacks)
-	local spellName = spellEntry.name or GetSpellInfo(spellEntry.id)
-	for index = 1, 4 do
-		local _, name, startTime, duration, icon = GetTotemInfo(index)  
-			-- Kitjan: startTime cast to integer and off by latency, so can be low
-			-- NephMakes: True for GetTotemTimeLeft() but not GetTotemInfo()
-		if name and name:find(spellName) then
-		--[[
-			-- Cache time totem actually appeared if GetTime() close to startTime
-			local dropTime = self.dropTime
-			if not dropTime[index] or dropTime[index] < startTime then
-				local preciseTime = GetTime()
-				if preciseTime - startTime > 1 then
-					preciseTime = startTime + 1
-				end
-				dropTime[index] = preciseTime
-			end
-			NeedToKnow.mfn_AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, dropTime[index] + duration, icon, "player")
-		]]--
-			self:AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, startTime + duration, icon, "player")
-		end
+function FindAura:FindEquipSlotBuff(spellEntry, allStacks)
+	-- Get temporary weapon enhancement (poison, sharpening stone, etc)
+
+	local count, timeLeft, enchantID, expirationTime
+
+	local _, mainHandTimeLeft, mainHandCharges, mainHandEnchantID, _, offHandTimeLeft, offHandCharges, offHandEnchantID, _, rangedTimeLeft, rangedCharges, rangedEnchantID = GetWeaponEnchantInfo()
+
+	local slotID = spellEntry.id
+	if slotID == INVSLOT_MAINHAND then
+		count = mainHandCharges
+		timeLeft = mainHandTimeLeft
+		enchantID = mainHandEnchantID
+	elseif slotID == INVSLOT_OFFHAND then
+		count = offHandCharges
+		timeLeft = offHandTimeLeft
+		enchantID = offHandEnchantID
+	elseif slotID == INVSLOT_RANGED then
+		count = rangedCharges
+		timeLeft = rangedTimeLeft
+		enchantID = rangedEnchantID
 	end
-end
---[[
-function NeedToKnow.mfn_AuraCheck_TOTEM(bar, bar_entry, all_stacks)
-    -- Bar_AuraCheck helper for Totem bars, this returns data if
-    -- a totem matching bar_entry is currently out. 
-    local idxName = bar_entry.idxName
-    local sComp = bar_entry.name or g_GetSpellInfo(bar_entry.id)
-    for iSlot=1, 4 do
-        local haveTotem, totemName, startTime, totemDuration, totemIcon = GetTotemInfo(iSlot)
-        if ( totemName and totemName:find(sComp) ) then
-            -- WORKAROUND: The startTime reported here is both cast to an int and off by 
-            -- a latency meaning it can be significantly low.  So we cache the g_GetTime 
-            -- that the totem actually appeared, so long as g_GetTime is reasonably close to 
-            -- startTime (since the totems may have been out for awhile before this runs.)
-            if ( not NeedToKnow.totem_drops[iSlot] or 
-                 NeedToKnow.totem_drops[iSlot] < startTime ) 
-            then
-                local precise = g_GetTime()
-                if ( precise - startTime > 1 ) then
-                    precise = startTime + 1
-                end
-                NeedToKnow.totem_drops[iSlot] = precise
-            end
-            NeedToKnow.mfn_AddInstanceToStacks(all_stacks, bar_entry, 
-                   totemDuration,                              -- duration
-                   totemName,                                  -- name
-                   1,                                          -- count
-                   NeedToKnow.totem_drops[iSlot] + totemDuration, -- expiration time
-                   totemIcon,                                  -- icon path
-                   "player" )                                  -- caster
-        end
-    end
-end
-]]--
 
-function FindAura:FindBuffCooldown(spellEntry, allStacks)
-	-- For internal cooldowns on procs
+	-- local duration  -- How to get? 
 
-	local buffStacks = m_scratch.buff_stacks
-	self:ResetScratchStacks(buffStacks)
-	self:FindSingle(spellEntry, buffStacks)
-
-	local now = GetTime()
-	if buffStacks.total > 0 then
-		local duration = tonumber(self.settings.buffcd_duration)
-		if buffStacks.max.expirationTime == 0 then
-			-- TODO: This doesn't work well as a substitute for telling when the aura was applied
-			if not self.expirationTime then
-				self:AddInstanceToStacks(allStacks, spellEntry, duration, buffStacks.min.buffName, 1, duration + now, buffStacks.min.iconPath, buffStacks.min.caster)
-			else
-				self:AddInstanceToStacks(allStacks, spellEntry, self.duration,  self.buffName, 1, self.expirationTime, self.iconPath, "player")
-			end
-			return
-		end
-
-		local start = buffStacks.max.expirationTime - buffStacks.max.duration
-		local expirationTime = start + duration
-		if expirationTime > now then
-			self:AddInstanceToStacks(allStacks, spellEntry, duration, buffStacks.min.buffName, 1, expirationTime, buffStacks.min.iconPath, buffStacks.min.caster)                   
-		end
-	elseif self.expirationTime and self.expirationTime > now + 0.1 then
-		self:AddInstanceToStacks(allStacks, spellEntry, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, "player")
+	if count then
+		count = math.max(count, 1)
 	end
+
+	if timeLeft then
+		local now = GetTime()
+		timeLeft = timeLeft / 1000
+		expirationTime = now + timeLeft
+	end
+
+	local icon = GetInventoryItemTexture("player", slotID)
+	-- TO DO: Can we show name/icon of enchant instead of weapon slot?
+
+	-- print("FindEquipSlotBuff()", spellEntry.shownName, timeLeft)
+	-- self:AddInstanceToStacks(allStacks, spellEntry, duration, spellEntry.id, count, expirationTime, icon, "player")
 end
 
--- NephMakes: I don't think temporary enchants aren't a thing anymore, 
--- but keep this for potential use in WoW Classic
+-- Old tooltip-scanning code: 
 --[[
 function NeedToKnow.DetermineTempEnchantFromTooltip(i_invID)
     local tt1,tt2 = NeedToKnow.GetUtilityTooltips()
@@ -838,12 +823,52 @@ function NeedToKnow.DetermineTempEnchantFromTooltip(i_invID)
 end
 ]]--
 
+function FindAura:FindTotem(spellEntry, allStacks)
+	local spellName = spellEntry.name or GetSpellInfo(spellEntry.id)
+	for index = 1, 4 do
+		local _, name, startTime, duration, icon = GetTotemInfo(index)  
+		if name and name:find(spellName) then
+			self:AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, startTime + duration, icon, "player")
+		end
+	end
+end
+
+function FindAura:FindBuffCooldown(spellEntry, allStacks)
+	-- For internal cooldowns on procs
+
+	local buffStacks = m_scratch.buff_stacks
+	self:ResetScratchStacks(buffStacks)
+	self:FindSingle(spellEntry, buffStacks)
+
+	local now = GetTime()
+	if buffStacks.total > 0 then
+		local duration = tonumber(self.settings.buffcd_duration)
+		if buffStacks.max.expirationTime == 0 then
+			-- TODO: This doesn't work well as a substitute for telling when the aura was applied
+			if not self.expirationTime then
+				self:AddInstanceToStacks(allStacks, spellEntry, duration, buffStacks.min.buffName, 1, duration + now, buffStacks.min.iconPath, buffStacks.min.caster)
+			else
+				self:AddInstanceToStacks(allStacks, spellEntry, self.duration,  self.buffName, 1, self.expirationTime, self.iconPath, "player")
+			end
+			return
+		end
+
+		local start = buffStacks.max.expirationTime - buffStacks.max.duration
+		local expirationTime = start + duration
+		if expirationTime > now then
+			self:AddInstanceToStacks(allStacks, spellEntry, duration, buffStacks.min.buffName, 1, expirationTime, buffStacks.min.iconPath, buffStacks.min.caster)                   
+		end
+	elseif self.expirationTime and self.expirationTime > now + 0.1 then
+		self:AddInstanceToStacks(allStacks, spellEntry, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, "player")
+	end
+end
+
 function Bar:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
 	if duration then
 		if not count or count < 1 then 
 			count = 1 
 		end
-		if allStacks.total == 0 or allStacks.min.expirationTime > expirationTime then
+		if allStacks.total == 0 or expirationTime < allStacks.min.expirationTime then
 			allStacks.min.buffName = name
 			allStacks.min.iconPath = icon
 			allStacks.min.duration = duration
@@ -851,7 +876,7 @@ function Bar:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, e
 			allStacks.min.caster = sourceUnit
 			allStacks.min.shownName = spellEntry.shownName
 		end
-		if allStacks.total == 0 or allStacks.max.expirationTime < expirationTime then
+		if allStacks.total == 0 or expirationTime > allStacks.max.expirationTime then
 			allStacks.max.duration = duration
 			allStacks.max.expirationTime = expirationTime
 		end 
@@ -864,10 +889,10 @@ function Bar:ResetScratchStacks(auraStacks)
 end
 
 function Bar:OnDurationFound(buffName, iconPath, count, duration, expirationTime, shownName, all_stacks)
-	-- Update bar to show tracked buff/debuff/cooldown
-	-- Called by Bar:CheckAura()
+	-- Update bar to show status of tracked buff/debuff/cooldown
+	-- Called by Bar:CheckAura
+
 	local settings = self.settings
-	duration = tonumber(duration)
 
 	local extended
 	if settings.bDetectExtends then
@@ -877,40 +902,49 @@ function Bar:OnDurationFound(buffName, iconPath, count, duration, expirationTime
 	self.buffName = buffName
 	self.iconPath = iconPath
 	self.count = count
-	-- bar.duration = tonumber(bar.fixedDuration) or duration  -- From old code
 	self.duration = duration
 	self.expirationTime = expirationTime
 	self.extendedTime = extended
 	self.shownName = shownName
 
-	if all_stacks and all_stacks.max.expirationTime ~= expirationTime then
-		self.max_expirationTime = all_stacks.max.expirationTime
+	if duration > 0 then
+		self.maxTimeLeft = self.fixedDuration or duration
 	else
-		self.max_expirationTime = nil
+		-- Indefinite aura (duration == 0)
+		self.maxTimeLeft = self.fixedDuration or 1
 	end
+	self.isBlinking = false
 
-	self.isBlinking = false  -- Because UpdateAppearance() calls OnUpdate which checks bar.isBlinking
 	self:UpdateAppearance()
 	self:SetLockedText()
 	self:Show()
+	self:OnUpdate(0)
 end
 
 function Bar:OnDurationAbsent(unitExists)
-	-- Update bar to show no tracked buff/debuff/cooldown
-	-- Called by Bar:CheckAura()
+	-- Update bar to show tracked buff/debuff/cooldown is missing
+	-- Called by Bar:CheckAura
+
 	local settings = self.settings
+
 	if settings.bDetectExtends and self.buffName then
 		self:ClearExtendedTime()
 	end
+
 	self.buffName = nil
+	self.iconPath = nil
 	self.count = nil
 	self.duration = nil
 	self.expirationTime = nil
 	self.extendedTime = nil
 	self.shownName = nil
+
+	self.maxTimeLeft = 1
+
 	if self:ShouldBlink(settings, unitExists) then
 		self:Blink(settings)
 		self:Show()
+		self:OnUpdate(0)
 	else    
 		self.isBlinking = false
 		self:Hide()
@@ -918,7 +952,7 @@ function Bar:OnDurationAbsent(unitExists)
 end
 
 function Bar:OnUpdate(elapsed)
-	-- Called very frequently. Make sure it's efficient. 
+	-- Called very frequently. Make it efficient. 
 	local now = GetTime()
 	if now > self.nextUpdate then
 		self.nextUpdate = now + 0.025  -- now + UPDATE_INTERVAL, 40 /sec
@@ -927,40 +961,30 @@ function Bar:OnUpdate(elapsed)
 			self:UpdateBlink(elapsed)
 			return
 		end
-        
-		if self.duration and self.duration > 0 then
-			local duration = self.fixedDuration or self.duration
-			local bar1_timeLeft = self.expirationTime - now
-			if bar1_timeLeft < 0 then
+
+		if self.duration and self.duration > 0 then  -- Indefinite auras have duration == 0
+			local timeLeft = self.expirationTime - now
+			if timeLeft < 0 then
 				if self.barType == "CASTCD" or self.barType == "BUFFCD" or self.barType == "EQUIPSLOT" then
-					-- Item cooldowns don't fire event when they expire.
-					-- Other cooldowns fire event too soon. So keep checking.
+					-- Item cooldowns don't fire event on expire. Others fire too soon. Keep checking.
 					self:CheckAura()
 					return
 				end
-				bar1_timeLeft = 0
+				timeLeft = 0
 			end
-			self:SetValue(self.bar1, bar1_timeLeft)
 
-			if self.settings.show_time then
-				self.time:SetText(self:FormatTime(bar1_timeLeft))
-			end
-            
-			if self.settings.show_spark and bar1_timeLeft <= duration then
-				self.spark:SetPoint("CENTER", self, "LEFT", self:GetWidth() * bar1_timeLeft/duration, 0)
-				self.spark:Show()
+			self:SetValue(timeLeft)
+			if self.settings.show_spark and timeLeft <= self.maxTimeLeft then
+				self.Spark:Show()
 			else
-				self.spark:Hide()
+				self.Spark:Hide()
 			end
-            
+			if self.settings.show_time then
+				self.Time:SetText(self:FormatTime(timeLeft))
+			end
 			if self.settings.vct_enabled and self.vct_refresh then
 				self:UpdateCastTime()
 			end
-
-			if self.max_expirationTime then
-				local bar2_timeLeft = self.max_expirationTime - now
-				self:SetValue(self.bar2, bar2_timeLeft, bar1_timeLeft)
-            end
 		end
 	end
 end

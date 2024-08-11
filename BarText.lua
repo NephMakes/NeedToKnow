@@ -18,8 +18,10 @@ function Bar:SetUnlockedText()
 	if settings.show_text then
 		if settings.show_text_user ~= "" then  -- User-specified replacement text 
 			name = settings.show_text_user
-		elseif self.barType == "EQUIPSLOT" then
-			name = C_Item.GetItemInventorySlotInfo(tonumber(settings.AuraName)) or ""
+		-- elseif self.barType == "EQUIPSLOT" then
+		elseif self.barType == "EQUIPSLOT" or self.barType == "EQUIPBUFF" then
+			-- name = C_Item.GetItemInventorySlotInfo(tonumber(settings.AuraName)) or ""
+			name = String.GetInventorySlotName(settings.AuraName)
 		else
 			name = settings.AuraName
 		end

@@ -5,7 +5,7 @@ local Bar = NeedToKnow.Bar
 
 function Bar:ShouldBlink(barSettings, unitExists)
 	-- Determine if bar should blink, return true/false
-	-- Called by Bar:OnDurationAbsent()
+	-- Called by Bar:OnDurationAbsent
 	if barSettings.blink_enabled then
 		local shouldBlink = unitExists and not UnitIsDead(self.unit)
 		if shouldBlink and not barSettings.blink_ooc and not UnitAffectingCombat("player") then
@@ -25,7 +25,7 @@ function Bar:ShouldBlink(barSettings, unitExists)
 end
 
 function Bar:Blink(barSettings)
-	-- Called by Bar:CheckAura()
+	-- Called by Bar:CheckAura
 	if not self.isBlinking then
 		self.isBlinking = true
 		self.blinkPhase = 0
@@ -33,8 +33,7 @@ function Bar:Blink(barSettings)
 		-- Bar appearance
 		local blinkColor = barSettings.MissingBlink
 		self.Texture:SetVertexColor(blinkColor.r, blinkColor.g, blinkColor.b, blinkColor.a)
-		self:SetValue(self.bar1, self.max_value)
-		self.Texture2:Hide()
+		self:SetValue(self.maxTimeLeft)
 		self.Spark:Hide()
 		self.Time:Hide()
 		self.icon:Hide()
@@ -53,12 +52,12 @@ function Bar:Blink(barSettings)
 end
 
 function Bar:UpdateBlink(elapsed)
-	-- Called by Bar:OnUpdate()
+	-- Called by Bar:OnUpdate
 	self.blinkPhase = self.blinkPhase + elapsed/0.7  -- elapsed/CYCLE_DURATION
 	if self.blinkPhase >= 1 then
 		self.blinkPhase = self.blinkPhase%1  -- Keep decimal remainder
 	end
-	self.bar1:SetAlpha(self.settings.MissingBlink.a * 
+	self.Texture:SetAlpha(self.settings.MissingBlink.a * 
 		(0.6 + 0.4 * math.cos(2 * math.pi * self.blinkPhase))
 	)
 end

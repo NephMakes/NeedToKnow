@@ -55,8 +55,6 @@ function Bar:OnLoad()
 	self:SetScript("OnSizeChanged", Bar.OnSizeChanged)
 	
 	-- Want to not need these eventually
-	self.bar1 = self.Texture
-	self.bar2 = self.Texture2
 	self.spark = self.Spark
 	self.text = self.Text
 	self.time = self.Time
@@ -74,9 +72,7 @@ function Bar:SetAppearance()
 	local barSettings = self.settings
 
 	self.Texture:SetTexture(NeedToKnow.LSM:Fetch("statusbar", settings.BarTexture))
-	self.Texture2:SetTexture(NeedToKnow.LSM:Fetch("statusbar", settings.BarTexture))
 	self.background:SetVertexColor(unpack(settings.BkgdColor))
-	self.border:SetVertexColor(unpack(settings.BkgdColor))
 	self.border:SetVertexColor(unpack(settings.BorderColor))
 	self:SetBorder()
 
@@ -91,8 +87,8 @@ function Bar:SetAppearance()
 			outline = "THICKOUTLINE"
 		end
 		self.Text:SetFont(fontPath, settings.FontSize, outline)
-		self.Time:SetFont(fontPath, settings.FontSize, outline)
 		self.Text:SetTextColor(unpack(settings.FontColor))
+		self.Time:SetFont(fontPath, settings.FontSize, outline)
 		self.Time:SetTextColor(unpack(settings.FontColor))
 	end
 
@@ -143,7 +139,7 @@ end
 --[[ Bar border ]]--
 
 function BarBorder:SetVertexColor(r, g, b, a)
-	for _, texture in ipairs(self.textures) do
+	for _, texture in pairs(self.textures) do
 		texture:SetVertexColor(r, g, b, a)
 	end
 end
@@ -171,78 +167,62 @@ end
 --[[ Bar behavior ]]--
 
 function Bar:UpdateAppearance()
-	-- For bar elements that can change in combat
-	-- Called by Bar:OnDurationFound()
+	-- Set bar elements that can change in combat
+	-- Called by Bar:OnDurationFound
 
 	local barSettings = self.settings
 
+	-- Bar color changes when blinking
+	local color = barSettings.BarColor
+	self.Texture:SetVertexColor(color.r, color.g, color.b, color.a)
+
+	-- Icon changes if bar tracks multiple things
 	local icon = self.icon
 	if barSettings.show_icon and self.iconPath then
-		icon.texture:SetTexture(self.iconPath)  -- Icon changes if bar tracks multiple spells
+		icon.texture:SetTexture(self.iconPath)
 		icon:Show()
 	else
 		icon:Hide()
 	end
 
-	local color = barSettings.BarColor  -- Blink changes bar color
-	self.Texture:SetVertexColor(color.r, color.g, color.b, color.a)
-	self.Texture2:SetVertexColor(color.r, color.g, color.b, color.a) -- Shown for indefinite auras. Bug?
-	if self.max_expirationTime and self.max_expirationTime ~= self.expirationTime then 
-		self.Texture2:Show()
-	else
-		self.Texture2:Hide()
-	end
-
 	if self.duration > 0 then
-		local duration = self.fixedDuration or self.duration
-		self.max_value = duration
-
-		if self.settings.vct_enabled then
+		if barSettings.show_time then
+			self.Time:Show()
+		else
+			self.Time:Hide()
+		end
+		if barSettings.vct_enabled then
 			self:UpdateCastTime()
 		end
-        
-		-- Kitjan: Force an update to get all the bars to the current position (sharing code)
-		-- This will call UpdateCastTime again, but that seems ok
-		self.nextUpdate = UPDATE_INTERVAL
-		if self.expirationTime > GetTime() then
-			self:OnUpdate(0)
-		end
-
-		self.Time:Show()
+		-- SetValue and Spark handled by Bar:OnUpdate
 	else
-		-- Aura has indefinite duration
-		self.max_value = 1
-		self:SetValue(self.Texture, 1)
-		self:SetValue(self.Texture2, 1)
+		-- Indefinite aura
 		self.Time:Hide()
-		self.Spark:Hide()
 		self.CastTime:Hide()
+		self:SetValue(self.maxTimeLeft)
+		self.Spark:Hide()
 	end
 end
 
-function Bar:SetValue(barTexture, value, value0)
-	-- Called by Bar:OnUpdate(), Bar:OnSizeChanged(), others
-	-- Called very frequently. Make sure it's efficient. 
-
-	-- bar.Texture2 used for user-determined max bar duration
-
-	value = math.max(value, 0)
-	local pct = math.min(value/self.max_value, 1)
-	local pct0 = 0
-	if value0 then
-		pct0 = math.min(value0/self.max_value, 1)
+function Bar:SetValue(timeLeft)
+	-- Called by Bar:OnUpdate, Bar:OnSizeChanged, Bar:UpdateAppearance, Bar:Blink
+	-- Called very frequently. Make it efficient. 
+	if timeLeft < 0 then 
+		timeLeft = 0
 	end
-
-	local width = (pct - pct0) * self:GetWidth()
-	if width < 1 then 
-		barTexture:Hide()
-	else
-		barTexture:SetWidth(width)
-		barTexture:SetTexCoord(pct0, 0, pct0, 1, pct, 0, pct, 1)
-		barTexture:Show()
+	local fractionFull = timeLeft/self.maxTimeLeft
+		-- maxTimeLeft set by Bar:OnDurationFound, Bar:OnDurationAbsent, Bar:Unlock
+		-- Bar.xml sets default maxTimeLeft = 1
+	if fractionFull > 1 then
+		fractionFull = 1
 	end
-
-	barTexture.cur_value = value  -- So bars size properly with resized group
+	local textureWidth = self:GetWidth() * fractionFull
+	if textureWidth < 1 then
+		textureWidth = 1
+	end
+	self.Texture:SetWidth(textureWidth)
+	self.Texture:SetTexCoord(0, fractionFull, 0, 1)  -- Crop so it's depleting, not squishing
+	self.barValue = timeLeft  -- So bars size properly with resized group
 end
 
 
@@ -252,30 +232,31 @@ function Bar:Unlock()
 	-- Make bar configurable by player
 	-- Called by Bar:Update()
 
-	self:Show()
-	self:EnableMouse(true)
-	self.Time:Hide()
-	self.Spark:Hide()
-
 	local settings = self.settings
 
-	if settings.Enabled then
-		self:SetAlpha(1)
-	else
-		self:SetAlpha(0.4)
-	end
+	self:Show()
+	self:EnableMouse(true)
 
+	self.maxTimeLeft = 1
+	self:SetValue(self.maxTimeLeft)
 	local color = settings.BarColor
 	self.Texture:SetVertexColor(color.r, color.g, color.b, color.a)
-	self.Texture2:Hide()
 
 	self:SetUnlockedText()
+	self.Time:Hide()
+	self.Spark:Hide()
 
 	if settings.vct_enabled then
 		self.CastTime:SetWidth(self:GetWidth()/8)
 		self.CastTime:Show()
 	else
 		self.CastTime:Hide()
+	end
+
+	if settings.Enabled then
+		self:SetAlpha(1)
+	else
+		self:SetAlpha(0.4)
 	end
 end
 
@@ -301,13 +282,9 @@ function Bar:OnDragStop()
 end
 
 function Bar:OnSizeChanged()
-	local bar1 = self.Texture
-	local bar2 = self.Texture2
-	if ( bar1.cur_value ) then 
-		self:SetValue(bar1, bar1.cur_value)
-	end
-	if ( bar2.cur_value ) then 
-		self:SetValue(bar2, bar2.cur_value, bar1.cur_value)
+	-- Called when user resizes BarGroup. Any other time? 
+	if self.barValue then 
+		self:SetValue(self.barValue)
 	end
 end
 
@@ -324,12 +301,11 @@ end
 -- Note: Kitjan's VCT = "Visual Cast Time"
 
 function Bar:UpdateCastTime()
-	-- Called by Bar:ConfigureVisible()
-	-- Called by Bar:OnUpdate() if CastTime used, so make sure it's efficent
-	-- Does GetSpellInfo() actually factor in haste etc?
+	-- Called by Bar:UpdateAppearance, Bar:OnUpdate
+	-- Called very frequently. Make it efficent. 
 
 	local castWidth = 0
-	local barDuration = self.fixedDuration or self.duration
+	local barDuration = self.maxTimeLeft
 	if barDuration then
 		local barWidth = self:GetWidth()
 		local castDuration = self:GetCastTimeDuration()
@@ -348,24 +324,26 @@ function Bar:UpdateCastTime()
 end
 
 function Bar:GetCastTimeDuration()
-	-- Called by Bar:UpdateCastTime()
-	-- Which is called by Bar:OnUpdate() if CastTime used, so make sure it's efficent
+	-- Called by Bar:UpdateCastTime
+	-- Called very frequently. Make it efficent. 
 	local castTime
 	local castDuration = 0
 	local spell = self.settings.vct_spell
 	if not spell or spell == "" then
 		spell = self.buffName
 	end
+
 	_, _, _, castTime = GetSpellInfo(spell)
 	if castTime then
 		castDuration = castTime / 1000
-		self.vct_refresh = true
+		self.vct_refresh = true  -- Does GetSpellInfo() actually factor in haste etc?
 	else
 		self.vct_refresh = false
 	end
 	if self.settings.vct_extra then
 		castDuration = castDuration + self.settings.vct_extra
 	end
+
 	return castDuration
 end
 

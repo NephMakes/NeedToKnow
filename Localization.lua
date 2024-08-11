@@ -24,6 +24,7 @@ Localize.enUS = {
 	BARTYPE_USABLE = "Reactive spell or ability", 
 	BARTYPE_BUFFCD = "Buff internal cooldown",
 	BARTYPE_TOTEM = "Totem",
+	BARTYPE_EQUIPBUFF = "Temporary weapon enhancement", 
 	SETTINGS = SETTINGS, -- "Settings"
 	OPTIONS = "Options", 
 	MORE_OPTIONS = "More options", 
@@ -43,8 +44,8 @@ Localize.enUS = {
 	UNIT_TARGETTARGET = "Target of target",
 	UNIT_LAST_RAID = "Last raid recipient",
 	ONLY_MINE = "Only show mine",
-	SUM_ALL_CASTERS = "Sum from all casters",
-	SUM_ALL_ENTRIES = "Show sum of all entries",
+	-- SUM_ALL_CASTERS = "Sum from all casters",
+	SHOW_SUM_OF_ALL = "Show sum of all", 
 	SHOW_CHARGE_COOLDOWN = "Show first and last charge cooldown",
 	BUFFCD_RESET = "Set reset buffs",
 	SET_USABLE_DURATION = "Set usable time",
@@ -66,10 +67,10 @@ Localize.enUS = {
 	SHOW_TTN2 = "Show 2nd tooltip number",
 	SHOW_TTN3 = "Show 3rd tooltip number",
 	CUSTOM_BAR_TEXT = "Custom bar text",
-	REPLACE_BAR_TEXT = "Replace bar text",
+	-- REPLACE_BAR_TEXT = "Replace bar text",
 	-- ADD_BAR_TEXT = "Add bar text",
-	APPEND_CD = "Append \"CD\"", 
-	APPEND_USABLE = "Append \"usable\"", 
+	-- APPEND_CD = "Append \"CD\"", 
+	-- APPEND_USABLE = "Append \"usable\"", 
 	CAST_TIME = "Cast timer",
 	CAST_TIME_ENABLE = "Show cast time overlay", 
 	CAST_TIME_CHOOSE_SPELL = "Choose other spell",
@@ -77,7 +78,8 @@ Localize.enUS = {
 	BLINK_SETTINGS = "Blink options", 
 	BLINK_ENABLE = "Blink when missing", 
 	BLINK_COLOR = "Color when blinking", 
-	BLINK_TEXT = "Replace text when blinking", 
+	-- BLINK_TEXT = "Replace text when blinking", 
+	BLINK_TEXT = "Custom text when blinking", 
 	BLINK_OUT_OF_COMBAT = "Blink out of combat", 
 	BLINK_ONLY_BOSS = "Blink only for boss fights", 
 
@@ -93,22 +95,25 @@ Localize.enUS = {
 	DIALOG_BUFFCD_SPELL = "Enter spell or ability name", 
 	DIALOG_CAST_TIME_SPELL = "Enter spell or ability name", 
 	DIALOG_CAST_TIME_ADD = "Enter time in seconds\nto add to cast time", 
-	DIALOG_BLINK_TEXT = "Enter text to replace\nspell, item, and ability names", 
-	DIALOG_REPLACE_TEXT = "Enter text to replace\nspell, item, and ability names", 
+	-- DIALOG_BLINK_TEXT = "Enter text to replace\nspell, item, and ability names", 
+	DIALOG_BLINK_TEXT = "Enter text to show while blinking", 
+	DIALOG_REPLACE_TEXT = "Enter custom text to replace\nspell, item, and ability names", 
+	DIALOG_CUSTOM_TEXT = "Enter custom text to replace\nspell, item, and ability names", 
 	DIALOG_IMPORT_EXPORT = "Copy or paste bar settings here", 
-	DIALOG_SUBTEXT_HELPFUL = "To track more than one, enter names in order of priority separated by semicolons (;). Spell IDs accepted.", 
-	DIALOG_SUBTEXT_HARMFUL = "To track more than one, enter names in order of priority separated by semicolons (;). Spell IDs accepted.", 
-	DIALOG_SUBTEXT_CASTCD = "To track more than one, enter names in order of priority separated by semicolons (;). Spell IDs accepted.", 
-	DIALOG_SUBTEXT_USABLE = "To track more than one, enter names in order of priority separated by semicolons (;). Spell IDs accepted.", 
-	DIALOG_SUBTEXT_BUFFCD = "To track more than one, enter names in order of priority separated by semicolons (;). Spell IDs accepted.", 
-	DIALOG_SUBTEXT_TOTEM = "To track more than one, enter names in order of priority separated by semicolons (;). Spell IDs accepted.", 
+	DIALOG_SUBTEXT_HELPFUL = "To track more than one, enter names in order of priority separated by commas. Spell IDs accepted.", 
+	DIALOG_SUBTEXT_HARMFUL = "To track more than one, enter names in order of priority separated by commas. Spell IDs accepted.", 
+	DIALOG_SUBTEXT_CASTCD = "To track more than one, enter names in order of priority separated by semicolons commas. Spell IDs accepted.", 
+	DIALOG_SUBTEXT_USABLE = "To track more than one, enter names in order of priority separated by commas. Spell IDs accepted.", 
+	DIALOG_SUBTEXT_BUFFCD = "To track more than one, enter names in order of priority separated by commas. Spell IDs accepted.", 
+	DIALOG_SUBTEXT_TOTEM = "To track more than one, enter names in order of priority separated by semicolonscommas. Spell IDs accepted.", 
 	DIALOG_SUBTEXT_USABLE_TIME = "", 
 	DIALOG_SUBTEXT_BUFFCD_TIME = "For most procs the internal cooldown is 45 seconds", 
-	DIALOG_SUBTEXT_BUFFCD_SPELL = "These buffs reset the proc's internal cooldown, too. For more than one, enter names separated by semicolons (;). Spell IDs accepted.", 
+	DIALOG_SUBTEXT_BUFFCD_SPELL = "These buffs reset the proc's internal cooldown, too. For more than one, enter names separated by commas. Spell IDs accepted.", 
 	DIALOG_SUBTEXT_CAST_TIME_SPELL = "Leave blank to show cast time for spell with buff or debuff name", 
 	DIALOG_SUBTEXT_CAST_TIME_ADD = "Leave blank to add no time", 
 	DIALOG_SUBTEXT_BLINK_TEXT = "Clear text to stop replacing", 
-	DIALOG_SUBTEXT_REPLACE_TEXT = "To individually replace names, enter text in order separated by semicolons (;). Clear text to stop replacing", 
+	DIALOG_SUBTEXT_REPLACE_TEXT = "To individually replace names, enter text in order separated by commas. Clear text to stop replacing", 
+	DIALOG_SUBTEXT_CUSTOM_TEXT = "For example: \"Stealth cooldown\" or \"Riposte now usable\". To individually replace names, enter text in order separated by commas. Clear text to stop replacing", 
 	DIALOG_SUBTEXT_IMPORT_EXPORT = "Clear text to clear settings", 
 
 	-- BarGroup tab
@@ -391,3 +396,12 @@ NeedToKnow.String.ITEM_NAMES = {
 	RANGEDSLOT.."/"..RELICSLOT,
 	TABARDSLOT
 }
+
+function NeedToKnow.String.GetInventorySlotName(slotID)
+	local slotName
+	slotID = tonumber(slotID)
+	if slotID then
+		slotName = NeedToKnow.String.ITEM_NAMES[slotID]
+	end
+	return slotName
+end

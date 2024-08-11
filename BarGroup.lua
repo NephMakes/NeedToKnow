@@ -27,7 +27,7 @@ function NeedToKnow:GetGroup(groupID)
 end
 
 function NeedToKnow:UpdateBarGroups()
-	for _, group in ipairs(self.barGroups) do
+	for _, group in pairs(self.barGroups) do
 		group:Update()
 	end
 end
@@ -66,7 +66,7 @@ function BarGroup:Update()
 
 	if not self.settings.Enabled then
 		self:Hide()
-		for _, bar in ipairs(self.bars) do
+		for _, bar in pairs(self.bars) do
 			bar:Inactivate()
 		end
 		return
