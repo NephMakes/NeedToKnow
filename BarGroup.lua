@@ -343,8 +343,7 @@ function BarGroupTab:InitializeDropDown()
 end
 
 function BarGroupTab:OpenOptionsPanel()
-	-- InterfaceAddOnsList_Update()
-	Settings.OpenToCategory(addonName)
+	Settings.OpenToCategory(addonName)  -- Blizz function
 end
 
 function BarGroupTab:OnDragStart()

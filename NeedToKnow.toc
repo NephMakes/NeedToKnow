@@ -33,6 +33,7 @@ BarEngine.lua
 Cooldown.lua
 Blink.lua
 BossFight.lua
+CastTime.lua
 
 # Config UI
 BarMenu.lua
