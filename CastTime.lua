@@ -49,7 +49,7 @@ function Bar:GetCastTimeDuration()
 		self.refreshCastTime = true
 	else
 		castDuration = 0
-		self.refreshCastTime = false
+		self.refreshCastTime = nil
 	end
 	if self.settings.vct_extra then
 		-- Extra time set by user (latency, for example)

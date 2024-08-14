@@ -34,6 +34,7 @@ Cooldown.lua
 Blink.lua
 BossFight.lua
 CastTime.lua
+UnitLastRaid.lua
 
 # Config UI
 BarMenu.lua

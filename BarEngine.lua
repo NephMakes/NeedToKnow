@@ -30,13 +30,8 @@ local function GetMySpellInfo(spell)
 end
 local GetSpellInfo = GetSpellInfo or GetMySpellInfo
 
--- Deprecated: 
-local m_last_guid = NeedToKnow.m_last_guid  -- For ExtendedTime
 
-
--- ---------
--- Bar setup
--- ---------
+--[[ Bar setup ]]--
 
 function Bar:Update()
 	-- Update bar behavior and appearance
@@ -51,7 +46,6 @@ function Bar:Update()
 	self:SetSpells()
 	self:SetAppearance()
 
-	-- Set max bar time for group
 	self.groupDuration = tonumber(groupSettings.FixedDuration)
 	if not self.groupDuration or self.groupDuration <= 0 then
 		self.groupDuration = nil
@@ -243,8 +237,6 @@ function Bar:Activate()
 		self:RegisterEvent("PLAYER_TARGET_CHANGED")
 		self:RegisterEvent("UNIT_TARGET")
 		self:RegisterCombatLog() 
-	-- elseif self.unit ~== "lastraid" then
-		-- self:RegisterUnitEvent("UNIT_AURA", self.unit)
 	else
 		self:RegisterEvent("UNIT_AURA")
 	end
@@ -258,11 +250,7 @@ function Bar:Activate()
 		self:RegisterEvent("UNIT_PET")
 		-- self:RegisterUnitEvent("UNIT_PET", "pet")  -- To do
 	elseif settings.Unit == "lastraid" then
-		if not NeedToKnow.BarsForPSS then
-			NeedToKnow.BarsForPSS = {}
-		end
-		NeedToKnow.BarsForPSS[self] = true
-		NeedToKnow.RegisterSpellcastSent()
+		self:RegisterLastRaid()
 	end
 
 	if settings.bDetectExtends then
@@ -279,24 +267,6 @@ function Bar:Activate()
 			self:RegisterBossFight()
 		end
 	end
-end
-
-function Bar:RegisterExtendedTime()
-	for _, entry in pairs(self.spells) do
-		local spellName
-		if entry.id then
-			spellName = GetSpellInfo(entry.id) or entry.id
-		else
-			spellName = entry.name
-		end
-		if spellName then
-			local r = m_last_guid[spellName]
-			if not r then
-				m_last_guid[spellName] = {time = 0, dur = 0, expiry = 0}
-			end
-		end
-	end
-	NeedToKnow.RegisterSpellcastSent()
 end
 
 function Bar:RegisterCombatLog()
@@ -331,28 +301,17 @@ function Bar:Inactivate()
 	for _, event in pairs(eventList) do
 		self:UnregisterEvent(event)
 	end
-	self["PLAYER_SPELLCAST_SUCCEEDED"] = nil  -- Fake event called by ExecutiveFrame
 
 	self.isBlinking = nil
 	self:UnregisterBossFight()
-
+	self:UnregisterLastRaid()
 	if self.settings.bDetectExtends then
-		NeedToKnow.UnregisterSpellcastSent()
-	end
-
-	if NeedToKnow.BarsForPSS and NeedToKnow.BarsForPSS[self] then
-		NeedToKnow.BarsForPSS[self] = nil
-		if not next(NeedToKnow.BarsForPSS) then
-			NeedToKnow.BarsForPSS = nil
-			NeedToKnow.UnregisterSpellcastSent()
-		end
+		self:UnregisterExtendedTime()
 	end
 end
 
 
--- -------------
--- Event handler
--- -------------
+--[[ Events ]]--
 
 function Bar:OnEvent(event, unit, ...)
 	local f = self[event]  -- Assigned by Bar:Activate()
@@ -401,20 +360,6 @@ end
 
 function Bar:PLAYER_REGEN_ENABLED()
 	self:CheckAura()
-end
-
-function Bar:PLAYER_SPELLCAST_SUCCEEDED(unit, ...)
-	-- Fake event called by ExecutiveFrame to monitor last raid recipient
-	local spellName, spellID, target = select(1, ...)
-	-- local spellName, spellID = select(1, ...)
-	for _, spell in pairs(self.spells) do
-		if spell.id == spellID or spell.name == spellName then
-			self.unit = target or "unknown"
-			-- print("Updating", self:GetName(), "since it was recast on", self.unit)
-			self:CheckAura()
-			break
-		end
-	end
 end
 
 function Bar:PLAYER_TARGET_CHANGED(unit, ...)
@@ -469,9 +414,8 @@ function Bar:UNIT_INVENTORY_CHANGED(unit, ...)
 end
 ]]--
 
--- -----------------
--- Tracking behavior
--- -----------------
+
+--[[ Tracking behavior ]]--
 
 -- Kitjan made m_scratch a reusable table to track multiple instances of an aura with one bar
 local m_scratch = {}
@@ -588,54 +532,6 @@ function Bar:GetBuffCooldownReset(duration, expirationTime)
 		duration = nil
 	end
 	return duration
-end
-
-function Bar:GetExtendedTime(auraName, duration, expirationTime, unit)
-	-- Called by Bar:OnDurationFound
-	local extended
-	local curStart = expirationTime - duration
-	local guidTarget = UnitGUID(unit)
-	local r = m_last_guid[auraName]
-
-	if not r[guidTarget] then 
-		-- Should only happen from /reload or /ntk while the aura is active
-		-- Kitjan: This went off for me, but I don't know a repro yet.  I suspect it has to do with bear/cat switching
-		--trace("WARNING! allocating guid slot for ", buffName, "on", guidTarget, "due to UNIT_AURA");
-		r[guidTarget] = {time = curStart, dur = duration, expiry = expirationTime}
-	else
-		r = r[guidTarget]
-		local oldExpiry = r.expiry
-		-- Kitjan: This went off for me, but I don't know a repro yet.  I suspect it has to do with bear/cat switching
-		--if ( oldExpiry > 0 and oldExpiry < curStart ) then
-			--trace("WARNING! stale entry for ",buffName,"on",guidTarget,curStart-r.time,curStart-oldExpiry)
-		--end
-
-		if oldExpiry < curStart then
-			r.time = curStart
-			r.dur = duration
-			r.expiry = expirationTime
-		else
-			r.expiry = expirationTime
-			extended = expirationTime - (r.time + r.dur)
-			if extended > 1 then
-				duration = r.dur
-			else
-				extended = nil
-			end
-		end
-	end
-	return extended, duration
-end
-
-function Bar:ClearExtendedTime()
-	-- Called by Bar:OnDurationAbsent
-	local r = m_last_guid[self.buffName]
-	if r then
-		local guidTarget = UnitGUID(self.unit)
-		if guidTarget then
-			r[guidTarget] = nil
-		end
-	end
 end
 
 -- FindAura:Methods() 
