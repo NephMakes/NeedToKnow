@@ -2,6 +2,12 @@
 
 ## NeedToKnow
 
+### v4.7.4 (2024-08-15)
+* Updated Table of Contents for Retail patch 11.0.2
+* Fixed Lua errors with cooldowns in patch 11.0.2 (I think)
+* Fixed: "Show sum of all" should now correctly sum across multiple instances of the same aura
+* Fixed: "Show sum of all" should now work correctly with "Only show mine"
+
 ### v4.7.3 (2024-08-11)
 * Fixed: "Show sum of all" now correctly describes bar behavior (formerly "Sum from all casters")
 * Fixed: Equipped item cooldowns now show inventory slot name

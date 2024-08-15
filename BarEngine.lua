@@ -24,7 +24,9 @@ local UnitGUID = UnitGUID
 -- Functions different between Retail and Classic as of 11.0.0
 local function GetMySpellInfo(spell)
 	local info = C_Spell.GetSpellInfo(spell)  -- Only in Retail
-	return info.name, nil, info.iconID, info.castTime, info.minRange, info.maxRange, info.spellID, info.originalIconID
+	if info then
+		return info.name, nil, info.iconID, info.castTime, info.minRange, info.maxRange, info.spellID, info.originalIconID
+	end
 end
 local GetSpellInfo = GetSpellInfo or GetMySpellInfo
 
@@ -541,7 +543,7 @@ function Bar:GetAuraInfo(spellEntry, allStacks)
 		filter = "HELPFUL"
 	end
 	if self.settings.OnlyMine then
-		filter = filter .. "|PLAYER"
+		filter = filter.."|PLAYER"
 	end
 	if spellEntry.id then
 		-- Track by spellID
@@ -621,7 +623,7 @@ function Bar:GetCooldownInfo(spellInfo, allStacks)
 	local start, duration, _, name, icon, count, start2 = GetCooldown(self, spellInfo)
 
 	-- Filter out global cooldown
-	if start and duration <= 1.5 then
+	if start and (duration <= 1.5) then
 		if self.expirationTime and self.expirationTime <= start + duration then
 			start = self.expirationTime - self.duration
 			duration = self.duration
@@ -786,23 +788,22 @@ function Bar:GetBuffCooldownInfo(spellEntry, allStacks)
 end
 
 function Bar:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
-	if duration then
-		if not count or count < 1 then 
-			count = 1 
-		end
-		if allStacks.total == 0 or expirationTime < allStacks.min.expirationTime then
-			allStacks.min.buffName = name
-			allStacks.min.iconPath = icon
-			allStacks.min.duration = duration
-			allStacks.min.expirationTime = expirationTime
-			allStacks.min.shownName = spellEntry.shownName
-		end
-		if allStacks.total == 0 or expirationTime > allStacks.max.expirationTime then
-			allStacks.max.duration = duration
-			allStacks.max.expirationTime = expirationTime
-		end 
-		allStacks.total = allStacks.total + count
+	if not duration then return end
+	if not count or count < 1 then 
+		count = 1 
 	end
+	if allStacks.total == 0 or expirationTime < allStacks.min.expirationTime then
+		allStacks.min.buffName = name
+		allStacks.min.iconPath = icon
+		allStacks.min.duration = duration
+		allStacks.min.expirationTime = expirationTime
+		allStacks.min.shownName = spellEntry.shownName
+	end
+	if allStacks.total == 0 or expirationTime > allStacks.max.expirationTime then
+		allStacks.max.duration = duration
+		allStacks.max.expirationTime = expirationTime
+	end 
+	allStacks.total = allStacks.total + count
 end
 
 function Bar:ResetScratchStacks(auraStacks)

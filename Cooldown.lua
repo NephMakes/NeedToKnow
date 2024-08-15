@@ -17,15 +17,21 @@ local GetItemCooldown = C_Container.GetItemCooldown
 -- Functions that are different between Retail and Classic as of patch 11.0.0
 local function GetMySpellInfo(spell)
 	local info = C_Spell.GetSpellInfo(spell)  -- Only in Retail
-	return info.name, nil, info.iconID, info.castTime, info.minRange, info.maxRange, info.spellID, info.originalIconID
+	if info then
+		return info.name, nil, info.iconID, info.castTime, info.minRange, info.maxRange, info.spellID, info.originalIconID
+	end
 end
 local function GetMySpellCharges(spell)
 	local info = C_Spell.GetSpellCharges(spell)  -- Only in Retail
-	return info.currentCharges, info.maxCharges, info.cooldownStartTime, info.cooldownDuration, info.chargeModRate
+	if info then
+		return info.currentCharges, info.maxCharges, info.cooldownStartTime, info.cooldownDuration, info.chargeModRate
+	end
 end
 local function GetMySpellCooldown(spell)
 	local info = C_Spell.GetSpellCooldown(spell)  -- Only in Retail
-	return info.startTime, info.duration, info.isEnabled, info.modRate
+	if info then
+		return info.startTime, info.duration, info.isEnabled, info.modRate
+	end
 end
 local GetSpellInfo = GetSpellInfo or GetMySpellInfo
 local GetSpellCharges = GetSpellCharges or GetMySpellCharges
@@ -40,12 +46,14 @@ function Bar:SetCooldownSpells()
 end
 
 function Cooldown.SetUpSpell(bar, info)
-	local name, icon, spellID
+	local spell = info.id or info.name
+	if not spell then return end
+
+	local name, icon, spellID, link
 
 	-- Check if item cooldown
 	if info.name then
 		-- Config by itemID not supported: itemID and spellID use overlapping values
-		local link
 		name, link, _, _, _, _, _, _, _, icon = GetItemInfo(info.name)
 		if link then
 			info.id = link:match("item:(%d+):")
@@ -56,7 +64,6 @@ function Cooldown.SetUpSpell(bar, info)
 	end
 
 	-- Spell cooldown
-	local spell = info.id or info.name
 	name, _, icon, _, _, _, spellID = GetSpellInfo(spell)
 	local start, duration, enabled = GetSpellCooldown(spell)
 	if start then
