@@ -3,12 +3,10 @@
 local _, NeedToKnow = ...
 
 local Bar = NeedToKnow.Bar
-local FindAura = NeedToKnow.FindAura
 local Cooldown = NeedToKnow.Cooldown
 local ExecutiveFrame = NeedToKnow.ExecutiveFrame
 local String = NeedToKnow.String
 
-local UPDATE_INTERVAL = 0.025  -- 40 /sec
 local INVSLOT_MAINHAND = INVSLOT_MAINHAND
 local INVSLOT_OFFHAND = INVSLOT_OFFHAND
 local INVSLOT_RANGED = INVSLOT_RANGED
@@ -94,35 +92,35 @@ function Bar:SetBarType()
 
 	-- Set tracking functions
 	if barType == "BUFFCD" then
-		self.GetTrackedInfo = FindAura.FindBuffCooldown
-		self.FindSingle = FindAura.FindSingle
+		self.GetTrackedInfo = self.GetBuffCooldownInfo
 		local duration = tonumber(settings.buffcd_duration)
 		if not duration or duration < 1 then
 			print("NeedToKnow: Please set internal cooldown time for ", settings.AuraName)
 		end
 	elseif barType == "TOTEM" then
-		self.GetTrackedInfo = FindAura.FindTotem
-		-- self.dropTime = {}  -- array 1-4 of precise times totems appeared
+		self.GetTrackedInfo = self.GetTotemInfo
 	elseif barType == "USABLE" then
-		self.GetTrackedInfo = FindAura.FindSpellUsable
+		self.GetTrackedInfo = self.GetSpellUsableInfo
 	elseif barType == "EQUIPSLOT" then
-		self.GetTrackedInfo = FindAura.FindEquipSlotCooldown
+		self.GetTrackedInfo = self.GetEquipSlotCooldownInfo
 	elseif barType == "CASTCD" then
-		self.GetTrackedInfo = FindAura.FindCooldown
+		self.GetTrackedInfo = self.GetCooldownInfo
 	elseif barType == "EQUIPBUFF" then
-		self.GetTrackedInfo = FindAura.FindEquipSlotBuff
+		self.GetTrackedInfo = self.GetEquipBuffInfo
 	elseif settings.show_all_stacks then
-		self.GetTrackedInfo = FindAura.FindAllStacks
+		self.GetTrackedInfo = self.GetAuraInfoAllStacks
 	else
-		self.GetTrackedInfo = FindAura.FindSingle
+		self.GetTrackedInfo = self.GetAuraInfo
 	end
 
 	-- Should Bar:OnUpdate check tracked spell when time runs out
-	if barType == "CASTCD" or self.barType == "BUFFCD" or self.barType == "EQUIPSLOT" then
+	self.checkOnNoTimeLeft = nil
+	if barType == "CASTCD" or 
+		self.barType == "BUFFCD" or 
+		self.barType == "EQUIPSLOT" 
+	then
 		-- Item cooldowns don't fire event on expire. Others fire too soon. 
 		self.checkOnNoTimeLeft = true
-	else
-		self.checkOnNoTimeLeft = nil
 	end
 end
 
@@ -141,6 +139,7 @@ end
 
 function Bar:SetSpells()
 	-- Set spells/items/abilities tracked by bar
+	-- Stored as bar.spells = {{name, id, shownName}, }
 	-- Called by Bar:Update
 
 	local settings = self.settings
@@ -214,7 +213,7 @@ function Bar:Activate()
 
 	self:SetScript("OnEvent", self.OnEvent)
 	self:SetScript("OnUpdate", self.OnUpdate)
-	self.nextUpdate = GetTime() + UPDATE_INTERVAL
+	self.nextUpdate = GetTime()
 
 	local settings = self.settings
 	local barType = self.barType
@@ -248,7 +247,7 @@ function Bar:Activate()
 		self:RegisterEvent("PLAYER_FOCUS_CHANGED")
 	elseif self.unit == "pet" then
 		self:RegisterEvent("UNIT_PET")
-		-- self:RegisterUnitEvent("UNIT_PET", "pet")  -- To do
+		-- self:RegisterUnitEvent("UNIT_PET", "pet")  -- TODO
 	elseif settings.Unit == "lastraid" then
 		self:RegisterLastRaid()
 	end
@@ -304,10 +303,8 @@ function Bar:Inactivate()
 
 	self.isBlinking = nil
 	self:UnregisterBossFight()
+	self:UnregisterExtendedTime()
 	self:UnregisterLastRaid()
-	if self.settings.bDetectExtends then
-		self:UnregisterExtendedTime()
-	end
 end
 
 
@@ -463,7 +460,8 @@ function Bar:CheckAura()
 		all_stacks = m_scratch.all_stacks
 		self:ResetScratchStacks(all_stacks)
 		for _, spellInfo in pairs(self.spells) do
-			self.GetTrackedInfo(self, spellInfo, all_stacks)  -- GetTrackedInfo set by Bar:SetBarType
+			self.GetTrackedInfo(self, spellInfo, all_stacks)
+			-- self:GetTrackedInfo(spellInfo, all_stacks)
 			if all_stacks.total > 0 and not settings.show_all_stacks then
 				break
 			end
@@ -507,25 +505,24 @@ function Bar:GetBuffCooldownReset(duration, expirationTime)
 	local buff_stacks = m_scratch.buff_stacks
 	self:ResetScratchStacks(buff_stacks)
 	-- Track when reset auras last applied to player
-	for idx, resetSpell in ipairs(self.reset_spells) do
-		-- Relies on BUFFCD setting target to player. onlyMine will work either way. 
-		local resetDuration, _, _, resetExpiration = FindAura.FindSingle(self, resetSpell, buff_stacks)
+	for i, resetSpell in ipairs(self.reset_spells) do
+		local resetDuration, _, _, resetExpiration = self:GetAuraInfo(resetSpell, buff_stacks)
 		local tStart
 		if buff_stacks.total > 0 then
 			if 0 == buff_stacks.max.duration then 
-				tStart = self.reset_start[idx]
+				tStart = self.reset_start[i]
 				if 0 == tStart then
 					tStart = tNow
 				end
 			else
 				tStart = buff_stacks.max.expirationTime - buff_stacks.max.duration
 			end
-			self.reset_start[idx] = tStart
+			self.reset_start[i] = tStart
 			if tStart > maxStart then 
 				maxStart = tStart 
 			end
 		else
-			self.reset_start[idx] = 0
+			self.reset_start[i] = 0
 		end
 	end
 	if maxStart > expirationTime - duration then
@@ -534,14 +531,18 @@ function Bar:GetBuffCooldownReset(duration, expirationTime)
 	return duration
 end
 
+function Bar:GetTrackedInfo()
+	-- Default null function that gets replaced in Bar:SetBarType
+end
+
 -- FindAura:Methods() 
 --   assigned by Bar:Update, called by Bar:CheckAura
 --   self = bar
 --   spellEntry is element of bar.spells, {name, id, shownName}
 
-function FindAura:FindSingle(spellEntry, allStacks)
-	-- Find first aura instance then update allStacks
-	local filter = self.settings.BuffOrDebuff
+function Bar:GetAuraInfo(spellEntry, allStacks)
+	-- Get tracking info for first instance of buff/debuff
+	local filter = self.settings.BuffOrDebuff  -- "HELPFUL" or "HARMFUL"
 	if self.settings.OnlyMine then
 		filter = filter .. "|PLAYER"
 	end
@@ -567,8 +568,8 @@ function FindAura:FindSingle(spellEntry, allStacks)
 	end
 end
 
-function FindAura:FindAllStacks(spellEntry, allStacks)
-	-- Find all aura instances then update allStacks
+function Bar:GetAuraInfoAllStacks(spellEntry, allStacks)
+	-- Get tracking info for all instances of buff/debuff
 	local j = 1
 	local filter = self.settings.BuffOrDebuff
 	while true do
@@ -584,8 +585,8 @@ function FindAura:FindAllStacks(spellEntry, allStacks)
 	end
 end
 
-function FindAura:FindSpellUsable(spellEntry, allStacks)
-	-- For watching reactive spells and abilities
+function Bar:GetSpellUsableInfo(spellEntry, allStacks)
+	-- Get tracking info for reactive spell/ability
 	local spell = spellEntry.name or spellEntry.id
 	if not spell then 
 		return
@@ -610,8 +611,8 @@ function FindAura:FindSpellUsable(spellEntry, allStacks)
 	end
 end
 
-function FindAura:FindCooldown(spellInfo, allStacks)
-	-- Find spell or item cooldown then update allStacks
+function Bar:GetCooldownInfo(spellInfo, allStacks)
+	-- Get tracking info for spell or item cooldown
 
 	local GetCooldown = spellInfo.cooldownFunction
 	local start, duration, _, name, icon, count, start2 = GetCooldown(self, spellInfo)
@@ -641,8 +642,8 @@ function FindAura:FindCooldown(spellInfo, allStacks)
 	end
 end
 
-function FindAura:FindEquipSlotCooldown(spellEntry, allStacks)
-	-- Find item cooldown then update allStacks
+function Bar:GetEquipSlotCooldownInfo(spellEntry, allStacks)
+	-- Get tracking info for item cooldown by equipment slot
 	if spellEntry.id then
 		local itemID = GetInventoryItemID("player", spellEntry.id)
 		if itemID then
@@ -656,8 +657,9 @@ function FindAura:FindEquipSlotCooldown(spellEntry, allStacks)
 	end
 end
 
-function FindAura:FindEquipSlotBuff(spellEntry, allStacks)
-	-- Get temporary weapon enhancement (poison, sharpening stone, etc)
+function Bar:GetEquipBuffInfo(spellEntry, allStacks)
+	-- Get tracking info for temporary weapon enhancement (poison, sharpening 
+	-- stone, etc) by inventorySlotID
 
 	local count, timeLeft, enchantID, expirationTime
 
@@ -739,7 +741,8 @@ function NeedToKnow.DetermineTempEnchantFromTooltip(i_invID)
 end
 ]]--
 
-function FindAura:FindTotem(spellEntry, allStacks)
+function Bar:GetTotemInfo(spellEntry, allStacks)
+	-- Get tracking info for shaman totem
 	local spellName = spellEntry.name or GetSpellInfo(spellEntry.id)
 	for index = 1, 4 do
 		local _, name, startTime, duration, icon = GetTotemInfo(index)  
@@ -749,12 +752,12 @@ function FindAura:FindTotem(spellEntry, allStacks)
 	end
 end
 
-function FindAura:FindBuffCooldown(spellEntry, allStacks)
-	-- For internal cooldowns on procs
+function Bar:GetBuffCooldownInfo(spellEntry, allStacks)
+	-- Get tracking info for buff cooldown (internal cooldown on proc)
 
 	local buffStacks = m_scratch.buff_stacks
 	self:ResetScratchStacks(buffStacks)
-	self:FindSingle(spellEntry, buffStacks)
+	self:GetAuraInfo(spellEntry, buffStacks)
 
 	local now = GetTime()
 	if buffStacks.total > 0 then
@@ -804,7 +807,7 @@ function Bar:ResetScratchStacks(auraStacks)
 end
 
 function Bar:OnDurationFound(buffName, iconPath, count, duration, expirationTime, shownName)
-	-- Update bar to show status of tracked buff/debuff/cooldown
+	-- Update bar to show status of tracked spell/item/ability
 	-- Called by Bar:CheckAura
 
 	local settings = self.settings
@@ -868,38 +871,39 @@ end
 
 function Bar:OnUpdate(elapsed)
 	-- Called very frequently. Be efficient. 
-	local now = GetTime()
-	if now > self.nextUpdate then
-		self.nextUpdate = now + 0.025  -- now + UPDATE_INTERVAL, 40 /sec
 
-		if self.isBlinking then
-			self:UpdateBlink(elapsed)
+	local now = GetTime()
+	if now < self.nextUpdate then return end
+	self.nextUpdate = now + 0.025  -- 40/sec
+
+	if self.isBlinking then
+		self:UpdateBlink(elapsed)
+		return
+	end
+
+	if not self.duration or self.duration <= 0 then return end
+		-- Indefinite auras have duration == 0
+
+	local timeLeft = self.expirationTime - now
+	if timeLeft < 0 then
+		if self.checkOnNoTimeLeft then
+			self:CheckAura()
 			return
 		end
+		timeLeft = 0
+	end
 
-		if self.duration and self.duration > 0 then  -- Indefinite auras have duration == 0
-			local timeLeft = self.expirationTime - now
-			if timeLeft < 0 then
-				if self.checkOnNoTimeLeft then
-					self:CheckAura()
-					return
-				end
-				timeLeft = 0
-			end
-
-			self:SetValue(timeLeft)
-			if self.settings.show_spark and timeLeft <= self.maxTimeLeft then
-				self.Spark:Show()
-			else
-				self.Spark:Hide()
-			end
-			if self.settings.show_time then
-				self.Time:SetText(self:FormatTime(timeLeft))
-			end
-			if self.settings.vct_enabled and self.refreshCastTime then
-				self:UpdateCastTime()
-			end
-		end
+	self:SetValue(timeLeft)
+	if self.settings.show_spark and timeLeft <= self.maxTimeLeft then
+		self.Spark:Show()
+	else
+		self.Spark:Hide()
+	end
+	if self.settings.show_time then
+		self.Time:SetText(self:FormatTime(timeLeft))
+	end
+	if self.settings.vct_enabled and self.refreshCastTime then
+		self:UpdateCastTime()
 	end
 end
 

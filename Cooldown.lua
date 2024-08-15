@@ -122,8 +122,8 @@ end
 
 function Cooldown.GetUnresolvedCooldown(bar, spellInfo)
 	Cooldown.SetUpSpell(bar, spellInfo)
-	local fn = spellInfo.cooldownFunction
-	if fn ~= Cooldown.GetUnresolvedCooldown then
-		return fn(bar, spellInfo)
+	local f = spellInfo.cooldownFunction
+	if f ~= Cooldown.GetUnresolvedCooldown then
+		return f(bar, spellInfo)
 	end
 end

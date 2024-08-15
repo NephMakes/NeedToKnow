@@ -9,7 +9,6 @@ NeedToKnow.BarGroup = {}
 NeedToKnow.ResizeButton = {}
 NeedToKnow.BarGroupTab = {}
 NeedToKnow.Bar = {}
-NeedToKnow.FindAura = {}
 NeedToKnow.Cooldown = {}
 NeedToKnow.BarMenu = {}
 NeedToKnow.Dialog = {}
