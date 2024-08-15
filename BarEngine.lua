@@ -460,8 +460,7 @@ function Bar:CheckAura()
 		all_stacks = m_scratch.all_stacks
 		self:ResetScratchStacks(all_stacks)
 		for _, spellInfo in pairs(self.spells) do
-			self.GetTrackedInfo(self, spellInfo, all_stacks)
-			-- self:GetTrackedInfo(spellInfo, all_stacks)
+			self:GetTrackedInfo(spellInfo, all_stacks)
 			if all_stacks.total > 0 and not settings.show_all_stacks then
 				break
 			end
@@ -535,62 +534,66 @@ function Bar:GetTrackedInfo()
 	-- Default null function that gets replaced in Bar:SetBarType
 end
 
--- FindAura:Methods() 
---   assigned by Bar:Update, called by Bar:CheckAura
---   self = bar
---   spellEntry is element of bar.spells, {name, id, shownName}
-
 function Bar:GetAuraInfo(spellEntry, allStacks)
 	-- Get tracking info for first instance of buff/debuff
-	local filter = self.settings.BuffOrDebuff  -- "HELPFUL" or "HARMFUL"
+	local filter = self.barType  -- "HELPFUL" or "HARMFUL"
+	if self.barType == "BUFFCD" then
+		filter = "HELPFUL"
+	end
 	if self.settings.OnlyMine then
 		filter = filter .. "|PLAYER"
 	end
 	if spellEntry.id then
-		local j = 1
-		while true do
-			local aura = GetAuraDataByIndex(self.unit, j, filter)
-			if not aura then
-				break
+		-- Track by spellID
+		if self.unit == "player" then
+			-- Can get info directly
+			local aura = C_UnitAuras.GetPlayerAuraBySpellID(spellEntry.id)
+			if aura then
+				self:AddInstanceToStacks(allStacks, spellEntry, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, nil, unpack(aura.points))
 			end
-			if aura.spellId == spellEntry.id then 
-				self:AddInstanceToStacks(allStacks, spellEntry, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, nil, nil, nil, nil)
-				return
+		else
+			-- Have to walk through auras by index
+			local i = 1
+			while true do
+				local aura = GetAuraDataByIndex(self.unit, i, filter)
+				if not aura then return end
+				if aura.spellId == spellEntry.id then 
+					self:AddInstanceToStacks(allStacks, spellEntry, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, nil, unpack(aura.points))
+					return
+				end
+				i = i + 1
 			end
-			j = j + 1
 		end
 	else
-		local name, icon, count, _, duration, expirationTime, _, _, _, spellID, _, _, _, _, _, value1, value2, value3 = AuraUtil.FindAuraByName(spellEntry.name, self.unit, filter)
-		if name then 
-			self:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, nil, value1, value2, value3)
-			return
+		-- Track by name
+		local aura = C_UnitAuras.GetAuraDataBySpellName(self.unit, spellEntry.name, filter)
+		if aura then
+			self:AddInstanceToStacks(allStacks, spellEntry, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, nil, unpack(aura.points))
 		end
 	end
 end
 
 function Bar:GetAuraInfoAllStacks(spellEntry, allStacks)
 	-- Get tracking info for all instances of buff/debuff
-	local j = 1
-	local filter = self.settings.BuffOrDebuff
+	local filter = self.barType  -- "HELPFUL" or "HARMFUL"
+	if self.settings.OnlyMine then
+		filter = filter .. "|PLAYER"
+	end
+	local i = 1
 	while true do
-		local aura = GetAuraDataByIndex(self.unit, j, filter)
-		if not aura then
-			break
-		end
+		local aura = GetAuraDataByIndex(self.unit, i, filter)
+		if not aura then return end
 		if aura.name == spellEntry.name or aura.spellId == spellEntry.id then 
-			self:AddInstanceToStacks(allStacks, spellEntry, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, nil, nil, nil, nil)
-			return
+			self:AddInstanceToStacks(allStacks, spellEntry, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, nil, unpack(aura.points))
 		end
-		j = j + 1
+		i = i + 1
 	end
 end
 
 function Bar:GetSpellUsableInfo(spellEntry, allStacks)
 	-- Get tracking info for reactive spell/ability
 	local spell = spellEntry.name or spellEntry.id
-	if not spell then 
-		return
-	end
+	if not spell then return end
 	local spellName, _, icon = GetSpellInfo(spell)
 	if spellName then
 		local isUsable, notEnoughMana = IsUsableSpell(spellName)
