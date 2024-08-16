@@ -619,6 +619,10 @@ end
 function Bar:GetCooldownInfo(spellInfo, allStacks)
 	-- Get tracking info for spell or item cooldown
 
+	-- local GetCooldown = spellInfo.cooldownFunction
+	-- if not GetCooldown then return end
+	-- local start, duration, _, name, icon, count, start2 = GetCooldown(self, spellInfo)
+
 	local start, duration, name, icon, count, start2
 	local GetCooldown = spellInfo.cooldownFunction
 	if GetCooldown then

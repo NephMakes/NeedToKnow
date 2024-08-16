@@ -11,7 +11,7 @@ local Bar = NeedToKnow.Bar
 local Cooldown = NeedToKnow.Cooldown
 
 -- Local versions of global functions
-local GetItemInfo = C_Item.GetItemInfo  -- or GetItemInfo
+local GetItemInfo = C_Item.GetItemInfo
 local GetItemCooldown = C_Container.GetItemCooldown
 local GetSpellInfo = GetSpellInfo
 local GetSpellCooldown = GetSpellCooldown
@@ -45,6 +45,16 @@ end
 
 --[[ Bar ]]--
 
+function Bar:SetCooldownSpells()
+	-- Called by Bar:SetSpells()
+	for _, spellEntry in pairs(self.spells) do
+		Cooldown.SetUpSpell(self, spellEntry)
+	end
+end
+
+
+--[[ Cooldown ]]--
+
 local function IsItemCooldown(itemIdentifier)
 	local isItemCooldown, itemID
 	local name, link, _, _, _, _, _, _, _, icon = GetItemInfo(itemIdentifier)
@@ -65,40 +75,36 @@ local function IsSpellCooldown(spellIdentifier)
 	return isSpellCooldown, name, icon, spellID
 end
 
-function Bar:SetCooldownSpells()
-	-- Called by Bar:SetSpells()
-	for _, spellEntry in pairs(self.spells) do
-
-		-- Check if item cooldown
-		if spellEntry.name then
-			-- Config by itemID not supported: values overlap with spellID
-			local isItemCooldown, _, icon, itemID = IsItemCooldown(spellEntry.name)
-			if isItemCooldown then
-				spellEntry.cooldownFunction = Cooldown.GetItemCooldown
-				spellEntry.icon = icon
-				spellEntry.id = itemID  -- GetItemCooldown() only accepts itemIDs
-				return
-			end
-		end
-
-		-- Check if spell cooldown
-		local spellIdentifier = spellEntry.id or spellEntry.name
-		local isSpellCooldown, name, icon, spellID = IsSpellCooldown(spellIdentifier)
-		if isSpellCooldown then
-			if self.settings.show_charges and GetSpellCharges(spellIdentifier) then
-				spellEntry.cooldownFunction = Cooldown.GetSpellChargesCooldown
-			else
-				spellEntry.cooldownFunction = Cooldown.GetSpellCooldown
-			end
-			spellEntry.name = name
+function Cooldown.SetUpSpell(bar, spellEntry)
+	-- Check if item cooldown
+	if spellEntry.name then
+		-- Config by itemID not supported: values overlap with spellID
+		local isItemCooldown, _, icon, itemID = IsItemCooldown(spellEntry.name)
+		if isItemCooldown then
+			spellEntry.cooldownFunction = Cooldown.GetItemCooldown
 			spellEntry.icon = icon
-			spellEntry.id = spellID
+			spellEntry.id = itemID  -- GetItemCooldown() only accepts itemIDs
 			return
 		end
-
-		-- Check again later: maybe just logged in or recently changed talents
-		spellEntry.cooldownFunction = Cooldown.GetUnresolvedCooldown
 	end
+
+	-- Check if spell cooldown
+	local spellIdentifier = spellEntry.id or spellEntry.name
+	local isSpellCooldown, name, icon, spellID = IsSpellCooldown(spellIdentifier)
+	if isSpellCooldown then
+		if bar.settings.show_charges and GetSpellCharges(spellIdentifier) then
+			spellEntry.cooldownFunction = Cooldown.GetSpellChargesCooldown
+		else
+			spellEntry.cooldownFunction = Cooldown.GetSpellCooldown
+		end
+		spellEntry.name = name
+		spellEntry.icon = icon
+		spellEntry.id = spellID
+		return
+	end
+
+	-- Check again later: maybe just logged in or recently changed talents
+	spellEntry.cooldownFunction = Cooldown.GetUnresolvedCooldown
 end
 
 --[[
@@ -138,9 +144,6 @@ function Cooldown.SetUpSpell(bar, info)
 	end
 end
 ]]--
-
-
---[[ Cooldown ]]--
 
 function Cooldown.GetItemCooldown(bar, spellInfo)
 	-- Called by bar:FindCooldown()

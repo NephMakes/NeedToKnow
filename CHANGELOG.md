@@ -2,6 +2,9 @@
 
 ## NeedToKnow
 
+### v4.7.5 (2024-08-16)
+* Another attempt at fixing cooldown issues in patch 11.0.2
+
 ### v4.7.4 (2024-08-15)
 * Updated Table of Contents for Retail patch 11.0.2
 * Fixed Lua errors with cooldowns in patch 11.0.2 (I think)
