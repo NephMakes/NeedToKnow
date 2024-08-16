@@ -22,13 +22,16 @@ local UnitExists = UnitExists
 local UnitGUID = UnitGUID
 
 -- Functions different between Retail and Classic as of 11.0.0
-local function GetMySpellInfo(spell)
+local GetSpellInfo = GetSpellInfo
+local function GetRetailSpellInfo(spell)
 	local info = C_Spell.GetSpellInfo(spell)  -- Only in Retail
 	if info then
 		return info.name, nil, info.iconID, info.castTime, info.minRange, info.maxRange, info.spellID, info.originalIconID
 	end
 end
-local GetSpellInfo = GetSpellInfo or GetMySpellInfo
+if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+	GetSpellInfo = GetRetailSpellInfo
+end
 
 
 --[[ Bar setup ]]--
@@ -619,15 +622,15 @@ end
 function Bar:GetCooldownInfo(spellInfo, allStacks)
 	-- Get tracking info for spell or item cooldown
 
-	-- local GetCooldown = spellInfo.cooldownFunction
-	-- if not GetCooldown then return end
-	-- local start, duration, _, name, icon, count, start2 = GetCooldown(self, spellInfo)
-
-	local start, duration, name, icon, count, start2
 	local GetCooldown = spellInfo.cooldownFunction
-	if GetCooldown then
-		start, duration, _, name, icon, count, start2 = GetCooldown(self, spellInfo)
-	end
+	if not GetCooldown then return end
+	local start, duration, _, name, icon, count, start2 = GetCooldown(self, spellInfo)
+
+--	local start, duration, name, icon, count, start2
+--	local GetCooldown = spellInfo.cooldownFunction
+--	if GetCooldown then
+--		start, duration, _, name, icon, count, start2 = GetCooldown(self, spellInfo)
+--	end
 
 	-- Filter out global cooldown
 	if start and (duration <= 1.5) then

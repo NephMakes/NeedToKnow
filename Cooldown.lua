@@ -107,46 +107,8 @@ function Cooldown.SetUpSpell(bar, spellEntry)
 	spellEntry.cooldownFunction = Cooldown.GetUnresolvedCooldown
 end
 
---[[
-function Cooldown.SetUpSpell(bar, info)
-	local spell = info.id or info.name
-	if not spell then return end
-
-	local name, icon, spellID, link
-
-	-- Check if item cooldown
-	if info.name then
-		-- Config by itemID not supported: itemID and spellID use overlapping values
-		name, link, _, _, _, _, _, _, _, icon = GetItemInfo(info.name)
-		if link then
-			info.id = link:match("item:(%d+):")
-			info.icon = icon
-			info.cooldownFunction = Cooldown.GetItemCooldown
-			return
-		end
-	end
-
-	-- Spell cooldown
-	name, _, icon, _, _, _, spellID = GetSpellInfo(spell)
-	local start, duration, enabled = GetSpellCooldown(spell)
-	if start then
-		info.name = name
-		info.id = spellID
-		info.icon = icon
-		if bar.settings.show_charges and GetSpellCharges(spell) then
-			info.cooldownFunction = Cooldown.GetSpellChargesCooldown
-		else
-			info.cooldownFunction = Cooldown.GetSpellCooldown
-		end
-	else
-		info.cooldownFunction = Cooldown.GetUnresolvedCooldown
-		-- Try again later in case we just logged in or recently changed talents
-	end
-end
-]]--
-
 function Cooldown.GetItemCooldown(bar, spellInfo)
-	-- Called by bar:FindCooldown()
+	-- Called by Bar:GetCooldownInfo
 	local start, duration, enabled = GetItemCooldown(spellInfo.id)
 	if start then
 		return start, duration, enabled, spellInfo.name, spellInfo.icon
@@ -154,7 +116,7 @@ function Cooldown.GetItemCooldown(bar, spellInfo)
 end
 
 function Cooldown.GetSpellCooldown(bar, spellInfo)
-	-- Called by Bar:GetCooldownInfo()
+	-- Called by Bar:GetCooldownInfo
 	local spell = spellInfo.id or spellInfo.name
 	local start, duration, enabled = GetSpellCooldown(spell)
 	if start and start > 0 then
@@ -178,7 +140,7 @@ function Cooldown.GetSpellCooldown(bar, spellInfo)
 end
 
 function Cooldown.GetSpellChargesCooldown(bar, spellInfo)
-	-- Called by bar:FindCooldown()
+	-- Called by Bar:GetCooldownInfo
 	local spell = spellInfo.id or spellInfo.name
 	local currentCharges, maxCharges, chargeStart, chargeDuration = GetSpellCharges(spell)
 	if currentCharges ~= maxCharges then
@@ -191,10 +153,11 @@ function Cooldown.GetSpellChargesCooldown(bar, spellInfo)
 	end
 end
 
-function Cooldown.GetUnresolvedCooldown(bar, spellInfo)
-	Cooldown.SetUpSpell(bar, spellInfo)
-	local f = spellInfo.cooldownFunction
+function Cooldown.GetUnresolvedCooldown(bar, spellEntry)
+	-- Called by Bar:GetCooldownInfo
+	Cooldown.SetUpSpell(bar, spellEntry)
+	local f = spellEntry.cooldownFunction
 	if f ~= Cooldown.GetUnresolvedCooldown then
-		return f(bar, spellInfo)
+		return f(bar, spellEntry)
 	end
 end
