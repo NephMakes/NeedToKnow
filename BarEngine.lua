@@ -422,11 +422,12 @@ end
 -- Kitjan made m_scratch a reusable table to track multiple instances of an aura with one bar
 local m_scratch = {}
 m_scratch.all_stacks = {
+	-- Stores tracked info
 	min = {
 		buffName = "", 
 		duration = 0, 
 		expirationTime = 0, 
-		iconPath = "",
+		icon = "",
 	},
 	max = {
 		duration = 0, 
@@ -440,7 +441,7 @@ m_scratch.buff_stacks = {
 		buffName = "", 
 		duration = 0, 
 		expirationTime = 0, 
-		iconPath = "",
+		icon = "",
 	},
 	max = {
 		duration = 0, 
@@ -454,30 +455,30 @@ function Bar:CheckAura()
 	-- Primary update call for active bars, called by many functions
 
 	local settings = self.settings
-	local all_stacks, name, icon, count, duration, expirationTime, shownName
+	local allStacks, name, icon, count, duration, expirationTime, shownName
 
 	local unitExists = self:UnitExists()
 	if unitExists then
-		all_stacks = m_scratch.all_stacks
-		self:ResetScratchStacks(all_stacks)
-		for _, spellInfo in pairs(self.spells) do
-			self:GetTrackedInfo(spellInfo, all_stacks)
-			if all_stacks.total > 0 and not settings.show_all_stacks then
+		allStacks = m_scratch.all_stacks
+		self:ResetScratchStacks(allStacks)
+		for _, spellEntry in pairs(self.spells) do
+			self:GetTrackedInfo(spellEntry, allStacks)
+			if allStacks.total > 0 and not settings.show_all_stacks then
 				break
 			end
 		end
-		if all_stacks.total > 0 then
-			name = all_stacks.min.buffName
-			icon = all_stacks.min.iconPath
-			count = all_stacks.total
+		if allStacks.total > 0 then
+			name = allStacks.min.name
+			icon = allStacks.min.icon
+			count = allStacks.total
 			if settings.show_all_stacks then
-				duration = all_stacks.max.duration
-				expirationTime = all_stacks.max.expirationTime
+				duration = allStacks.max.duration
+				expirationTime = allStacks.max.expirationTime
 			else
-				duration = all_stacks.min.duration
-				expirationTime = all_stacks.min.expirationTime
+				duration = allStacks.min.duration
+				expirationTime = allStacks.min.expirationTime
 			end
-			shownName = all_stacks.min.shownName
+			shownName = allStacks.min.shownName
 		end
 	end
 
@@ -550,7 +551,7 @@ function Bar:GetAuraInfo(spellEntry, allStacks)
 			-- Can get info directly
 			local aura = C_UnitAuras.GetPlayerAuraBySpellID(spellEntry.id)
 			if aura then
-				self:AddInstanceToStacks(allStacks, spellEntry, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, nil, unpack(aura.points))
+				self:AddTrackedInfo(allStacks, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, spellEntry.shownName, unpack(aura.points))
 			end
 		else
 			-- Have to walk through auras by index
@@ -559,7 +560,7 @@ function Bar:GetAuraInfo(spellEntry, allStacks)
 				local aura = GetAuraDataByIndex(self.unit, i, filter)
 				if not aura then return end
 				if aura.spellId == spellEntry.id then 
-					self:AddInstanceToStacks(allStacks, spellEntry, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, nil, unpack(aura.points))
+					self:AddTrackedInfo(allStacks, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, spellEntry.shownName, unpack(aura.points))
 					return
 				end
 				i = i + 1
@@ -569,7 +570,7 @@ function Bar:GetAuraInfo(spellEntry, allStacks)
 		-- Track by name
 		local aura = C_UnitAuras.GetAuraDataBySpellName(self.unit, spellEntry.name, filter)
 		if aura then
-			self:AddInstanceToStacks(allStacks, spellEntry, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, nil, unpack(aura.points))
+			self:AddTrackedInfo(allStacks, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, spellEntry.shownName, unpack(aura.points))
 		end
 	end
 end
@@ -585,7 +586,7 @@ function Bar:GetAuraInfoAllStacks(spellEntry, allStacks)
 		local aura = GetAuraDataByIndex(self.unit, i, filter)
 		if not aura then return end
 		if aura.name == spellEntry.name or aura.spellId == spellEntry.id then 
-			self:AddInstanceToStacks(allStacks, spellEntry, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, nil, unpack(aura.points))
+			self:AddTrackedInfo(allStacks, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, spellEntry.shownName, unpack(aura.points))
 		end
 		i = i + 1
 	end
@@ -610,17 +611,17 @@ function Bar:GetSpellUsableInfo(spellEntry, allStacks)
 				duration = self.duration
 				expirationTime = self.expirationTime
 			end
-			self:AddInstanceToStacks(allStacks, spellEntry, duration, spellName, 1, expirationTime, icon, nil)
+			self:AddTrackedInfo(allStacks, duration, spellName, 1, expirationTime, icon, spellEntry.shownName)
 		end
 	end
 end
 
-function Bar:GetCooldownInfo(spellInfo, allStacks)
+function Bar:GetCooldownInfo(spellEntry, allStacks)
 	-- Get tracking info for spell or item cooldown
 
-	local GetCooldown = spellInfo.cooldownFunction
+	local GetCooldown = spellEntry.cooldownFunction
 	if not GetCooldown then return end
-	local start, duration, _, name, icon, count, start2 = GetCooldown(self, spellInfo)
+	local start, duration, _, name, icon, count, start2 = GetCooldown(self, spellEntry)
 
 	-- Filter out global cooldown
 	if start and (duration <= 1.5) then
@@ -637,12 +638,12 @@ function Bar:GetCooldownInfo(spellInfo, allStacks)
 		local expirationTime = start + duration
 		if expirationTime > now + 0.1 then
 			if start2 then  -- returned by Cooldown.GetSpellChargesCooldown
-				self:AddInstanceToStacks(allStacks, spellInfo, duration, name, 1, start2 + duration, icon, nil)
+				self:AddTrackedInfo(allStacks, duration, name, 1, start2 + duration, icon, spellEntry.shownName)
 				count = count - 1
 			else
 				if not count then count = 1 end
 			end
-			self:AddInstanceToStacks(allStacks, spellInfo, duration, name, count, expirationTime, icon, nil)
+			self:AddTrackedInfo(allStacks, duration, name, count, expirationTime, icon, spellEntry.shownName)
 		end
 	end
 end
@@ -653,7 +654,7 @@ function Bar:GetEquipSlotCooldownInfo(spellEntry, allStacks)
 	local start, duration, enable = GetInventoryItemCooldown("player", spellEntry.id)
 	if start and start > 0 then
 		local icon = GetInventoryItemTexture("player", spellEntry.id)
-		self:AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, start + duration, icon, nil)
+		self:AddTrackedInfo(allStacks, duration, name, 1, start + duration, icon, spellEntry.shownName)
 	end
 end
 
@@ -696,7 +697,7 @@ function Bar:GetEquipBuffInfo(spellEntry, allStacks)
 	-- TO DO: Can we show name/icon of enchant instead of weapon slot?
 
 	-- print("FindEquipSlotBuff()", spellEntry.shownName, timeLeft)
-	-- self:AddInstanceToStacks(allStacks, spellEntry, duration, spellEntry.id, count, expirationTime, icon, nil)
+	-- self:AddTrackedInfo(allStacks, duration, spellEntry.id, count, expirationTime, icon, spellEntry.shownName)
 end
 
 -- Old tooltip-scanning code: 
@@ -747,7 +748,7 @@ function Bar:GetTotemInfo(spellEntry, allStacks)
 	for index = 1, 4 do
 		local _, name, startTime, duration, icon = GetTotemInfo(index)  
 		if name and name:find(spellName) then
-			self:AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, startTime + duration, icon, nil)
+			self:AddTrackedInfo(allStacks, duration, name, 1, startTime + duration, icon, spellEntry.shownName)
 		end
 	end
 end
@@ -765,9 +766,9 @@ function Bar:GetBuffCooldownInfo(spellEntry, allStacks)
 		if buffStacks.max.expirationTime == 0 then
 			-- TODO: This doesn't work well as a substitute for telling when the aura was applied
 			if not self.expirationTime then
-				self:AddInstanceToStacks(allStacks, spellEntry, duration, buffStacks.min.buffName, 1, duration + now, buffStacks.min.iconPath, nil)
+				self:AddTrackedInfo(allStacks, duration, buffStacks.min.name, 1, duration + now, buffStacks.min.icon, spellEntry.shownName)
 			else
-				self:AddInstanceToStacks(allStacks, spellEntry, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, nil)
+				self:AddTrackedInfo(allStacks, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, spellEntry.shownName)
 			end
 			return
 		end
@@ -775,24 +776,24 @@ function Bar:GetBuffCooldownInfo(spellEntry, allStacks)
 		local start = buffStacks.max.expirationTime - buffStacks.max.duration
 		local expirationTime = start + duration
 		if expirationTime > now then
-			self:AddInstanceToStacks(allStacks, spellEntry, duration, buffStacks.min.buffName, 1, expirationTime, buffStacks.min.iconPath, nil)                   
+			self:AddTrackedInfo(allStacks, duration, buffStacks.min.name, 1, expirationTime, buffStacks.min.icon, spellEntry.shownName)                   
 		end
 	elseif self.expirationTime and self.expirationTime > now + 0.1 then
-		self:AddInstanceToStacks(allStacks, spellEntry, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, nil)
+		self:AddTrackedInfo(allStacks, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, spellEntry.shownName)
 	end
 end
 
-function Bar:AddInstanceToStacks(allStacks, spellEntry, duration, name, count, expirationTime, icon, sourceUnit, value1, value2, value3)
+function Bar:AddTrackedInfo(allStacks, duration, name, count, expirationTime, icon, shownName, value1, value2, value3)
 	if not duration then return end
 	if not count or count < 1 then 
 		count = 1 
 	end
 	if allStacks.total == 0 or expirationTime < allStacks.min.expirationTime then
-		allStacks.min.buffName = name
-		allStacks.min.iconPath = icon
+		allStacks.min.name = name
+		allStacks.min.icon = icon
 		allStacks.min.duration = duration
 		allStacks.min.expirationTime = expirationTime
-		allStacks.min.shownName = spellEntry.shownName
+		allStacks.min.shownName = shownName
 	end
 	if allStacks.total == 0 or expirationTime > allStacks.max.expirationTime then
 		allStacks.max.duration = duration
@@ -805,7 +806,7 @@ function Bar:ResetScratchStacks(auraStacks)
 	auraStacks.total = 0
 end
 
-function Bar:OnDurationFound(buffName, iconPath, count, duration, expirationTime, shownName)
+function Bar:OnDurationFound(name, icon, count, duration, expirationTime, shownName)
 	-- Update bar to show status of tracked spell/item/ability
 	-- Called by Bar:CheckAura
 
@@ -813,11 +814,11 @@ function Bar:OnDurationFound(buffName, iconPath, count, duration, expirationTime
 
 	local extended
 	if settings.bDetectExtends then
-		extended, duration = self:GetExtendedTime(buffName, duration, expirationTime, self.unit)
+		extended, duration = self:GetExtendedTime(name, duration, expirationTime, self.unit)
 	end
 
-	self.buffName = buffName
-	self.iconPath = iconPath
+	self.buffName = name
+	self.iconPath = icon
 	self.count = count
 	self.duration = duration
 	self.expirationTime = expirationTime
