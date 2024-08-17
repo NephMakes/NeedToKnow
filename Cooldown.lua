@@ -107,11 +107,11 @@ function Cooldown.SetUpSpell(bar, spellEntry)
 	spellEntry.cooldownFunction = Cooldown.GetUnresolvedCooldown
 end
 
-function Cooldown.GetItemCooldown(bar, spellInfo)
+function Cooldown.GetItemCooldown(bar, spellEntry)
 	-- Called by Bar:GetCooldownInfo
-	local start, duration, enabled = GetItemCooldown(spellInfo.id)
+	local start, duration, enabled = GetItemCooldown(spellEntry.id)
 	if start then
-		return start, duration, enabled, spellInfo.name, spellInfo.icon
+		return start, duration, enabled, spellEntry.name, spellEntry.icon
 	end
 end
 

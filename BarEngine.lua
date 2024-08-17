@@ -144,7 +144,7 @@ end
 
 function Bar:SetSpells()
 	-- Set spells/items/abilities tracked by bar
-	-- Stored as bar.spells = {{name, id, shownName}, }
+	-- Stored as bar.spells = {{name, id, shownName, ...}, }
 	-- Called by Bar:Update
 
 	local settings = self.settings
@@ -448,10 +448,6 @@ m_scratch.buff_stacks = {
 	},
 	total = 0,
 }
-m_scratch.bar_entry = {
-	barSpell = "",
-	isSpellID = false,
-}
 
 function Bar:CheckAura()
 	-- Get info for tracked buff/debuff/cooldown and act accordingly
@@ -626,12 +622,6 @@ function Bar:GetCooldownInfo(spellInfo, allStacks)
 	if not GetCooldown then return end
 	local start, duration, _, name, icon, count, start2 = GetCooldown(self, spellInfo)
 
---	local start, duration, name, icon, count, start2
---	local GetCooldown = spellInfo.cooldownFunction
---	if GetCooldown then
---		start, duration, _, name, icon, count, start2 = GetCooldown(self, spellInfo)
---	end
-
 	-- Filter out global cooldown
 	if start and (duration <= 1.5) then
 		if self.expirationTime and self.expirationTime <= start + duration then
@@ -658,17 +648,12 @@ function Bar:GetCooldownInfo(spellInfo, allStacks)
 end
 
 function Bar:GetEquipSlotCooldownInfo(spellEntry, allStacks)
-	-- Get tracking info for item cooldown by equipment slot
-	if spellEntry.id then
-		local itemID = GetInventoryItemID("player", spellEntry.id)
-		if itemID then
-			local itemEntry = m_scratch.bar_entry
-			itemEntry.id = itemID
-			local start, duration, _, name, icon = Cooldown.GetItemCooldown(bar, itemEntry)
-			if start and start > 0 then
-				self:AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, start + duration, icon, nil)
-			end
-		end
+	-- Get tracking info for cooldown of equipped item
+	if not spellEntry.id then return end
+	local start, duration, enable = GetInventoryItemCooldown("player", spellEntry.id)
+	if start and start > 0 then
+		local icon = GetInventoryItemTexture("player", spellEntry.id)
+		self:AddInstanceToStacks(allStacks, spellEntry, duration, name, 1, start + duration, icon, nil)
 	end
 end
 
