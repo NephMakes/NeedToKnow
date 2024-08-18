@@ -137,6 +137,11 @@ function Cooldown.GetSpellCooldown(bar, spellInfo)
 			return start, duration, enabled, spellInfo.name, spellInfo.icon
 		end
 	end
+	--[[
+	if start then
+		return start, duration, enabled, spellInfo.name, spellInfo.icon
+	end
+	]]--
 end
 
 function Cooldown.GetSpellChargesCooldown(bar, spellInfo)

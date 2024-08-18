@@ -225,6 +225,14 @@ function Bar:SetValue(timeLeft)
 	self.barValue = timeLeft  -- So bars size properly with resized group
 end
 
+function Bar:CondenseBarGroup()
+	-- Called by Bar:CheckAura
+	if self.isVisible ~= self:IsVisible() then
+		self:GetParent():UpdateBarPosition()
+		self.isVisible = self:IsVisible()
+	end
+end
+
 
 --[[ Bar config ]]--
 

@@ -14,6 +14,8 @@ local INVSLOT_RANGED = INVSLOT_RANGED
 -- Local versions of frequently-used global functions
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
 local GetAuraDataByIndex = C_UnitAuras.GetAuraDataByIndex
+local GetAuraDataBySpellName = C_UnitAuras.GetAuraDataBySpellName
+local GetPlayerAuraBySpellID = C_UnitAuras.GetPlayerAuraBySpellID
 local GetInventoryItemID = GetInventoryItemID
 local GetTime = GetTime
 local GetTotemInfo = GetTotemInfo
@@ -53,6 +55,7 @@ function Bar:Update()
 	if not self.groupDuration or self.groupDuration <= 0 then
 		self.groupDuration = nil
 	end
+	self.condenseGroup = groupSettings.condenseGroup
 
 	if NeedToKnow.isLocked then
 		if self.settings.Enabled and groupSettings.Enabled then
@@ -190,6 +193,8 @@ function Bar:SetSpells()
 end
 
 function Bar:SetBuffCooldownResetSpells()
+	-- Set spells that reset buff cooldown
+	-- For example: a Classic Druid's Eclipse resets cooldown on Nature's Grace
 	local settings = self.settings
 	if settings.buffcd_reset_spells and settings.buffcd_reset_spells ~= "" then
 		self.reset_spells = {}
@@ -451,12 +456,13 @@ m_scratch.buff_stacks = {
 }
 
 function Bar:CheckAura()
-	-- Get info for tracked buff/debuff/cooldown and act accordingly
+	-- Get info for tracked spell/item/ability and act on it
 	-- Primary update call for active bars, called by many functions
 
 	local settings = self.settings
 	local allStacks, name, icon, count, duration, expirationTime, shownName
 
+	-- Get info
 	local unitExists = self:UnitExists()
 	if unitExists then
 		allStacks = m_scratch.all_stacks
@@ -481,22 +487,18 @@ function Bar:CheckAura()
 			shownName = allStacks.min.shownName
 		end
 	end
-
 	if self.barType == "BUFFCD" and self.reset_spells and duration then
 		duration = self:GetBuffCooldownReset(duration, expirationTime)
 	end
 
+	-- Act on info
 	if duration then
 		self:OnDurationFound(name, icon, count, duration, expirationTime, shownName)
 	else
 		self:OnDurationAbsent(unitExists)
 	end
-
-	-- Condense/expand bar group
-	local barGroup = self:GetParent()
-	if barGroup.settings.condenseGroup and (self.isVisible ~= self:IsVisible()) then
-		barGroup:UpdateBarPosition()
-		self.isVisible = self:IsVisible()
+	if self.condenseGroup then
+		self:CondenseBarGroup()
 	end
 end
 
@@ -538,6 +540,7 @@ end
 
 function Bar:GetAuraInfo(spellEntry, allStacks)
 	-- Get tracking info for first instance of buff/debuff
+
 	local filter = self.barType  -- "HELPFUL" or "HARMFUL"
 	if self.barType == "BUFFCD" then
 		filter = "HELPFUL"
@@ -545,33 +548,30 @@ function Bar:GetAuraInfo(spellEntry, allStacks)
 	if self.settings.OnlyMine then
 		filter = filter.."|PLAYER"
 	end
-	if spellEntry.id then
-		-- Track by spellID
+
+	local aura
+	local entryName = spellEntry.name
+	local entryID = spellEntry.id
+	if entryName then
+		aura = GetAuraDataBySpellName(self.unit, entryName, filter)
+	elseif entryID then
 		if self.unit == "player" then
-			-- Can get info directly
-			local aura = C_UnitAuras.GetPlayerAuraBySpellID(spellEntry.id)
-			if aura then
-				self:AddTrackedInfo(allStacks, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, spellEntry.shownName, unpack(aura.points))
-			end
+			aura = GetPlayerAuraBySpellID(entryID)
 		else
-			-- Have to walk through auras by index
 			local i = 1
 			while true do
-				local aura = GetAuraDataByIndex(self.unit, i, filter)
-				if not aura then return end
-				if aura.spellId == spellEntry.id then 
-					self:AddTrackedInfo(allStacks, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, spellEntry.shownName, unpack(aura.points))
-					return
+				local thisAura = GetAuraDataByIndex(self.unit, i, filter)
+				if not thisAura then break end
+				if thisAura.spellId == entryID then
+					aura = thisAura
+					break
 				end
 				i = i + 1
 			end
 		end
-	else
-		-- Track by name
-		local aura = C_UnitAuras.GetAuraDataBySpellName(self.unit, spellEntry.name, filter)
-		if aura then
-			self:AddTrackedInfo(allStacks, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, spellEntry.shownName, unpack(aura.points))
-		end
+	end
+	if aura then
+		self:AddTrackedInfo(allStacks, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, spellEntry.shownName, unpack(aura.points))
 	end
 end
 
@@ -579,12 +579,13 @@ function Bar:GetAuraInfoAllStacks(spellEntry, allStacks)
 	-- Get tracking info for all instances of buff/debuff
 	local filter = self.barType  -- "HELPFUL" or "HARMFUL"
 	if self.settings.OnlyMine then
-		filter = filter .. "|PLAYER"
+		filter = filter.."|PLAYER"
 	end
+	local aura
 	local i = 1
 	while true do
-		local aura = GetAuraDataByIndex(self.unit, i, filter)
-		if not aura then return end
+		aura = GetAuraDataByIndex(self.unit, i, filter)
+		if not aura then break end
 		if aura.name == spellEntry.name or aura.spellId == spellEntry.id then 
 			self:AddTrackedInfo(allStacks, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, spellEntry.shownName, unpack(aura.points))
 		end
@@ -749,6 +750,7 @@ function Bar:GetTotemInfo(spellEntry, allStacks)
 		local _, name, startTime, duration, icon = GetTotemInfo(index)  
 		if name and name:find(spellName) then
 			self:AddTrackedInfo(allStacks, duration, name, 1, startTime + duration, icon, spellEntry.shownName)
+			return
 		end
 	end
 end
@@ -783,6 +785,10 @@ function Bar:GetBuffCooldownInfo(spellEntry, allStacks)
 	end
 end
 
+function Bar:ResetScratchStacks(stacks)
+	stacks.total = 0
+end
+
 function Bar:AddTrackedInfo(allStacks, duration, name, count, expirationTime, icon, shownName, value1, value2, value3)
 	if not duration then return end
 	if not count or count < 1 then 
@@ -800,10 +806,6 @@ function Bar:AddTrackedInfo(allStacks, duration, name, count, expirationTime, ic
 		allStacks.max.expirationTime = expirationTime
 	end 
 	allStacks.total = allStacks.total + count
-end
-
-function Bar:ResetScratchStacks(auraStacks)
-	auraStacks.total = 0
 end
 
 function Bar:OnDurationFound(name, icon, count, duration, expirationTime, shownName)
