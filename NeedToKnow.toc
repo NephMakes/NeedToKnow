@@ -17,7 +17,7 @@ libs\LibStub\LibStub.lua
 libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
 libs\LibSharedMedia-3.0\lib.xml
 
-# Setup
+# Addon setup
 NeedToKnow.lua
 Localization.lua
 ExecutiveFrame.lua
@@ -35,6 +35,15 @@ Blink.lua
 BossFight.lua
 CastTime.lua
 UnitLastRaid.lua
+
+# Bar types
+Aura.lua
+# EquipBuff.lua
+SpellUsable.lua
+Totem.lua
+SpellCooldown.lua
+EquipCooldown.lua
+BuffCooldown.lua
 
 # Config UI
 BarMenu.lua

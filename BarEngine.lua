@@ -79,6 +79,21 @@ function Bar:SetBarType()
 	self.barType = settings.BuffOrDebuff
 	local barType = self.barType
 
+	-- BarType mixins provide Bar:SetBarTypeInfo, ...
+	local barTypeMixin = {
+		HELPFUL = NeedToKnow.AuraBarMixin, 
+		HARMFUL = NeedToKnow.AuraBarMixin, 
+		-- EQUIPBUFF = NeedToKnow.EquipBuffBarMixin, 
+		USABLE = NeedToKnow.SpellUsableBarMixin, 
+		TOTEM = NeedToKnow.TotemBarMixin, 
+		CASTCD = NeedToKnow.SpellCooldownBarMixin, 
+		EQUIPSLOT = NeedToKnow.EquipCooldownBarMixin, 
+		BUFFCD = NeedToKnow.BuffCooldownBarMixin, 
+	}
+	Mixin(self, barTypeMixin[barType])
+
+	self:SetBarTypeInfo()
+
 	-- Set unit
 	if barType == "BUFFCD" or 
 		barType == "TOTEM" or 
@@ -91,11 +106,13 @@ function Bar:SetBarType()
 	end
 	self.unit = settings.Unit
 
-	-- Replace default Bar:UnitExists() for "player" and "lastraid"
+	-- Set UnitExists function
 	if settings.Unit == "player" then
-		self.UnitExists = self.UnitExistsPlayer
+		self.UnitExists = Bar.UnitExistsPlayer
 	elseif settings.Unit == "lastraid" then
-		self.UnitExists = self.UnitExistsLastRaid
+		self.UnitExists = Bar.UnitExistsLastRaid
+	else
+		self.UnitExists = Bar.UnitExists
 	end
 
 	-- Set tracking functions
@@ -110,7 +127,7 @@ function Bar:SetBarType()
 	elseif barType == "USABLE" then
 		self.GetTrackedInfo = self.GetSpellUsableInfo
 	elseif barType == "EQUIPSLOT" then
-		self.GetTrackedInfo = self.GetEquipSlotCooldownInfo
+		self.GetTrackedInfo = self.GetEquipCooldownInfo
 	elseif barType == "CASTCD" then
 		self.GetTrackedInfo = self.GetCooldownInfo
 	elseif barType == "EQUIPBUFF" then
@@ -503,6 +520,7 @@ function Bar:CheckAura()
 end
 
 function Bar:GetBuffCooldownReset(duration, expirationTime)
+	-- For example Classic Druid Eclipse resets internal cooldown on Nature's Grace
 	local maxStart = 0
 	local tNow = GetTime()
 	local buff_stacks = m_scratch.buff_stacks
@@ -540,6 +558,7 @@ end
 
 function Bar:GetAuraInfo(spellEntry, allStacks)
 	-- Get tracking info for first instance of buff/debuff
+	-- Called by Bar:CheckAura, Bar:GetBuffCooldownInfo, Bar:GetBuffCooldownReset
 
 	local filter = self.barType  -- "HELPFUL" or "HARMFUL"
 	if self.barType == "BUFFCD" then
@@ -554,20 +573,18 @@ function Bar:GetAuraInfo(spellEntry, allStacks)
 	local entryID = spellEntry.id
 	if entryName then
 		aura = GetAuraDataBySpellName(self.unit, entryName, filter)
-	elseif entryID then
-		if self.unit == "player" then
-			aura = GetPlayerAuraBySpellID(entryID)
-		else
-			local i = 1
-			while true do
-				local thisAura = GetAuraDataByIndex(self.unit, i, filter)
-				if not thisAura then break end
-				if thisAura.spellId == entryID then
-					aura = thisAura
-					break
-				end
-				i = i + 1
+	elseif entryID and (self.unit == "player") then
+		aura = GetPlayerAuraBySpellID(entryID)
+	elseif entryId then
+		local i = 1
+		while true do
+			local thisAura = GetAuraDataByIndex(self.unit, i, filter)
+			if not thisAura then break end
+			if thisAura.spellId == entryID then
+				aura = thisAura
+				break
 			end
+			i = i + 1
 		end
 	end
 	if aura then
@@ -649,8 +666,9 @@ function Bar:GetCooldownInfo(spellEntry, allStacks)
 	end
 end
 
-function Bar:GetEquipSlotCooldownInfo(spellEntry, allStacks)
-	-- Get tracking info for cooldown of equipped item
+function Bar:GetEquipCooldownInfo(spellEntry, allStacks)
+	-- Get tracking info for cooldown of equipped item 
+	-- by inventorySlotID (stored as spellEntry.id)
 	if not spellEntry.id then return end
 	local start, duration, enable = GetInventoryItemCooldown("player", spellEntry.id)
 	if start and start > 0 then
@@ -660,6 +678,7 @@ function Bar:GetEquipSlotCooldownInfo(spellEntry, allStacks)
 end
 
 function Bar:GetEquipBuffInfo(spellEntry, allStacks)
+	-- NOT YET IMPLEMENTED
 	-- Get tracking info for temporary weapon enhancement (poison, sharpening 
 	-- stone, etc) by inventorySlotID
 
