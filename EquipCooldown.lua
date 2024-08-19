@@ -13,16 +13,17 @@ function BarMixin:SetBarTypeInfo()
 	-- Set tracking function
 
 	-- Set other info
-	self.checkOnNoTimeLeft = true
-		-- For Bar:OnUpdate. Item cooldowns don't fire event on expire. 
+	self.checkOnNoTimeLeft = true  -- For Bar:OnUpdate. No event when item cooldowns expire. 
 end
 
 function BarMixin:RegisterBarTypeEvents()
 	-- Called by Bar:Activate
+	self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 end
 
 function BarMixin:UnregisterBarTypeEvents()
 	-- Called by Bar:Inactivate
+	self:UnregisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 end
 
 -- function BarMixin:EXAMPLE_EVENT() end

@@ -18,10 +18,12 @@ end
 
 function BarMixin:RegisterBarTypeEvents()
 	-- Called by Bar:Activate
+	self:UnregisterEvent("SPELL_UPDATE_USABLE")
 end
 
 function BarMixin:UnregisterBarTypeEvents()
 	-- Called by Bar:Inactivate
+	self:UnregisterEvent("SPELL_UPDATE_USABLE")
 end
 
 -- function BarMixin:EXAMPLE_EVENT() end

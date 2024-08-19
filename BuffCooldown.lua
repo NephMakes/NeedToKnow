@@ -19,10 +19,12 @@ end
 
 function BarMixin:RegisterBarTypeEvents()
 	-- Called by Bar:Activate
+	self:RegisterEvent("UNIT_AURA")
 end
 
 function BarMixin:UnregisterBarTypeEvents()
 	-- Called by Bar:Inactivate
+	self:UnregisterEvent("UNIT_AURA")
 end
 
 -- function BarMixin:EXAMPLE_EVENT() end

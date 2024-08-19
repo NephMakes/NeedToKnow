@@ -18,10 +18,12 @@ end
 
 function BarMixin:RegisterBarTypeEvents()
 	-- Called by Bar:Activate
+	self:RegisterEvent("PLAYER_TOTEM_UPDATE")
 end
 
 function BarMixin:UnregisterBarTypeEvents()
 	-- Called by Bar:Inactivate
+	self:UnregisterEvent("PLAYER_TOTEM_UPDATE")
 end
 
 -- function BarMixin:EXAMPLE_EVENT() end

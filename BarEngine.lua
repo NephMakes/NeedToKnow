@@ -79,7 +79,11 @@ function Bar:SetBarType()
 	self.barType = settings.BuffOrDebuff
 	local barType = self.barType
 
-	-- BarType mixins provide Bar:SetBarTypeInfo, ...
+	-- BarType mixins provide
+	--   Bar:SetBarTypeInfo,
+	--   Bar:RegisterBarTypeEvents, 
+	--   Bar:UnregisterBarTypeEvents, 
+	--   ...
 	local barTypeMixin = {
 		HELPFUL = NeedToKnow.AuraBarMixin, 
 		HARMFUL = NeedToKnow.AuraBarMixin, 
@@ -237,53 +241,12 @@ end
 
 function Bar:Activate()
 	-- Called by Bar:Update if NeedToKnow is locked
-
 	self:SetScript("OnEvent", self.OnEvent)
 	self:SetScript("OnUpdate", self.OnUpdate)
 	self.nextUpdate = GetTime()
+	self:RegisterBarTypeEvents()
 
 	local settings = self.settings
-	local barType = self.barType
-
-	-- Tracking events
-	if barType == "TOTEM" then
-		self:RegisterEvent("PLAYER_TOTEM_UPDATE")
-	elseif barType == "CASTCD" then
-		self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
-		self:RegisterEvent("SPELL_UPDATE_COOLDOWN")
-	elseif barType == "EQUIPSLOT" then
-		self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
-	elseif barType == "EQUIPBUFF" then
-		-- self:RegisterEvent("WEAPON_ENCHANT_CHANGED")
-		self:RegisterEvent("UNIT_INVENTORY_CHANGED")
-	elseif barType == "USABLE" then
-		self:RegisterEvent("SPELL_UPDATE_USABLE")
-	elseif self.unit == "targettarget" then
-		-- We don't get UNIT_AURA for target of target
-		self:RegisterEvent("PLAYER_TARGET_CHANGED")
-		self:RegisterEvent("UNIT_TARGET")
-		self:RegisterCombatLog() 
-	else
-		self:RegisterEvent("UNIT_AURA")
-	end
-
-	-- Unit events
-	if self.unit == "target" then
-		self:RegisterEvent("PLAYER_TARGET_CHANGED")
-	elseif self.unit == "focus" then
-		self:RegisterEvent("PLAYER_FOCUS_CHANGED")
-	elseif self.unit == "pet" then
-		self:RegisterEvent("UNIT_PET")
-		-- self:RegisterUnitEvent("UNIT_PET", "pet")  -- TODO
-	elseif settings.Unit == "lastraid" then
-		self:RegisterLastRaid()
-	end
-
-	if settings.bDetectExtends then
-		self:RegisterExtendedTime()
-	end
-
-	-- Blink events
 	if settings.blink_enabled then
 		if not settings.blink_ooc then
 			self:RegisterEvent("PLAYER_REGEN_DISABLED")
@@ -293,45 +256,21 @@ function Bar:Activate()
 			self:RegisterBossFight()
 		end
 	end
-end
-
-function Bar:RegisterCombatLog()
-	-- For monitoring target of target
-	if UnitExists(self.unit) then
-		self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	else
-		self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	if settings.bDetectExtends then
+		self:RegisterExtendedTime()
 	end
 end
 
 function Bar:Inactivate()
 	self:SetScript("OnEvent", nil)
 	self:SetScript("OnUpdate", nil)
-
-	local eventList = {
-		"ACTIONBAR_UPDATE_COOLDOWN", 
-		"COMBAT_LOG_EVENT_UNFILTERED", 
-		"PLAYER_FOCUS_CHANGED", 
-		"PLAYER_REGEN_DISABLED", 
-		"PLAYER_REGEN_ENABLED", 
-		"PLAYER_TARGET_CHANGED", 
-		"PLAYER_TOTEM_UPDATE", 
-		"SPELL_UPDATE_COOLDOWN", 
-		"SPELL_UPDATE_USABLE", 
-		"UNIT_AURA", 
-		"UNIT_PET", 
-		"UNIT_TARGET", 
---		"WEAPON_ENCHANT_CHANGED", 
---		"UNIT_INVENTORY_CHANGED", 
-	}
-	for _, event in pairs(eventList) do
-		self:UnregisterEvent(event)
-	end
+	self:UnregisterBarTypeEvents()
 
 	self.isBlinking = nil
+	self:UnregisterEvent("PLAYER_REGEN_DISABLED")
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
 	self:UnregisterBossFight()
 	self:UnregisterExtendedTime()
-	self:UnregisterLastRaid()
 end
 
 
@@ -363,7 +302,7 @@ function Bar:COMBAT_LOG_EVENT_UNFILTERED(unit, ...)
 	local _, event, _, _, _, _, _, targetGUID, _, _, _, spellID, spellName = CombatLogGetCurrentEventInfo()
 	if auraEvents[event] then
 		if targetGUID == UnitGUID(self.unit) then
-			if self.auraName:find(spellID) or self.auraName:find(spellName) then 
+			if self.buffName:find(spellID) or self.buffName:find(spellName) then 
 				self:CheckAura()
 			end
 		end
@@ -518,6 +457,13 @@ function Bar:CheckAura()
 		self:CondenseBarGroup()
 	end
 end
+
+--[[
+do
+	Bar.UpdateTracking = Bar.CheckAura  -- Temporary alias
+end
+-- function Bar:UpdateTracking() end  -- TODO (will replace CheckAura)
+]]--
 
 function Bar:GetBuffCooldownReset(duration, expirationTime)
 	-- For example Classic Druid Eclipse resets internal cooldown on Nature's Grace
