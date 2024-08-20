@@ -4,27 +4,21 @@ local _, NeedToKnow = ...
 NeedToKnow.TotemBarMixin = {}
 local BarMixin = NeedToKnow.TotemBarMixin
 
-
---[[ BarMixin ]]--
-
 function BarMixin:SetBarTypeInfo()
 	-- Called by Bar:SetBarType
-
-	-- Set tracking function
-
-	-- Set other info
+	self.settings.Unit = "player"
+	self.GetTrackedInfo = self.GetTotemInfo
 	self.checkOnNoTimeLeft = nil  -- For Bar:OnUpdate
 end
 
 function BarMixin:RegisterBarTypeEvents()
-	-- Called by Bar:Activate
 	self:RegisterEvent("PLAYER_TOTEM_UPDATE")
 end
 
 function BarMixin:UnregisterBarTypeEvents()
-	-- Called by Bar:Inactivate
 	self:UnregisterEvent("PLAYER_TOTEM_UPDATE")
 end
 
--- function BarMixin:EXAMPLE_EVENT() end
-
+function BarMixin:PLAYER_TOTEM_UPDATE(totemSlot)
+	self:UpdateTracking()
+end

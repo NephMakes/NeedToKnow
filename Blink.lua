@@ -1,7 +1,32 @@
--- Blink bar when aura/cooldown missing
+-- Blink bar when aura/cooldown/etc absent
 
 local _, NeedToKnow = ...
 local Bar = NeedToKnow.Bar
+
+function Bar:RegisterBlinkEvents()
+	local settings = self.settings
+	if not settings.blink_ooc then
+		self:RegisterEvent("PLAYER_REGEN_DISABLED")
+		self:RegisterEvent("PLAYER_REGEN_ENABLED")
+	end
+	if settings.blink_boss then
+		self:RegisterBossFight()
+	end
+end
+
+function Bar:UnregisterBlinkEvents()
+	self:UnregisterEvent("PLAYER_REGEN_DISABLED")
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	self:UnregisterBossFight()
+end
+
+function Bar:PLAYER_REGEN_DISABLED()
+	self:UpdateTracking()
+end
+
+function Bar:PLAYER_REGEN_ENABLED()
+	self:UpdateTracking()
+end
 
 function Bar:ShouldBlink(barSettings, unitExists)
 	-- Determine if bar should blink, return true/false
@@ -25,7 +50,7 @@ function Bar:ShouldBlink(barSettings, unitExists)
 end
 
 function Bar:Blink(barSettings)
-	-- Called by Bar:CheckAura
+	-- Called by Bar:UpdateTracking
 	if not self.isBlinking then
 		self.isBlinking = true
 		self.blinkPhase = 0

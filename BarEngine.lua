@@ -77,83 +77,37 @@ function Bar:SetBarType()
 
 	local settings = self.settings
 	self.barType = settings.BuffOrDebuff
-	local barType = self.barType
 
 	-- BarType mixins provide
 	--   Bar:SetBarTypeInfo,
 	--   Bar:RegisterBarTypeEvents, 
 	--   Bar:UnregisterBarTypeEvents, 
+	--   Most Bar:EVENTS, 
 	--   ...
 	local barTypeMixin = {
 		HELPFUL = NeedToKnow.AuraBarMixin, 
 		HARMFUL = NeedToKnow.AuraBarMixin, 
-		-- EQUIPBUFF = NeedToKnow.EquipBuffBarMixin, 
+		EQUIPBUFF = NeedToKnow.EquipBuffBarMixin, 
 		USABLE = NeedToKnow.SpellUsableBarMixin, 
 		TOTEM = NeedToKnow.TotemBarMixin, 
 		CASTCD = NeedToKnow.SpellCooldownBarMixin, 
 		EQUIPSLOT = NeedToKnow.EquipCooldownBarMixin, 
 		BUFFCD = NeedToKnow.BuffCooldownBarMixin, 
 	}
-	Mixin(self, barTypeMixin[barType])
-
+	Mixin(self, barTypeMixin[self.barType])
 	self:SetBarTypeInfo()
 
-	-- Set unit
-	if barType == "BUFFCD" or 
-		barType == "TOTEM" or 
-		barType == "USABLE" or 
-		barType == "EQUIPSLOT" or 
-		barType == "EQUIPBUFF" or 
-		barType == "CASTCD" 
-	then
-		settings.Unit = "player"
-	end
 	self.unit = settings.Unit
-
-	-- Set UnitExists function
 	if settings.Unit == "player" then
 		self.UnitExists = Bar.UnitExistsPlayer
 	elseif settings.Unit == "lastraid" then
 		self.UnitExists = Bar.UnitExistsLastRaid
 	else
-		self.UnitExists = Bar.UnitExists
-	end
-
-	-- Set tracking functions
-	if barType == "BUFFCD" then
-		self.GetTrackedInfo = self.GetBuffCooldownInfo
-		local duration = tonumber(settings.buffcd_duration)
-		if not duration or duration < 1 then
-			print("NeedToKnow: Please set internal cooldown time for ", settings.AuraName)
-		end
-	elseif barType == "TOTEM" then
-		self.GetTrackedInfo = self.GetTotemInfo
-	elseif barType == "USABLE" then
-		self.GetTrackedInfo = self.GetSpellUsableInfo
-	elseif barType == "EQUIPSLOT" then
-		self.GetTrackedInfo = self.GetEquipCooldownInfo
-	elseif barType == "CASTCD" then
-		self.GetTrackedInfo = self.GetCooldownInfo
-	elseif barType == "EQUIPBUFF" then
-		self.GetTrackedInfo = self.GetEquipBuffInfo
-	elseif settings.show_all_stacks then
-		self.GetTrackedInfo = self.GetAuraInfoAllStacks
-	else
-		self.GetTrackedInfo = self.GetAuraInfo
-	end
-
-	-- Should Bar:OnUpdate check tracked spell when time runs out
-	self.checkOnNoTimeLeft = nil
-	if barType == "CASTCD" or 
-		self.barType == "BUFFCD" or 
-		self.barType == "EQUIPSLOT" 
-	then
-		-- Item cooldowns don't fire event on expire. Others fire too soon. 
-		self.checkOnNoTimeLeft = true
+		self.UnitExists = Bar.UnitExistsGeneric
 	end
 end
 
-function Bar:UnitExists()
+function Bar:UnitExistsGeneric()
 	return UnitExists(self.unit)
 end
 
@@ -248,13 +202,7 @@ function Bar:Activate()
 
 	local settings = self.settings
 	if settings.blink_enabled then
-		if not settings.blink_ooc then
-			self:RegisterEvent("PLAYER_REGEN_DISABLED")
-			self:RegisterEvent("PLAYER_REGEN_ENABLED")
-		end
-		if settings.blink_boss then
-			self:RegisterBossFight()
-		end
+		self:RegisterBlinkEvents()
 	end
 	if settings.bDetectExtends then
 		self:RegisterExtendedTime()
@@ -267,118 +215,19 @@ function Bar:Inactivate()
 	self:UnregisterBarTypeEvents()
 
 	self.isBlinking = nil
-	self:UnregisterEvent("PLAYER_REGEN_DISABLED")
-	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-	self:UnregisterBossFight()
+	self:UnregisterBlinkEvents()
 	self:UnregisterExtendedTime()
 end
 
 
---[[ Events ]]--
+--[[ Tracking behavior ]]--
 
 function Bar:OnEvent(event, unit, ...)
-	local f = self[event]  -- Assigned by Bar:Activate()
+	local f = self[event]
 	if f then
 		f(self, unit, ...)
 	end
 end
-
-function Bar:ACTIONBAR_UPDATE_COOLDOWN()
-	self:CheckAura()
-end
-
-local auraEvents = {
-	-- For Bar:COMBAT_LOG_EVENT_UNFILTERED
-	SPELL_AURA_APPLIED = true,
-	SPELL_AURA_REMOVED = true,
-	SPELL_AURA_APPLIED_DOSE = true,
-	SPELL_AURA_REMOVED_DOSE = true,
-	SPELL_AURA_REFRESH = true,
-	SPELL_AURA_BROKEN = true,
-	SPELL_AURA_BROKEN_SPELL = true
-}
-function Bar:COMBAT_LOG_EVENT_UNFILTERED(unit, ...)
-	-- To monitor target of target
-	local _, event, _, _, _, _, _, targetGUID, _, _, _, spellID, spellName = CombatLogGetCurrentEventInfo()
-	if auraEvents[event] then
-		if targetGUID == UnitGUID(self.unit) then
-			if self.buffName:find(spellID) or self.buffName:find(spellName) then 
-				self:CheckAura()
-			end
-		end
-	elseif event == "UNIT_DIED" then
-		if targetGUID == UnitGUID(self.unit) then
-			self:CheckAura()
-		end
-	end 
-end
-
-function Bar:PLAYER_FOCUS_CHANGED(unit, ...)
-	self:CheckAura()
-end
-
-function Bar:PLAYER_REGEN_DISABLED()
-	self:CheckAura()
-end
-
-function Bar:PLAYER_REGEN_ENABLED()
-	self:CheckAura()
-end
-
-function Bar:PLAYER_TARGET_CHANGED(unit, ...)
-	if self.unit == "targettarget" then
-		self:RegisterCombatLog()
-	end
-	self:CheckAura()
-end
-
-function Bar:PLAYER_TOTEM_UPDATE()
-	self:CheckAura()
-end
-
-function Bar:SPELL_UPDATE_COOLDOWN()
-	self:CheckAura()
-end
-
-function Bar:SPELL_UPDATE_USABLE()
-	self:CheckAura()
-end
-
-function Bar:UNIT_AURA(unit, ...)
-	if unit == self.unit then
-		self:CheckAura()
-	end
-end
-
-function Bar:UNIT_PET(unit, ...)
-	if unit == "player" then
-		self:CheckAura()
-	end
-end
-
-function Bar:UNIT_TARGET(unit, ...)
-	if self.unit == "targettarget" and unit == "target" then
-		self:RegisterCombatLog()
-	end
-	self:CheckAura()
-end
-
---[[
-function Bar:WEAPON_ENCHANT_CHANGED(...)
-	-- Event only in Retail
-	-- print("NeedToKnow: WEAPON_ENCHANT_CHANGED")
-end
-
-function Bar:UNIT_INVENTORY_CHANGED(unit, ...)
---	if unit == "player" then
---		print("NeedToKnow: UNIT_INVENTORY_CHANGED", unit)
---	end
-	self:CheckAura()
-end
-]]--
-
-
---[[ Tracking behavior ]]--
 
 -- Kitjan made m_scratch a reusable table to track multiple instances of an aura with one bar
 local m_scratch = {}
@@ -458,12 +307,10 @@ function Bar:CheckAura()
 	end
 end
 
---[[
 do
 	Bar.UpdateTracking = Bar.CheckAura  -- Temporary alias
 end
 -- function Bar:UpdateTracking() end  -- TODO (will replace CheckAura)
-]]--
 
 function Bar:GetBuffCooldownReset(duration, expirationTime)
 	-- For example Classic Druid Eclipse resets internal cooldown on Nature's Grace

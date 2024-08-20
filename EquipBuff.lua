@@ -6,29 +6,30 @@ local _, NeedToKnow = ...
 NeedToKnow.EquipBuffBarMixin = {}
 local BarMixin = NeedToKnow.EquipBuffBarMixin
 
-
---[[ BarMixin ]]--
-
 function BarMixin:SetBarTypeInfo()
 	-- Called by Bar:SetBarType
-
-	-- Set tracking function
-
-	-- Set other info
-	self.checkOnNoTimeLeft = false  -- For Bar:OnUpdate
+	self.settings.Unit = "player"
+	self.GetTrackedInfo = self.GetEquipBuffInfo
+	self.checkOnNoTimeLeft = nil  -- For Bar:OnUpdate
 end
 
 function BarMixin:RegisterBarTypeEvents()
-	-- Called by Bar:Activate
-	self:RegisterEvent("UNIT_INVENTORY_CHANGED")
+	-- NOTE: Prolly need more events (see wiki)
+	self:RegisterUnitEvent("UNIT_INVENTORY_CHANGED", "player")
 	-- self:RegisterEvent("WEAPON_ENCHANT_CHANGED")  -- Only in Retail?
 end
 
 function BarMixin:UnregisterBarTypeEvents()
-	-- Called by Bar:Inactivate
-	self:UnregisterEvent("UNIT_INVENTORY_CHANGED")
+	self:UnregisterUnitEvent("UNIT_INVENTORY_CHANGED", "player")
 	-- self:UnregisterEvent("WEAPON_ENCHANT_CHANGED")  -- Only in Retail?
 end
 
--- function BarMixin:EXAMPLE_EVENT() end
+function BarMixin:UNIT_INVENTORY_CHANGED(unit)
+	self:UpdateTracking()
+end
+
+function BarMixin:WEAPON_ENCHANT_CHANGED()
+	-- Only in Retail?
+	self:UpdateTracking()
+end
 

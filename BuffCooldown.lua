@@ -5,27 +5,31 @@ NeedToKnow.BuffCooldownBarMixin = {}
 local BarMixin = NeedToKnow.BuffCooldownBarMixin
 
 
---[[ BarMixin ]]--
+--[[ Bar setup ]]--
 
 function BarMixin:SetBarTypeInfo()
 	-- Called by Bar:SetBarType
-
-	-- Set tracking function
-
-	-- Set other info
-	self.checkOnNoTimeLeft = true
-		-- For Bar:OnUpdate. No event that fires on expire. 
+	self.settings.Unit = "player"
+	self.GetTrackedInfo = self.GetBuffCooldownInfo
+	-- local duration = tonumber(settings.buffcd_duration)
+	-- if not duration or duration < 1 then
+	-- 	print("NeedToKnow: Please set internal cooldown time for ", settings.AuraName)
+	-- end
+	self.checkOnNoTimeLeft = true  -- For Bar:OnUpdate. No event for expired cooldown. 
 end
 
 function BarMixin:RegisterBarTypeEvents()
-	-- Called by Bar:Activate
-	self:RegisterEvent("UNIT_AURA")
+	self:RegisterUnitEvent("UNIT_AURA", "player")
 end
 
 function BarMixin:UnregisterBarTypeEvents()
-	-- Called by Bar:Inactivate
 	self:UnregisterEvent("UNIT_AURA")
 end
 
--- function BarMixin:EXAMPLE_EVENT() end
+
+--[[ Bar tracking ]]--
+
+function BarMixin:UNIT_AURA(unit, updateInfo)
+	self:UpdateTracking()
+end
 
