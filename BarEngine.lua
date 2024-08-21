@@ -43,22 +43,17 @@ function Bar:Update()
 	-- Called by BarGroup:Update() and various BarMenu:Methods()
 	-- when addon loaded, locked/unlocked, or bar configuration changed
 
-	local groupID = self:GetParent():GetID()
-	local groupSettings = NeedToKnow:GetGroupSettings(groupID)
+	local groupSettings = self:GetParent().settings
 	self.settings = groupSettings.Bars[self:GetID()]
 
 	self:SetBarType()
+	self:SetTrackingOptions()
+	-- self:SetAppearanceOptions()  -- TODO
 	self:SetSpells()
 	self:SetAppearance()
 
-	self.groupDuration = tonumber(groupSettings.FixedDuration)
-	if not self.groupDuration or self.groupDuration <= 0 then
-		self.groupDuration = nil
-	end
-	self.condenseGroup = groupSettings.condenseGroup
-
 	if NeedToKnow.isLocked then
-		if self.settings.Enabled and groupSettings.Enabled then
+		if self.isEnabled and groupSettings.Enabled then
 			self:EnableMouse(false)  -- Click through
 			self:Activate()
 			self:CheckAura()
@@ -73,18 +68,15 @@ function Bar:Update()
 end
 
 function Bar:SetBarType()
-	-- Called by Bar:Update()
-
-	local settings = self.settings
-	self.barType = settings.BuffOrDebuff
-
-	-- BarType mixins provide
-	--   Bar:SetBarTypeInfo,
-	--   Bar:RegisterBarTypeEvents, 
-	--   Bar:UnregisterBarTypeEvents, 
-	--   Most Bar:EVENTS, 
-	--   ...
+	self.barType = self.settings.BuffOrDebuff
 	local barTypeMixin = {
+		-- BarType mixins provide
+		--   Bar:SetBarTypeInfo,
+		--   Bar:SetBarTypeSpells,
+		--   Bar:RegisterBarTypeEvents, 
+		--   Bar:UnregisterBarTypeEvents, 
+		--   Most Bar:EVENTS, 
+		--   ...
 		HELPFUL = NeedToKnow.AuraBarMixin, 
 		HARMFUL = NeedToKnow.AuraBarMixin, 
 		EQUIPBUFF = NeedToKnow.EquipBuffBarMixin, 
@@ -96,50 +88,75 @@ function Bar:SetBarType()
 	}
 	Mixin(self, barTypeMixin[self.barType])
 	self:SetBarTypeInfo()
+end
 
-	self.unit = settings.Unit
-	if settings.Unit == "player" then
+function Bar:SetTrackingOptions()
+	-- Setting names can be nonintuitive so let's corral them
+	local settings = self.settings
+
+	local unit = settings.Unit
+	self.unit = unit
+	if unit == "player" then
 		self.UnitExists = Bar.UnitExistsPlayer
-	elseif settings.Unit == "lastraid" then
+	elseif unit == "lastraid" then
 		self.UnitExists = Bar.UnitExistsLastRaid
 	else
 		self.UnitExists = Bar.UnitExistsGeneric
 	end
-end
 
-function Bar:UnitExistsGeneric()
-	return UnitExists(self.unit)
+	self.isEnabled = settings.Enabled
+	self.showAllStacks = settings.show_all_stacks
+
+	self.showTime = settings.show_time
+	self.showSpark = settings.show_spark
+	self.showIcon = settings.show_icon
+	self.showBlink = settings.blink_enabled
+	self.showCastTime = settings.vct_enabled
+	self.showExtendedTime = settings.bDetectExtends
+	-- self:SetBlinkOptions()  -- TODO
+	-- self:SetCastTimeOptions()  -- TODO
+
+	local groupSettings = self:GetParent().settings
+	self.condenseGroup = groupSettings.condenseGroup
+	local groupDuration = tonumber(groupSettings.FixedDuration)
+	if groupDuration and groupDuration > 0 then
+		self.groupDuration = groupDuration
+	else
+		self.groupDuration = nil
+	end
 end
 
 function Bar:UnitExistsPlayer()
+	-- Called as bar:UnitExists()
 	return true
 end
 
 function Bar:UnitExistsLastRaid()
-	-- self.unit set by Bar:PLAYER_SPELLCAST_SUCCEEDED
+	-- Called as bar:UnitExists()
+	-- Bar:PLAYER_SPELLCAST_SUCCEEDED sets self.unit
 	return self.unit and UnitExists(self.unit)
+end
+
+function Bar:UnitExistsGeneric()
+	-- Called as bar:UnitExists()
+	return UnitExists(self.unit)
+end
+
+local function GetSpellNames(settingString)
+	-- Extract spell names from string entered by user
+	local names = {}
+	for name in settingString:gmatch("([^,]+)") do
+		table.insert(names, strtrim(name))
+	end
+	return names
 end
 
 function Bar:SetSpells()
 	-- Set spells/items/abilities tracked by bar
 	-- Stored as bar.spells = {{name, id, shownName, ...}, }
-	-- Called by Bar:Update
-
-	local settings = self.settings
-
-	local spellNames = {}
-	-- for spellName in settings.AuraName:gmatch("([^;]+)") do  -- Not yet
-	for spellName in settings.AuraName:gmatch("([^,]+)") do
-		table.insert(spellNames, strtrim(spellName))
-	end
-
-	local shownNames = {}
-	-- for shownName in settings.show_text_user:gmatch("([^;]+)") do  -- Not yet
-	for shownName in settings.show_text_user:gmatch("([^,]+)") do
-		table.insert(shownNames, strtrim(shownName))
-	end
-
 	self.spells = {}
+	local spellNames = GetSpellNames(self.settings.AuraName)
+	local shownNames = GetSpellNames(self.settings.show_text_user)
 	for i, spellName in ipairs(spellNames) do
 		local spellEntry = {}
 		local _, numDigits = string.find(spellName, "^-?%d+")
@@ -148,63 +165,25 @@ function Bar:SetSpells()
 		else
 			spellEntry.name = spellName  -- Track by name
 		end
-
 		if shownNames[i] then
 			spellEntry.shownName = shownNames[i]
 		elseif shownNames[1] then
 			spellEntry.shownName = shownNames[math.min(#shownNames, #spellNames)]
-		elseif self.barType == "EQUIPSLOT" or self.barType == "EQUIPBUFF" then
-			spellEntry.shownName = String.GetInventorySlotName(spellName)
 		end
-
 		table.insert(self.spells, spellEntry)
 	end
-
-	if self.barType == "CASTCD" then
-		self:SetCooldownSpells()
-	elseif self.barType == "BUFFCD" then
-		self:SetBuffCooldownResetSpells()
-	end
-end
-
-function Bar:SetBuffCooldownResetSpells()
-	-- Set spells that reset buff cooldown
-	-- For example: a Classic Druid's Eclipse resets cooldown on Nature's Grace
-	local settings = self.settings
-	if settings.buffcd_reset_spells and settings.buffcd_reset_spells ~= "" then
-		self.reset_spells = {}
-		self.reset_start = {}
-		local spellIndex = 0
-		-- for resetSpell in settings.buffcd_reset_spells:gmatch("([^;]+)") do  -- Not yet
-		for resetSpell in settings.buffcd_reset_spells:gmatch("([^,]+)") do
-			spellIndex = spellIndex + 1
-			resetSpell = strtrim(resetSpell)
-			local _, numDigits = resetSpell:find("^%d+")
-			if numDigits == resetSpell:len() then
-				table.insert(self.reset_spells, {id = tonumber(resetSpell)})
-			else
-				table.insert(self.reset_spells, {name = resetSpell})
-			end
-			table.insert(self.reset_start, 0)
-		end
-	else
-		self.reset_spells = nil
-		self.reset_start = nil
-	end
+	self:SetBarTypeSpells()
 end
 
 function Bar:Activate()
-	-- Called by Bar:Update if NeedToKnow is locked
 	self:SetScript("OnEvent", self.OnEvent)
 	self:SetScript("OnUpdate", self.OnUpdate)
 	self.nextUpdate = GetTime()
 	self:RegisterBarTypeEvents()
-
-	local settings = self.settings
-	if settings.blink_enabled then
+	if self.showBlink then
 		self:RegisterBlinkEvents()
 	end
-	if settings.bDetectExtends then
+	if self.showExtendedTime then
 		self:RegisterExtendedTime()
 	end
 end
@@ -213,14 +192,13 @@ function Bar:Inactivate()
 	self:SetScript("OnEvent", nil)
 	self:SetScript("OnUpdate", nil)
 	self:UnregisterBarTypeEvents()
-
 	self.isBlinking = nil
 	self:UnregisterBlinkEvents()
 	self:UnregisterExtendedTime()
 end
 
 
---[[ Tracking behavior ]]--
+--[[ Bar tracking behavior ]]--
 
 function Bar:OnEvent(event, unit, ...)
 	local f = self[event]
@@ -264,7 +242,6 @@ function Bar:CheckAura()
 	-- Get info for tracked spell/item/ability and act on it
 	-- Primary update call for active bars, called by many functions
 
-	local settings = self.settings
 	local allStacks, name, icon, count, duration, expirationTime, shownName
 
 	-- Get info
@@ -274,7 +251,7 @@ function Bar:CheckAura()
 		self:ResetScratchStacks(allStacks)
 		for _, spellEntry in pairs(self.spells) do
 			self:GetTrackedInfo(spellEntry, allStacks)
-			if allStacks.total > 0 and not settings.show_all_stacks then
+			if allStacks.total > 0 and not self.showAllStacks then
 				break
 			end
 		end
@@ -282,7 +259,7 @@ function Bar:CheckAura()
 			name = allStacks.min.name
 			icon = allStacks.min.icon
 			count = allStacks.total
-			if settings.show_all_stacks then
+			if self.showAllStacks then
 				duration = allStacks.max.duration
 				expirationTime = allStacks.max.expirationTime
 			else
@@ -352,26 +329,17 @@ end
 function Bar:GetAuraInfo(spellEntry, allStacks)
 	-- Get tracking info for first instance of buff/debuff
 	-- Called by Bar:CheckAura, Bar:GetBuffCooldownInfo, Bar:GetBuffCooldownReset
-
-	local filter = self.barType  -- "HELPFUL" or "HARMFUL"
-	if self.barType == "BUFFCD" then
-		filter = "HELPFUL"
-	end
-	if self.settings.OnlyMine then
-		filter = filter.."|PLAYER"
-	end
-
 	local aura
 	local entryName = spellEntry.name
 	local entryID = spellEntry.id
 	if entryName then
-		aura = GetAuraDataBySpellName(self.unit, entryName, filter)
+		aura = GetAuraDataBySpellName(self.unit, entryName, self.filter)
 	elseif entryID and (self.unit == "player") then
 		aura = GetPlayerAuraBySpellID(entryID)
 	elseif entryId then
 		local i = 1
 		while true do
-			local thisAura = GetAuraDataByIndex(self.unit, i, filter)
+			local thisAura = GetAuraDataByIndex(self.unit, i, self.filter)
 			if not thisAura then break end
 			if thisAura.spellId == entryID then
 				aura = thisAura
@@ -387,14 +355,10 @@ end
 
 function Bar:GetAuraInfoAllStacks(spellEntry, allStacks)
 	-- Get tracking info for all instances of buff/debuff
-	local filter = self.barType  -- "HELPFUL" or "HARMFUL"
-	if self.settings.OnlyMine then
-		filter = filter.."|PLAYER"
-	end
 	local aura
 	local i = 1
 	while true do
-		aura = GetAuraDataByIndex(self.unit, i, filter)
+		aura = GetAuraDataByIndex(self.unit, i, self.filter)
 		if not aura then break end
 		if aura.name == spellEntry.name or aura.spellId == spellEntry.id then 
 			self:AddTrackedInfo(allStacks, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, spellEntry.shownName, unpack(aura.points))
@@ -513,48 +477,6 @@ function Bar:GetEquipBuffInfo(spellEntry, allStacks)
 	-- self:AddTrackedInfo(allStacks, duration, spellEntry.id, count, expirationTime, icon, spellEntry.shownName)
 end
 
--- Old tooltip-scanning code: 
---[[
-function NeedToKnow.DetermineTempEnchantFromTooltip(i_invID)
-    local tt1,tt2 = NeedToKnow.GetUtilityTooltips()
-    
-    tt1:SetInventoryItem("player", i_invID)
-    local n,h = tt1:GetItem()
-
-    tt2:SetHyperlink(h)
-    
-    -- Look for green lines present in tt1 that are missing from tt2
-    local nLines1, nLines2 = tt1:NumLines(), tt2:NumLines()
-    local i1, i2 = 1,1
-    while ( i1 <= nLines1 ) do
-        local txt1 = tt1.left[i1]
-        if ( txt1:GetTextColor() ~= 0 ) then
-            i1 = i1 + 1
-        elseif ( i2 <= nLines2 ) then
-            local txt2 = tt2.left[i2]
-            if ( txt2:GetTextColor() ~= 0 ) then
-                i2 = i2 + 1
-            elseif (txt1:GetText() == txt2:GetText()) then
-                i1 = i1 + 1
-                i2 = i2 + 1
-            else
-                break
-            end
-        else
-            break
-        end
-    end
-    if ( i1 <= nLines1 ) then
-        local line = tt1.left[i1]:GetText()
-        local paren = line:find("[(]")
-        if ( paren ) then
-            line = line:sub(1,paren-2)
-        end
-        return line
-    end    
-end
-]]--
-
 function Bar:GetTotemInfo(spellEntry, allStacks)
 	-- Get tracking info for shaman totem
 	local spellName = spellEntry.name or GetSpellInfo(spellEntry.id)
@@ -624,10 +546,8 @@ function Bar:OnDurationFound(name, icon, count, duration, expirationTime, shownN
 	-- Update bar to show status of tracked spell/item/ability
 	-- Called by Bar:CheckAura
 
-	local settings = self.settings
-
 	local extended
-	if settings.bDetectExtends then
+	if self.showExtendedTime then
 		extended, duration = self:GetExtendedTime(name, duration, expirationTime, self.unit)
 	end
 
@@ -659,7 +579,7 @@ function Bar:OnDurationAbsent(unitExists)
 
 	local settings = self.settings
 
-	if settings.bDetectExtends and self.buffName then
+	if self.showExtendedTime and self.buffName then
 		self:ClearExtendedTime()
 	end
 
@@ -708,15 +628,15 @@ function Bar:OnUpdate(elapsed)
 	end
 
 	self:SetValue(timeLeft)
-	if self.settings.show_spark and timeLeft <= self.maxTimeLeft then
+	if self.showSpark and timeLeft <= self.maxTimeLeft then
 		self.Spark:Show()
 	else
 		self.Spark:Hide()
 	end
-	if self.settings.show_time then
+	if self.showTime then
 		self.Time:SetText(self:FormatTime(timeLeft))
 	end
-	if self.settings.vct_enabled and self.refreshCastTime then
+	if self.showCastTime and self.refreshCastTime then
 		self:UpdateCastTime()
 	end
 end

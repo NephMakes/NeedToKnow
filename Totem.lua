@@ -11,6 +11,10 @@ function BarMixin:SetBarTypeInfo()
 	self.checkOnNoTimeLeft = nil  -- For Bar:OnUpdate
 end
 
+function BarMixin:SetBarTypeSpells()
+	-- Nothing to do
+end
+
 function BarMixin:RegisterBarTypeEvents()
 	self:RegisterEvent("PLAYER_TOTEM_UPDATE")
 end

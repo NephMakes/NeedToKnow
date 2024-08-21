@@ -9,12 +9,21 @@ local BarMixin = NeedToKnow.AuraBarMixin
 
 function BarMixin:SetBarTypeInfo()
 	-- Called by Bar:SetBarType
-	if self.settings.show_all_stacks then
+	local settings = self.settings
+	self.filter = self.barType  -- "HELPFUL" or "HARMFUL"
+	if settings.OnlyMine then
+		self.filter = self.filter.."|PLAYER"
+	end
+	if settings.show_all_stacks then
 		self.GetTrackedInfo = self.GetAuraInfoAllStacks
 	else
 		self.GetTrackedInfo = self.GetAuraInfo
 	end
 	self.checkOnNoTimeLeft = nil  -- For Bar:OnUpdate
+end
+
+function BarMixin:SetBarTypeSpells()
+	-- Nothing to do
 end
 
 function BarMixin:RegisterBarTypeEvents()
@@ -38,6 +47,7 @@ function BarMixin:RegisterBarTypeEvents()
 		self:RegisterUnitEvent("UNIT_AURA", "vehicle")
 		-- TODO Need event for entering/exiting/changing vehicle
 	elseif settings.Unit == "lastraid" then  -- "Last raid recipient"
+		-- self.unit set by Bar:PLAYER_SPELLCAST_SUCCEEDED
 		self:RegisterLastRaid()
 	end
 end
@@ -65,9 +75,7 @@ end
 --[[ Bar tracking ]]--
 
 function BarMixin:UNIT_AURA(unit, updateInfo)
-	if unit == self.unit then
-		self:UpdateTracking()
-	end
+	self:UpdateTracking()
 end
 
 function BarMixin:UNIT_TARGET(unit)
@@ -99,6 +107,7 @@ local auraEvents = {
 	SPELL_AURA_BROKEN = true,
 	SPELL_AURA_BROKEN_SPELL = true
 }
+
 function BarMixin:COMBAT_LOG_EVENT_UNFILTERED(unit, ...)
 	-- To monitor target of target
 	local _, event, _, _, _, _, _, targetGUID, _, _, _, spellID, spellName = CombatLogGetCurrentEventInfo()

@@ -93,7 +93,7 @@ function Bar:SetAppearance()
 	end
 
 	local time = self.Time
-	if barSettings.show_time then
+	if self.showTime then
 		if barSettings.TimeFormat == "Fmt_TwoUnits" then
 			self.FormatTime = self.FormatTimeTwoUnits
 		elseif barSettings.TimeFormat == "Fmt_Float" then
@@ -107,7 +107,7 @@ function Bar:SetAppearance()
 	end
 
 	local icon = self.icon
-	if barSettings.show_icon then
+	if self.showIcon then
 		icon.border:SetVertexColor(unpack(settings.BkgdColor))
 		icon.background:SetVertexColor(unpack(settings.BkgdColor))
 		icon:Show()
@@ -115,7 +115,7 @@ function Bar:SetAppearance()
 		icon:Hide()
 	end
 
-	if barSettings.vct_enabled then
+	if self.showCastTime then
 		local castColor = barSettings.vct_color
 		self.CastTime:SetColorTexture(castColor.r, castColor.g, castColor.b, castColor.a)
 	else
@@ -178,7 +178,7 @@ function Bar:UpdateAppearance()
 
 	-- Icon changes if bar tracks multiple things
 	local icon = self.icon
-	if barSettings.show_icon and self.iconPath then
+	if self.showIcon and self.iconPath then
 		icon.texture:SetTexture(self.iconPath)
 		icon:Show()
 	else
@@ -186,12 +186,12 @@ function Bar:UpdateAppearance()
 	end
 
 	if self.duration > 0 then
-		if barSettings.show_time then
+		if self.showTime then
 			self.Time:Show()
 		else
 			self.Time:Hide()
 		end
-		if barSettings.vct_enabled then
+		if self.showCastTime then
 			self:UpdateCastTime()
 		end
 		-- SetValue and Spark handled by Bar:OnUpdate
@@ -254,14 +254,14 @@ function Bar:Unlock()
 	self.Time:Hide()
 	self.Spark:Hide()
 
-	if settings.vct_enabled then
+	if self.showCastTime then
 		self.CastTime:SetWidth(self:GetWidth()/8)
 		self.CastTime:Show()
 	else
 		self.CastTime:Hide()
 	end
 
-	if settings.Enabled then
+	if self.isEnabled then
 		self:SetAlpha(1)
 	else
 		self:SetAlpha(0.4)

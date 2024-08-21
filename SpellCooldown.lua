@@ -16,6 +16,11 @@ function BarMixin:SetBarTypeInfo()
 		-- No event when item cooldowns expire. Others fire too soon. 
 end
 
+function BarMixin:SetBarTypeSpells()
+	-- Set appropriate cooldown function for each spellEntry
+	self:SetCooldownSpells()
+end
+
 function BarMixin:RegisterBarTypeEvents()
 	self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 	self:RegisterEvent("SPELL_UPDATE_COOLDOWN")
