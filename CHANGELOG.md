@@ -2,6 +2,11 @@
 
 ## NeedToKnow
 
+### v4.7.6 (2024-08-21)
+* Fixed: Bars for equipment slot cooldowns can now show icon
+* Fixed: Tracking buffs/debuffs on target of target should work again
+* Fixed: Cast timer should work again on Retail
+
 ### v4.7.5 (2024-08-16)
 * Another attempt at fixing cooldown issues in patch 11.0.2
 
