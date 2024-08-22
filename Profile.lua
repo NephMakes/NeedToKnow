@@ -20,6 +20,7 @@ end
 function NeedToKnow:CreateBlankProfile()
 	-- Make new profile with default settings and return its key
 	local profileKey = self:CreateProfile(CopyTable(DefaultSettings.profile))
+	NeedToKnow:InitializeProfile(profileKey)
 	return profileKey
 end
 
@@ -30,6 +31,20 @@ function NeedToKnow:CreateProfile(settings)
 	self.profiles[profileKey] = settings
 	self:SetProfileToCharacter(profileKey)  -- Character-specific by default
 	return profileKey
+end
+
+function NeedToKnow:InitializeProfile(profileKey)
+	-- Initialize profile settings so first-time users have clean experience. 
+	-- User should see one barGroup with two enabled blank bars and one 
+	-- disabled blank bar. 
+	local settings = self.profiles[profileKey]
+	local groupSettings = settings.Groups[1]
+	groupSettings.Enabled = true
+	for i, barSettings in ipairs(groupSettings.Bars) do
+		if i < 3 then
+			barSettings.Enabled = true
+		end
+	end
 end
 
 function NeedToKnow:GetNewProfileKey()

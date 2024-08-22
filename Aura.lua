@@ -138,7 +138,7 @@ function BarMixin:GetTrackedInfoSingle(spellEntry, allStacks)
 		aura = GetAuraDataBySpellName(self.unit, entryName, self.filter)
 	elseif entryID and (self.unit == "player") then
 		aura = GetPlayerAuraBySpellID(entryID)
-	elseif entryId then
+	elseif entryID then
 		local i = 1
 		while true do
 			local thisAura = GetAuraDataByIndex(self.unit, i, self.filter)

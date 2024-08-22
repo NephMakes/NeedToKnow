@@ -62,7 +62,7 @@ function BarGroup:OnLoad()
 end
 
 function BarGroup:Update()
-	self.settings = NeedToKnow:GetGroupSettings(self:GetID())
+	self.settings = NeedToKnow:GetBarGroupSettings(self:GetID())
 
 	if not self.settings.Enabled then
 		self:Hide()

@@ -237,7 +237,7 @@ end
 --[[ Default settings ]]--
 
 DefaultSettings.bar = {
-	Enabled = true,
+	Enabled = false,
 	AuraName = "",
 	Unit = "player",
 	BuffOrDebuff = "HELPFUL",
@@ -269,13 +269,13 @@ DefaultSettings.bar = {
 	append_usable = false,
 }
 DefaultSettings.barGroup = {
-	Enabled = true,
+	Enabled = false,
 	NumberBars = 3,
 	Position = {"TOPLEFT", "TOPLEFT", 100, -100},
 	Scale = 1,
 	Width = 270,
 	direction = "down", 
-	condenseGroup = false, 
+	condenseGroup = true, 
 	FixedDuration = 0, 
 	Bars = {DefaultSettings.bar, DefaultSettings.bar, DefaultSettings.bar},
 }
@@ -319,7 +319,6 @@ function DefaultSettings:LocalizeDefaultFont()
 	end
 	self.profile.BarFont = gameFontName or "Fritz Quadrata TT"
 end
-
 do
 	DefaultSettings:LocalizeDefaultFont()
 end
