@@ -4,20 +4,25 @@ local _, NeedToKnow = ...
 NeedToKnow.AuraBarMixin = {}
 local BarMixin = NeedToKnow.AuraBarMixin
 
+local GetAuraDataByIndex = C_UnitAuras.GetAuraDataByIndex
+local GetAuraDataBySpellName = C_UnitAuras.GetAuraDataBySpellName
+local GetPlayerAuraBySpellID = C_UnitAuras.GetPlayerAuraBySpellID
+local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
+local UnitGUID = UnitGUID
+
 
 --[[ Bar setup ]]--
 
 function BarMixin:SetBarTypeInfo()
-	-- Called by Bar:SetBarType
 	local settings = self.settings
+	if settings.show_all_stacks then
+		self.GetTrackedInfo = self.GetTrackedInfoAllStacks
+	else
+		self.GetTrackedInfo = self.GetTrackedInfoSingle
+	end
 	self.filter = self.barType  -- "HELPFUL" or "HARMFUL"
 	if settings.OnlyMine then
 		self.filter = self.filter.."|PLAYER"
-	end
-	if settings.show_all_stacks then
-		self.GetTrackedInfo = self.GetAuraInfoAllStacks
-	else
-		self.GetTrackedInfo = self.GetAuraInfo
 	end
 	self.checkOnNoTimeLeft = nil  -- For Bar:OnUpdate
 end
@@ -122,6 +127,46 @@ function BarMixin:COMBAT_LOG_EVENT_UNFILTERED(unit, ...)
 			self:UpdateTracking()
 		end
 	end 
+end
+
+function BarMixin:GetTrackedInfoSingle(spellEntry, allStacks)
+	-- Get info for first instance of buff/debuff
+	local aura
+	local entryName = spellEntry.name
+	local entryID = spellEntry.id
+	if entryName then
+		aura = GetAuraDataBySpellName(self.unit, entryName, self.filter)
+	elseif entryID and (self.unit == "player") then
+		aura = GetPlayerAuraBySpellID(entryID)
+	elseif entryId then
+		local i = 1
+		while true do
+			local thisAura = GetAuraDataByIndex(self.unit, i, self.filter)
+			if not thisAura then break end
+			if thisAura.spellId == entryID then
+				aura = thisAura
+				break
+			end
+			i = i + 1
+		end
+	end
+	if aura then
+		self:AddTrackedInfo(allStacks, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, spellEntry.shownName, unpack(aura.points))
+	end
+end
+
+function BarMixin:GetTrackedInfoAllStacks(spellEntry, allStacks)
+	-- Get info for all instances of buff/debuff
+	local aura
+	local i = 1
+	while true do
+		aura = GetAuraDataByIndex(self.unit, i, self.filter)
+		if not aura then break end
+		if aura.name == spellEntry.name or aura.spellId == spellEntry.id then 
+			self:AddTrackedInfo(allStacks, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, spellEntry.shownName, unpack(aura.points))
+		end
+		i = i + 1
+	end
 end
 
 

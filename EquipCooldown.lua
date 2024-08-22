@@ -5,10 +5,15 @@ NeedToKnow.EquipCooldownBarMixin = {}
 local BarMixin = NeedToKnow.EquipCooldownBarMixin
 local String = NeedToKnow.String
 
+local GetInventoryItemCooldown = GetInventoryItemCooldown
+local GetInventoryItemTexture = GetInventoryItemTexture
+
+
+--[[ BarMixin ]]--
+
 function BarMixin:SetBarTypeInfo()
 	-- Called by Bar:SetBarType
 	self.settings.Unit = "player"
-	self.GetTrackedInfo = self.GetEquipCooldownInfo
 	self.checkOnNoTimeLeft = true  -- For Bar:OnUpdate. No event when item cooldowns expire. 
 end
 
@@ -32,4 +37,15 @@ end
 function BarMixin:ACTIONBAR_UPDATE_COOLDOWN()
 	self:UpdateTracking()
 end
+
+function BarMixin:GetTrackedInfo(spellEntry, allStacks)
+	-- Get cooldown info for equipped item by inventorySlotID 
+	if not spellEntry.id then return end
+	local start, duration, _ = GetInventoryItemCooldown("player", spellEntry.id)
+	if start and start > 0 then
+		local iconID = GetInventoryItemTexture("player", spellEntry.id)
+		self:AddTrackedInfo(allStacks, duration, name, 1, start + duration, iconID, spellEntry.shownName)
+	end
+end
+
 

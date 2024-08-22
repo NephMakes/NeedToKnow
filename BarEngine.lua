@@ -1,39 +1,10 @@
 -- Bar tracking behavior
 
 local _, NeedToKnow = ...
-
 local Bar = NeedToKnow.Bar
-local Cooldown = NeedToKnow.Cooldown
-local ExecutiveFrame = NeedToKnow.ExecutiveFrame
-local String = NeedToKnow.String
 
-local INVSLOT_MAINHAND = INVSLOT_MAINHAND
-local INVSLOT_OFFHAND = INVSLOT_OFFHAND
-local INVSLOT_RANGED = INVSLOT_RANGED
-
--- Local versions of frequently-used global functions
-local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
-local GetAuraDataByIndex = C_UnitAuras.GetAuraDataByIndex
-local GetAuraDataBySpellName = C_UnitAuras.GetAuraDataBySpellName
-local GetPlayerAuraBySpellID = C_UnitAuras.GetPlayerAuraBySpellID
-local GetInventoryItemID = GetInventoryItemID
 local GetTime = GetTime
-local GetTotemInfo = GetTotemInfo
-local IsUsableSpell = C_Spell.IsSpellUsable or IsUsableSpell
 local UnitExists = UnitExists
-local UnitGUID = UnitGUID
-
--- Functions different between Retail and Classic as of 11.0.0
-local GetSpellInfo = GetSpellInfo
-local function GetRetailSpellInfo(spell)
-	local info = C_Spell.GetSpellInfo(spell)  -- Only in Retail
-	if info then
-		return info.name, nil, info.iconID, info.castTime, info.minRange, info.maxRange, info.spellID, info.originalIconID
-	end
-end
-if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
-	GetSpellInfo = GetRetailSpellInfo
-end
 
 
 --[[ Bar setup ]]--
@@ -76,6 +47,7 @@ function Bar:SetBarType()
 		--   Bar:RegisterBarTypeEvents, 
 		--   Bar:UnregisterBarTypeEvents, 
 		--   Most Bar:EVENTS, 
+		--   Bar:GetTrackedInfo, 
 		--   ...
 		HELPFUL = NeedToKnow.AuraBarMixin, 
 		HARMFUL = NeedToKnow.AuraBarMixin, 
@@ -223,24 +195,11 @@ m_scratch.all_stacks = {
 	},
 	total = 0,
 }
-m_scratch.buff_stacks = {
-	-- Used to track proc internal cooldowns (barType "BUFFCD")
-	min = {
-		buffName = "", 
-		duration = 0, 
-		expirationTime = 0, 
-		icon = "",
-	},
-	max = {
-		duration = 0, 
-		expirationTime = 0, 
-	},
-	total = 0,
-}
 
 function Bar:CheckAura()
 	-- Get info for tracked spell/item/ability and act on it
 	-- Primary update call for active bars, called by many functions
+	-- Called by Bar:EVENT functions
 
 	local allStacks, name, icon, count, duration, expirationTime, shownName
 
@@ -248,7 +207,7 @@ function Bar:CheckAura()
 	local unitExists = self:UnitExists()
 	if unitExists then
 		allStacks = m_scratch.all_stacks
-		self:ResetScratchStacks(allStacks)
+		allStacks.total = 0
 		for _, spellEntry in pairs(self.spells) do
 			self:GetTrackedInfo(spellEntry, allStacks)
 			if allStacks.total > 0 and not self.showAllStacks then
@@ -289,240 +248,6 @@ do
 end
 -- function Bar:UpdateTracking() end  -- TODO (will replace CheckAura)
 
-function Bar:GetBuffCooldownReset(duration, expirationTime)
-	-- For example Classic Druid Eclipse resets internal cooldown on Nature's Grace
-	local maxStart = 0
-	local tNow = GetTime()
-	local buff_stacks = m_scratch.buff_stacks
-	self:ResetScratchStacks(buff_stacks)
-	-- Track when reset auras last applied to player
-	for i, resetSpell in ipairs(self.reset_spells) do
-		local resetDuration, _, _, resetExpiration = self:GetAuraInfo(resetSpell, buff_stacks)
-		local tStart
-		if buff_stacks.total > 0 then
-			if 0 == buff_stacks.max.duration then 
-				tStart = self.reset_start[i]
-				if 0 == tStart then
-					tStart = tNow
-				end
-			else
-				tStart = buff_stacks.max.expirationTime - buff_stacks.max.duration
-			end
-			self.reset_start[i] = tStart
-			if tStart > maxStart then 
-				maxStart = tStart 
-			end
-		else
-			self.reset_start[i] = 0
-		end
-	end
-	if maxStart > expirationTime - duration then
-		duration = nil
-	end
-	return duration
-end
-
-function Bar:GetTrackedInfo()
-	-- Default null function that gets replaced in Bar:SetBarType
-end
-
-function Bar:GetAuraInfo(spellEntry, allStacks)
-	-- Get tracking info for first instance of buff/debuff
-	-- Called by Bar:CheckAura, Bar:GetBuffCooldownInfo, Bar:GetBuffCooldownReset
-	local aura
-	local entryName = spellEntry.name
-	local entryID = spellEntry.id
-	if entryName then
-		aura = GetAuraDataBySpellName(self.unit, entryName, self.filter)
-	elseif entryID and (self.unit == "player") then
-		aura = GetPlayerAuraBySpellID(entryID)
-	elseif entryId then
-		local i = 1
-		while true do
-			local thisAura = GetAuraDataByIndex(self.unit, i, self.filter)
-			if not thisAura then break end
-			if thisAura.spellId == entryID then
-				aura = thisAura
-				break
-			end
-			i = i + 1
-		end
-	end
-	if aura then
-		self:AddTrackedInfo(allStacks, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, spellEntry.shownName, unpack(aura.points))
-	end
-end
-
-function Bar:GetAuraInfoAllStacks(spellEntry, allStacks)
-	-- Get tracking info for all instances of buff/debuff
-	local aura
-	local i = 1
-	while true do
-		aura = GetAuraDataByIndex(self.unit, i, self.filter)
-		if not aura then break end
-		if aura.name == spellEntry.name or aura.spellId == spellEntry.id then 
-			self:AddTrackedInfo(allStacks, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, spellEntry.shownName, unpack(aura.points))
-		end
-		i = i + 1
-	end
-end
-
-function Bar:GetSpellUsableInfo(spellEntry, allStacks)
-	-- Get tracking info for reactive spell/ability
-	local spell = spellEntry.name or spellEntry.id
-	if not spell then return end
-	local spellName, _, icon = GetSpellInfo(spell)
-	if spellName then
-		local isUsable, notEnoughMana = IsUsableSpell(spellName)
-		if isUsable or notEnoughMana then
-			local duration, expirationTime
-			local now = GetTime()
-			if not self.expirationTime or 
-				(self.expirationTime > 0 and self.expirationTime < now - 0.01) 
-			then
-				duration = self.settings.usable_duration  -- Has to be set by user :(
-				expirationTime = now + duration
-			else
-				duration = self.duration
-				expirationTime = self.expirationTime
-			end
-			self:AddTrackedInfo(allStacks, duration, spellName, 1, expirationTime, icon, spellEntry.shownName)
-		end
-	end
-end
-
-function Bar:GetCooldownInfo(spellEntry, allStacks)
-	-- Get tracking info for spell or item cooldown
-
-	local GetCooldown = spellEntry.cooldownFunction
-	if not GetCooldown then return end
-	local start, duration, _, name, icon, count, start2 = GetCooldown(self, spellEntry)
-
-	-- Filter out global cooldown
-	if start and (duration <= 1.5) then
-		if self.expirationTime and self.expirationTime <= start + duration then
-			start = self.expirationTime - self.duration
-			duration = self.duration
-		else
-			start = nil
-		end
-	end
-
-	if start and duration then
-		local now = GetTime()
-		local expirationTime = start + duration
-		if expirationTime > now + 0.1 then
-			if start2 then  -- returned by Cooldown.GetSpellChargesCooldown
-				self:AddTrackedInfo(allStacks, duration, name, 1, start2 + duration, icon, spellEntry.shownName)
-				count = count - 1
-			else
-				if not count then count = 1 end
-			end
-			self:AddTrackedInfo(allStacks, duration, name, count, expirationTime, icon, spellEntry.shownName)
-		end
-	end
-end
-
-function Bar:GetEquipCooldownInfo(spellEntry, allStacks)
-	-- Get tracking info for cooldown of equipped item 
-	-- by inventorySlotID (stored as spellEntry.id)
-	if not spellEntry.id then return end
-	local start, duration, enable = GetInventoryItemCooldown("player", spellEntry.id)
-	if start and start > 0 then
-		local icon = GetInventoryItemTexture("player", spellEntry.id)
-		self:AddTrackedInfo(allStacks, duration, name, 1, start + duration, icon, spellEntry.shownName)
-	end
-end
-
-function Bar:GetEquipBuffInfo(spellEntry, allStacks)
-	-- NOT YET IMPLEMENTED
-	-- Get tracking info for temporary weapon enhancement (poison, sharpening 
-	-- stone, etc) by inventorySlotID
-
-	local count, timeLeft, enchantID, expirationTime
-
-	local _, mainHandTimeLeft, mainHandCharges, mainHandEnchantID, _, offHandTimeLeft, offHandCharges, offHandEnchantID, _, rangedTimeLeft, rangedCharges, rangedEnchantID = GetWeaponEnchantInfo()
-
-	local slotID = spellEntry.id
-	if slotID == INVSLOT_MAINHAND then
-		count = mainHandCharges
-		timeLeft = mainHandTimeLeft
-		enchantID = mainHandEnchantID
-	elseif slotID == INVSLOT_OFFHAND then
-		count = offHandCharges
-		timeLeft = offHandTimeLeft
-		enchantID = offHandEnchantID
-	elseif slotID == INVSLOT_RANGED then
-		count = rangedCharges
-		timeLeft = rangedTimeLeft
-		enchantID = rangedEnchantID
-	end
-
-	-- local duration  -- How to get? 
-
-	if count then
-		count = math.max(count, 1)
-	end
-
-	if timeLeft then
-		local now = GetTime()
-		timeLeft = timeLeft / 1000
-		expirationTime = now + timeLeft
-	end
-
-	local icon = GetInventoryItemTexture("player", slotID)
-	-- TO DO: Can we show name/icon of enchant instead of weapon slot?
-
-	-- print("FindEquipSlotBuff()", spellEntry.shownName, timeLeft)
-	-- self:AddTrackedInfo(allStacks, duration, spellEntry.id, count, expirationTime, icon, spellEntry.shownName)
-end
-
-function Bar:GetTotemInfo(spellEntry, allStacks)
-	-- Get tracking info for shaman totem
-	local spellName = spellEntry.name or GetSpellInfo(spellEntry.id)
-	for index = 1, 4 do
-		local _, name, startTime, duration, icon = GetTotemInfo(index)  
-		if name and name:find(spellName) then
-			self:AddTrackedInfo(allStacks, duration, name, 1, startTime + duration, icon, spellEntry.shownName)
-			return
-		end
-	end
-end
-
-function Bar:GetBuffCooldownInfo(spellEntry, allStacks)
-	-- Get tracking info for buff cooldown (internal cooldown on proc)
-
-	local buffStacks = m_scratch.buff_stacks
-	self:ResetScratchStacks(buffStacks)
-	self:GetAuraInfo(spellEntry, buffStacks)
-
-	local now = GetTime()
-	if buffStacks.total > 0 then
-		local duration = tonumber(self.settings.buffcd_duration)
-		if buffStacks.max.expirationTime == 0 then
-			-- TODO: This doesn't work well as a substitute for telling when the aura was applied
-			if not self.expirationTime then
-				self:AddTrackedInfo(allStacks, duration, buffStacks.min.name, 1, duration + now, buffStacks.min.icon, spellEntry.shownName)
-			else
-				self:AddTrackedInfo(allStacks, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, spellEntry.shownName)
-			end
-			return
-		end
-
-		local start = buffStacks.max.expirationTime - buffStacks.max.duration
-		local expirationTime = start + duration
-		if expirationTime > now then
-			self:AddTrackedInfo(allStacks, duration, buffStacks.min.name, 1, expirationTime, buffStacks.min.icon, spellEntry.shownName)                   
-		end
-	elseif self.expirationTime and self.expirationTime > now + 0.1 then
-		self:AddTrackedInfo(allStacks, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, spellEntry.shownName)
-	end
-end
-
-function Bar:ResetScratchStacks(stacks)
-	stacks.total = 0
-end
-
 function Bar:AddTrackedInfo(allStacks, duration, name, count, expirationTime, icon, shownName, value1, value2, value3)
 	if not duration then return end
 	if not count or count < 1 then 
@@ -544,11 +269,10 @@ end
 
 function Bar:OnDurationFound(name, icon, count, duration, expirationTime, shownName)
 	-- Update bar to show status of tracked spell/item/ability
-	-- Called by Bar:CheckAura
 
-	local extended
+	local extendedTime
 	if self.showExtendedTime then
-		extended, duration = self:GetExtendedTime(name, duration, expirationTime, self.unit)
+		extendedTime, duration = self:GetExtendedTime(name, duration, expirationTime, self.unit)
 	end
 
 	self.buffName = name
@@ -557,7 +281,7 @@ function Bar:OnDurationFound(name, icon, count, duration, expirationTime, shownN
 	self.duration = duration
 	self.expirationTime = expirationTime
 	self.shownName = shownName
-	self.extendedTime = extended
+	self.extendedTime = extendedTime
 
 	if duration > 0 then
 		self.maxTimeLeft = self.groupDuration or duration
@@ -575,7 +299,6 @@ end
 
 function Bar:OnDurationAbsent(unitExists)
 	-- Update bar to show tracked buff/debuff/cooldown is absent
-	-- Called by Bar:CheckAura
 
 	local settings = self.settings
 

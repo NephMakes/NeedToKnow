@@ -6,10 +6,18 @@ local _, NeedToKnow = ...
 NeedToKnow.EquipBuffBarMixin = {}
 local BarMixin = NeedToKnow.EquipBuffBarMixin
 
+local GetWeaponEnchantInfo = GetWeaponEnchantInfo
+local GetInventoryItemTexture = GetInventoryItemTexture
+local INVSLOT_MAINHAND = INVSLOT_MAINHAND
+local INVSLOT_OFFHAND = INVSLOT_OFFHAND
+local INVSLOT_RANGED = INVSLOT_RANGED
+
+
+--[[ BarMixin ]]--
+
 function BarMixin:SetBarTypeInfo()
 	-- Called by Bar:SetBarType
 	self.settings.Unit = "player"
-	self.GetTrackedInfo = self.GetEquipBuffInfo
 	self.checkOnNoTimeLeft = nil  -- For Bar:OnUpdate
 end
 
@@ -35,6 +43,48 @@ end
 function BarMixin:WEAPON_ENCHANT_CHANGED()
 	-- Only in Retail?
 	self:UpdateTracking()
+end
+
+function BarMixin:GetTrackedInfo(spellEntry, allStacks)
+	-- Get info for temporary weapon enhancement (poison, etc) 
+	-- by inventorySlotID (stored as spellEntry.id)
+
+	local count, timeLeft, enchantID, expirationTime
+
+	local _, mainHandTimeLeft, mainHandCharges, mainHandEnchantID, _, offHandTimeLeft, offHandCharges, offHandEnchantID, _, rangedTimeLeft, rangedCharges, rangedEnchantID = GetWeaponEnchantInfo()
+
+	local slotID = spellEntry.id
+	if slotID == INVSLOT_MAINHAND then
+		count = mainHandCharges
+		timeLeft = mainHandTimeLeft
+		enchantID = mainHandEnchantID
+	elseif slotID == INVSLOT_OFFHAND then
+		count = offHandCharges
+		timeLeft = offHandTimeLeft
+		enchantID = offHandEnchantID
+	elseif slotID == INVSLOT_RANGED then
+		count = rangedCharges
+		timeLeft = rangedTimeLeft
+		enchantID = rangedEnchantID
+	end
+
+	-- local duration  -- How to get? 
+
+	if count then
+		count = math.max(count, 1)
+	end
+
+	if timeLeft then
+		local now = GetTime()
+		timeLeft = timeLeft / 1000
+		expirationTime = now + timeLeft
+	end
+
+	local icon = GetInventoryItemTexture("player", slotID)
+	-- TO DO: Can we show name/icon of enchant instead of weapon slot?
+
+	-- print("FindEquipSlotBuff()", spellEntry.shownName, timeLeft)
+	-- self:AddTrackedInfo(allStacks, duration, spellEntry.id, count, expirationTime, icon, spellEntry.shownName)
 end
 
 -- Kitjan's old tooltip-scanning code: 

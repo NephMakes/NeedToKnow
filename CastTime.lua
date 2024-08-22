@@ -1,10 +1,9 @@
 --[[
 	Cast timer
 	
-	Show shaded region on bar showing time needed to cast a specific spell 
-	before time expires. For example: for Shadow Priest to cast Vampiric Touch 
-	before its debuff expires. Or for Shaman to cast Lava Burst before Flame 
-	Shock expires. 
+	Bar overlay shows time needed to cast a specific spell. For example: for  
+	Shadow Priest to cast Vampiric Touch before its debuff expires. Or for 
+	Shaman to cast Lava Burst before Flame Shock expires. 
 
 	Kitjan originally called this "Visual Cast Time" (vct)
 ]]--
@@ -26,6 +25,17 @@ end
 
 
 --[[ CastTime ]]--
+
+function Bar:SetCastTimeOptions()
+	-- TODO
+	local spellName = self.settings.vct_spell
+	if spellName == "" then
+		spellName = nil
+	end
+	self.castTimeSpell = spellName
+	self.castTimeExtra = self.settings.vct_extra 
+		-- Extra time set by user (latency, for example)
+end
 
 function Bar:UpdateCastTime()
 	-- Update for current cast speed (affected by spell haste, etc)
@@ -61,7 +71,6 @@ function Bar:GetCastTimeDuration()
 		self.refreshCastTime = nil
 	end
 	if self.settings.vct_extra then
-		-- Extra time set by user (latency, for example)
 		castDuration = castDuration + self.settings.vct_extra
 	end
 	return castDuration
