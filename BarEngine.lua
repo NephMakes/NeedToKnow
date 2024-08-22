@@ -82,10 +82,9 @@ function Bar:SetTrackingOptions()
 	self.showTime = settings.show_time
 	self.showSpark = settings.show_spark
 	self.showIcon = settings.show_icon
-	self.showBlink = settings.blink_enabled
 	self.showCastTime = settings.vct_enabled
 	self.showExtendedTime = settings.bDetectExtends
-	-- self:SetBlinkOptions()  -- TODO
+	self:SetBlinkOptions()
 	-- self:SetCastTimeOptions()  -- TODO
 
 	local groupSettings = self:GetParent().settings
@@ -300,8 +299,6 @@ end
 function Bar:OnDurationAbsent(unitExists)
 	-- Update bar to show tracked buff/debuff/cooldown is absent
 
-	local settings = self.settings
-
 	if self.showExtendedTime and self.buffName then
 		self:ClearExtendedTime()
 	end
@@ -313,11 +310,10 @@ function Bar:OnDurationAbsent(unitExists)
 	self.expirationTime = nil
 	self.shownName = nil
 	self.extendedTime = nil
-
 	self.maxTimeLeft = 1
 
-	if self:ShouldBlink(settings, unitExists) then
-		self:Blink(settings)
+	if self:ShouldBlink(unitExists) then
+		self:Blink()
 		self:Show()
 		self:OnUpdate(0)
 	else    
