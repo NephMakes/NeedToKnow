@@ -15,12 +15,11 @@ function Bar:SetUnlockedText()
 	-- Called by Bar:Unlock(), Bar:Blink()
 	local name 
 	local settings = self.settings
-	if settings.show_text then
-		if settings.show_text_user ~= "" then  -- User-specified replacement text 
+	if self.showText then
+		if settings.show_text_user ~= "" then
+			-- User-specified replacement text 
 			name = settings.show_text_user
-		-- elseif self.barType == "EQUIPSLOT" then
 		elseif self.barType == "EQUIPSLOT" or self.barType == "EQUIPBUFF" then
-			-- name = C_Item.GetItemInventorySlotInfo(tonumber(settings.AuraName)) or ""
 			name = String.GetInventorySlotName(settings.AuraName)
 		else
 			name = settings.AuraName
@@ -28,9 +27,7 @@ function Bar:SetUnlockedText()
 	else
 		name = ""
 	end
-	-- local appendedText = self:GetAppendedText()
-	-- Could show placeholders for count and extendedTime but makes config view very messy
-	-- self.Text:SetText(name..appendedText)
+	-- Placeholders for count and extendedTime would make config view messy 
 	self.Text:SetText(name)
 end
 
@@ -38,18 +35,16 @@ function Bar:SetLockedText()
 	-- Set text shown when bar is locked and active
 	-- Called by Bar:OnDurationFound() if duration found
 
-	-- local name, appendedText, countText, extendedTimeText 
 	local name, countText, extendedTimeText 
-	local settings = self.settings
 
-	if settings.show_text then
+	if self.showText then
 		name = self.shownName or self.buffName or ""
 	else
 		name = ""
 	end
 
 	local count = self.count
-	if settings.show_count and count and count > 1 then
+	if self.showCount and count and count > 1 then
 		countText = "  ["..count.."]"
 	else
 		countText = ""
@@ -62,28 +57,9 @@ function Bar:SetLockedText()
 		extendedTimeText = ""
 	end
 
-	-- appendedText = self:GetAppendedText()
-
-	-- self.Text:SetText(name..appendedText..countText..extendedTimeText)
 	self.Text:SetText(name..countText..extendedTimeText)
 end
 
---[[
-function Bar:GetAppendedText()
-	local appendedText
-	local settings = self.settings
-	if settings.append_cd and
-		(self.barType == "CASTCD" or self.barType == "BUFFCD" or self.barType == "EQUIPSLOT")
-	then
-		appendedText = " CD"
-	elseif settings.append_usable and self.barType == "USABLE" then
-		appendedText = " Usable"
-	else
-		appendedText = ""
-	end
-	return appendedText
-end
-]]--
 
 --[[ Time ]]--
 

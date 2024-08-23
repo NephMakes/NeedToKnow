@@ -5,6 +5,9 @@
 	Shadow Priest to cast Vampiric Touch before its debuff expires. Or for 
 	Shaman to cast Lava Burst before Flame Shock expires. 
 
+	User can also add extra time to overlay. For latency, or for effects that 
+	trigger on a certain amount of time left. 
+
 	Kitjan originally called this "Visual Cast Time" (vct)
 ]]--
 
@@ -27,20 +30,21 @@ end
 --[[ CastTime ]]--
 
 function Bar:SetCastTimeOptions()
-	-- TODO
-	local spellName = self.settings.vct_spell
+	local settings = self.settings
+	self.showCastTime = settings.vct_enabled
+	self.castTimeColor = settings.vct_color
+	local spellName = settings.vct_spell
 	if spellName == "" then
 		spellName = nil
 	end
 	self.castTimeSpell = spellName
-	self.castTimeExtra = self.settings.vct_extra 
-		-- Extra time set by user (latency, for example)
+	self.castTimeExtra = settings.vct_extra or 0
 end
 
 function Bar:UpdateCastTime()
 	-- Update for current cast speed (affected by spell haste, etc)
 	-- Called by Bar:OnUpdate, Bar:UpdateAppearance
-	-- Called very frequently. Make it efficent. 
+	-- Very frequent. Be efficent. 
 	local castDuration = self:GetCastTimeDuration()
 	local barWidth = self:GetWidth()
 	local castWidth = barWidth * castDuration / self.maxTimeLeft
@@ -56,12 +60,8 @@ function Bar:UpdateCastTime()
 end
 
 function Bar:GetCastTimeDuration()
-	-- Called by Bar:UpdateCastTime
-	-- Called very frequently. Make it efficent. 
-	local spell = self.settings.vct_spell
-	if not spell or spell == "" then
-		spell = self.buffName
-	end
+	-- Called by Bar:UpdateCastTime. Very frequent. Be efficent. 
+	local spell = self.castTimeSpell or self.buffName
 	local _, _, _, castDuration = GetSpellInfo(spell)
 	if castDuration then
 		castDuration = castDuration / 1000  -- Want seconds not milliseconds
@@ -70,9 +70,6 @@ function Bar:GetCastTimeDuration()
 		castDuration = 0
 		self.refreshCastTime = nil
 	end
-	if self.settings.vct_extra then
-		castDuration = castDuration + self.settings.vct_extra
-	end
-	return castDuration
+	return castDuration + self.castTimeExtra
 end
 

@@ -22,7 +22,12 @@ function BarMixin:SetBarTypeInfo()
 end
 
 function BarMixin:SetBarTypeSpells()
-	-- Nothing to do
+	-- Show equipment slot name if no custom text
+	for _, spellEntry in pairs(self.spells) do
+		if not spellEntry.shownName then
+			spellEntry.shownName = String.GetInventorySlotName(spellEntry.id)
+		end
+	end
 end
 
 function BarMixin:RegisterBarTypeEvents()

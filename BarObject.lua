@@ -7,20 +7,6 @@ local String = NeedToKnow.String
 NeedToKnow.BarBorder = {}
 local BarBorder = NeedToKnow.BarBorder
 
--- local versions of frequently-used functions
-local GetTime = GetTime
-local SecondsToTimeAbbrev = SecondsToTimeAbbrev
-
--- Functions different between Retail and Classic as of 11.0.0
-local function GetMySpellInfo(spell)
-	local info = C_Spell.GetSpellInfo(spell)  -- Only in Retail
-	return info.name, nil, info.iconID, info.castTime, info.minRange, info.maxRange, info.spellID, info.originalIconID
-end
-local GetSpellInfo = GetSpellInfo or GetMySpellInfo
-
--- Deprecated: 
-local UPDATE_INTERVAL = 0.025  -- Make this an addon-wide variable?
-
 
 --[[ NeedToKnow:BarMethods() ]]--
 
@@ -62,6 +48,22 @@ function Bar:OnLoad()
 
 	Mixin(self.border, BarBorder)
 	Mixin(self.icon.border, BarBorder)
+end
+
+function Bar:SetAppearanceOptions()
+	-- Setting names can be nonintuitive so let's corral them
+	-- Called by Bar:Update
+
+	local settings = self.settings
+	self.barColor = settings.BarColor
+	self.showText = settings.show_text
+	self.showCount = settings.show_count
+	self.showTime = settings.show_time
+	self.showSpark = settings.show_spark
+	self.showIcon = settings.show_icon
+
+	local groupSettings = self:GetParent().settings
+	self.condenseGroup = groupSettings.condenseGroup
 end
 
 function Bar:SetAppearance()
@@ -116,8 +118,8 @@ function Bar:SetAppearance()
 	end
 
 	if self.showCastTime then
-		local castColor = barSettings.vct_color
-		self.CastTime:SetColorTexture(castColor.r, castColor.g, castColor.b, castColor.a)
+		local color = self.castTimeColor
+		self.CastTime:SetColorTexture(color.r, color.g, color.b, color.a)
 	else
 		self.CastTime:Hide()
 	end
@@ -170,10 +172,8 @@ function Bar:UpdateAppearance()
 	-- Set bar elements that can change in combat
 	-- Called by Bar:OnDurationFound
 
-	local barSettings = self.settings
-
 	-- Bar color changes when blinking
-	local color = barSettings.BarColor
+	local color = self.barColor
 	self.Texture:SetVertexColor(color.r, color.g, color.b, color.a)
 
 	-- Icon changes if bar tracks multiple things
@@ -240,19 +240,16 @@ function Bar:Unlock()
 	-- Make bar configurable by player
 	-- Called by Bar:Update()
 
-	local settings = self.settings
-
 	self:Show()
 	self:EnableMouse(true)
 
 	self.maxTimeLeft = 1
 	self:SetValue(self.maxTimeLeft)
-	local color = settings.BarColor
+	local color = self.barColor
 	self.Texture:SetVertexColor(color.r, color.g, color.b, color.a)
-
-	self:SetUnlockedText()
 	self.Time:Hide()
 	self.Spark:Hide()
+	self:SetUnlockedText()
 
 	if self.showCastTime then
 		self.CastTime:SetWidth(self:GetWidth()/8)
@@ -276,7 +273,7 @@ function Bar:OnEnter()
 end
 
 function Bar:OnLeave()
-	_G["GameTooltip"]:Hide()
+	GameTooltip:Hide()
 end
 
 function Bar:OnDragStart()

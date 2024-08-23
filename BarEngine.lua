@@ -19,7 +19,7 @@ function Bar:Update()
 
 	self:SetBarType()
 	self:SetTrackingOptions()
-	-- self:SetAppearanceOptions()  -- TODO
+	self:SetAppearanceOptions()
 	self:SetSpells()
 	self:SetAppearance()
 
@@ -78,17 +78,11 @@ function Bar:SetTrackingOptions()
 
 	self.isEnabled = settings.Enabled
 	self.showAllStacks = settings.show_all_stacks
-
-	self.showTime = settings.show_time
-	self.showSpark = settings.show_spark
-	self.showIcon = settings.show_icon
-	self.showCastTime = settings.vct_enabled
 	self.showExtendedTime = settings.bDetectExtends
 	self:SetBlinkOptions()
-	-- self:SetCastTimeOptions()  -- TODO
+	self:SetCastTimeOptions()
 
 	local groupSettings = self:GetParent().settings
-	self.condenseGroup = groupSettings.condenseGroup
 	local groupDuration = tonumber(groupSettings.FixedDuration)
 	if groupDuration and groupDuration > 0 then
 		self.groupDuration = groupDuration
@@ -124,7 +118,7 @@ end
 
 function Bar:SetSpells()
 	-- Set spells/items/abilities tracked by bar
-	-- Stored as bar.spells = {{name, id, shownName, ...}, }
+	-- Store as bar.spells = {{name, id, shownName, ...}, }
 	self.spells = {}
 	local spellNames = GetSpellNames(self.settings.AuraName)
 	local shownNames = GetSpellNames(self.settings.show_text_user)
