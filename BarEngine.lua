@@ -137,7 +137,7 @@ function Bar:SetSpells()
 		end
 		table.insert(self.spells, spellEntry)
 	end
-	self:SetBarTypeSpells()
+	self:SetBarTypeSpells()  -- Set extra information for Bar:GetTrackedInfo
 end
 
 function Bar:Activate()

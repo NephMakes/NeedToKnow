@@ -4,6 +4,10 @@
 	Kitjan made this bar type cover all three cases. It tries to figure out 
 	spell vs item from the entryName/entryID. Spell charges require an 
 	additional setting. 
+
+	[Kitjan]: ACTIVE_TALENT_GROUP_CHANGED is only event guaranteed on talent 
+	switch, but client might not have spell info yet. So checking cooldowns 
+	should fail silently and try again later. 
 ]]--
 
 local _, NeedToKnow = ...
@@ -40,15 +44,14 @@ if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 	end
 end
 
+local GLOBAL_SPELLID = 61304  -- Global cooldown
+if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then
+	GLOBAL_SPELLID = 29515  -- "TEST Scorch"
+end
+
 local function round(value, decimalPlaces)
     local order = 10^(decimalPlaces or 0)
     return math.floor(value * order + 0.5) / order
-end
-
--- spellID for global cooldown
-local GLOBAL_SPELLID = 61304
-if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then
-	GLOBAL_SPELLID = 29515  -- "TEST Scorch"
 end
 
 
@@ -63,6 +66,7 @@ function BarMixin:SetBarTypeInfo()
 end
 
 function BarMixin:SetBarTypeSpells()
+	-- Set extra information for Bar:GetTrackedInfo
 	for _, spellEntry in pairs(self.spells) do
 		self:SetCooldownSpell(spellEntry)
 	end
@@ -96,7 +100,8 @@ function BarMixin:SetCooldownSpell(spellEntry)
 		-- Config by itemID not supported: values overlap with spellID
 		local isItemCooldown, _, iconID, itemID = IsItemCooldown(spellEntry.name)
 		if isItemCooldown then
-			spellEntry.cooldownFunction = self.GetItemCooldown
+			self.GetTrackedCooldown = self.GetTrackedItemCooldown
+			spellEntry.hasFunction = true
 			spellEntry.icon = iconID
 			spellEntry.id = itemID  -- GetItemCooldown() only accepts itemIDs
 			return
@@ -108,10 +113,13 @@ function BarMixin:SetCooldownSpell(spellEntry)
 	local isSpellCooldown, name, iconID, spellID = IsSpellCooldown(spell)
 	if isSpellCooldown then
 		if self.showChargeCooldown and GetSpellCharges(spell) then
-			spellEntry.cooldownFunction = self.GetSpellChargesCooldown
+			-- Spell charge cooldown
+			self.GetTrackedCooldown = self.GetTrackedSpellChargesCooldown
 		else
-			spellEntry.cooldownFunction = self.GetSpellCooldown
+			-- Spell cooldown
+			self.GetTrackedCooldown = self.GetTrackedSpellCooldown
 		end
+		spellEntry.hasFunction = true
 		spellEntry.name = name
 		spellEntry.icon = iconID
 		spellEntry.id = spellID
@@ -119,7 +127,7 @@ function BarMixin:SetCooldownSpell(spellEntry)
 	end
 
 	-- Try again later: maybe just logged in or recently changed talents
-	spellEntry.cooldownFunction = self.GetUnresolvedCooldown
+	spellEntry.hasFunction = false
 end
 
 function BarMixin:RegisterBarTypeEvents()
@@ -143,30 +151,23 @@ function BarMixin:SPELL_UPDATE_COOLDOWN()
 	self:UpdateTracking()
 end
 
+function BarMixin:GetTrackedInfo(spellEntry, allStacks)
+	-- Called by Bar:UpdateTracking
+	if not spellEntry.hasFunction then
+		self:SetCooldownSpell(spellEntry)
+	end
+	if spellEntry.hasFunction then
+		local trackedInfo = self:GetTrackedCooldown(spellEntry)
+		if trackedInfo then
+			self:AddTrackedInfo(allStacks, trackedInfo.duration, trackedInfo.name, trackedInfo.count, trackedInfo.expirationTime, trackedInfo.iconID, trackedInfo.shownName)
+		end
+		-- return self:GetTrackedCooldown(spellEntry)  -- Eventually do this instead
+	end
+end
+
 local function IsGlobalCooldown(start, duration)
 	local globalStart, globalDuration = GetSpellCooldown(GLOBAL_SPELLID)
 	return (start == globalStart) and (duration == globalDuration)
-end
-
-function BarMixin:GetTrackedInfo(spellEntry, allStacks)
-	-- Get cooldown info for spell, item, or spell charges
-	local GetCooldown = spellEntry.cooldownFunction
-	if not GetCooldown then return end
-
-	local start, duration, _, name, iconID, count, start2 = GetCooldown(self, spellEntry)
-	if not start or not duration then return end
-	if IsGlobalCooldown(start, duration) then return end
-
-	local expirationTime = start + duration
-	if expirationTime > GetTime() + 0.1 then
-		if start2 then  -- returned by bar:GetSpellChargesCooldown
-			self:AddTrackedInfo(allStacks, duration, name, 1, start2 + duration, iconID, spellEntry.shownName)
-			count = count - 1
-		else
-			if not count then count = 1 end
-		end
-		self:AddTrackedInfo(allStacks, duration, name, count, expirationTime, iconID, spellEntry.shownName)
-	end
 end
 
 local function IsRuneCooldown(duration)
@@ -178,6 +179,100 @@ local function IsRuneCooldown(duration)
 			-- duration and runeDuration accurate to different digits
 			return true
 		end
+	end
+end
+
+function BarMixin:GetTrackedSpellCooldown(spellEntry)
+	-- Called as self:GetTrackedCooldown
+	local spell = spellEntry.id or spellEntry.name
+	local start, duration, enabled = GetSpellCooldown(spell)
+	if not duration or 
+		(duration == 0) or (enabled == 0) or
+		IsGlobalCooldown(start, duration) or
+		(NeedToKnow.isClassicDeathKnight and IsRuneCooldown(duration)) 
+	then 
+		return 
+	end
+	return {
+		name = spellEntry.name, 
+		iconID = spellEntry.icon, 
+		count = 1, 
+		duration = duration, 
+		expirationTime = start + duration, 
+		-- extraValues = nil, 
+		spellID = spellEntry.id, 
+		shownName = spellEntry.shownName
+	}
+end
+
+function BarMixin:GetTrackedItemCooldown(spellEntry)
+	-- Called as self:GetTrackedCooldown
+	local start, duration, enabled = GetItemCooldown(spellEntry.id)
+	if not duration or 
+		(duration == 0) or (enabled == 0) or
+		IsGlobalCooldown(start, duration)
+	then 
+		return 
+	end
+	return {
+		name = spellEntry.name, 
+		iconID = spellEntry.icon, 
+		count = 1, 
+		duration = duration, 
+		expirationTime = start + duration, 
+		-- extraValues = nil, 
+		spellID = spellEntry.id, 
+		shownName = spellEntry.shownName
+	}
+end
+
+function BarMixin:GetTrackedSpellChargesCooldown(spellEntry)
+	-- [Kitjan]: "Show first and last charge cooldown"
+	-- [NephMakes]: Not sure this does the same thing as before (old code below)
+	-- Called as self:GetTrackedCooldown
+	local spell = spellEntry.id or spellEntry.name
+	local currentCharges, maxCharges, start, duration = GetSpellCharges(spell)
+	if not duration or 
+		(currentCharges == maxCharges) or
+		IsGlobalCooldown(start, duration) or
+		(NeedToKnow.isClassicDeathKnight and IsRuneCooldown(duration)) 
+	then
+		return
+	end
+	return {
+		name = spellEntry.name, 
+		iconID = spellEntry.icon, 
+		count = maxCharges - currentCharges, 
+		duration = duration, 
+		expirationTime = start + duration, 
+		-- extraValues = nil, 
+		spellID = spellEntry.id, 
+		shownName = spellEntry.shownName
+	}
+end
+
+
+--[[ Old code ]]--
+
+--[[
+function BarMixin:GetTrackedInfo(spellEntry, allStacks)
+	-- Get cooldown info for spell, item, or spell charges
+	local GetCooldown = spellEntry.cooldownFunction
+	if not GetCooldown then return end
+
+	local start, duration, enabled, name, iconID, count, start2 = GetCooldown(self, spellEntry)
+	if not start or not duration then return end
+	if IsGlobalCooldown(start, duration) then return end
+
+	local expirationTime = start + duration
+	if expirationTime > GetTime() + 0.1 then  -- Why + 0.1?
+		if start2 then  -- returned by bar:GetSpellChargesCooldown if no charges left
+			self:AddTrackedInfo(allStacks, duration, name, 1, start2 + duration, iconID, spellEntry.shownName)
+			count = count - 1
+		else
+			if not count then count = 1 end
+		end
+		self:AddTrackedInfo(allStacks, duration, name, count, expirationTime, iconID, spellEntry.shownName)
 	end
 end
 
@@ -224,11 +319,5 @@ function BarMixin:GetUnresolvedCooldown(spellEntry)
 		return f(bar, spellEntry)
 	end
 end
-
---[[
-	[Kitjan]: ACTIVE_TALENT_GROUP_CHANGED is only event guaranteed on talent switch, 
-	but client might not have spell info yet. So checking cooldowns should fail silently 
-	and try again later. 
 ]]--
-
 
