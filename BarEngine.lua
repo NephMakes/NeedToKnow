@@ -241,6 +241,20 @@ do
 end
 -- function Bar:UpdateTracking() end  -- TODO (will replace CheckAura)
 
+--[[
+BarType functions return: 
+	trackedInfo = {
+		name = foo, 
+		iconID = foo, 
+		count = foo, 
+		duration = foo, 
+		expirationTime = foo, 
+		extraValues = fooTable, 
+		spellID = foo,  -- Also used for itemID
+		shownName = foo, 
+	}
+]]--
+
 function Bar:AddTrackedInfo(allStacks, duration, name, count, expirationTime, icon, shownName, value1, value2, value3)
 	if not duration then return end
 	if not count or count < 1 then 

@@ -30,7 +30,6 @@ Bar.xml
 BarObject.lua
 BarText.lua
 BarEngine.lua
-Cooldown.lua
 Blink.lua
 BossFight.lua
 CastTime.lua
