@@ -2,8 +2,9 @@
 
 ## NeedToKnow
 
-### v4.7.7 (2024-08-22)
+### v4.7.7 (2024-08-??)
 * Fixed: Buffs and debuffs tracked by spell ID on target/focus should now work again
+* Fixed: Cooldown bars should no longer show rune cooldowns for Classic Death Knights
 * Changed: Default profile should now provide cleaner experience for first-time users and new characters. Groups and bars on inactive profiles will likely need to be re-enabled. 
 
 ### v4.7.6 (2024-08-21)

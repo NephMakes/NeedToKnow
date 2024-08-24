@@ -40,6 +40,17 @@ if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 	end
 end
 
+local function round(value, decimalPlaces)
+    local order = 10^(decimalPlaces or 0)
+    return math.floor(value * order + 0.5) / order
+end
+
+-- spellID for global cooldown
+local GLOBAL_SPELLID = 61304
+if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then
+	GLOBAL_SPELLID = 29515  -- "TEST Scorch"
+end
+
 
 --[[ Bar setup ]]--
 
@@ -132,18 +143,22 @@ function BarMixin:SPELL_UPDATE_COOLDOWN()
 	self:UpdateTracking()
 end
 
+local function IsGlobalCooldown(start, duration)
+	local globalStart, globalDuration = GetSpellCooldown(GLOBAL_SPELLID)
+	return (start == globalStart) and (duration == globalDuration)
+end
+
 function BarMixin:GetTrackedInfo(spellEntry, allStacks)
 	-- Get cooldown info for spell, item, or spell charges
 	local GetCooldown = spellEntry.cooldownFunction
 	if not GetCooldown then return end
+
 	local start, duration, _, name, iconID, count, start2 = GetCooldown(self, spellEntry)
-
-	start, duration = self:ScreenOutGlobalCooldown(start, duration)
 	if not start or not duration then return end
+	if IsGlobalCooldown(start, duration) then return end
 
-	local now = GetTime()
 	local expirationTime = start + duration
-	if expirationTime > now + 0.1 then
+	if expirationTime > GetTime() + 0.1 then
 		if start2 then  -- returned by bar:GetSpellChargesCooldown
 			self:AddTrackedInfo(allStacks, duration, name, 1, start2 + duration, iconID, spellEntry.shownName)
 			count = count - 1
@@ -154,16 +169,16 @@ function BarMixin:GetTrackedInfo(spellEntry, allStacks)
 	end
 end
 
-function BarMixin:ScreenOutGlobalCooldown(start, duration)
-	if start and (duration <= 1.5) then
-		if self.expirationTime and self.expirationTime <= start + duration then
-			start = self.expirationTime - self.duration
-			duration = self.duration
-		else
-			start = nil
+local function IsRuneCooldown(duration)
+	-- For Classic Death Knights
+	local runeDuration
+	for runeIndex = 1, 6 do
+		_, runeDuration = GetRuneCooldown(runeIndex)
+		if round(duration, 2) == round(runeDuration, 2) then
+			-- duration and runeDuration accurate to different digits
+			return true
 		end
 	end
-	return start, duration
 end
 
 function BarMixin:GetSpellCooldown(spellEntry)
@@ -173,15 +188,8 @@ function BarMixin:GetSpellCooldown(spellEntry)
 		if enabled == 0 then
 			-- Cooldown hasn't started yet
 			start = nil
-		elseif NeedToKnow.isClassicDeathKnight then
-			-- Show ability cooldowns, not rune cooldowns
-			for runeIndex = 1, 6 do
-				local _, runeDuration = GetRuneCooldown(runeIndex)
-				if duration == runeDuration then
-					start = nil
-					break
-				end
-			end
+		elseif NeedToKnow.isClassicDeathKnight and IsRuneCooldown(duration) then
+			start = nil
 		end
 		if start then
 			return start, duration, enabled, spellEntry.name, spellEntry.icon
