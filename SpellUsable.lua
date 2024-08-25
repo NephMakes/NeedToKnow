@@ -62,7 +62,16 @@ function BarMixin:GetTrackedInfo(spellEntry, allStacks)
 			duration = self.duration
 			expirationTime = self.expirationTime
 		end
-		self:AddTrackedInfo(allStacks, duration, spellName, 1, expirationTime, icon, spellEntry.shownName)
+		return {
+			name = spellName, 
+			iconID = icon, 
+			count = 1, 
+			duration = duration, 
+			expirationTime = expirationTime, 
+			-- extraValues = nil, 
+			shownName = spellEntry.shownName, 
+			stacks = 1, 
+		}
 	end
 end
 

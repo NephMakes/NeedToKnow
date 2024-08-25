@@ -44,7 +44,16 @@ function BarMixin:GetTrackedInfo(spellEntry, allStacks)
 	local start, duration, _ = GetInventoryItemCooldown("player", spellEntry.id)
 	if start and start > 0 then
 		local iconID = GetInventoryItemTexture("player", spellEntry.id)
-		self:AddTrackedInfo(allStacks, duration, name, 1, start + duration, iconID, spellEntry.shownName)
+		return {
+			name = spellEntry.id, 
+			iconID = iconID, 
+			count = 1, 
+			duration = duration, 
+			expirationTime = start + duration, 
+			-- extraValues = nil, 
+			shownName = spellEntry.shownName, 
+			stacks = 1, 
+		}
 	end
 end
 

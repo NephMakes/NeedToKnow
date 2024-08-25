@@ -48,8 +48,16 @@ function BarMixin:GetTrackedInfo(spellEntry, allStacks)
 	for index = 1, 4 do
 		local _, name, startTime, duration, iconID = GetTotemInfo(index)  
 		if name and name:find(spellName) then
-			self:AddTrackedInfo(allStacks, duration, name, 1, startTime + duration, iconID, spellEntry.shownName)
-			return
+			return {
+				name = name, 
+				iconID = iconID, 
+				count = 1, 
+				duration = duration, 
+				expirationTime = startTime + duration, 
+				-- extraValues = nil, 
+				shownName = spellEntry.shownName, 
+				stacks = 1, 
+			}
 		end
 	end
 end

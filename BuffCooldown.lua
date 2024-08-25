@@ -33,7 +33,7 @@ function BarMixin:SetBarTypeInfo()
 end
 
 function BarMixin:SetBarTypeSpells()
-	-- Set spells that reset buff cooldown
+	-- Set other buffs that reset tracked buff cooldown
 	-- Example: Classic Balance Druid Eclipse resets cooldown on Nature's Grace
 	local settings = self.settings
 	if settings.buffcd_reset_spells and settings.buffcd_reset_spells ~= "" then
@@ -85,6 +85,7 @@ function BarMixin:GetTrackedInfo(spellEntry, allStacks)
 	-- Get info for cooldown on passive buff proc
 	-- Called by Bar:UpdateTracking
 	local name, duration, expirationTime, iconID
+
 	local buff = GetBuffInfo(spellEntry)
 	local now = GetTime()
 	if buff then
@@ -120,8 +121,18 @@ function BarMixin:GetTrackedInfo(spellEntry, allStacks)
 		duration = self.duration
 		expirationTime = self.expirationTime
 	end
+
 	if duration then
-		self:AddTrackedInfo(allStacks, duration, name, 1, expirationTime, iconID, spellEntry.shownName)
+		return {
+			name = name, 
+			iconID = iconID, 
+			count = 1, 
+			duration = duration, 
+			expirationTime = expirationTime, 
+			-- extraValues = nil, 
+			shownName = spellEntry.shownName, 
+			stacks = 1, 
+		}
 	end
 end
 
@@ -129,12 +140,10 @@ function Bar:GetBuffCooldownReset(duration, expirationTime)
 	-- ...
 	-- Example: Classic Druid Eclipse resets internal cooldown on Nature's Grace
 	-- Called by Bar:CheckAura()
-
 	local maxStartTime = 0
 	local now = GetTime()
-
-	-- Track when reset buff last applied to player
 	for i, resetSpell in ipairs(self.reset_spells) do
+		-- Track when reset buff last applied to player
 		local resetBuff = GetBuffInfo(resetSpell)
 		local startTime
 		if resetBuff then

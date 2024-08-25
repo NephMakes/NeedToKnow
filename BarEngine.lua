@@ -76,8 +76,16 @@ function Bar:SetTrackingOptions()
 		self.UnitExists = Bar.UnitExistsGeneric
 	end
 
-	self.isEnabled = settings.Enabled
 	self.showAllStacks = settings.show_all_stacks
+	if self.showAllStacks then
+		self.UpdateTracking = self.UpdateTrackingAllStacks
+		self.CheckAura = self.UpdateTrackingAllStacks  -- Deprecated alias
+	else
+		self.UpdateTracking = self.UpdateTrackingSingle
+		self.CheckAura = self.UpdateTrackingSingle  -- Deprecated alias
+	end
+
+	self.isEnabled = settings.Enabled
 	self.showExtendedTime = settings.bDetectExtends
 	self:SetBlinkOptions()
 	self:SetCastTimeOptions()
@@ -172,122 +180,126 @@ function Bar:OnEvent(event, unit, ...)
 	end
 end
 
--- Kitjan made m_scratch a reusable table to track multiple instances of an aura with one bar
-local m_scratch = {}
-m_scratch.all_stacks = {
-	-- Stores tracked info
-	min = {
-		buffName = "", 
-		duration = 0, 
-		expirationTime = 0, 
-		icon = "",
-	},
-	max = {
-		duration = 0, 
-		expirationTime = 0, 
-	},
-	total = 0,
-}
-
-function Bar:CheckAura()
+function Bar:UpdateTrackingSingle()
 	-- Get info for tracked spell/item/ability and act on it
 	-- Primary update call for active bars, called by many functions
-	-- Called by Bar:EVENT functions
+	-- Called as Bar:UpdateTracking
 
-	local allStacks, name, icon, count, duration, expirationTime, shownName
-
-	-- Get info
+	local trackedInfo
 	local unitExists = self:UnitExists()
 	if unitExists then
-		allStacks = m_scratch.all_stacks
-		allStacks.total = 0
 		for _, spellEntry in pairs(self.spells) do
-			self:GetTrackedInfo(spellEntry, allStacks)
-			if allStacks.total > 0 and not self.showAllStacks then
-				break
-			end
+			trackedInfo = self:GetTrackedInfo(spellEntry)
+			if trackedInfo then break end
 		end
-		if allStacks.total > 0 then
-			name = allStacks.min.name
-			icon = allStacks.min.icon
-			count = allStacks.total
-			if self.showAllStacks then
-				duration = allStacks.max.duration
-				expirationTime = allStacks.max.expirationTime
-			else
-				duration = allStacks.min.duration
-				expirationTime = allStacks.min.expirationTime
-			end
-			shownName = allStacks.min.shownName
-		end
-	end
-	if self.barType == "BUFFCD" and self.reset_spells and duration then
-		duration = self:GetBuffCooldownReset(duration, expirationTime)
 	end
 
-	-- Act on info
-	if duration then
-		self:OnDurationFound(name, icon, count, duration, expirationTime, shownName)
+	if self.barType == "BUFFCD" and self.reset_spells and 
+		trackedInfo and trackedInfo.duration 
+	then
+		trackedInfo.duration = self:GetBuffCooldownReset(trackedInfo.duration, trackedInfo.expirationTime)
+		if not trackedInfo.duration then
+			trackedInfo = nil
+		end
+	end
+
+	if trackedInfo then
+		self:OnTrackedPresent(trackedInfo)
 	else
-		self:OnDurationAbsent(unitExists)
+		self:OnTrackedAbsent(unitExists)
 	end
 	if self.condenseGroup then
 		self:CondenseBarGroup()
 	end
 end
 
-do
-	Bar.UpdateTracking = Bar.CheckAura  -- Temporary alias
+function Bar:UpdateTrackingAllStacks()
+	-- Get info for tracked spell/item/ability and act on it
+	-- Primary update call for active bars, called by many functions
+	-- Called as Bar:UpdateTracking
+
+	local trackedInfo, newInfo
+	local unitExists = self:UnitExists()
+	if unitExists then
+		for _, spellEntry in pairs(self.spells) do
+			newInfo = self:GetTrackedInfo(spellEntry)
+			trackedInfo = self:SumTrackedInfo(newInfo, trackedInfo)
+		end
+	end
+
+	if self.barType == "BUFFCD" and self.reset_spells and 
+		trackedInfo and trackedInfo.duration 
+	then
+		trackedInfo.duration = self:GetBuffCooldownReset(trackedInfo.duration, trackedInfo.expirationTime)
+		if not trackedInfo.duration then
+			trackedInfo = nil
+		end
+	end
+
+	if trackedInfo then
+		self:OnTrackedPresent(trackedInfo)
+	else
+		self:OnTrackedAbsent(unitExists)
+	end
+	if self.condenseGroup then
+		self:CondenseBarGroup()
+	end
 end
--- function Bar:UpdateTracking() end  -- TODO (will replace CheckAura)
 
 --[[
-BarType functions return: 
-	trackedInfo = {
-		name = foo, 
-		iconID = foo, 
-		count = foo, 
-		duration = foo, 
-		expirationTime = foo, 
-		-- extraValues = fooTable,  -- Not yet implemented
-		spellID = foo,  -- Also used for itemID
-		shownName = foo, 
-	}
+trackedInfo = { 
+	name = string, 
+	iconID = number, 
+	count = number,  -- Count for shown instance only
+	duration = number, 
+	expirationTime = number, 
+	-- extraValues = table of numbers,  -- Not yet implemented
+	shownName = string, 
+	stacks = number,  -- How many instances (for showAllStacks)
+}
 ]]--
 
-function Bar:AddTrackedInfo(allStacks, duration, name, count, expirationTime, icon, shownName, value1, value2, value3)
-	if not duration then return end
-	if not count or count < 1 then 
-		count = 1 
+function Bar:SumTrackedInfo(newInfo, trackedInfo)
+	-- Combine info from multiple spells/instances to show sum of all
+	-- Called by Bar:UpdateTrackingAllStacks, Bar:GetAuraInfoAllStacks
+
+	if not trackedInfo then return newInfo end
+	if not newInfo then return trackedInfo end
+
+	-- Keep info for last to expire
+	if newInfo.expirationTime > trackedInfo.expirationTime then
+		trackedInfo.name = newInfo.name
+		trackedInfo.iconID = newInfo.iconID
+		trackedInfo.count = newInfo.count
+		trackedInfo.expirationTime = newInfo.expirationTime
+		trackedInfo.shownName = newInfo.shownName
 	end
-	if allStacks.total == 0 or expirationTime < allStacks.min.expirationTime then
-		allStacks.min.name = name
-		allStacks.min.icon = icon
-		allStacks.min.duration = duration
-		allStacks.min.expirationTime = expirationTime
-		allStacks.min.shownName = shownName
+	if newInfo.duration > trackedInfo.duration then
+		trackedInfo.duration = newInfo.duration
 	end
-	if allStacks.total == 0 or expirationTime > allStacks.max.expirationTime then
-		allStacks.max.duration = duration
-		allStacks.max.expirationTime = expirationTime
-	end 
-	allStacks.total = allStacks.total + count
+	-- extraValues not yet implemented
+	trackedInfo.stacks = newInfo.stacks + trackedInfo.stacks
+
+	return trackedInfo
 end
 
-function Bar:OnDurationFound(name, icon, count, duration, expirationTime, shownName)
-	-- Update bar to show status of tracked spell/item/ability
+function Bar:OnTrackedPresent(trackedInfo)
+	-- Update bar to show status of tracked aura/cooldown/etc
+
+	local duration = trackedInfo.duration
 
 	local extendedTime
 	if self.showExtendedTime then
-		extendedTime, duration = self:GetExtendedTime(name, duration, expirationTime, self.unit)
+		extendedTime, duration = self:GetExtendedTime(trackedInfo.name, duration, trackedInfo.expirationTime, self.unit)
 	end
 
-	self.buffName = name
-	self.iconPath = icon
-	self.count = count
+	self.buffName = trackedInfo.name
+	self.iconPath = trackedInfo.iconID
+	self.count = trackedInfo.count
 	self.duration = duration
-	self.expirationTime = expirationTime
-	self.shownName = shownName
+	self.expirationTime = trackedInfo.expirationTime
+	self.shownName = trackedInfo.shownName
+	self.stacks = trackedInfo.stacks
 	self.extendedTime = extendedTime
 
 	if duration > 0 then
@@ -304,19 +316,20 @@ function Bar:OnDurationFound(name, icon, count, duration, expirationTime, shownN
 	self:OnUpdate(0)
 end
 
-function Bar:OnDurationAbsent(unitExists)
-	-- Update bar to show tracked buff/debuff/cooldown is absent
+function Bar:OnTrackedAbsent(unitExists)
+	-- Update bar to show tracked aura/cooldown/etc is absent
 
 	if self.showExtendedTime and self.buffName then
 		self:ClearExtendedTime()
 	end
 
 	self.buffName = nil
-	self.iconPath = nil
+	self.iconPath = nil  -- Keep icon for blink?
 	self.count = nil
 	self.duration = nil
 	self.expirationTime = nil
 	self.shownName = nil
+	self.stacks = nil
 	self.extendedTime = nil
 	self.maxTimeLeft = 1
 

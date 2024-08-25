@@ -177,11 +177,7 @@ function BarMixin:GetTrackedInfo(spellEntry, allStacks)
 		self:SetCooldownSpell(spellEntry)
 	end
 	if spellEntry.hasFunction then
-		local trackedInfo = self:GetTrackedCooldown(spellEntry)
-		if trackedInfo then
-			self:AddTrackedInfo(allStacks, trackedInfo.duration, trackedInfo.name, trackedInfo.count, trackedInfo.expirationTime, trackedInfo.iconID, trackedInfo.shownName)
-		end
-		-- return self:GetTrackedCooldown(spellEntry)  -- Eventually do this instead
+		return self:GetTrackedCooldown(spellEntry)
 	end
 end
 
@@ -203,8 +199,8 @@ function BarMixin:GetTrackedSpellCooldown(spellEntry)
 		duration = duration, 
 		expirationTime = start + duration, 
 		-- extraValues = nil, 
-		spellID = spellEntry.id, 
-		shownName = spellEntry.shownName
+		shownName = spellEntry.shownName, 
+		stacks = 1, 
 	}
 end
 
@@ -224,8 +220,8 @@ function BarMixin:GetTrackedItemCooldown(spellEntry)
 		duration = duration, 
 		expirationTime = start + duration, 
 		-- extraValues = nil, 
-		spellID = spellEntry.id, 
-		shownName = spellEntry.shownName
+		shownName = spellEntry.shownName, 
+		stacks = 1, 
 	}
 end
 
@@ -249,8 +245,8 @@ function BarMixin:GetTrackedSpellChargesCooldown(spellEntry)
 		duration = duration, 
 		expirationTime = start + duration, 
 		-- extraValues = nil, 
-		spellID = spellEntry.id, 
-		shownName = spellEntry.shownName
+		shownName = spellEntry.shownName, 
+		stacks = 1, 
 	}
 end
 

@@ -151,22 +151,42 @@ function BarMixin:GetTrackedInfoSingle(spellEntry, allStacks)
 		end
 	end
 	if aura then
-		self:AddTrackedInfo(allStacks, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, spellEntry.shownName, unpack(aura.points))
+		return {
+			name = aura.name, 
+			iconID = aura.icon, 
+			count = aura.applications, 
+			duration = aura.duration, 
+			expirationTime = aura.expirationTime, 
+			-- extraValues = aura.points, 
+			shownName = spellEntry.shownName, 
+			stacks = 1, 
+		}
 	end
 end
 
 function BarMixin:GetTrackedInfoAllStacks(spellEntry, allStacks)
 	-- Get info for all instances of buff/debuff
-	local aura
+	local aura, newInfo, trackedInfo
 	local i = 1
 	while true do
 		aura = GetAuraDataByIndex(self.unit, i, self.filter)
 		if not aura then break end
-		if aura.name == spellEntry.name or aura.spellId == spellEntry.id then 
-			self:AddTrackedInfo(allStacks, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, spellEntry.shownName, unpack(aura.points))
+		if aura.name == spellEntry.name or aura.spellId == spellEntry.id then
+			newInfo = {
+				name = aura.name, 
+				iconID = aura.icon, 
+				count = aura.applications, 
+				duration = aura.duration, 
+				expirationTime = aura.expirationTime, 
+				-- extraValues = aura.points, 
+				shownName = spellEntry.shownName, 
+				stacks = 1, 
+			}
+			trackedInfo = self:SumTrackedInfo(newInfo, trackedInfo)
 		end
 		i = i + 1
 	end
+	return trackedInfo
 end
 
 

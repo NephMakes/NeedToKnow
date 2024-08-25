@@ -35,7 +35,7 @@ function Bar:SetLockedText()
 	-- Set text shown when bar is locked and active
 	-- Called by Bar:OnDurationFound() if duration found
 
-	local name, countText, extendedTimeText 
+	local name, countText, stackText, extendedTimeText 
 
 	if self.showText then
 		name = self.shownName or self.buffName or ""
@@ -50,6 +50,14 @@ function Bar:SetLockedText()
 		countText = ""
 	end
 
+	local stacks = self.stacks
+	if self.showAllStacks and stacks and stacks > 1 then
+		stacks = stacks - 1  -- Show extra stacks
+		stackText = "  +"..stacks
+	else
+		stackText = ""
+	end
+
 	local extendedTime = self.extendedTime
 	if extendedTime and extendedTime > 1 then
 		extendedTimeText = string.format(" + %.0fs", extendedTime)
@@ -57,7 +65,7 @@ function Bar:SetLockedText()
 		extendedTimeText = ""
 	end
 
-	self.Text:SetText(name..countText..extendedTimeText)
+	self.Text:SetText(name..countText..stackText..extendedTimeText)
 end
 
 
