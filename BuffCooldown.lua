@@ -1,4 +1,11 @@
--- Track buff cooldowns (passive internal cooldowns on procs)
+--[[ 
+	Track buff cooldowns (internal cooldowns on procs)
+
+	Cooldown duration has to be set by user :(. Not accurate for multiple 
+	instances of same buff (for example from same enchant on dual-wielded 
+	melee weapons). Allows specific buffs to reset cooldown (also have to be 
+	set by user). 
+]]--
 
 local _, NeedToKnow = ...
 NeedToKnow.BuffCooldownBarMixin = {}
@@ -14,9 +21,9 @@ local GetPlayerAuraBySpellID = C_UnitAuras.GetPlayerAuraBySpellID
 
 function BarMixin:SetBarTypeInfo()
 	-- Called by Bar:SetBarType
-	self.settings.Unit = "player"
-	-- self.settings.buffcd_duration  -- TODO
-	self.filter = "HELPFUL"
+	local settings = self.settings
+	settings.Unit = "player"
+	self.buffCooldownDuration = tonumber(settings.buffcd_duration)
 	self.checkOnNoTimeLeft = true  -- For Bar:OnUpdate. No event for expired cooldown. 
 
 	-- local duration = tonumber(settings.buffcd_duration)
@@ -27,7 +34,7 @@ end
 
 function BarMixin:SetBarTypeSpells()
 	-- Set spells that reset buff cooldown
-	-- For example: Balance Druid's Eclipse resets cooldown on Nature's Grace
+	-- Example: Classic Balance Druid Eclipse resets cooldown on Nature's Grace
 	local settings = self.settings
 	if settings.buffcd_reset_spells and settings.buffcd_reset_spells ~= "" then
 		self.reset_spells = {}
@@ -65,94 +72,89 @@ function BarMixin:UNIT_AURA(unit, updateInfo)
 	self:UpdateTracking()
 end
 
-local m_scratch = {}  -- Deprecated
-m_scratch.buff_stacks = {
-	min = {
-		buffName = "", 
-		duration = 0, 
-		expirationTime = 0, 
-		icon = "",
-	},
-	max = {
-		duration = 0, 
-		expirationTime = 0, 
-	},
-	total = 0,
-}
-
-function BarMixin:GetTrackedInfo(spellEntry, allStacks)
-	-- Get info for cooldown on passive buff proc
-	local buffStacks = m_scratch.buff_stacks
-	buffStacks.total = 0
-	self:GetAuraInfo(spellEntry, buffStacks)
-
-	local now = GetTime()
-	if buffStacks.total > 0 then
-		local duration = tonumber(self.settings.buffcd_duration)
-		if buffStacks.max.expirationTime == 0 then
-			-- TODO: This doesn't work well as a substitute for telling when the aura was applied
-			if not self.expirationTime then
-				self:AddTrackedInfo(allStacks, duration, buffStacks.min.name, 1, duration + now, buffStacks.min.icon, spellEntry.shownName)
-			else
-				self:AddTrackedInfo(allStacks, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, spellEntry.shownName)
-			end
-			return
-		end
-
-		local start = buffStacks.max.expirationTime - buffStacks.max.duration
-		local expirationTime = start + duration
-		if expirationTime > now then
-			self:AddTrackedInfo(allStacks, duration, buffStacks.min.name, 1, expirationTime, buffStacks.min.icon, spellEntry.shownName)                   
-		end
-	elseif self.expirationTime and self.expirationTime > now + 0.1 then
-		self:AddTrackedInfo(allStacks, self.duration, self.buffName, 1, self.expirationTime, self.iconPath, spellEntry.shownName)
+local function GetBuffInfo(entry)
+	-- Get info for first instance of buff on player
+	if entry.name then
+		return GetAuraDataBySpellName("player", entry.name, "HELPFUL")
+	elseif entry.id then
+		return GetPlayerAuraBySpellID(entry.id)
 	end
 end
 
-function BarMixin:GetAuraInfo(spellEntry, stacks)
-	-- Get info for first instance of buff/debuff
-	local aura
-	local entryName = spellEntry.name
-	local entryID = spellEntry.id
-	if entryName then
-		aura = GetAuraDataBySpellName("player", entryName, "HELPFUL")
-	elseif entryID then
-		aura = GetPlayerAuraBySpellID(entryID)
+function BarMixin:GetTrackedInfo(spellEntry, allStacks)
+	-- Get info for cooldown on passive buff proc
+	-- Called by Bar:UpdateTracking
+	local name, duration, expirationTime, iconID
+	local buff = GetBuffInfo(spellEntry)
+	local now = GetTime()
+	if buff then
+		name = buff.name
+		iconID = buff.icon
+		if buff.expirationTime > 0 then
+			local startTime = buff.expirationTime - buff.duration
+			expirationTime = startTime + self.buffCooldownDuration
+			if expirationTime > now then
+				-- Set the clock
+				duration = self.buffCooldownDuration
+				expirationTime = expirationTime
+			end
+		elseif buff.expirationTime == 0 then
+			-- Buff has indefinite duration
+			-- NOTE: Example = ???. Do any indefinite buffs have a cooldown? 
+			if self.expirationTime then 
+				-- Keep on keepin' on
+				duration = self.duration
+				expirationTime = self.expirationTime
+			else
+				-- We have no memory of this, so assume newly applied
+				-- (won't be accurate after /reload etc)
+				-- Start the clock
+				duration = self.buffCooldownDuration
+				expirationTime = duration + now
+			end
+		end
+	elseif self.expirationTime and self.expirationTime > now + 0.1 then
+		-- Keep on keepin' on
+		name = self.buffName
+		iconID = self.iconPath
+		duration = self.duration
+		expirationTime = self.expirationTime
 	end
-	if aura then
-		self:AddTrackedInfo(stacks, aura.duration, aura.name, aura.applications, aura.expirationTime, aura.icon, spellEntry.shownName, unpack(aura.points))
+	if duration then
+		self:AddTrackedInfo(allStacks, duration, name, 1, expirationTime, iconID, spellEntry.shownName)
 	end
 end
 
 function Bar:GetBuffCooldownReset(duration, expirationTime)
-	-- Called by Bar:CheckAura()
+	-- ...
 	-- Example: Classic Druid Eclipse resets internal cooldown on Nature's Grace
-	local maxStart = 0
-	local tNow = GetTime()
-	local buff_stacks = m_scratch.buff_stacks
-	buff_stacks.total = 0
-	-- Track when reset auras last applied to player
+	-- Called by Bar:CheckAura()
+
+	local maxStartTime = 0
+	local now = GetTime()
+
+	-- Track when reset buff last applied to player
 	for i, resetSpell in ipairs(self.reset_spells) do
-		local resetDuration, _, _, resetExpiration = self:GetAuraInfo(resetSpell, buff_stacks)
-		local tStart
-		if buff_stacks.total > 0 then
-			if 0 == buff_stacks.max.duration then 
-				tStart = self.reset_start[i]
-				if 0 == tStart then
-					tStart = tNow
+		local resetBuff = GetBuffInfo(resetSpell)
+		local startTime
+		if resetBuff then
+			if resetBuff.duration == 0 then
+				startTime = self.reset_start[i]
+				if 0 == startTime then
+					startTime = now
 				end
 			else
-				tStart = buff_stacks.max.expirationTime - buff_stacks.max.duration
+				startTime = resetBuff.expirationTime - resetBuff.duration
 			end
-			self.reset_start[i] = tStart
-			if tStart > maxStart then 
-				maxStart = tStart 
+			self.reset_start[i] = startTime
+			if startTime > maxStartTime then 
+				maxStartTime = startTime 
 			end
 		else
 			self.reset_start[i] = 0
 		end
 	end
-	if maxStart > expirationTime - duration then
+	if maxStartTime > expirationTime - duration then
 		duration = nil
 	end
 	return duration

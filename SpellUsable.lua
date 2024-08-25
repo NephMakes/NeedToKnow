@@ -49,7 +49,6 @@ function BarMixin:GetTrackedInfo(spellEntry, allStacks)
 	if not spell then return end
 	local spellName, _, icon = GetSpellInfo(spell)
 	if not spellName then return end
-
 	local isUsable, notEnoughMana = IsUsableSpell(spellName)
 	if isUsable or notEnoughMana then
 		local duration, expirationTime

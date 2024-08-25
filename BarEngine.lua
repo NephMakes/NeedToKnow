@@ -249,7 +249,7 @@ BarType functions return:
 		count = foo, 
 		duration = foo, 
 		expirationTime = foo, 
-		extraValues = fooTable, 
+		-- extraValues = fooTable,  -- Not yet implemented
 		spellID = foo,  -- Also used for itemID
 		shownName = foo, 
 	}

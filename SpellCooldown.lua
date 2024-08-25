@@ -44,33 +44,8 @@ if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 	end
 end
 
-local GLOBAL_SPELLID = 61304  -- Global cooldown
-if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then
-	GLOBAL_SPELLID = 29515  -- "TEST Scorch"
-end
 
-local function round(value, decimalPlaces)
-    local order = 10^(decimalPlaces or 0)
-    return math.floor(value * order + 0.5) / order
-end
-
-
---[[ Bar setup ]]--
-
-function BarMixin:SetBarTypeInfo()
-	local settings = self.settings
-	settings.Unit = "player"
-	self.showChargeCooldown = settings.show_charges
-	self.checkOnNoTimeLeft = true  
-		-- For Bar:OnUpdate. No event when item cooldowns expire. Others fire too soon. 
-end
-
-function BarMixin:SetBarTypeSpells()
-	-- Set extra information for Bar:GetTrackedInfo
-	for _, spellEntry in pairs(self.spells) do
-		self:SetCooldownSpell(spellEntry)
-	end
-end
+--[[ Local functions ]]--
 
 local function IsItemCooldown(itemIdentifier)
 	local isItemCooldown, itemID
@@ -90,6 +65,51 @@ local function IsSpellCooldown(spellIdentifier)
 		name, _, icon, _, _, _, spellID = GetSpellInfo(spellIdentifier)
 	end
 	return isSpellCooldown, name, icon, spellID
+end
+
+local GLOBAL_SPELLID = 61304  -- Global cooldown
+if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then
+	GLOBAL_SPELLID = 29515  -- "TEST Scorch"
+end
+
+local function IsGlobalCooldown(start, duration)
+	local globalStart, globalDuration = GetSpellCooldown(GLOBAL_SPELLID)
+	return (start == globalStart) and (duration == globalDuration)
+end
+
+local function round(value, decimalPlaces)
+    local order = 10^(decimalPlaces or 0)
+    return math.floor(value * order + 0.5) / order
+end
+
+local function IsRuneCooldown(duration)
+	-- For Classic Death Knights
+	local runeDuration
+	for runeIndex = 1, 6 do
+		_, runeDuration = GetRuneCooldown(runeIndex)
+		if round(duration, 2) == round(runeDuration, 2) then
+			-- duration and runeDuration accurate to different digits
+			return true
+		end
+	end
+end
+
+
+--[[ Bar setup ]]--
+
+function BarMixin:SetBarTypeInfo()
+	local settings = self.settings
+	settings.Unit = "player"
+	self.showChargeCooldown = settings.show_charges
+	self.checkOnNoTimeLeft = true  
+		-- For Bar:OnUpdate. No event when item cooldowns expire. Others fire too soon. 
+end
+
+function BarMixin:SetBarTypeSpells()
+	-- Set extra information for Bar:GetTrackedInfo
+	for _, spellEntry in pairs(self.spells) do
+		self:SetCooldownSpell(spellEntry)
+	end
 end
 
 function BarMixin:SetCooldownSpell(spellEntry)
@@ -162,23 +182,6 @@ function BarMixin:GetTrackedInfo(spellEntry, allStacks)
 			self:AddTrackedInfo(allStacks, trackedInfo.duration, trackedInfo.name, trackedInfo.count, trackedInfo.expirationTime, trackedInfo.iconID, trackedInfo.shownName)
 		end
 		-- return self:GetTrackedCooldown(spellEntry)  -- Eventually do this instead
-	end
-end
-
-local function IsGlobalCooldown(start, duration)
-	local globalStart, globalDuration = GetSpellCooldown(GLOBAL_SPELLID)
-	return (start == globalStart) and (duration == globalDuration)
-end
-
-local function IsRuneCooldown(duration)
-	-- For Classic Death Knights
-	local runeDuration
-	for runeIndex = 1, 6 do
-		_, runeDuration = GetRuneCooldown(runeIndex)
-		if round(duration, 2) == round(runeDuration, 2) then
-			-- duration and runeDuration accurate to different digits
-			return true
-		end
 	end
 end
 
