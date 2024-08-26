@@ -3,9 +3,10 @@
 ## NeedToKnow
 
 ### v4.7.7 (2024-08-??)
+* Breaking change: Default settings should now provide cleaner experience for first-time users and new characters. Groups and bars on inactive profiles will likely need to be re-enabled. 
 * Fixed: Buffs and debuffs tracked by spell ID on target/focus should now work again
 * Fixed: Cooldown bars should no longer show rune cooldowns for Classic Death Knights
-* Changed: Default profile should now provide cleaner experience for first-time users and new characters. Groups and bars on inactive profiles will likely need to be re-enabled. 
+* Changed: Bars set to "Show sum of all" while tracking more than one spell/etc now show name, count, and icon for last effect to expire (was first to expire)
 
 ### v4.7.6 (2024-08-21)
 * Fixed: Bars for equipment slot cooldowns can now show icon

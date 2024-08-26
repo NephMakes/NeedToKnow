@@ -17,13 +17,16 @@ local Bar = NeedToKnow.Bar
 
 -- Local versions of frequently-used global functions
 local UnitGUID = UnitGUID
+local GetSpellInfo = GetSpellInfo
 
--- Functions different between Retail and Classic as of 11.0.0
-local function GetRetailSpellInfo(spell)
-	local info = C_Spell.GetSpellInfo(spell)  -- Only in Retail
-	return info.name
+if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+	GetSpellInfo = function(spell) 
+		local info = C_Spell.GetSpellInfo(spell)
+		if info then
+			return info.name
+		end
+	end
 end
-local GetSpellInfo = GetSpellInfo or GetRetailSpellInfo
 
 -- Deprecated: 
 local m_last_guid = NeedToKnow.m_last_guid  -- For ExtendedTime
@@ -63,7 +66,8 @@ function Bar:PLAYER_SPELLCAST_SUCCEEDED(unit, ...)
 		if spell.id == spellID or spell.name == spellName then
 			self.unit = target or "unknown"
 			-- print("Updating", self:GetName(), "since it was recast on", self.unit)
-			self:CheckAura()
+			-- self:CheckAura()
+			self:UpdateTracking()
 			break
 		end
 	end
@@ -72,6 +76,12 @@ end
 
 --[[ ExtendedTime ]]--
 
+--[[
+	Example: For a Balance Druid in Cataclysm Classic with Glyph of Starfire, 
+	Starfire increases duration of Moonfire on target up to a maximum of 9 sec
+]]--
+
+--[[
 function Bar:RegisterExtendedTime()
 	-- Called by Bar:Activate
 	for _, entry in pairs(self.spells) do
@@ -105,16 +115,17 @@ function Bar:GetExtendedTime(auraName, duration, expirationTime, unit)
 
 	if not r[guidTarget] then 
 		-- Should only happen from /reload or /ntk while the aura is active
-		-- Kitjan: This went off for me, but I don't know a repro yet.  I suspect it has to do with bear/cat switching
-		-- trace("WARNING! allocating guid slot for ", buffName, "on", guidTarget, "due to UNIT_AURA")
+		-- [Kitjan]: This went off for me, but I don't know a repro yet.  I suspect it has to do with bear/cat switching
+		-- print("WARNING! allocating guid slot for ", buffName, "on", guidTarget, "due to UNIT_AURA")
 		r[guidTarget] = {time = curStart, dur = duration, expiry = expirationTime}
 	else
 		r = r[guidTarget]
 		local oldExpiry = r.expiry
-		-- Kitjan: This went off for me, but I don't know a repro yet.  I suspect it has to do with bear/cat switching
-		-- if ( oldExpiry > 0 and oldExpiry < curStart ) then
-			-- trace("WARNING! stale entry for ", buffName, "on", guidTarget, curStart - r.time, curStart - oldExpiry)
-		-- end
+
+		-- [Kitjan]: This went off for me, but I don't know a repro yet.  I suspect it has to do with bear/cat switching
+--		if (oldExpiry > 0) and (oldExpiry < curStart) then
+--			print("WARNING! stale entry for ", buffName, "on", guidTarget, curStart - r.time, curStart - oldExpiry)
+--		end
 
 		if oldExpiry < curStart then
 			r.time = curStart
@@ -143,4 +154,5 @@ function Bar:ClearExtendedTime()
 		end
 	end
 end
+]]--
 

@@ -121,10 +121,6 @@ end
 
 function ExecutiveFrame:UNIT_SPELLCAST_SENT(unit, tgt, lineID, spellID)
 	-- For last raid recipient and detect extends
-	--[[ 
-		Kitjan implemented "lastraid" to track spells like Beacon of Light (Paladin) 
-		or Earth Shield (Shaman) without having to set recipient as focus
-	]]--
     if unit == "player" then
         -- TODO: I hate to pay this memory cost for every "spell" ever cast.
         --       Would be nice to at least garbage collect this data at some point, but that

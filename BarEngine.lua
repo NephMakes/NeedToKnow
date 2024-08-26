@@ -40,16 +40,16 @@ end
 
 function Bar:SetBarType()
 	self.barType = self.settings.BuffOrDebuff
+	-- BarType mixins provide
+	--   self:SetBarTypeInfo,
+	--   self:SetBarTypeSpells,
+	--   self:RegisterBarTypeEvents, 
+	--   self:UnregisterBarTypeEvents, 
+	--   Most self:EVENTS, 
+	--   self:GetTrackedInfo, 
+	--   self:ProcessTrackedInfo,  -- Deprecated
+	--   ...
 	local barTypeMixin = {
-		-- BarType mixins provide
-		--   self:SetBarTypeInfo,
-		--   self:SetBarTypeSpells,
-		--   self:RegisterBarTypeEvents, 
-		--   self:UnregisterBarTypeEvents, 
-		--   Most self:EVENTS, 
-		--   self:GetTrackedInfo, 
-		--   self:ProcessTrackedInfo,  -- Deprecated
-		--   ...
 		HELPFUL = NeedToKnow.AuraBarMixin, 
 		HARMFUL = NeedToKnow.AuraBarMixin, 
 		EQUIPBUFF = NeedToKnow.EquipBuffBarMixin, 
@@ -157,9 +157,6 @@ function Bar:Activate()
 	if self.showBlink then
 		self:RegisterBlinkEvents()
 	end
-	if self.showExtendedTime then
-		self:RegisterExtendedTime()
-	end
 end
 
 function Bar:Inactivate()
@@ -168,7 +165,7 @@ function Bar:Inactivate()
 	self:UnregisterBarTypeEvents()
 	self.isBlinking = nil
 	self:UnregisterBlinkEvents()
-	self:UnregisterExtendedTime()
+	self:ClearExtendedTime()
 end
 
 
@@ -232,8 +229,8 @@ function Bar:UpdateTrackingAllStacks()
 end
 
 --[[
-	GetTrackedInfo() defined by BarTypeMixin, returns
-	trackedInfo = { 
+	GetTrackedInfo() defined by BarTypeMixin
+	Returns trackedInfo = { 
 		name = string, 
 		iconID = number, 
 		count = number,  -- Count for shown instance only
@@ -274,19 +271,14 @@ function Bar:OnTrackedPresent(trackedInfo)
 
 	local duration = trackedInfo.duration
 
-	local extendedTime
-	if self.showExtendedTime then
-		extendedTime, duration = self:GetExtendedTime(trackedInfo.name, duration, trackedInfo.expirationTime, self.unit)
-	end
-
 	self.buffName = trackedInfo.name
 	self.iconPath = trackedInfo.iconID
 	self.count = trackedInfo.count
 	self.duration = duration
 	self.expirationTime = trackedInfo.expirationTime
 	self.shownName = trackedInfo.shownName
+	-- extraValues not yet implemented
 	self.stacks = trackedInfo.stacks
-	self.extendedTime = extendedTime
 
 	if duration > 0 then
 		self.maxTimeLeft = self.groupDuration or duration
@@ -294,8 +286,12 @@ function Bar:OnTrackedPresent(trackedInfo)
 		-- Indefinite aura (duration == 0)
 		self.maxTimeLeft = self.groupDuration or 1
 	end
-	self.isBlinking = false
 
+	if self.showExtendedTime then
+		self:UpdateExtendedTime(trackedInfo)
+	end
+
+	self.isBlinking = false
 	self:UpdateAppearance()
 	self:SetLockedText()
 	self:Show()
@@ -305,10 +301,6 @@ end
 function Bar:OnTrackedAbsent(unitExists)
 	-- Update bar to show tracked aura/cooldown/etc is absent
 
-	if self.showExtendedTime and self.buffName then
-		self:ClearExtendedTime()
-	end
-
 	self.buffName = nil
 	self.iconPath = nil  -- Keep icon for blink?
 	self.count = nil
@@ -316,8 +308,12 @@ function Bar:OnTrackedAbsent(unitExists)
 	self.expirationTime = nil
 	self.shownName = nil
 	self.stacks = nil
-	self.extendedTime = nil
+
 	self.maxTimeLeft = 1
+
+	if self.showExtendedTime then
+		self:ClearExtendedTime()
+	end
 
 	if self:ShouldBlink(unitExists) then
 		self:Blink()
@@ -347,7 +343,7 @@ function Bar:OnUpdate(elapsed)
 	local timeLeft = self.expirationTime - now
 	if timeLeft < 0 then
 		if self.checkOnNoTimeLeft then
-			self:CheckAura()
+			self:UpdateTracking()
 			return
 		end
 		timeLeft = 0

@@ -53,14 +53,13 @@ function Bar:SetLockedText()
 	local stacks = self.stacks
 	if self.showAllStacks and stacks and stacks > 1 then
 		stacks = stacks - 1  -- Show extra stacks
-		stackText = "  +"..stacks
+		stackText = " +"..stacks
 	else
 		stackText = ""
 	end
 
-	local extendedTime = self.extendedTime
-	if extendedTime and extendedTime > 1 then
-		extendedTimeText = string.format(" + %.0fs", extendedTime)
+	if self.extendedTime then
+		extendedTimeText = string.format(" (+%.0fs)", self.extendedTime)
 	else
 		extendedTimeText = ""
 	end
