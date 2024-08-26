@@ -70,8 +70,8 @@ function ExecutiveFrame:ClearBossFight()
 end
 
 function ExecutiveFrame:UpdateBossFightBars()
-	for bar, v in pairs(self.BossFightBars) do
-		bar:CheckAura()
+	for bar, _ in pairs(self.BossFightBars) do
+		bar:UpdateTracking()
 	end
 end
 

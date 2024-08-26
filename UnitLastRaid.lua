@@ -1,5 +1,5 @@
 --[[
-	Unit "lastraid" (and ExtendedTime)
+	Unit "lastraid" 
 
 	Track buffs/debuffs on last raid recipient. For example: a Paladin could 
 	track Beacon of Light or a Shaman could track Earth Shield without having 
@@ -8,8 +8,8 @@
 	NOTE: Kitjan made this option for what appear to be niche use cases, so 
 	worth moving to "Advanced options". 
 
-	NOTE: ExtendedTime currently always uses this tracking option even when it 
-	doesn't really need to. 
+	NOTE: Kitjan's version of ExtendedTime always used this tracking option 
+	even when it didn't really need to. 
 ]]--
 
 local _, NeedToKnow = ...
@@ -17,8 +17,9 @@ local Bar = NeedToKnow.Bar
 
 -- Local versions of frequently-used global functions
 local UnitGUID = UnitGUID
-local GetSpellInfo = GetSpellInfo
 
+--[[
+local GetSpellInfo = GetSpellInfo
 if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 	GetSpellInfo = function(spell) 
 		local info = C_Spell.GetSpellInfo(spell)
@@ -27,9 +28,9 @@ if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 		end
 	end
 end
+]]--
 
--- Deprecated: 
-local m_last_guid = NeedToKnow.m_last_guid  -- For ExtendedTime
+-- local m_last_guid = NeedToKnow.m_last_guid  -- For ExtendedTime
 
 
 --[[ ExecutiveFrame ]]--

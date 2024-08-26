@@ -94,7 +94,7 @@ function ExecutiveFrame:PLAYER_REGEN_ENABLED()
 	self:ClearBossFight()
 end
 
--- For last raid recipient (unit "lastraid") and ExtendedTime
+-- For last raid recipient (unit "lastraid")
 
 function NeedToKnow.RegisterSpellcastSent()
 	-- Called by Bar:Activate()

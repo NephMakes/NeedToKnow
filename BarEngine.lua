@@ -27,7 +27,7 @@ function Bar:Update()
 		if self.isEnabled and groupSettings.Enabled then
 			self:EnableMouse(false)  -- Click through
 			self:Activate()
-			self:CheckAura()
+			self:UpdateTracking()
 		else
 			self:Inactivate()
 			self:Hide()
@@ -163,9 +163,9 @@ function Bar:Inactivate()
 	self:SetScript("OnEvent", nil)
 	self:SetScript("OnUpdate", nil)
 	self:UnregisterBarTypeEvents()
+	self:ClearExtendedTime()
 	self.isBlinking = nil
 	self:UnregisterBlinkEvents()
-	self:ClearExtendedTime()
 end
 
 
@@ -271,14 +271,18 @@ function Bar:OnTrackedPresent(trackedInfo)
 
 	local duration = trackedInfo.duration
 
-	self.buffName = trackedInfo.name
-	self.iconPath = trackedInfo.iconID
+	self.name = trackedInfo.name
+	self.iconID = trackedInfo.iconID
 	self.count = trackedInfo.count
 	self.duration = duration
 	self.expirationTime = trackedInfo.expirationTime
 	self.shownName = trackedInfo.shownName
 	-- extraValues not yet implemented
 	self.stacks = trackedInfo.stacks
+
+	-- Deprecated aliases
+	self.buffName = self.name
+	self.iconPath = self.iconID
 
 	if duration > 0 then
 		self.maxTimeLeft = self.groupDuration or duration
@@ -301,13 +305,17 @@ end
 function Bar:OnTrackedAbsent(unitExists)
 	-- Update bar to show tracked aura/cooldown/etc is absent
 
-	self.buffName = nil
-	self.iconPath = nil  -- Keep icon for blink?
+	self.name = nil
+	self.iconID = nil  -- Keep icon for blink?
 	self.count = nil
 	self.duration = nil
 	self.expirationTime = nil
 	self.shownName = nil
 	self.stacks = nil
+
+	-- Deprecated aliases
+	self.buffName = nil
+	self.iconPath = nil
 
 	self.maxTimeLeft = 1
 

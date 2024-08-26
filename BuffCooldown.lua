@@ -117,7 +117,7 @@ function BarMixin:GetTrackedInfo(spellEntry, allStacks)
 	elseif self.expirationTime and self.expirationTime > now + 0.1 then
 		-- Keep on keepin' on
 		name = self.buffName
-		iconID = self.iconPath
+		iconID = self.iconID
 		duration = self.duration
 		expirationTime = self.expirationTime
 	end

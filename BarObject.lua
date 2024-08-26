@@ -178,8 +178,8 @@ function Bar:UpdateAppearance()
 
 	-- Icon changes if bar tracks multiple things
 	local icon = self.icon
-	if self.showIcon and self.iconPath then
-		icon.texture:SetTexture(self.iconPath)
+	if self.showIcon and self.iconID then
+		icon.texture:SetTexture(self.iconID)
 		icon:Show()
 	else
 		icon:Hide()
@@ -226,7 +226,7 @@ function Bar:SetValue(timeLeft)
 end
 
 function Bar:CondenseBarGroup()
-	-- Called by Bar:CheckAura
+	-- Called by Bar:UpdateTracking
 	if self.isVisible ~= self:IsVisible() then
 		self:GetParent():UpdateBarPosition()
 		self.isVisible = self:IsVisible()

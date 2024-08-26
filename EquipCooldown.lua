@@ -28,13 +28,19 @@ end
 
 function BarMixin:RegisterBarTypeEvents()
 	self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
+	self:RegisterUnitEvent("UNIT_INVENTORY_CHANGED", "player")
 end
 
 function BarMixin:UnregisterBarTypeEvents()
 	self:UnregisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
+	self:UnregisterEvent("UNIT_INVENTORY_CHANGED")
 end
 
 function BarMixin:ACTIONBAR_UPDATE_COOLDOWN()
+	self:UpdateTracking()
+end
+
+function BarMixin:UNIT_INVENTORY_CHANGED()
 	self:UpdateTracking()
 end
 
