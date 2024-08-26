@@ -170,7 +170,7 @@ end
 
 function Bar:UpdateAppearance()
 	-- Set bar elements that can change in combat
-	-- Called by Bar:OnDurationFound
+	-- Called by Bar:OnTrackedPresent
 
 	-- Bar color changes when blinking
 	local color = self.barColor
@@ -192,6 +192,7 @@ function Bar:UpdateAppearance()
 			self.Time:Hide()
 		end
 		if self.showCastTime then
+			self.CastTime:Show()
 			self:UpdateCastTime()
 		end
 		-- SetValue and Spark handled by Bar:OnUpdate
