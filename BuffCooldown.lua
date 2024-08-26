@@ -136,7 +136,22 @@ function BarMixin:GetTrackedInfo(spellEntry, allStacks)
 	end
 end
 
-function Bar:GetBuffCooldownReset(duration, expirationTime)
+function BarMixin:ProcessTrackedInfo(trackedInfo)
+	-- Return nil if reset spell found, trackedInfo otherwise
+	-- DEPRECATED: This should really just be rolled into GetTrackedInfo 
+	-- so we can remove ProcessTrackedInfo altogether
+	if self.reset_spells and trackedInfo and trackedInfo.duration then
+		local duration = self:GetBuffCooldownReset(trackedInfo.duration, trackedInfo.expirationTime)
+		if not duration then
+			trackedInfo = nil
+		else 
+			trackedInfo.duration = duration
+		end
+	end
+	return trackedInfo
+end
+
+function BarMixin:GetBuffCooldownReset(duration, expirationTime)
 	-- ...
 	-- Example: Classic Druid Eclipse resets internal cooldown on Nature's Grace
 	-- Called by Bar:CheckAura()

@@ -62,3 +62,9 @@ function BarMixin:GetTrackedInfo(spellEntry, allStacks)
 	end
 end
 
+function BarMixin:ProcessTrackedInfo(trackedInfo)
+	-- Nothing to do
+	return trackedInfo
+end
+
+

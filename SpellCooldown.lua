@@ -250,6 +250,12 @@ function BarMixin:GetTrackedSpellChargesCooldown(spellEntry)
 	}
 end
 
+function BarMixin:ProcessTrackedInfo(trackedInfo)
+	-- Nothing to do
+	return trackedInfo
+end
+
+
 
 --[[ Old code ]]--
 

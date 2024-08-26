@@ -42,12 +42,13 @@ function Bar:SetBarType()
 	self.barType = self.settings.BuffOrDebuff
 	local barTypeMixin = {
 		-- BarType mixins provide
-		--   Bar:SetBarTypeInfo,
-		--   Bar:SetBarTypeSpells,
-		--   Bar:RegisterBarTypeEvents, 
-		--   Bar:UnregisterBarTypeEvents, 
-		--   Most Bar:EVENTS, 
-		--   Bar:GetTrackedInfo, 
+		--   self:SetBarTypeInfo,
+		--   self:SetBarTypeSpells,
+		--   self:RegisterBarTypeEvents, 
+		--   self:UnregisterBarTypeEvents, 
+		--   Most self:EVENTS, 
+		--   self:GetTrackedInfo, 
+		--   self:ProcessTrackedInfo,  -- Deprecated
 		--   ...
 		HELPFUL = NeedToKnow.AuraBarMixin, 
 		HARMFUL = NeedToKnow.AuraBarMixin, 
@@ -181,7 +182,7 @@ function Bar:OnEvent(event, unit, ...)
 end
 
 function Bar:UpdateTrackingSingle()
-	-- Get info for tracked spell/item/ability and act on it
+	-- Get first instance of tracked aura/etc then act on info
 	-- Primary update call for active bars, called by many functions
 	-- Called as Bar:UpdateTracking
 
@@ -193,15 +194,7 @@ function Bar:UpdateTrackingSingle()
 			if trackedInfo then break end
 		end
 	end
-
-	if self.barType == "BUFFCD" and self.reset_spells and 
-		trackedInfo and trackedInfo.duration 
-	then
-		trackedInfo.duration = self:GetBuffCooldownReset(trackedInfo.duration, trackedInfo.expirationTime)
-		if not trackedInfo.duration then
-			trackedInfo = nil
-		end
-	end
+	trackedInfo = self:ProcessTrackedInfo(trackedInfo)  -- Deprecated
 
 	if trackedInfo then
 		self:OnTrackedPresent(trackedInfo)
@@ -214,7 +207,7 @@ function Bar:UpdateTrackingSingle()
 end
 
 function Bar:UpdateTrackingAllStacks()
-	-- Get info for tracked spell/item/ability and act on it
+	-- Get all instances of tracked aura/etc then act on info
 	-- Primary update call for active bars, called by many functions
 	-- Called as Bar:UpdateTracking
 
@@ -226,15 +219,7 @@ function Bar:UpdateTrackingAllStacks()
 			trackedInfo = self:SumTrackedInfo(newInfo, trackedInfo)
 		end
 	end
-
-	if self.barType == "BUFFCD" and self.reset_spells and 
-		trackedInfo and trackedInfo.duration 
-	then
-		trackedInfo.duration = self:GetBuffCooldownReset(trackedInfo.duration, trackedInfo.expirationTime)
-		if not trackedInfo.duration then
-			trackedInfo = nil
-		end
-	end
+	trackedInfo = self:ProcessTrackedInfo(trackedInfo)  -- Deprecated
 
 	if trackedInfo then
 		self:OnTrackedPresent(trackedInfo)
@@ -247,16 +232,17 @@ function Bar:UpdateTrackingAllStacks()
 end
 
 --[[
-trackedInfo = { 
-	name = string, 
-	iconID = number, 
-	count = number,  -- Count for shown instance only
-	duration = number, 
-	expirationTime = number, 
-	-- extraValues = table of numbers,  -- Not yet implemented
-	shownName = string, 
-	stacks = number,  -- How many instances (for showAllStacks)
-}
+	GetTrackedInfo() defined by BarTypeMixin, returns
+	trackedInfo = { 
+		name = string, 
+		iconID = number, 
+		count = number,  -- Count for shown instance only
+		duration = number, 
+		expirationTime = number, 
+		-- extraValues = table of numbers,  -- Not yet implemented
+		shownName = string, 
+		stacks = number,  -- How many instances (for showAllStacks)
+	}
 ]]--
 
 function Bar:SumTrackedInfo(newInfo, trackedInfo)
@@ -266,7 +252,7 @@ function Bar:SumTrackedInfo(newInfo, trackedInfo)
 	if not trackedInfo then return newInfo end
 	if not newInfo then return trackedInfo end
 
-	-- Keep info for last to expire
+	-- Show name/etc for last to expire
 	if newInfo.expirationTime > trackedInfo.expirationTime then
 		trackedInfo.name = newInfo.name
 		trackedInfo.iconID = newInfo.iconID

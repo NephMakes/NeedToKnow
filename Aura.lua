@@ -189,4 +189,10 @@ function BarMixin:GetTrackedInfoAllStacks(spellEntry, allStacks)
 	return trackedInfo
 end
 
+function BarMixin:ProcessTrackedInfo(trackedInfo)
+	-- Nothing to do
+	return trackedInfo
+end
+
+
 
