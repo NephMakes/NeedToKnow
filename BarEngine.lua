@@ -16,11 +16,10 @@ function Bar:Update()
 
 	local groupSettings = self:GetParent().settings
 	self.settings = groupSettings.Bars[self:GetID()]
-
+	self:SetSpells()
 	self:SetBarType()
 	self:SetTrackingOptions()
 	self:SetAppearanceOptions()
-	self:SetSpells()
 	self:SetAppearance()
 
 	if NeedToKnow.isLocked then
@@ -38,17 +37,42 @@ function Bar:Update()
 	end
 end
 
+local function GetSpellNames(settingString)
+	-- Extract spell names from string entered by user
+	local names = {}
+	for name in settingString:gmatch("([^,]+)") do
+		table.insert(names, strtrim(name))
+	end
+	return names
+end
+
+function Bar:SetSpells()
+	-- Set spells/items/abilities tracked by bar
+	-- Store as bar.spells = {{name, id, shownName, ...}, }
+	self.spells = {}
+	local spellNames = GetSpellNames(self.settings.AuraName)
+	local shownNames = GetSpellNames(self.settings.show_text_user)
+	for i, spellName in ipairs(spellNames) do
+		local spellEntry = {}
+		local _, numDigits = string.find(spellName, "^-?%d+")
+		if numDigits == string.len(spellName) then
+			spellEntry.id = tonumber(spellName)  -- Track by ID
+		else
+			spellEntry.name = spellName  -- Track by name
+		end
+		if shownNames[i] then
+			spellEntry.shownName = shownNames[i]
+		elseif shownNames[1] then
+			spellEntry.shownName = shownNames[math.min(#shownNames, #spellNames)]
+		end
+		table.insert(self.spells, spellEntry)
+	end
+end
+
 function Bar:SetBarType()
+	-- Must be called after Bar:SetSpells because SpellCooldown 
+	-- uses name/ID to determine if spell or item cooldown
 	self.barType = self.settings.BuffOrDebuff
-	-- BarType mixins provide
-	--   self:SetBarTypeInfo,
-	--   self:SetBarTypeSpells,
-	--   self:RegisterBarTypeEvents, 
-	--   self:UnregisterBarTypeEvents, 
-	--   Most self:EVENTS, 
-	--   self:GetTrackedInfo, 
-	--   self:ProcessTrackedInfo,  -- Deprecated
-	--   ...
 	local barTypeMixin = {
 		HELPFUL = NeedToKnow.AuraBarMixin, 
 		HARMFUL = NeedToKnow.AuraBarMixin, 
@@ -60,11 +84,24 @@ function Bar:SetBarType()
 		BUFFCD = NeedToKnow.BuffCooldownBarMixin, 
 	}
 	Mixin(self, barTypeMixin[self.barType])
-	self:SetBarTypeInfo()
+	-- BarType mixins provide
+	--   self:SetBarTypeInfo,
+	--   self:SetBarTypeSpells,
+	--   self:SetbarTypeOptions, 
+	--   self:RegisterBarTypeEvents, 
+	--   self:UnregisterBarTypeEvents, 
+	--   Most self:EVENTS, 
+	--   self:GetTrackedInfo, 
+	--   self:ProcessTrackedInfo,  -- Deprecated
+	--   ...
+	self:SetBarTypeOptions()
 end
 
 function Bar:SetTrackingOptions()
-	-- Setting names can be nonintuitive so let's corral them
+	-- Setting names can be nonintuitive so let's corral them. 
+	-- Must be called after Bar:SetBarTypeOptions because several bar 
+	--   types (cooldowns/etc) set settings.Unit to "player"
+
 	local settings = self.settings
 
 	local unit = settings.Unit
@@ -114,39 +151,6 @@ end
 function Bar:UnitExistsGeneric()
 	-- Called as bar:UnitExists()
 	return UnitExists(self.unit)
-end
-
-local function GetSpellNames(settingString)
-	-- Extract spell names from string entered by user
-	local names = {}
-	for name in settingString:gmatch("([^,]+)") do
-		table.insert(names, strtrim(name))
-	end
-	return names
-end
-
-function Bar:SetSpells()
-	-- Set spells/items/abilities tracked by bar
-	-- Store as bar.spells = {{name, id, shownName, ...}, }
-	self.spells = {}
-	local spellNames = GetSpellNames(self.settings.AuraName)
-	local shownNames = GetSpellNames(self.settings.show_text_user)
-	for i, spellName in ipairs(spellNames) do
-		local spellEntry = {}
-		local _, numDigits = string.find(spellName, "^-?%d+")
-		if numDigits == string.len(spellName) then
-			spellEntry.id = tonumber(spellName)  -- Track by ID
-		else
-			spellEntry.name = spellName  -- Track by name
-		end
-		if shownNames[i] then
-			spellEntry.shownName = shownNames[i]
-		elseif shownNames[1] then
-			spellEntry.shownName = shownNames[math.min(#shownNames, #spellNames)]
-		end
-		table.insert(self.spells, spellEntry)
-	end
-	self:SetBarTypeSpells()  -- Set extra information for Bar:GetTrackedInfo
 end
 
 function Bar:Activate()

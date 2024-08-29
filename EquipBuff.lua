@@ -15,13 +15,10 @@ local INVSLOT_RANGED = INVSLOT_RANGED
 
 --[[ BarMixin ]]--
 
-function BarMixin:SetBarTypeInfo()
-	-- Called by Bar:SetBarType
+function BarMixin:SetBarTypeOptions()
 	self.settings.Unit = "player"
 	self.checkOnNoTimeLeft = nil  -- For Bar:OnUpdate
-end
 
-function BarMixin:SetBarTypeSpells()
 	-- Show equipment slot name if no custom text
 	for _, spellEntry in pairs(self.spells) do
 		if not spellEntry.shownName then

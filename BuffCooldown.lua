@@ -19,7 +19,7 @@ local GetPlayerAuraBySpellID = C_UnitAuras.GetPlayerAuraBySpellID
 
 --[[ Bar setup ]]--
 
-function BarMixin:SetBarTypeInfo()
+function BarMixin:SetBarTypeOptions()
 	-- Called by Bar:SetBarType
 	local settings = self.settings
 	settings.Unit = "player"
@@ -30,10 +30,12 @@ function BarMixin:SetBarTypeInfo()
 	-- if not duration or duration < 1 then
 	-- 	print("NeedToKnow: Please set internal cooldown time for ", settings.AuraName)
 	-- end
+
+	self:SetResetBuffs()
 end
 
-function BarMixin:SetBarTypeSpells()
-	-- Set other buffs that reset tracked buff cooldown
+function BarMixin:SetResetBuffs()
+	-- Set other buffs that reset cooldown on tracked buff
 	-- Example: Classic Balance Druid Eclipse resets cooldown on Nature's Grace
 	local settings = self.settings
 	if settings.buffcd_reset_spells and settings.buffcd_reset_spells ~= "" then

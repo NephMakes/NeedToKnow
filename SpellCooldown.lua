@@ -97,15 +97,13 @@ end
 
 --[[ Bar setup ]]--
 
-function BarMixin:SetBarTypeInfo()
+function BarMixin:SetBarTypeOptions()
 	local settings = self.settings
 	settings.Unit = "player"
 	self.showChargeCooldown = settings.show_charges
-	self.checkOnNoTimeLeft = true  
-		-- For Bar:OnUpdate. No event when item cooldowns expire. Others fire too soon. 
-end
+	self.checkOnNoTimeLeft = true  -- For Bar:OnUpdate. 
+		-- No event when item cooldowns expire. Others fire too soon. 
 
-function BarMixin:SetBarTypeSpells()
 	-- Set extra information for Bar:GetTrackedInfo
 	for _, spellEntry in pairs(self.spells) do
 		self:SetCooldownSpell(spellEntry)

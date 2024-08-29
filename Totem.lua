@@ -20,14 +20,9 @@ end
 
 --[[ BarMixin ]]--
 
-function BarMixin:SetBarTypeInfo()
-	-- Called by Bar:SetBarType
+function BarMixin:SetBarTypeOptions()
 	self.settings.Unit = "player"
 	self.checkOnNoTimeLeft = nil  -- For Bar:OnUpdate
-end
-
-function BarMixin:SetBarTypeSpells()
-	-- Nothing to do
 end
 
 function BarMixin:RegisterBarTypeEvents()

@@ -11,13 +11,11 @@ local GetInventoryItemTexture = GetInventoryItemTexture
 
 --[[ BarMixin ]]--
 
-function BarMixin:SetBarTypeInfo()
-	-- Called by Bar:SetBarType
+function BarMixin:SetBarTypeOptions()
 	self.settings.Unit = "player"
-	self.checkOnNoTimeLeft = true  -- For Bar:OnUpdate. No event when item cooldowns expire. 
-end
+	self.checkOnNoTimeLeft = true 
+		-- For Bar:OnUpdate. No event when item cooldowns expire. 
 
-function BarMixin:SetBarTypeSpells()
 	-- Show equipment slot name if no custom text
 	for _, spellEntry in pairs(self.spells) do
 		if not spellEntry.shownName then

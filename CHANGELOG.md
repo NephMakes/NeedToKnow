@@ -2,6 +2,8 @@
 
 ## NeedToKnow
 
+### v4.X.X (2024-XX-XX)
+
 ### v4.7.7 (2024-08-26)
 * Breaking change: Default settings should now provide cleaner experience for first-time users and new characters. Groups and bars on inactive profiles will likely need to be re-enabled. 
 * Fixed: Buffs and debuffs tracked by spell ID on target/focus should now work again

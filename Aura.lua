@@ -13,7 +13,7 @@ local UnitGUID = UnitGUID
 
 --[[ Bar setup ]]--
 
-function BarMixin:SetBarTypeInfo()
+function BarMixin:SetBarTypeOptions()
 	local settings = self.settings
 	if settings.show_all_stacks then
 		self.GetTrackedInfo = self.GetTrackedInfoAllStacks
@@ -25,10 +25,6 @@ function BarMixin:SetBarTypeInfo()
 		self.filter = self.filter.."|PLAYER"
 	end
 	self.checkOnNoTimeLeft = nil  -- For Bar:OnUpdate
-end
-
-function BarMixin:SetBarTypeSpells()
-	-- Nothing to do
 end
 
 function BarMixin:RegisterBarTypeEvents()
