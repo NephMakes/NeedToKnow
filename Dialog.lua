@@ -15,16 +15,16 @@ StaticPopupDialogs["NEEDTOKNOW_TEXT_INPUT"] = {
 	maxLetters = 0,
 	OnShow = function(self)
 		local text = self.data.currentValue or ""
-		self.editBox:SetText(text)
-		self.editBox:SetFocus()
+		self.EditBox:SetText(text)
+		self.EditBox:SetFocus()
 	end,
 	OnAccept = function(self)
-		local text = self.editBox:GetText()
+		local text = self.EditBox:GetText()
 		local data = self.data
 		Dialog:SetSetting(data.varName, text, data.groupID, data.barID)
 	end,
 	EditBoxOnEnterPressed = function(self)
-		local text = self:GetParent().editBox:GetText()
+		local text = self:GetParent().EditBox:GetText()
 		local data = self:GetParent().data
 		Dialog:SetSetting(data.varName, text, data.groupID, data.barID)
 		self:GetParent():Hide()
@@ -34,7 +34,7 @@ StaticPopupDialogs["NEEDTOKNOW_TEXT_INPUT"] = {
 	end,
 	OnHide = function(self)
 		ChatEdit_FocusActiveWindow()
-		self.editBox:SetText("")
+		self.EditBox:SetText("")
 	end,
 	timeout = 0,
 	exclusive = 1, 
@@ -50,11 +50,11 @@ StaticPopupDialogs["NEEDTOKNOW_NUMERIC_INPUT"] = {
 	maxLetters = 0,
 	OnShow = function(self)
 		local text = tonumber(self.data.currentValue) or ""
-		self.editBox:SetText(text)
-		self.editBox:SetFocus()
+		self.EditBox:SetText(text)
+		self.EditBox:SetFocus()
 	end,
 	OnAccept = function(self)
-		local value = Dialog:GetNumericValue(self.editBox:GetText())
+		local value = Dialog:GetNumericValue(self.EditBox:GetText())
 		local data = self.data
 		Dialog:SetSetting(data.varName, value, data.groupID, data.barID)
 	end,
@@ -80,7 +80,7 @@ StaticPopupDialogs["NEEDTOKNOW_NUMERIC_INPUT"] = {
 	end,
 	OnHide = function(self)
 		ChatEdit_FocusActiveWindow()
-		self.editBox:SetText("")
+		self.EditBox:SetText("")
 	end,
 	timeout = 0,
 	exclusive = 1, 
@@ -97,15 +97,15 @@ StaticPopupDialogs["NEEDTOKNOW_IMPORT_EXPORT"] = {
 	editBoxWidth = 300,
 	maxLetters = 0,
 	OnShow = function(self)
-		self.editBox:SetText(self.data.text)
-		self.editBox:HighlightText()
+		self.EditBox:SetText(self.data.text)
+		self.EditBox:HighlightText()
 	end,
 	OnAccept = function(self)
-		local text = self.editBox:GetText()
+		local text = self.EditBox:GetText()
 		Dialog:ImportSettings(text, self.data.groupID, self.data.barID)
 	end,
 	EditBoxOnEnterPressed = function(self)
-		local text = self:GetParent().editBox:GetText()
+		local text = self:GetParent().EditBox:GetText()
 		local data = self:GetParent().data
 		Dialog:ImportSettings(text, data.groupID, data.barID)
 		self:GetParent():Hide()
@@ -115,7 +115,7 @@ StaticPopupDialogs["NEEDTOKNOW_IMPORT_EXPORT"] = {
 	end,
 	OnHide = function(self)
 		ChatEdit_FocusActiveWindow()
-		self.editBox:SetText("")
+		self.EditBox:SetText("")
 	end,
 	timeout = 0,
 	exclusive = 1, 
