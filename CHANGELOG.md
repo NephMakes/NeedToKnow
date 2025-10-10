@@ -2,7 +2,11 @@
 
 ## NeedToKnow
 
-### v4.X.X (2024-XX-XX)
+### v4.7.8 (2025-10-XX)
+* Updated for Retail patch 11.2.5
+* Updated for Mists of Pandaria Classic patch 5.5.1
+* Updated for Vanilla Classic patch 1.15.7
+* Fixed lua EditBox error when entering text input. Thanks durandal42! 
 
 ### v4.7.7 (2024-08-26)
 * Breaking change: Default settings should now provide cleaner experience for first-time users and new characters. Groups and bars on inactive profiles will likely need to be re-enabled. 
