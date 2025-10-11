@@ -1,0 +1,31 @@
+name: Package and release AddOn
+
+on:
+  push:
+    tags:
+      - '**'
+
+jobs:
+  release:
+
+    runs-on: ubuntu-latest
+
+    env:
+      CF_API_KEY: ${{ secrets.CF_API_KEY }}
+      WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
+      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+      # For github releases, secret automatically provided to workflow
+      # Must be explicitly configured with read-write permissions on the repo
+  
+
+    steps:
+
+      # Checkout repo under $GITHUB_WORKSPACE so job can access it
+      - name: Clone project
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Gets entire git history (needed for automatic changelogs)
+
+      # Use BigWigsMods Packager
+      - name: Package and release
+        uses: BigWigsMods/packager@v2
