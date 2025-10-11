@@ -271,10 +271,14 @@ function BarMenu:AddButton(barSettings, menuItem, subMenuKey)
 	elseif itemType == "color" then
 		info.value = value
 		info.hasColorSwatch = 1
-		info.hasOpacity = true
 		local color = barSettings[value]
 		info.r, info.g, info.b = color.r, color.g, color.b
-		info.opacity = 1 - color.a
+		if color.a then
+			info.hasOpacity = true
+			info.opacity = color.a
+		else
+			info.hasOpacity = false
+		end
 		info.swatchFunc = BarMenu.SetColor
 		info.opacityFunc = BarMenu.SetOpacity
 		info.cancelFunc = BarMenu.CancelColor
@@ -412,7 +416,7 @@ function BarMenu.SetOpacity()
 	local groupID, barID = BarMenu.groupID, BarMenu.barID
 	local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
 	local color = barSettings[ColorPickerFrame.extraInfo]
-	color.a = 1 - ColorPickerFrame:GetColorAlpha()
+	color.a = ColorPickerFrame:GetColorAlpha()
 	NeedToKnow:UpdateBar(groupID, barID)
 end
 
@@ -422,7 +426,7 @@ function BarMenu.CancelColor(oldColor)
 		local barSettings = NeedToKnow:GetBarSettings(groupID, barID)
 		local color = barSettings[ColorPickerFrame.extraInfo]
 		color.r, color.g, color.b = oldColor.r, oldColor.g, oldColor.b
-		color.a = 1 - oldColor.opacity
+		color.a = oldColor.opacity or oldColor.a
 		NeedToKnow:UpdateBar(groupID, barID)
 	end
 end
