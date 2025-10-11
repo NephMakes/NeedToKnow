@@ -2,7 +2,7 @@
 
 ## NeedToKnow
 
-### v4.7.8 (2025-10-XX)
+### v4.7.8 (2025-10-11)
 * Updated for Retail patch 11.2.5
 * Updated for Mists of Pandaria Classic patch 5.5.1
 * Updated for Vanilla Classic patch 1.15.7
