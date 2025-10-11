@@ -1,7 +1,7 @@
 ## Interface: 110205, 50501, 11507
 ## Title: NeedToKnow
 ## Author: NephMakes, lieandswell
-## Version: 4.7.8
+## Version: 4.7.9
 ## Notes: Simple, effective timer bars
 ## X-Category: Buffs, Combat
 ## X-FormerAuthor: Kitjan
@@ -11,6 +11,8 @@
 ## LoadOnDemand: 0
 ## SavedVariables: NeedToKnow_Globals
 ## SavedVariablesPerCharacter: NeedToKnow_CharSettings
+## X-Curse-Project-ID: 3741
+## X-WoWI-ID: 6675
 
 # Libs
 libs\LibStub\LibStub.lua

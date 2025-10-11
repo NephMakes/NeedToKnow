@@ -1,6 +1,8 @@
 # Changelog
-
 ## NeedToKnow
+
+### v4.7.9 (2025-10-11)
+* Fixed workflow for package & release to Curse, WoWInterface
 
 ### v4.7.8 (2025-10-11)
 * Updated for Retail patch 11.2.5
