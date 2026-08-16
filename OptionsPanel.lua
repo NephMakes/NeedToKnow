@@ -36,6 +36,7 @@ function OptionsPanel:OnLoad()
 	self.OnDefault = NeedToKnow.ResetCharacter
 	self.OnRefresh = nil
 	local category, layout = Settings.RegisterCanvasLayoutCategory(self, self.name, self.name)
+	NeedToKnow.categoryID = category:GetID()   -- keep the real numeric ID for OpenToCategory
 	category.ID = self.name
 	Settings.RegisterAddOnCategory(category)
 end
