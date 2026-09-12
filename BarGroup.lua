@@ -343,7 +343,7 @@ function BarGroupTab:InitializeDropDown()
 end
 
 function BarGroupTab:OpenOptionsPanel()
-	Settings.OpenToCategory(addonName)  -- Blizz function
+	Settings.OpenToCategory(NeedToKnow.categoryID or addonName)  -- Blizz function
 end
 
 function BarGroupTab:OnDragStart()
